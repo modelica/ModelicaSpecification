@@ -6,6 +6,8 @@
 \usepackage{amsmath}
 \allowdisplaybreaks
 
+%For non-floating figures:
+\usepackage{float}
 % Need more text:
 \usepackage[margin=1in]{geometry}
 
@@ -18,6 +20,7 @@
 \renewcommand{\textfraction}{0}
 \renewcommand{\topfraction}{1}
 \renewcommand{\bottomfraction}{1}
+\renewcommand{\newline}{\strut}
 \setcounter{totalnumber}{1000}
 \raggedbottom
 \usepackage{hyperref}
@@ -52,6 +55,8 @@
 \definecolor{keywordcolor1}{rgb}{0,0,.4} 
 \definecolor{keywordcolor2}{rgb}{.90,0,0} 
 % See https://github.com/modelica-tools/listings-modelica/blob/master/listings-modelica.cfg
+% Note: Changed comment color from green to [rgb]{0,0.4,0} - since the other variant was too distracting
+% And added pure,impure,stream as keywords
 \lstdefinelanguage{modelica}{%
     alsoletter={...},%
     %otherkeywords={-, =, +, [, ], (, ), \{, \}, :, *, !},%
@@ -62,7 +67,7 @@
         function,if,in,inner,initial,input,import,loop,model,nondiscrete,outer,%
         output,package,parameter,partial,record,redeclare,replaceable,return,%
         size,terminate,then,type,when,while,algorithm,equation,%
-        protected,public,and,false,not,or,true},%
+        protected,public,and,false,not,or,true,pure,impure,stream},%
     % Note: initial is in both variants - depending on context, use first variant
     morekeywords=[3]{% red keywords
         abs,acos,asin,atan,atan2,connect,cos,cosh,cross,der,edge,exp,%
@@ -82,11 +87,11 @@ morekeywords=[1]{|}
 }[keywords,comments,strings]
 \lstset{ % 
   backgroundcolor=\color{white},   % choose the background color 
-  basicstyle=\footnotesize,        % size of fonts used for the code 
+  basicstyle=\footnotesize\ttfamily,        % size of fonts used for the code 
   breaklines=true,                % automatic line breaking only at whitespace 
   captionpos=b,                    % sets the caption-position to bottom 
-  commentstyle=\color{green},    % comment style 
-  keywordstyle=\color{blue},       % keyword style 
+  commentstyle=\color[rgb]{0,0.4,0}\sffamily,    % comment style 
+  keywordstyle=\color{blue}\ttfamily\bfseries,       % keyword style 
   keywordstyle=[1]\color{keywordcolor1}, 
   keywordstyle=[2]\color{keywordcolor1}\bfseries, 
   keywordstyle=[3]\color{keywordcolor2}, 
@@ -97,6 +102,46 @@ morekeywords=[1]{|}
   xleftmargin=\fboxsep, % 
   xrightmargin=-\fboxsep, % 
 } 
+
+\lstdefinelanguage{Fortran}%
+  {morekeywords={ASSIGN,BACKSPACE,CALL,CHARACTER,%
+      CLOSE,COMMON,COMPLEX,CONTINUE,DATA,DIMENSION,DO,DOUBLE,%
+      ELSE,ELSEIF,END,ENDIF,ENDDO,ENTRY,EQUIVALENCE,EXTERNAL,%
+      FILE,FORMAT,FUNCTION,GO,TO,GOTO,IF,IMPLICIT,%
+      INQUIRE,INTEGER,INTRINSIC,LOGICAL,%
+      OPEN,PARAMETER,PAUSE,PRECISION,PRINT,PROGRAM,READ,REAL,%
+      RETURN,REWIND,STOP,SUBROUTINE,THEN,%
+      WRITE,SAVE},%
+    morekeywords=[2]{ACCESS,BLANK,BLOCK,DIRECT,EOF,ERR,EXIST,%
+      FMT,FORM,FORMATTED,IOSTAT,NAMED,NEXTREC,NUMBER,OPENED,%
+      REC,RECL,SEQUENTIAL,STATUS,TYPE,UNFORMATTED,UNIT},%
+    morekeywords=[3]{INT,DBLE,CMPLX,ICHAR,CHAR,AINT,ANINT,% left out real
+      NINT,ABS,MOD,SIGN,DIM,DPROD,MAX,MIN,AIMAG,CONJG,SQRT,EXP,LOG,%
+      LOG10,SIN,COS,TAN,ASIN,ACOS,ATAN,ATAN2,SINH,COSH,TANH,LGE,LLE,LLT,%
+      LEN,INDEX},%
+    morekeywords=[4]{AND,EQ,EQV,FALSE,GE,GT,OR,LE,LT,NE,NEQV,NOT,TRUE},%
+   sensitive=f,%% not Fortran-77 standard, but allowed in Fortran-95 %%
+   morecomment=[f]*,%
+   morecomment=[f]C,%
+   morecomment=[f]c,%
+   morestring=[d]",%% not Fortran-77 standard, but allowed in Fortran-95 %%
+   morestring=[d]'%
+  }[keywords,comments,strings]%
+\lstdefinelanguage{C}%
+  {morekeywords={auto,break,case,char,const,continue,default,do,double,%
+      else,enum,extern,float,for,goto,if,int,long,register,return,%
+      short,signed,sizeof,static,struct,switch,typedef,union,unsigned,%
+      void,volatile,while},%
+   sensitive,%
+   morecomment=[s]{/*}{*/},%
+   morecomment=[l]//,% nonstandard
+   morestring=[b]",%
+   morestring=[b]',%
+   moredelim=*[directive]\#,%
+   moredirectives={define,elif,else,endif,error,if,ifdef,ifndef,line,%
+      include,pragma,undef,warning}%
+  }[keywords,comments,strings,directives]%
+  
 % Note: \lstinline!...! used for inline Modelica
 
 
@@ -106,9 +151,11 @@ Specification\\[2\baselineskip]Version 3.4}
 \date{\today}
 \author{Modelica Association}
 \begin{document}
-%\includegraphics{media/image1}
 \maketitle
 \begin{abstract}
+\begin{center}
+\includegraphics[width=10cm]{media/image1}
+\end{center}
 This document defines the Modelica\footnote{Modelica is a registered
   trademark of the Modelica Association} language, version 3.4, which is
 developed by the Modelica Association, a non-profit organization with
@@ -285,9 +332,7 @@ documentation text for the class, and version information.
 
 The semantic specification should be read together with the Modelica
 grammar. Non-normative text, i.e., examples and comments, are enclosed
-\begin{lstlisting}[language=modelica]
-  in [ ]; comments are set in italics. Additional terms are explained
-\end{lstlisting}
+  in {[} {]}; comments are set in italics. Additional terms are explained
 in the glossary in \ref{glossary}. Some important terms are:
 
 \begin{tabular}{|l|p{10cm}|}
@@ -356,10 +401,8 @@ identical to that of C++}{]}. The following comment variants are
 available:
 
 \begin{lstlisting}[language=modelica]
-// comment & Characters from // to the end of the line are
-ignored.
-/* comment */ & Characters between /* and */ are ignored, including line
-terminators.
+// comment & Characters from // to the end of the line are ignored.
+/* comment */ & Characters between /* and */ are ignored, including line terminators.
 \end{lstlisting}
 
 Modelica comments do not nest, i.e., /* */ cannot be embedded within /*
@@ -609,10 +652,8 @@ precedence from highest to lowest, as derived from the Modelica grammar
 in \ref{modelica-concrete-syntax}. All operators are binary except the postfix operators and
 those shown as unary together with \emph{expr}, the conditional
 operator, the array construction operator \{\} and concatenation
-\begin{lstlisting}[language=modelica]
-operator [ ], and the array range constructor which is either binary
+operator {[} {]}, and the array range constructor which is either binary
   or ternary. Operators with the same precedence occur at the same line of
-\end{lstlisting}
 the table:
 
 \begin{table}
@@ -665,8 +706,7 @@ expressions):}
 
 \begin{lstlisting}[language=modelica]
   x^y^z // Not legal, use parenthesis to make it clear
-  a:b:c:d:e:f:g // Not legal, and scalar arguments gives no legal
-  interpretation.
+  a:b:c:d:e:f:g // Not legal, and scalar arguments gives no legal interpretation.
 \end{lstlisting}
 {]}
 
@@ -896,9 +936,9 @@ which the simulation is started.
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
 encapsulated model SineSource
-import Modelica.Math.sin;
-connector OutPort=output Real;
-OutPort y=sin(time); // Uses the built-in variable time.
+  import Modelica.Math.sin;
+  connector OutPort=output Real;
+  OutPort y=sin(time); // Uses the built-in variable time.
 end SineSource;
 \end{lstlisting}
 {]}
@@ -1024,9 +1064,7 @@ These expression for div, ceil, floor, and integer are
 event generating expression. The event generating expression for
 mod(x,y) is floor(x/y), and for rem(x,y) it is div(x,y) - i.e. events
 are not generated when mod or rem changes continuously in an interval,
-\begin{lstlisting}[language=modelica]
-  but when they change discontinuously from one interval to the next. [
-\end{lstlisting}
+  but when they change discontinuously from one interval to the next. {[}
 \emph{If this is not desired, the} noEvent \emph{function can be applied
 to them. E.g.} noEvent(integer(v)) {]}
 
@@ -1128,7 +1166,7 @@ since it will be removed in one of the next Modelica releases.}{]}
 
 Returns the number of (inside and outside) occurrences of connector
 instance c in a connect-equation as an Integer number. See also \ref{cardinality-deprecated}.\\ \hline
-homotopy(actual=actual,\newline
+homotopy(actual=actual,\\
 simplified=simplified) & The scalar expressions ``actual'' and ``simplified'' are subtypes of
 Real. A Modelica translator should map this operator into either of the
 two forms:
@@ -1169,8 +1207,8 @@ of the stream variable v for any flow direction. The operator is
 vectorizable. For more details, see \ref{stream-operator-actualstream}.\\ \hline
 spatialDistribution(in0=in0, in1=in1,
 x=x,\newline
-positiveVelocity=\ldots{},\newline
-initialPoints=\ldots{},\newline
+positiveVelocity=\ldots{},\\
+initialPoints=\ldots{},\\
 initialValues=\ldots{}) & 
 The spatialDistribution(\ldots{}) operator allows approximation of
 variable-speed transport of properties, see \ref{spatialdistribution}.\\ \hline
@@ -1220,9 +1258,9 @@ The spatialDistribution() operator allows to approximate efficiently the
 solution of the infinite-dimensional problem
 
 \begin{eqnarray*}
-\partial z(y,t)/\partial t+v(t)\partial z(y,t)/\partial y&=&0.0\\
-z(0.0, t)=\mathrm{in}_0(t) \mathrm{if} v \ge 0\\
-z(1.0, t)=\mathrm{in}_1(t) \mathrm{if} v < 0\\
+\frac{\partial z(y,t)}{\partial t}+v(t)\frac{\partial z(y,t)}{\partial y}&=&0.0\\
+z(0.0, t)=\mathrm{in}_0(t) \text{if $v>0$}\\
+z(1.0, t)=\mathrm{in}_1(t) \text{if $v<0$}
 \end{eqnarray*}
 where $z(y, t)$ is the transported quantity, \emph{y} is the
 normalized spatial coordinate ($0.0 \le y \le 1.0$), $t$ is the
@@ -1231,9 +1269,9 @@ transport velocity and the boundary conditions are set at either
 $y=0.0$ or $y=1.0$, depending on the sign of the velocity.
 The calling syntax is:
 \begin{lstlisting}[language=modelica]
-(out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity
-initialPoints = {0.0, 1.0},
-initialValues = {0.0, 0.0});
+(out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
+  initialPoints = {0.0, 1.0},
+  initialValues = {0.0, 0.0});
 \end{lstlisting}
 where in0, in1, out0, out1, x, v are all subtypes of Real,
 positiveVelocity is a Boolean, initialPoints and initialValues are
@@ -1327,8 +1365,7 @@ suppress event generation.}
 omitted, e.g.:}
 \begin{lstlisting}[language=modelica]
 der(x) = v;
-(,out1) = spatialDistribution(in0, 0, x, true, initialPoints,
-initialValues);
+(,out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
 \end{lstlisting}
 \emph{Technically relevant use cases for the use of the}
 spatialDistribution\emph{() operator are modeling of electrical
@@ -1410,10 +1447,10 @@ over the whole model, and not several homotopy iterations over the
 respective non-linear algebraic equation systems. The reason is that the
 following structure can be present:}
 
-\textbf{w} = $f_1$(\textbf{x}) // has homotopy
-operator\\
-\textbf{0} = $f_2$(der(\textbf{x}), \textbf{x},
-\textbf{z}, \textbf{w})
+\begin{lstlisting}[language=modelica, mathescape=true]
+w= $f_1$(x) // has homotopy operator
+0 = $f_2$(der(x), x, z, w)
+\end{lstlisting}
 
 \emph{Here, a non-linear equation system} $f_2$
 \emph{is present. The homotopy operator is, however used on a variable
@@ -1528,11 +1565,8 @@ end DoNotUse;
 \emph{The initial equation is expanded into}
 $ 0 = \lambda*\mathrm{der}(x)+(1-\lambda)(x-x_0)$
 \emph{and you can solve the two equations to give}
-$ x=(\lambda+(\lambda-1)x_0)/(2\lambda-1)$
-\emph{which has the correct value of $x_0$ at $\lambda = 0$ and of 1 at $\lambda= 1$, but unfortunately has a singularity at $\lambda = 0.5 $ .}
-\emph{{]}}
 $ x=\frac{\lambda+(\lambda-1)x_0}{2\lambda-1}$
-
+\emph{which has the correct value of $x_0$ at $\lambda = 0$ and of 1 at $\lambda= 1$, but unfortunately has a singularity at $\lambda = 0.5 $ .}
 \emph{{]}}
 
 \subsubsection{semiLinear}\doublelabel{semilinear}
@@ -1546,61 +1580,54 @@ one meaningful solution in such cases:
 
 \textbf{Rule 1}: The equations
 
+\begin{lstlisting}[language=modelica]
 y = semiLinear(x, sa, s1);
-
 y = semiLinear(x, s1, s2);
-
 y = semiLinear(x, s2, s3);
-
 ...
-
 y = semiLinear(x, sN, sb);
-
 ...
+\end{lstlisting}
 
 may be replaced by
-
-s1 = \textbf{if} x \textgreater{}= 0 \textbf{then} sa \textbf{else} sb
-
+\begin{lstlisting}[language=modelica, mathescape=true]
+s1 = if x >= 0 then sa else sb
 s2 = s1;
-
 s3 = s2;
-
 ...
-
 $s_N = s_{N-1}$;
-
 y = semiLinear(x, sa, sb);
+\end{lstlisting}
 
 \textbf{Rule 2}: The equations
-
+\begin{lstlisting}[language=modelica]
 x = 0;
-
 y = 0;
-
 y = semiLinear(x, sa, sb);
+\end{lstlisting}
 
 may be replaced by
-
+\begin{lstlisting}[language=modelica]
 x = 0
-
 y = 0;
-
 sa = sb;
+\end{lstlisting}
 
 {[}\emph{For symbolic transformations, the following property is useful
 (this follows from the definition):}
-
-semiLinear(m\_flow, port\_h, h);
-
+\begin{lstlisting}[language=modelica]
+semiLinear(m_flow, port_h, h);
+\end{lstlisting}
 \emph{is identical to :}
-
--semiLinear(-m\_flow, h, port\_h);
+\begin{lstlisting}[language=modelica]
+-semiLinear(-m_flow, h, port_h);
+\end{lstlisting}
 
 \emph{The} semiLinear \emph{function is designed to handle reversing
 flow in fluid systems, such as}
-
-H\_flow =semiLinear(m\_flow, port.h, h);
+\begin{lstlisting}[language=modelica]
+H_flow =semiLinear(m_flow, port.h, h);
+\end{lstlisting}
 
 \emph{i.e., the enthalpy flow rate} H\_flow \emph{is computed from the
 mass flow rate} m\_flow \emph{and the upstream specific enthalpy
@@ -2037,7 +2064,7 @@ Component declarations are described in this section.
 The formal syntax of a component declaration clause is given by the
 following syntactic rules:
 
-\begin{lstlisting}[language=modelica]
+\begin{lstlisting}[language=grammar]
 component-clause:
   type-prefix type-specifier [ array-subscripts ] component-list
   
@@ -2399,9 +2426,11 @@ record A
   Real y;
   Integer i;
 end A;
+
 parameter A a;
   // a.pi is a constant
   // a.y and a.i are parameters
+  
 A b;
   // b.pi is a constant
   // b.y is a continuous-time variable
@@ -2619,12 +2648,14 @@ derived from it; see also \ref{restriction-on-combining-base-classes-and-other-e
 \begin{lstlisting}[language=modelica]
 type InArgument = input Real;
 type OutArgument = output Real[3];
+
 function foo
   InArgument u; // Same as: input Real u
   OutArgument y; // Same as: output Real[3] y
 algorithm
   y:=fill(u,3);
 end foo;
+
 Real x[:]=foo(time);
 \end{lstlisting}
 
@@ -3731,9 +3762,7 @@ classes and enumeration types are ignored during function name lookup.
 \subsection{Simple Name Lookup}\doublelabel{simple-name-lookup}
 
 When an element, equation, or section is flattened, any simple name
-\begin{lstlisting}[language=modelica]
-  [not composed using dot notation] is looked up sequentially in each
-\end{lstlisting}
+  {[}not composed using dot notation{]} is looked up sequentially in each
 member of the ordered set \textbf{of instance scopes (see 
 \ref{the-class-tree}) corresponding to lexically enclosing classes} until a
 match is found or an enclosing class is encapsulated. In the latter case
@@ -4588,10 +4617,12 @@ infinite set}.
 fulfill the additional property of having the component} Real y;
 \emph{in all its values.}{]}
 
-\emph{Figure} \emph{6.1\textbf{. The type R can be defined as the set of
+\begin{figure}
+\caption{The type R can be defined as the set of
 record values containing x and b. The subtype R2 is the subset of values
-that all contain x, b, and y.}}
-
+that all contain x, b, and y.}
+\includegraphics[width=20cm,height=20cm]{media/subtype.pdf}
+\end{figure}
 {]}
 
 \section{Interface or Type}\doublelabel{interface-or-type}
@@ -6010,12 +6041,10 @@ namespace is polluted by elements that have different names but the same
 implementation (e.g. MoistAir2.BaseProperties is identical to
 MoistAir2.MoistAir\_BaseProperties) the whole construction does not work
 if arrays are present that depend on constants in PartialMedium, such as
-\begin{lstlisting}[language=modelica]
-  X[nX]: The problem is that MoistAir_BaseProperties extends from
+  X{[}nX{]}: The problem is that MoistAir\_BaseProperties extends from
   PartialMedium.BaseProperties where the constant nX does not yet have a
   value. This means that the dimension of array X is undefined and model
-  MoistAir_BaseProperties is wrong. With this construction, all constant
-\end{lstlisting}
+  MoistAir\_BaseProperties is wrong. With this construction, all constant
 definitions have to be repeated whenever these constants shall be used,
 especially in MoistAir\_BaseProperties and MoistAir\_dynamicViscosity.
 For larger models this is not practical and therefore the only
@@ -6530,7 +6559,7 @@ matter, e.g.}
 equation   
   when x > 2 then
     y3 = 2*x +y1+y2; // Order of y1 and y3 equations does not matter     
-	y1 = sin(x);     
+    y1 = sin(x);     
   end when;   
   y2 = sin(y1);
 \end{lstlisting}
@@ -6544,7 +6573,7 @@ A when-equation:
 equation
   when x>2 then
     v1 = expr1;
-	v2 = expr2;   
+    v2 = expr2;   
   end when; 
 \end{lstlisting}
 
@@ -7550,7 +7579,7 @@ model Battery
   Interfaces.PositivePin p42, n42;
   ElectricalBus bus;
 equation
- connect(p42, bus.p42); // Adds new electrical pin
+  connect(p42, bus.p42); // Adds new electrical pin
   connect(n42, bus.n42); // Adds another pin
 end Battery;
 \end{lstlisting}
@@ -7581,8 +7610,10 @@ model Controller
 equation
   connect(speed, bus1.speed); // ok, only one undeclared
   // and it is unsubscripted
+  
   connect(bus1.pressure, bus2.pressure);
   // not allowed, both undeclared
+  
   connect(speed, bus2.speed[2]);
   // introduces speed array (with element [2]).
 end Controller;
@@ -7875,11 +7906,9 @@ model Circuit
   Load load;
   inner Resistor resistor;
 equation
-\end{lstlisting}
-\textbf{connect(load.p, ground.p);\\
-end} Circuit;
+  connect(load.p, ground.p);
+end Circuit;
 
-\begin{lstlisting}[language=modelica]
 model Load
   extends TwoPin;
   outer Resistor resistor;
@@ -8067,20 +8096,20 @@ connector Plug // a hierarchical connector of
   parameter Integer m=3;
   Pin p[m];
 end Plug;
-connector InputReal = input Real; // A causal input
-connector
-  connector OutputReal = output Real; // A causal output
-  connector
-    connector Frame_Illegal
-      Modelica.SIunits.Position r0[3] "Position vector of frame origin";
-      Real S[3, 3] "Rotation matrix of frame";
-      Modelica.SIunits.Velocity v[3] "Abs. velocity of frame origin";
-      Modelica.SIunits.AngularVelocity w[3] "Abs. angular velocity of frame";
-      Modelica.SIunits.Acceleration a[3] "Abs. acc. of frame origin";
-      Modelica.SIunits.AngularAcceleration z[3] "Abs. angular acc. of frame";
-      flow Modelica.SIunits.Force f[3] "Cut force";
-      flow Modelica.SIunits.Torque t[3] "Cut torque";
-    end Frame_Illegal;
+
+connector InputReal = input Real; // A causal input connector
+connector OutputReal = output Real; // A causal output connector
+
+connector Frame_Illegal
+  Modelica.SIunits.Position r0[3] "Position vector of frame origin";
+  Real S[3, 3] "Rotation matrix of frame";
+  Modelica.SIunits.Velocity v[3] "Abs. velocity of frame origin";
+  Modelica.SIunits.AngularVelocity w[3] "Abs. angular velocity of frame";
+  Modelica.SIunits.Acceleration a[3] "Abs. acc. of frame origin";
+  Modelica.SIunits.AngularAcceleration z[3] "Abs. angular acc. of frame";
+  flow Modelica.SIunits.Force f[3] "Cut force";
+  flow Modelica.SIunits.Torque t[3] "Cut torque";
+end Frame_Illegal;
 \end{lstlisting}
 
 \emph{The} Frame\_Illegal \emph{connector (intended to be used in a
@@ -8381,8 +8410,10 @@ following way:
 
 {[}\emph{Example:}
 
-\emph{Figure} \emph{9.2\textbf{. }} \textbf{\emph{Example of a virtual
-connection graph}.}
+\begin{figure}[H]
+\caption{Example of a virtual connection graph.}
+\includegraphics{media/overdetermined}
+\end{figure}
 
 {]}
 
@@ -8400,8 +8431,7 @@ type AC_Angle "Angle of source, e.g., rotor of generator"
     input AC_Angle theta2;
     output Real residue[0] "No constraints"
   algorithm
-    /* make sure that theta1 and theta2 from
-joining branches are identical */
+    /* make sure that theta1 and theta2 from joining branches are identical */
     assert(abs(theta1 -- theta2) < 1.e-10, "Consistent angles");
   end equalityConstraint;
 end AC_Angle;
@@ -8612,9 +8642,8 @@ declaration form 2 is the traditional way of array declarations in
 languages such as Fortran, C, C++.}
 
 \begin{lstlisting}[language=modelica]
-  Real[:] v1, v2 // vectors v1 and v2 have unknown sizes. The actual
+  Real[:] v1, v2 // vectors v1 and v2 have unknown sizes. The actual sizes may be different.
 \end{lstlisting}
-sizes may be different.
 
 \emph{It is possible to mix the two declaration forms although it might
 be confusing.}
@@ -8641,10 +8670,8 @@ substituting a type by its definition allow ``c''.}
 \end{lstlisting}
 {]}
 
-\begin{lstlisting}[language=modelica]
-  Zero-valued dimensions are allowed, so: C x[0]; declares an empty
-  vector and: C x[0,3]; an empty matrix.
-\end{lstlisting}
+Zero-valued dimensions are allowed, so: C x{[}0{]}; declares an empty
+  vector and: C x{[}0,3{]}; an empty matrix.
 {[}\emph{Special cases}:
 
 \begin{longtable}{|l|l|l|l|p{3cm}|}
@@ -8680,14 +8707,14 @@ class of a variable is maximally expanded.
     flow Current i; // type class of i = Current, type of i = Real
   end Pin;
   type MultiPin = Pin[5];
-  MultiPin[4] p; // type class of p is MultiPin, type of p is
-  Pin[4,5];
+  MultiPin[4] p; // type class of p is MultiPin, type of p is Pin[4,5];
   type Point = Real[3];
   Point p1[10];
   Real p2[10,3];
+\end{lstlisting}
   The components p1 and p2 have identical types.
-  p2[5] = p1[2]+ p2[4]; // equivalent to p2[5,:] =
-  p1[2,:] + p2[4,:]
+\begin{lstlisting}[language=modelica]
+  p2[5] = p1[2]+ p2[4]; // equivalent to p2[5,:] = p1[2,:] + p2[4,:]
   Real r[3] = p1[2]; // equivalent to r[3] = p1[2,:]
 \end{lstlisting}
 {]}
@@ -8954,8 +8981,9 @@ all combinations of i in u, ..., j in v:
 \subsubsection{Reduction Expressions}\doublelabel{reduction-expressions}
 
 An expression:
-
-function-name "(" expression1 \textbf{for} iterators ")"
+\begin{lstlisting}[language=grammar]
+function-name "(" expression1 for iterators ")"
+\end{lstlisting}
 
 is a reduction-expression. The expressions in the iterators of a
 reduction-expression shall be vector expressions. They are evaluated
@@ -8963,8 +8991,9 @@ once for each reduction-expression, and are evaluated in the scope
 immediately enclosing the reduction-expression.
 
 For an iterator:
-
-IDENT \textbf{in} expression2
+\begin{lstlisting}[language=grammar]
+IDENT in expression2
+\end{lstlisting}
 
 the loop-variable, IDENT, is in scope inside expression1. The
 loop-variable may hide other variables, as in for-clauses. The result
@@ -8978,7 +9007,7 @@ deduction of ranges, see \ref{implicit-iteration-ranges}; and for using types as
 see \ref{types-as-iteration-ranges}.
 
 
-\begin{longtable}{|p{3cm}|p{4cm}|p{6cm}|}
+\begin{longtable}{|p{3cm}|p{5cm}|p{6cm}|}
 \caption{Reduction expressions with iterators.}\\
 \hline
 \emph{Function-name} & \emph{Restriction on expression1} & \emph{Result if expression2 is empty}\\ \hline
@@ -8994,12 +9023,11 @@ Least value of type\newline ( -Modelica.Constants.inf for Real)\\ \hline
 
 {[}\emph{Example}:
 
-\begin{lstlisting}[language=modelica]
-  sum(i for  i in 1:10) // Gives 1+2+...+10=55
+\begin{lstlisting}[language=modelica, mathescape=true]
+  sum(i for  i in 1:10) // Gives $\sum_{i=1}^{10}i=$1+2+...+10=55
   // Read it as: compute the sum of i for i in the range 1 to 10.
-  sum(i^2 for  i in {1,3,7,6}) // Gives 1+9+49+36=95
-  {product(j for j in 1:i) for i in
-  0:4} // Gives {1,1,2,6,24}
+  sum(i^2 for  i in {1,3,7,6}) // Gives $\sum_{i\in \begin{Bmatrix}1&3&7&6\end{Bmatrix}}i^2=$1+9+49+36=95
+  {product(j for j in 1:i) for i in 0:4} // Gives {1,1,2,6,24}
   max(i^2 for  i in {3,7,6}) // Gives 49
 \end{lstlisting}
 {]}
@@ -9146,10 +9174,8 @@ a '\{'.
 {[}\emph{Example}:
 
 \begin{lstlisting}[language=modelica]
-  Real hilb[:,:]= { 1/(i+j-1) for  i in 1:n, j
-  in 1:n};
-  Real hilb2[:,:]={{ 1/(i+j-1) for  j in 1:n}
-  for i in 1:n};
+  Real hilb[:,:]= { 1/(i+j-1) for  i in 1:n, j in 1:n};
+  Real hilb2[:,:]={{ 1/(i+j-1) for  j in 1:n} for i in 1:n};
 \end{lstlisting}
 \subsection{Array Concatenation}\doublelabel{array-concatenation}
 
@@ -9199,14 +9225,12 @@ size(R,j) = size(A,j) = size(B,j) = size(C,j) = ...., for 1 \textless{}=
 j \textless{}= n and j \textless{}\textgreater{} k.
 
 \begin{lstlisting}[language=modelica]
-  R[i_1, ..., i_k, ..., i_n] = A[i_1, ..., i_k, ..., i_n],
-  for i_k <= size(A,k),
-    R[i_1, ..., i_k, ..., i_n] = B[i_1, ..., i_k - size(A,i),
-    ..., i_n], for i_k <= size(A,k) + size(B,k),
+  R[i_1, ..., i_k, ..., i_n] = A[i_1, ..., i_k, ..., i_n], for i_k <= size(A,k),
+  R[i_1, ..., i_k, ..., i_n] = B[i_1, ..., i_k - size(A,i), ..., i_n], for i_k <= size(A,k) + size(B,k),
     ....
-    where 1 <= i_j <= size(R,j) for 1 <= j
-    <= n.
 \end{lstlisting}
+    where 1 \textless{}= i\_j \textless{}= size(R,j) for 1 \textless{}= j \textless{}= n.
+
 \subsubsection{Array Concatenation along First and Second Dimensions}\doublelabel{array-concatenation-along-first-and-second-dimensions}
 
 For convenience, a special syntax is supported for the concatenation
@@ -9394,15 +9418,13 @@ the type used for declaring the dimension of the array.
 {[}\emph{Example}:
 
 \begin{lstlisting}[language=modelica]
-  type ShirtSizes = enumeration(small, medium, large,
-  xlarge);
+  type ShirtSizes = enumeration(small, medium, large, xlarge);
   Real[ShirtSizes] w;
   Real[Boolean] b2;
 algorithm
   w[ShirtSizes.large] := 2.28; // Assign a value to an element of w
   b2[true] := 10.0;
-  b2[ShirtSizes.medium] := 4; // Error, b2 was declared with Boolean
-  dimension
+  b2[ShirtSizes.medium] := 4; // Error, b2 was declared with Boolean dimension
   w[1] := 3; // Error, w was declared with ShirtSizes dimension
 \end{lstlisting}
 {]}
@@ -9416,13 +9438,10 @@ nested array subscripts it refers to the most closely nested array.
 
 {[}\emph{Examples}:
 
-\begin{lstlisting}[language=modelica]
+\begin{lstlisting}[language=modelica, escapechar=!]
   A[end -1,end] is A[size(A,1)-1,size(A,2)]
-  A[v[end ],end] is
+  A[v[end ],end] is A[v[size(v,1)],size(A,2)] // !\emph{since the first}! end !\emph{is referring to end of v.}!
 \end{lstlisting}
-A{[}v{[}size(v,1){]},size(A,2){]} // \emph{since the first} end \emph{is
-referring to end of v.}
-
 {]}
 
 \section{Scalar, Vector, Matrix, and Array Operator Functions}\doublelabel{scalar-vector-matrix-and-array-operator-functions}
@@ -9746,18 +9765,15 @@ example:}
   Real y[m];
   Real y2,y3;
 equation
-  // Extract the x1 slice even though different x1's have different
-  lengths
+  // Extract the x1 slice even though different x1's have different lengths
   y=tf.x1[1] ; // Legal, ={tf[1].x1[1], tf[2].x1[1],
   ... tf[m].x1[1]};
   y2=sum(tf.x1[:]); // Illegal to extract all elements since they have
   // different lengths. Does not satisfy:
-  // size(tf[1].x1[:])=size(tf[2].x1[:])=...
-  =size(tf[m].x1[:])
+  // size(tf[1].x1[:])=size(tf[2].x1[:])=...=size(tf[m].x1[:])
   y3=sum(tf.x1[1:2]); // Legal.
   // Since x1 has at least 2 elements in all tf, and
-  // size(tf[1].x1[1:2])=size(tf[2].x1[1:2])=...
-  =size(tf[m].x1[1:2])={2}
+  // size(tf[1].x1[1:2])=size(tf[2].x1[1:2])=...=size(tf[m].x1[1:2])={2}
 \end{lstlisting}
 \emph{In this example the different x1 vectors have different lengths,
 but it is still possible to perform some operations on them.}{]}
@@ -9792,13 +9808,10 @@ Empty matrices can be constructed with the fill function. E.g.
 
 \begin{lstlisting}[language=modelica]
   Real A[:,:] = fill(0.0, 0, 1); // a Real 0 x 1 matrix
-  Boolean B[:, :, :] = fill(false, 0, 1, 0); // a Boolean 0 x 1 x 0
-  matrix
+  Boolean B[:, :, :] = fill(false, 0, 1, 0); // a Boolean 0 x 1 x 0 matrix
 \end{lstlisting}
 It is not possible to access an element of an empty matrix, e.g.
-\begin{lstlisting}[language=modelica]
-  v[j,k] cannot be evaluated if v=[] because the assertion fails
-\end{lstlisting}
+  \lstinline!v[j,k]! cannot be evaluated if \lstinline!v=[]! because the assertion fails
 that the index must be bigger than one.
 
 Size-requirements of operations, such as +, -, have also to be fulfilled
@@ -9817,8 +9830,7 @@ sizes, i.e.,
 \begin{lstlisting}[language=modelica]
   Real[0,m]*Real[m,n] = Real[0,n] (empty matrix)
   Real[m,n]*Real[n,0] = Real[m,0] (empty matrix)
-  Real[m,0]*Real[0,n] = fill(0.0, m, n) (non-empty matrix, with
-  zero elements).
+  Real[m,0]*Real[0,n] = fill(0.0, m, n) (non-empty matrix, with zero elements).
 \end{lstlisting}
 {[}\emph{Example}:
 
@@ -10093,11 +10105,13 @@ algorithm
   for i loop // Same as: for i in 1:size(x,1) loop ...
     xsquared3[i] := x[i]^2;
   end for;
+\end{lstlisting}
+
+\begin{lstlisting}[language=modelica]
   type FourEnums=enumeration(one,two,three,four);
   Real xe[FourEnums]= x;
-  Real xsquared3[FourEnums]={xe[i]*xe[i] for  i};
-  Real xsquared4[FourEnums]={xe[i]*xe[i] for  i
-  in FourEnums};
+  Real xsquared3[FourEnums]={xe[i]*xe[i] for i};
+  Real xsquared4[FourEnums]={xe[i]*xe[i] for i in FourEnums};
   Real xsquared5[FourEnums]={x[i]*x[i] for  i};
 \end{lstlisting}
 {]}
@@ -10120,8 +10134,7 @@ expressions.
   type FourEnums=enumeration(one,two,three,four);
   Real xe[FourEnums];
   Real xsquared1[FourEnums];
-  Real xsquared2[FourEnums]={xe[i]*xe[i] for  i
-  in FourEnums};
+  Real xsquared2[FourEnums]={xe[i]*xe[i] for i in FourEnums};
 equation
   for i in FourEnums loop
     xsquared1[i]=xe[i]^2;
@@ -10334,9 +10347,7 @@ algorithm
   end when;
 \end{lstlisting}
 is similar to the following special if-statement, where Boolean
-\begin{lstlisting}[language=modelica]
-  b1[N]; and Boolean b2; are necessary because the edge() operator can
-\end{lstlisting}
+  b1{[}N{]}; and Boolean b2; are necessary because the edge() operator can
 only be applied to variables
 
 \begin{lstlisting}[language=modelica]
@@ -10405,11 +10416,11 @@ function  !\emph{functionname}!
   output TypeO2 out2 :=  !\emph{default\_expr2}!;
   ... 
 protected   
-  !\emph{<local variables>}!   
+  !\emph{\textless{}local variables\textgreater{}}!   
   ... 
 algorithm   
   ...   
-    !\emph{<statements>}!   
+    !\emph{\textless{}statements\textgreater{}}!   
   ... 
 end !\emph{functionname}!; 
 \end{lstlisting}
@@ -10449,18 +10460,16 @@ read.}{]}
 
 
 
-\begin{lstlisting}[language=modelica]
-function  !\emph{<functionname>}!
-  output TypeO1 out1; // Intermixed declarations of inputs and
-  outputs
-  input TypeI1 in1; // not recommended since code becomes hard to
-  read
+\begin{lstlisting}[language=modelica,escapechar=!]
+function  !\emph{\textless{}functionname\textgreater{}}!
+  output TypeO1 out1; // Intermixed declarations of inputs and outputs
+  input TypeI1 in1; // not recommended since code becomes hard to read
   input TypeI2 in2;
   ...
   output TypeO2 out2;
   input TypeI3 in3;
   ...
-\end  !\emph{<functionname>}!;
+end  !\emph{\textless{}functionname\textgreater{}}!;
 \end{lstlisting}
 
 {]}
@@ -10741,8 +10750,7 @@ end receiveRealSignal;
 \emph{Examples of allowed optimizations of pure functions:}
 
 \begin{lstlisting}[language=modelica]
-model M // Assume sin, cos, asin are pure functions with normal
-  derivatives.
+model M // Assume sin, cos, asin are pure functions with normal derivatives.
   input Real x[2];
   input Real w;
   Real y[2]=[cos(w),sin(w);-sin(w),cos(w)]*x;
@@ -10767,8 +10775,7 @@ algorithm
   end if;
   y:=y+asin(x);
   y:=y+someOtherFunction(x);
-  // May not evaluate someOtherFunction(x) before asin(x) -- unless b is
-  true
+  // May not evaluate someOtherFunction(x) before asin(x) -- unless b is true
   // The reason is that asin(x) may fail and someOtherFunction may hang,
   // and it might be possible to recover from this error.
 \end{lstlisting}
@@ -10984,19 +10991,19 @@ algorithm
     area := area + quadrature(0, 1, function  Sine(A=2, w=i*time));
   end for;
 end Test;
+
 function Sine "y = Sine(x,A,w)"
-extends Integrand;
-input Real A;
-input Real w;
+  extends Integrand;
+  input Real A;
+  input Real w;
 algorithm
-y:=A*Modelica.Math.sin(w*x);
+  y:=A*Modelica.Math.sin(w*x);
 end Sine;
 \end{lstlisting}
 \emph{Call with function partial application as named input argument:}
-
-area := area + quadrature(0, 1, integrand = \textbf{function} Sine(A=2,
-w=i*time));
-
+\begin{lstlisting}[language=modelica]
+area := area + quadrature(0, 1, integrand = function Sine(A=2, w=i*time));
+\end{lstlisting}
 {]}
 
 {[}\emph{Example showing that function types are matching after removing
@@ -11100,20 +11107,18 @@ eigenvectors may be called in the following ways:}
 \emph{The function may be defined as:}
 
 \begin{lstlisting}[language=modelica]
-function eigen "calculate eigenvalues and optionally
-eigenvectors"
+function eigen "calculate eigenvalues and optionally eigenvectors"
   input Real A[:, size(A,1)];
   output Real eigenValues[size(A,1),2];
   output Real rightEigenVectors[size(A,1),size(A,1)];
   output Real leftEigenVectors [size(A,1),size(A,1)];
 algorithm
   // The output variables are computed separately (and not, e.g., by one
-  // call of a Fortran function) in order that an optimizing compiler can
-  remove
+  // call of a Fortran function) in order that an optimizing compiler can remove
   // unnecessary computations, if one or more output arguments are missing
-  // compute eigenvalues
-  // compute right eigenvectors using the computed eigenvalues
-  // compute left eigenvectors using the computed eigenvalues
+  //   compute eigenvalues
+  //   compute right eigenvectors using the computed eigenvalues
+  //   compute left eigenvectors using the computed eigenvalues
 end eigen;
 \end{lstlisting}
 {]}
@@ -11275,8 +11280,7 @@ size, and they are traversed in parallel.
 
 \begin{lstlisting}[language=modelica]
   sin({a, b, c}) = {sin(a), sin(b), sin(c)} // argument is a vector
-  sin([a,b,c]) = [sin(a),sin(b),sin(c)] // argument may be a
-  matrix
+  sin([a,b,c]) = [sin(a),sin(b),sin(c)] // argument may be a matrix
   atan({a,b,c},{d,e,f}) = {atan(a,d), atan(b,e), atan(c,f)}
 \end{lstlisting}
 \emph{This works even if the function is declared to take an array as
@@ -11290,6 +11294,8 @@ Real. }
   pval([1,2;3,4]) = [pval([1,2]); pval([3,4])]
   sin([1,2;3,4]) = [sin({1,2}); sin({3,4})]
   = [sin(1), sin(2); sin(3), sin(4)]
+\end{lstlisting}
+\begin{lstlisting}[language=modelica]
   function Add
     input Real e1, e2;
     output Real sum1;
@@ -11388,18 +11394,19 @@ optional modification, at all places where a function call is allowed.
 Examples}:
 
 \begin{lstlisting}[language=modelica]
-record Complex "Complex number"
-  Real re "real part";
-  Real im "imaginary part";
-end Complex;
+  record Complex "Complex number"
+    Real re "real part";
+    Real im "imaginary part";
+  end Complex;
 
-function add
-  input Complex u, v;
-  output Complex w(re=u.re + v.re, im=u.im+v.re);
-end add;
-Complex c1, c2;
+  function add
+    input Complex u, v;
+    output Complex w(re=u.re + v.re, im=u.im+v.re);
+  end add;
+
+  Complex c1, c2;
 equation
-c2 = add(c1, Complex(sin(time), cos(time));
+  c2 = add(c1, Complex(sin(time), cos(time));
 \end{lstlisting}
 \emph{In the following example, a convenient data sheet library of
 components is built up:}
@@ -11419,16 +11426,17 @@ package Motors
   equation
     ...
   end Motor;
+  
   record MotorI123 = MotorData( // data of a specific motor
-  inertia = 0.001,
-  nominalTorque = 10,
-  maxTorque = 20,
-  maxSpeed = 3600) "Data sheet of motor I123";
+    inertia = 0.001,
+    nominalTorque = 10,
+    maxTorque = 20,
+    maxSpeed = 3600) "Data sheet of motor I123";
   record MotorI145 = MotorData( // data of another specific motor
-  inertia = 0.0015,
-  nominalTorque = 15,
-  maxTorque = 22,
-  maxSpeed = 3600) "Data sheet of motor I145";
+    inertia = 0.0015,
+    nominalTorque = 15,
+    maxTorque = 22,
+    maxSpeed = 3600) "Data sheet of motor I145";
 end Motors
 
 model Robot
@@ -11831,9 +11839,8 @@ function f "Simple table lookup"
   output Real z;
 algorithm
   ...
-  annotation(derivative(zeroDerivative=y, zeroDerivative=offset)
-  = f_der,
-  derivative=f_general_der);
+  annotation(derivative(zeroDerivative=y, zeroDerivative=offset)= f_der,
+             derivative=f_general_der);
 end f;
 
 function f_der "Derivative of simple table lookup"
@@ -11844,8 +11851,7 @@ function f_der "Derivative of simple table lookup"
   output Real z_der;
 algorithm
   ...
-  annotation(derivative(zeroDerivative=y, zeroDerivative=offset,
-  order=2) = f_der2);
+  annotation(derivative(zeroDerivative=y, zeroDerivative=offset, order=2) = f_der2);
 end f_der;
 
 function f_der "Second derivative of simple table lookup"
@@ -12316,8 +12322,7 @@ function foo
   input Integer i;
   output Real u1[size(y,1)];
   output Integer u2[size(y,2)];
-  external "FORTRAN 77" myfoo(x, y, size(x,1), size(y,2),
-  u1, i, u2);
+  external "FORTRAN 77" myfoo(x, y, size(x,1), size(y,2), u1, i, u2);
 end foo;
 \end{lstlisting}
 \emph{The corresponding FORTRAN 77 subroutine would be declared as
@@ -12924,7 +12929,7 @@ end MyTable;
 \begin{lstlisting}[language=modelica]
 model test "Define a new table and interpolate in it"
   MyTable table=MyTable(fileName ="testTables.txt",
-  tableName="table1"); // call initMyTable
+    tableName="table1"); // call initMyTable
   Real y;
 equation
   y = interpolateMyTable(table, time);
@@ -13094,8 +13099,7 @@ access the addition operation of the hypothetical package}
 Modelica.Math.ComplexNumbers:
 
 \begin{lstlisting}[language=modelica]
-  import Modelica.Math.ComplexNumbers; // Accessed by
-  ComplexNumbers.Add
+  import Modelica.Math.ComplexNumbers; // Accessed by ComplexNumbers.Add
   import Modelica.Math.ComplexNumbers.Add; // Accessed by Add
   import Modelica.Math.ComplexNumbers.{Add,Sub}; // Accessed by Add and Sub
   import Modelica.Math.ComplexNumbers.*; // Accessed by Add
@@ -13862,17 +13866,18 @@ c = Complex.'+'.add(Complex.'constructor'.fromReal(a), b);
 
 \emph{Complex can be used in a connector:}
 \begin{lstlisting}[language=modelica]
-operator record ComplexVoltage = Complex(re(unit="V"),im(unit="V"));
-operator record ComplexCurrent = Complex(re(unit="A"),im(unit="A"));
+  operator record ComplexVoltage = Complex(re(unit="V"),im(unit="V"));
+  operator record ComplexCurrent = Complex(re(unit="A"),im(unit="A"));
 
-connector ComplexPin
-  ComplexVoltage v;
-  flow ComplexCurrent i;
-end ComplexPin;
-ComplexPin p1,p2,p3;
+  connector ComplexPin
+    ComplexVoltage v;
+    flow ComplexCurrent i;
+  end ComplexPin;
+  
+  ComplexPin p1,p2,p3;
 equation
-connect(p1,p2);
-connect(p1,p3);
+  connect(p1,p2);
+  connect(p1,p3);
 \end{lstlisting}
 \emph{The two connect equations result in the following connection
 equations:}
@@ -13965,7 +13970,7 @@ variable is called ``stream variable''. The following definitions hold:
 \begin{lstlisting}[language=modelica]
 connector FluidPort
   replaceable package Medium =
-  Modelica.Media.Interfaces.PartialMedium;
+    Modelica.Media.Interfaces.PartialMedium;
   Medium.AbsolutePressure p "Pressure in connection point";
   flow Medium.MassFlowRate m_flow "> 0, if flow into component";
   stream Medium.SpecificEnthalpy h_outflow "h close to port if m_flow < 0";
@@ -14030,9 +14035,10 @@ equation
   ...
 end FluidSystem;
 \end{lstlisting}
-%\includegraphics[width=2.3in,height=2.08125in]{media/image27.emf}
-
-\emph{Figure: Examplary FluidSystem with N=3 and M=2}
+\begin{figure}
+\caption{Examplary FluidSystem with N=3 and M=2}
+\includegraphics[width=2.3in,height=2.08125in]{media/fluidsystem}
+\end{figure} 
 
 {[}\emph{The connection set represents an infinitesimally small control
 volume, for which the stream connection equations are equivalent to the
@@ -14047,48 +14053,24 @@ connection set. The connection equation for the flow variables has
 already been added to the system according to the connection semantics
 of flow variables defined in \ref{generation-of-connection-equations}.
 
-\begin{longtable}[]{@{}l@{}}
-\hline
-\endhead
-\begin{minipage}[t]{0.97\columnwidth}\raggedright
+\begin{lstlisting}[language=modelica]
 // Standard connection equation for flow variables
-
-0 = sum(m\textsubscript{j}.c.m\_flow \textbf{for} j \textbf{in} 1:N) +
-sum(-c\textsubscript{k}.m\_flow \textbf{for} k \textbf{in} 1:M);\strut
-\end{minipage}\\ \hline
-
-\end{longtable}
+0 = sum(mj.c.m_flow for j in 1:N) + sum(-ck.m_flow for k in 1:M);
+\end{lstlisting}
 
 Whenever the \textbf{inStream()} operator is applied to a stream
 variable of an inside connector, the balance equation of the transported
 property must be added under the assumption of flow going into the
 connector
 
-\begin{longtable}[]{@{}l@{}}
-\hline
-\endhead
-\begin{minipage}[t]{0.97\columnwidth}\raggedright
-// Implicit definition of the \textbf{inStream()} operator applied to
-inside connector i
-
-0 = sum(m\textsubscript{j}.c.m\_flow*(\textbf{if}
-m\textsubscript{j}.c.m\_flow \textgreater{} 0 \textbf{or} j==i
-\textbf{then} h\_mix\_in\textsubscript{i} \textbf{else}
-m\textsubscript{j}.c.h\_outflow)
-
 \begin{lstlisting}[language=modelica]
-for j in 1:N) +
-  sum(-c_k.m_flow* (if
-  --c_k.m_flow > 0 then
-  h_mix_in_i else
-  inStream(c_k.h_outflow)
-  for k in 1:M);
-    inStream(m_i.c.h_outflow) =
-    h_mix_in_i;
+// Implicit definition of the inStream() operator applied to inside connector i
+0 = sum(mj.c.m_flow*(if mj.c.m_flow > 0 or j==i then h_mix_ini else mj.c.h_outflow)
+        for j in 1:N) +
+    sum(-ck.m_flow* (if -ck.m_flow > 0 then h_mix_ini else inStream(ck.h_outflow)
+         for k in 1:M);
+inStream(mi.c.h_outflow) = h_mix_ini;
 \end{lstlisting}
-\end{minipage}\\ \hline
-
-\end{longtable}
 
 Note that the result of the
 \textbf{inStream}(m\textsubscript{i}.c.h\_outflow) operator is different
@@ -14098,13 +14080,8 @@ different for each of them.
 Additional equations need to be generated for the stream variables of
 outside connectors.
 
-\begin{longtable}[]{@{}l@{}}
-\hline
-\endhead
-\begin{minipage}[t]{0.97\columnwidth}\raggedright
-// Additional connection equations for outside connectors
-
 \begin{lstlisting}[language=modelica]
+// Additional connection equations for outside connectors
 for q in 1:M loop
   0 = sum(m_j.c.m_flow*(if
   m_j.c.m_flow > 0 then
@@ -14119,47 +14096,28 @@ for q in 1:M loop
     c_q.h_outflow = h_mix_out_q;
   end for;
 \end{lstlisting}
-\end{minipage}\\ \hline
-
-\end{longtable}
 
 Neglecting zero flow conditions, the solution of the above-defined
 stream connection equations for inStream values of inside connectors and
 outflow stream variables of outside connectors is (for a derivation, see
 \ref{derivation-of-stream-equations}):
 
-\begin{longtable}[]{@{}l@{}}
-\hline
-\endhead
-\begin{minipage}[t]{0.97\columnwidth}\raggedright
-\textbf{inStream}(m\textsubscript{i}.c.h\_outflow) :=
-
-(\textbf{sum}(\textbf{max}(-m\textsubscript{j}.c.m\_flow,0)*m\textsubscript{j}.c.h\_outflow
-\begin{lstlisting}[language=modelica]
-for j in cat(1,1:i-1, i+1:N) +
-  sum(max( c_k.m_flow
-  ,0)*inStream(c_k.h_outflow) for k
-  in 1:M))/
-  (sum(max(-m_j.c.m_flow,0) for
-  j in  cat(1,1:i-1, i+1:N) +
-  sum(max( c_k.m_flow ,0) for k
-  in 1:M));
-  // Additional equations to be generated for outside connectors q
-  for q in 1:M loop
-    c_q.h_outflow :=
-    (sum(max(-m_j.c.m_flow,0)*
-    m_j.c.h_outflow for j in 1:N) +
-    sum(max(c_k.m_flow,0)*inStream(c_k.h_outflow)
-    for k in cat(1,1:q-1, q+1:M))/
-      (sum(max(-m_j.c.m_flow,0) for
-      j in  1:N) +
-      sum(max( c_k.m_flow ,0) for k
-      in cat(1,1:q-1, q+1:M)));
-    end for;
+\begin{lstlisting}[language=modelica,mathescape=true]
+inStream($m_i$.c.h_outflow) :=
+  (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in cat(1,1:i-1, i+1:N) +
+   sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in 1:M))/
+  (sum(max(-$m_j$.c.m_flow,0) for j in  cat(1,1:i-1, i+1:N) +
+   sum(max( $c_k$.m_flow ,0) for k in 1:M));
+  
+// Additional equations to be generated for outside connectors q
+for q in 1:M loop
+  $c_q$.h_outflow :=
+    (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in 1:N) +
+     sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in cat(1,1:q-1, q+1:M))/
+    (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
+     sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+end for;
 \end{lstlisting}
-\end{minipage}\\ \hline
-
-\end{longtable}
 
 \emph{Note, that \textbf{inStream}(c\textsubscript{k}.h\_outflow) is
 computed from the connection set that is present one hierarchical level
@@ -14230,33 +14188,36 @@ c2.h_outflow = inStream(c1.h_outflow);
 \end{lstlisting}
 
 \item\textbf{All other cases:}\newline
-\begin{lstlisting}[language=modelica]
-if m_j.c.m_flow.min >= 0  for all j = 1:N with j <> i  and  $c_k$.m_flow.max <= 0 for all k = 1:M
+\begin{lstlisting}[language=modelica,mathescape=true]
+if $m_j$.c.m_flow.min >= 0  for all j = 1:N with j <> i  and  
+   $c_k$.m_flow.max <= 0 for all k = 1:M
 then 
-    inStream(m_i.c.h_outflow) =  m_i.c.h_outflow;
+    inStream($m_i$.c.h_outflow) =  $m_i$.c.h_outflow;
  else 
-    si = sum (max(-m_j.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) + sum(max( c_k.m_flow ,0) for k  in 1:M);
-    inStream(m_i.c.h_outflow) = 
-       (sum(positiveMax(-m_j.c.m_flow,s_i)*m_j.c.h_outflow)
-      +  sum(positiveMax(c_k.m_flow,s_i)*inStream(c_k.h_outflow)))/ 
-     (sum(positiveMax(-m_j.c.m_flow,s_i))
-        +  sum(positiveMax(c_k.m_flow,s_i)))  
-                  for j in 1:N and i <> j and m_j.c.m_flow.min < 0, 
-                  for k in 1:M and c_k.m_flow.max > 0
+    si = sum (max(-$m_j$.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) + 
+         sum(max( $c_k$.m_flow ,0) for k  in 1:M);
+    inStream($m_i$.c.h_outflow) = 
+       (sum(positiveMax(-$m_j$.c.m_flow,$s_i$)*$m_j$.c.h_outflow)
+      +  sum(positiveMax($c_k$.m_flow,s_i)*inStream($c_k$.h_outflow)))/ 
+     (sum(positiveMax(-$m_j$.c.m_flow,s_i))
+        +  sum(positiveMax($c_k$.m_flow,s_i)))  
+                  for j in 1:N and i <> j and $m_j$.c.m_flow.min < 0, 
+                  for k in 1:M and $c_k$.m_flow.max > 0
 // Additional equations to be generated
 for q in 1:M loop
-   if m_j.c.m_flow.min >= 0 for all j = 1:N and 
-       c_k.m_flow.max <= 0 for all k = 1:M and k <> q
+   if $m_j$.c.m_flow.min >= 0 for all j = 1:N and 
+       $c_k$.m_flow.max <= 0 for all k = 1:M and k <> q
    then
-       c_q.h_outflow = 0;
+       $c_q$.h_outflow = 0;
     else
-       s_q =  (sum(max(-m_j.c.m_flow,0) for j in  1:N) +
-                    sum(max( c_k.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
-      c_q.h_outflow = (sum(positiveMax(-m_j.c.m_flow,s_q)*m_j.c.h_outflow) +
-                sum(positiveMax(c_k.m_flow,s_q)* inStream(c_k.h_outflow)))/
-                (sum(positiveMax(-m_j.c.m_flow,s_q)) +
-                sum(positiveMax(c_k.m_flow,s_q)))  for j in 1:N and m_j.c.m_flow.min < 0,
-                  for k in 1:M and k <>  q and  c_k.m_flow.max > 0
+       $s_q$ =  (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
+                    sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+       $c_q$.h_outflow = (sum(positiveMax(-$m_j$.c.m_flow,s_q)*$m_j$.c.h_outflow) +
+                 sum(positiveMax($c_k$.m_flow,$s_q$)* inStream($c_k$.h_outflow)))/
+                (sum(positiveMax(-$m_j$.c.m_flow,s_q)) +
+                 sum(positiveMax($c_k$.m_flow,s_q)))  
+		  for j in 1:N and $m_j$.c.m_flow.min < 0,
+                  for k in 1:M and k <> q and $c_k$.m_flow.max > 0
 end for;
 \end{lstlisting}
 \end{itemize}
@@ -14287,9 +14248,11 @@ applied only when {all} flows are small:}
 \begin{lstlisting}[language=modelica,escapechar=!]
 // Define a "small number" eps (!\textbf{nominal}!(v) is the nominal value of v !--! see !\ref{attributes-start-fixed-nominal-and-unbounded}!)
   eps := relativeTolerance*min(nominal($m_j$.c.m_flow));
+  
 // Define a smooth curve, such that  alpha($s_i>=eps$)=1 and alpha($s_i<0$)=0
   alpha := smooth(1, if $s_i$ > eps then 1 else
-    if $s_i$ > 0 then  ( $s_i$/eps)^2*(3-2* $s_i$/eps)) else 0);
+                     if $s_i$ > 0 then  ( $s_i$/eps)^2*(3-2* $s_i$/eps)) else 0);
+    
   // Define function positiveMax(v,s_i) as a linear combination of max (v,0)
   // and of eps along alpha
   positiveMax((-$m_j$.c.m_flow,s_i)  := alpha*max(-$m_j$.c.m_flow,0) +  (1-alpha)*eps;
@@ -14363,16 +14326,15 @@ definition it is assumed that an (inside or outside) connector c
 contains a stream variable h\_outflow which is associated with a flow
 variable m\_flow in the same connector c:
 
-\textbf{actualStream}(c.h\_outflow) = \textbf{if} c.m\_flow
-\textgreater{} 0 \textbf{then} \textbf{inStream}(c.h\_outflow)
-
-\textbf{else} c.h\_outflow;
+\begin{lstlisting}[language=modelica]
+actualStream(c.h_outflow) = if c.m_flow > 0 then inStream(c.h_outflow) else c.h_outflow;
+\end{lstlisting}
 
 {[}\emph{The \textbf{actualStream}(v) operator is typically used in two
 contexts:}
 \begin{lstlisting}[language=modelica]
   der(U) = c.m_flow*actualStream(c.h_outflow);  // (1)energy balance equation
-  h_c = actualStream(c.h); // (2)monitoring the enthalpy at port c
+  h_c = actualStream(c.h);                      // (2)monitoring the enthalpy at port c
 \end{lstlisting}
 \emph{In the case of equation (1), although the actualStream() operator
 is discontinuous, the product with the flow variable is not, because
@@ -14812,7 +14774,7 @@ equation
   end when; 
  
   when Clock(nextInterval, 1000) then      
-  // interval clock that ticks at 0, 0.003, 0.007, 0.012, ...     
+    // interval clock that ticks at 0, 0.003, 0.007, 0.012, ...     
     nextInterval = previous(nextInterval) + 1;     
     y2 = previous(y2) + 1;   
   end when; 
@@ -15212,8 +15174,7 @@ equation
   end when;
   when clk2 then
     y = noClock (x); // most recent value of x
-    z = sample (hold(x)); // left limit of x
-    (infinitesimally delayed)!
+    z = sample (hold(x)); // left limit of x (infinitesimally delayed)!
   end when;
 end NoClockVsSampleHold;
 \end{lstlisting}
@@ -15376,11 +15337,13 @@ identified:}
   0 = f1(yd1, ud1, previous(ud1)); // incidence(e) = {yd1,ud1}
   ud2 = superSample (yd1,2); // incidence(e) = {ud2, yd1}
   0 = f2(yd2, ud2); // incidence(e) = {yd2, ud2}
+  
   // Base partition 2 // continuous-time partition
   u = hold (yd2); // incidence(e) = {u}
   0 = f3(der(x1), x1, u); // incidence(e) = {x1,u}
   0 = f4(der(x2), x2, x1); // incidence(e) = {x2,x1}
   0 = f6(y, x1, u); // incidence(e) = {y,x1,u}
+  
   // Identified as separate partition, but belonging to partition 2
   0 = f5(der(x3), x3); // incidence(e) = {x3}
 \end{lstlisting}
@@ -15562,8 +15525,8 @@ type SolverMethod = String annotation(choices(
   choice="ExplicitRungeKutta4" "Explicit Runge-Kutta method (order 4)",
   choice="ImplicitEuler" "Implicit Euler method (order 1)",
   choice="ImplicitTrapezoid" "Implicit trapezoid rule (order 2)"
-)) "Type of integration method to solve differential equations in a clocked
-discretized"+"continuous-time partition."
+)) "Type of integration method to solve differential equations in a clocked discretized"
+   +"continuous-time partition."
 \end{lstlisting}
 
 If a tool supports one of the integrators of SolverMethod, it must use
@@ -15677,7 +15640,7 @@ implementation:}
   parameter Real x_start = 1;
   Real x(start=x_start); // previous(x) = x_start at first clock tick
   Real der_x(start=0); // previous(der_x) = 0 at first clock tick
-  protected 
+protected 
   Boolean first(start=true);
 equation 
   when Clock() then
@@ -15685,7 +15648,7 @@ equation
     if previous(first) then
       // first clock tick (initialize system)
       x = previous (x);
-      else
+    else
       // second and further clock tick
       x = previous (x) +
       interval()*previous(der_x);
@@ -15763,8 +15726,7 @@ needed for such partitions.
 {[}\emph{Example:}
 
 \begin{lstlisting}[language=modelica]
-model InferenceTest "Specific clocks set on all partitions.
-Decouple constraint"
+model InferenceTest "Specific clocks set on all partitions. Decouple constraint"
   ...
 equation 
   // Physical model
@@ -15844,8 +15806,8 @@ block ClockedPI
   Real Ts = interval(u);
 equation
   /* Continuous PI equations: der(x) = u/T; y = k*(x + u);
-Discretization equation: der(x) = (x - previous (x))/Ts;
-*/
+     Discretization equation: der(x) = (x - previous (x))/Ts;
+  */
   when Clock() then
     x = previous (x) + Ts/T*u;
     y = k*(x + u);
@@ -16095,7 +16057,8 @@ in states of hierarchical state machines.\\ \hline
 {[} \emph{The recommended layout of state machines is shown below for a
 simple state machine with 5 transitions. }
 
-%\includegraphics[width=4.85417in,height=3.42708in]{media/image40.png}
+\includegraphics[width=4.85417in,height=3.42708in]{media/statemachine}
+
 \emph{For
 the 5 transitions above, the settings are as follows, from left to
 right: immediate = true, false, true, false, true; reset = true, true,
@@ -16180,7 +16143,7 @@ stored in a separate array c{[}:{]} since they are time varying.
   The semantics model is a discrete-time system with inputs \{ c{[}:{]},
   active, reset\} with t being an array corresponding to the inputs to the
   transition operator, outputs \{activeState, activeReset,
-  activeResetStates{[}:{]}\} and states {nextState, nextReset,
+  activeResetStates{[}:{]}\} and states \{nextState, nextReset,
   nextResetStates{[}:{]}\}. For a top level state machine, active is
   always true. For sub-state machines, active is true only when the parent
   state is active. For a top level state machine, reset is true at the
@@ -16307,24 +16270,23 @@ machine should be reset";
   Integer selectedState = if reset then 1 else previous(nextState);
   Boolean selectedReset = if reset then true else previous(nextReset);
   // For strong (immediate) and weak (delayed) transitions
-  Integer immediate = max(if (if 
-    t[i].immediate and t[i].from == selectedState then c[i] else false) then i else 0 for i in 1:size(t,1));
-  Integer delayed =   
-  max(if  (if not t[i].immediate and t[i].from == nextState
- then c[i] else false) then i else 0 for i in 1:size(t,1));
+  Integer immediate = max(if (if t[i].immediate and t[i].from == selectedState 
+    then c[i] else false) then i else 0 for i in 1:size(t,1));
+  Integer delayed = max(if  (if not t[i].immediate and t[i].from == nextState 
+    then c[i] else false) then i else 0 for i in 1:size(t,1));
   Integer fired = max(previous(delayed), immediate);
   output Integer activeState = if reset then 1 elseif fired > 0 then t[fired].to else selectedState;
   output Boolean activeReset = if reset then true elseif fired > 0 then t[fired].reset else selectedReset;
+  
   // Update states
   Integer nextState = if active then activeState else previous(nextState);
   Boolean nextReset = if active then false else previous(nextReset);
   // Delayed resetting of individual states
-  output Boolean activeResetStates[nStates] = {if reset then true else previous(nextResetStates[i]) for i in 1:nStates};
-  Boolean nextResetStates[nStates] = if active then {if selectedState == i then false else activeResetStates[i] for i in 1:nStates} 
-  else previous(nextResetStates);
-  Boolean finalStates[nStates] = {max(if  t[j].from == i
-  then 1 else 0 for j in 1:size(t,1))
-  == 0 for i in 1:nStates};
+  output Boolean activeResetStates[nStates] = {if reset then true else 
+    previous(nextResetStates[i]) for i in 1:nStates};
+  Boolean nextResetStates[nStates] = if active then {if selectedState == i then false 
+    else activeResetStates[i] for i in 1:nStates} else previous(nextResetStates);
+  Boolean finalStates[nStates] = {max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1))== 0 for i in 1:nStates};
   Boolean stateMachineInFinalState = finalStates[activeState];
 end StateMachineSemantics;
 \end{lstlisting}
@@ -16391,7 +16353,7 @@ u!\textsubscript{2}! = v
 
 \emph{{[} Consider the following hierarchical state machine:}
 
-%\includegraphics[width=5.34375in,height=5.72917in]{media/image41.png}
+\includegraphics[width=5.34375in,height=5.72917in]{media/statemachine2}
 
 \emph{The model demonstrates the following properties:}
 
@@ -16429,45 +16391,53 @@ u!\textsubscript{2}! = v
 \begin{lstlisting}[language=modelica]
 block HierarchicalAndParallelStateMachine
   inner Integer v(start=0);
+
   State1 state1;
   State2 state2;
 equation 
   initialState(state1);
   transition(state1,state2,activeState(state1.stateD) and
-  activeState(state1.stateY), immediate=false);
+    activeState(state1.stateY), immediate=false);
   transition(state2,state1,v >= 20, immediate=false);
-  public 
+  
+public 
   block State1
     inner Integer count(start=0);
     inner outer output Integer v;
+    
     block StateA
       outer output Integer v;
     equation 
       v = previous(v) + 2;
     end StateA;
     StateA stateA;
+    
     block StateB
       outer output Integer v;
     equation 
       v = previous(v) - 1;
     end StateB;
     StateB stateB;
+    
     block StateC
       outer output Integer count;
     equation 
       count = previous(count) + 1;
     end StateC;
     StateC stateC;
+    
     block StateD
     end StateD;
     StateD stateD;
+    
   equation 
     initialState(stateA);
     transition(stateA, stateB, v >= 6, immediate=false);
     transition(stateB, stateC, v == 0, immediate=false);
     transition(stateC, stateA, true, immediate=false, priority=2);
     transition(stateC, stateD, count >= 2, immediate=false);
-    public 
+  
+  public 
     block StateX
       outer input Integer v;
       Integer i(start=0);
@@ -16477,12 +16447,14 @@ equation
       w = v;
     end StateX;
     StateX stateX;
+    
     block StateY
       Integer j(start=0);
     equation 
       j = previous(j) + 1;
     end StateY;
     StateY stateY;
+    
   equation 
     initialState(stateX);
     transition(stateX, stateY, stateX.i > 20, immediate=false,
@@ -16498,9 +16470,9 @@ end HierarchicalAndParallelStateMachine;
 \end{lstlisting}
 
 \emph{The behavior of the state machine can be seen in the plots of v:}
-
-%\includegraphics[width=4.16667in,height=2.91667in]{media/image42.png}
-
+\begin{figure}
+\includegraphics[width=4.16667in,height=2.91667in]{media/statemachineplot}
+\end{figure}
 \emph{The transition from state1 to state2 could have been done with a
 synchronize transition with condition=true instead. The semantically
 equivalent model is shown below:}
@@ -16640,7 +16612,8 @@ vendor-specific annotations.
 
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
-annotation (   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+annotation (
+   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
         graphics={__NameOfVendor(Circle(center={0,0}, radius=10))}) ); 
 \end{lstlisting}
 \emph{This introduces a new graphical primitive} Circle \emph{using the
@@ -16944,8 +16917,7 @@ annotations in the later sections.
 \begin{lstlisting}[language=modelica]
   type DrawingUnit = Real(final unit="mm");
   type Point = DrawingUnit[2] "{x, y}";
-  type Extent = Point[2]
-  "Defines a rectangular area {{x1, y1}, {x2, y2}}";
+  type Extent = Point[2] "Defines a rectangular area {{x1, y1}, {x2, y2}}";
 \end{lstlisting}
 The interpretation of "unit" is with respect to printer output in
 natural size (not zoomed).
@@ -17001,9 +16973,9 @@ end CoordinateSystem;
 \end{lstlisting}
 {[}\emph{Example}: \emph{A coordinate system for an icon could for
 example be defined as:}
-
-CoordinateSystem(extent = \{\{-10, -10\}, \{10, 10\}\});
-
+\begin{lstlisting}[language=modelica]
+CoordinateSystem(extent = {{-10, -10}, {10, 10}});
+\end{lstlisting}
 \emph{i.e. a coordinate system with width 20 units and height 20
 units.}{]}
 
@@ -17013,14 +16985,12 @@ ordered list of graphical primitives.
 
 \begin{lstlisting}[language=modelica]
 record Icon "Representation of the icon layer"
-  CoordinateSystem coordinateSystem(extent = {{-100, -100}, {100,
-  100}});
+  CoordinateSystem coordinateSystem(extent = {{-100, -100}, {100, 100}});
   GraphicItem[:] graphics;
 end Icon;
 
 record Diagram "Representation of the diagram layer"
-  CoordinateSystem coordinateSystem(extent = {{-100, -100}, {100,
-  100}});
+  CoordinateSystem coordinateSystem(extent = {{-100, -100}, {100, 100}});
   GraphicItem[:] graphics;
 end Diagram;
 \end{lstlisting}
@@ -17068,7 +17038,8 @@ The attributes HorizontalCylinder, VerticalCylinder and Sphere specify
 gradients that represent a horizontal cylinder, a vertical cylinder and
 a sphere, respectively. The gradient goes from line color to fill color.
 
-%\includegraphics[width=2.08333in,height=1.66667in]{media/image43.png}
+\includegraphics[width=2.08333in,height=1.66667in]{media/bezierpoints}
+
 The border pattern attributes Raised, Sunken and Engraved represent frames
 which are rendered in a tool-dependent way -- inside the extent of the
 filled shape.
@@ -17254,20 +17225,20 @@ and optionally a Text-primitive, as specified below. {[}\emph{Example:}
 
 The optional Text-primitive defines a text that will be written on the
 connection line. It has the following definition (\emph{it is not equal
-to the Text-primitive as part of graphics -- the differences are additionally indented}):
-% CHANGE: marked as bold
-\begin{lstlisting}[language=modelica,escapechar=!]
+to the Text-primitive as part of graphics -- the differences are marked as bold lines}):
+% NOTE: Technically just the names - not the entire lines are marked ni bold
+\begin{lstlisting}[language=modelica,escapechar=!,emph={horizontalAlignment,string,index}, emphstyle=\textbf]
 record Text
   extends GraphicItem;
   extends FilledShape;
   Extent extent;
-   String string;
+  String string;
   Real fontSize = 0 "unit pt";
   String fontName;
   TextStyle textStyle[:];
   Color textColor=lineColor;
-   TextAlignment horizontalAlignment = if index<0 then TextAlignment.Right else TextAligment.Left;
-   Integer index;
+  TextAlignment horizontalAlignment = if index<0 then TextAlignment.Right else TextAligment.Left;
+  Integer index;
 end Text;
 \end{lstlisting}
 
@@ -17568,8 +17539,7 @@ In a similar way, a variable can be changed when the mouse button is
 
 \begin{lstlisting}[language=modelica]
 record OnMouseUpSetBoolean
-  Boolean variable "Name of variable to change when mouse button
-released";
+  Boolean variable "Name of variable to change when mouse button released";
   Boolean value "Assigned value";
 end OnMouseUpSetBoolean;
 \end{lstlisting}
@@ -17588,8 +17558,7 @@ mapped to the interval defined by the minValue and maxValue attributes.
 
 \begin{lstlisting}[language=modelica]
 record OnMouseMoveXSetReal
-  Real xVariable "Name of variable to change when cursor moved
-in x direction";
+  Real xVariable "Name of variable to change when cursor moved in x direction";
   Real minValue;
   Real maxValue;
 end OnMouseMoveXSetReal;
@@ -17599,8 +17568,7 @@ as the OnMouseMoveXSetReal object but in the Y direction.
 
 \begin{lstlisting}[language=modelica]
 record OnMouseMoveYSetReal
-  Real yVariable "Name of variable to change when cursor moved
-in y direction";
+  Real yVariable "Name of variable to change when cursor moved in y direction";
   Real minValue;
   Real maxValue;
 end OnMouseMoveYSetReal;
@@ -17852,20 +17820,17 @@ writing.
 \begin{lstlisting}[language=modelica]
 model DialogDemo
   parameter Boolean b = true "Boolean parameter";
-  parameter Modelica.SIunits.Length length "Real parameter with
-unit";
-  parameter Integer nInports=0
-  annotation(Dialog(connectorSizing=true));
+  parameter Modelica.SIunits.Length length "Real parameter with unit";
+  parameter Integer nInports=0 
+     annotation(Dialog(connectorSizing=true));
   parameter Real r1 "Real parameter in Group 1"
-  annotation(Dialog(group="Group 1"));
+     annotation(Dialog(group="Group 1"));
   parameter Real r2 "Disabled Real parameter in Group 1"
-  annotation(Dialog(group="Group 1",
-  enable = not b));
+     annotation(Dialog(group="Group 1",enable = not b));
   parameter Real r3 "Real parameter in Tab 1"
-  annotation(Dialog(tab="Tab 1"));
+     annotation(Dialog(tab="Tab 1"));
   parameter Real r4 "Real parameter in Tab 1 and Group 2"
-  annotation(Dialog(tab="Tab 1",
-  group="Group 2"));
+     annotation(Dialog(tab="Tab 1", group="Group 2"));
   StepIn stepIn[nInports];
   ...
 end DialogDemo;
@@ -17877,8 +17842,8 @@ menu since it has the ``connectorSizing'' annotation and therefore it
 should not be modified by the user (an alternative is to show parameter
 nInports in the menu but with disabled input field): }
 
-%\includegraphics[width=2.25in,height=1.125in]{media/image44.png}
-%includegraphics[width=2.625in,height=0.89583in]{media/image45.png}
+\includegraphics[width=2.25in,height=1.125in]{media/disabledparameter}
+\includegraphics[width=2.625in,height=0.89583in]{media/tabparameter}
 
 \emph{The following part is non-normative text and describes a useful
 way to handle the connectorSizing annotation in a tool (still a tool may
@@ -17888,8 +17853,7 @@ example which represents a connector and a model from the
 Modelica.StateGraph library:}
 
 \begin{lstlisting}[language=modelica]
-connector StepIn // Only 1:1 connections are possible since
-  input used
+connector StepIn // Only 1:1 connections are possible since input used
   output Boolean occupied;
   input Boolean set;
 end StepIn;
@@ -19086,13 +19050,11 @@ Note:
   String constant concatenation "a" "b" becoming "ab" (as in C) is
   replaced by the "+" operator in Modelica.
 \item
-\begin{lstlisting}[language=modelica]
   Modelica uses the same comment syntax as C++ and Java (i.e., //
   signals the start of a line comment and /* .... */ is a multi-line
   comment); comments may contain any Unicode character. Modelica also
   has structured comments in the form of annotations and string
   comments.
-\end{lstlisting}
 \item
   Description strings (= production ``string-comment'' in the grammar)
   and strings in annotations (= STRING with production annotation in the
@@ -19620,16 +19582,32 @@ connectors from \ref{stream-connectors}.
 
 Consider a connection set with \emph{n} connectors. The mixing enthalpy
 is defined by the mass balance
-
+\begin{equation*}
+0=\sum_{j=1}^n\dot{m}_j
+\end{equation*}
 and the energy balance
-
+\begin{equation*}
+0=\sum_{j=1}^n\dot{H}_j
+\end{equation*}
 with
-
+\begin{equation*}
+\dot{H}_j=\dot{m}_j 
+\begin{cases}
+h_{mix}&\text{if $\dot{m}_j>0$}\\
+h_{outflow,j}&\text{if $\dot{m}_j<=0$}
+\end{cases}
+\end{equation*}
 Herein, mass flow rates are positive when entering models (exiting the
 connection set). The specific enthalpy represents the specific enthalpy
 inside the component, close to the connector, for the case of outflow.
 Expressed with variables used in the balance equations we arrive at:
-
+\begin{equation*}
+h_{outflow,j}=
+\begin{cases}
+\frac{\dot{H}_j}{\dot{m}_j}&\text{if $\dot{m}_j<0$}\\
+\textrm{arbitrary}&\text{if $\dot{m}_j>=0$}
+\end{cases}
+\end{equation*}
 While these equations are suitable for device-oriented modeling, the
 straightforward usage of this definition leads to models with
 discontinuous residual equations, which violates the prerequisites of
@@ -19637,7 +19615,7 @@ several solvers for nonlinear equation systems. This is the reason why
 the actual mixing enthalpy is not modelled directly in the model
 equations. The stream connectors provide a suitable alternative.
 
-%includegraphics[width=6.33819in,height=2.97083in]{media/image54.emf}
+\includegraphics[width=6.33819in,height=2.97083in]{media/fluidmix}
 
 \section{Rationale for the formulation of the inStream() operator}\doublelabel{rationale-for-the-formulation-of-the-instream-operator}
 
@@ -19647,22 +19625,67 @@ connections follows correspondingly.
 
 The energy and mass balance equations for the connection set for 3
 components are (see above):
-
-(1a)
-
-(1b)
+\begin{subequations}
+\begin{equation}
+\begin{split}
+0=&\dot{m}_1\cdot
+\begin{cases}
+h_{mix}&\text{if $\dot{m}_1>0$}\\
+h_{outflow,1}&\text{if $\dot{m}_1<=0$}
+\end{cases}\\
++&\dot{m}_2\cdot
+\begin{cases}
+h_{mix}&\text{if $\dot{m}_2>0$}\\
+h_{outflow,2}&\text{if $\dot{m}_2<=0$}
+\end{cases}\\
++&\dot{m}_3\cdot
+\begin{cases}
+h_{mix}&\text{if $\dot{m}_3>0$}\\
+h_{outflow,3}&\text{if $\dot{m}_3<=0$}
+\end{cases}
+\end{split}
+\label{D1a}
+\end{equation}
+\begin{equation}
+0=\dot{m}_1+\dot{m}_2+\dot{m}_3
+\label{D1b}
+\end{equation}
+\label{D1}
+\end{subequations}
 
 The balance equations are implemented using a max() operator in place of
 the piecewise expressions, taking care of the different flow directions:
+\begin{subequations}
+\begin{equation}
+\begin{split}
+0=&\text{max}(\dot{m}_1,0)h_{mix}-\text{max}(-\dot{m}_1,0)h_{outflow,1}\\
++&\text{max}(\dot{m}_2,0)h_{mix}-\text{max}(-\dot{m}_2,0)h_{outflow,2}\\
++&\text{max}(\dot{m}_3,0)h_{mix}-\text{max}(-\dot{m}_3,0)h_{outflow,3}
+\end{split}
+\label{D2a}
+\end{equation}
 
-(2a)
+\begin{equation}
+\begin{split}
+0=&\text{max}(\dot{m}_1,0)-\text{max}(-\dot{m}_1,0)\\
++&\text{max}(\dot{m}_2,0)-\text{max}(-\dot{m}_2,0)\\
++&\text{max}(\dot{m}_3,0)-\text{max}(-\dot{m}_3,0)
+\end{split}
+\label{D2b}
+\end{equation}
+\label{D2}
+\end{subequations}
 
-(2b)
-
-Equation (2a) is solved for
-
-Using (2b), the denominator can be changed to:
-
+Equation (\ref{D2a}) is solved for $h_{mix}$
+\begin{equation*}
+h_{mix}=\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_2,0)h_{outflow,2}+\text{max}(-\dot{m}_3,0)h_{outflow,3}}
+{\text{max}(\dot{m}_1,0)+\text{max}(\dot{m}_2,0)+\text{max}(\dot{m}_3,0)}
+\end{equation*}
+Using (\ref{D2b}), the denominator can be changed to:
+\begin{equation*}
+h_{mix}=\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_2,0)h_{outflow,2}+\text{max}(-\dot{m}_3,0)h_{outflow,3}}
+{\text{max}(-\dot{m}_1,0)+\text{max}(-\dot{m}_2,0)+\text{max}(-\dot{m}_3,0)}
+\end{equation*}
 Above it was shown that an equation of this type does not yield properly
 formulated model equations. In the streams concept we therefore decide
 to split the energy balance, which consists of different branches
@@ -19675,15 +19698,22 @@ flowing into it. Whenever the mixing enthalpy is \emph{used} in a model
 it is therefore the mixing enthalpy under the assumption of fluid
 flowing into said model.
 
-We establish this quantity using a dedicated operator . This leads to
+We establish this quantity using a dedicated operator $inStream(h_{outflow,i})=h_{mix}$ $(\dot{m}_{i} >= 0)$. This leads to
 three different incarnations of (n in the general case). This is
 illustrated in the figure below. For the present example of three
 components in a connection set, this means the following.
-
-%includegraphics[width=6.69306in,height=3.5125in]{media/image68.emf}
+\begin{eqnarray*}
+inStream(h_{outflow,1})&=&\frac{\text{max}(-\dot{m}_2,0)h_{outflow,2}+\text{max}(-\dot{m}_3,0)h_{outflow,3}}{\text{max}(-\dot{m}_2,0)+\text{max}(-\dot{m}_3,0)}\\
+inStream(h_{outflow,2})&=&\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_3,0)h_{outflow,3}}{\text{max}(-\dot{m}_1,0)+\text{max}(-\dot{m}_3,0)}\\
+inStream(h_{outflow,3})&=&\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_2,0)h_{outflow,2}}{\text{max}(-\dot{m}_1,0)+\text{max}(-\dot{m}_2,0)}
+\end{eqnarray*}
+includegraphics[width=6.69306in,height=3.5125in]{media/fluidmix3}
 
 In the general case of a connection set with \emph{n} components,
 similar considerations lead to the following.
+\begin{equation*}
+inStream(h_{outflow,i})=\frac{\sum_{j=1,...,n;j\neq i}\text{max}(-\dot{m}_j,0)h_{outflow,j}}{\sum_{j=1,...,n;j\neq i}\text{max}(-\dot{m}_j,0)}
+\end{equation*}
 
 \section{Special cases covered by the inStream() operator definition}\doublelabel{special-cases-covered-by-the-instream-operator-definition}
 \subsection{Stream connector is not connected (N=1):}\doublelabel{stream-connector-is-not-connected-n-1}
@@ -19691,7 +19721,13 @@ For this case, the return value of the inStream() operator is arbitrary.
 Therefore, it is set to the outflow value.
 
 \subsection{Connection of 2 stream connectors, one to one connections (N=2):}\doublelabel{connection-of-2-stream-connectors-one-to-one-connections-n-2}
-In this case, inStream() is continuous (contrary to ) and does not
+
+\begin{eqnarray*}
+inStream(h_{outflow,1})&=&\frac{\text{max}(-\dot{m}_2,0)h_{outflow,2}}{\text{max}(-\dot{m}_2,0)}=h_{outflow,2}\\
+inStream(h_{outflow,2})&=&\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}}{\text{max}(-\dot{m}_1,0)}=h_{outflow,1}
+\end{eqnarray*}
+
+In this case, inStream() is continuous (contrary to $h_{mix}$) and does not
 depend on flow rates. The latter result means that this transformation
 may remove nonlinear systems of equations, which requires that either
 simplifications of the form ``a*b/a = b'' must be provided, or that this
@@ -19703,8 +19739,16 @@ connected to two connected components. For the sensor, the min attribute
 of the mass flow rate has to be set to zero (no fluid exiting the
 component via this connector). The suggested implementation results in
 the following equations, and as indicated the last formula can be
-simplified further by using :
-
+simplified further by using $\dot{m}_3=0$:
+\begin{eqnarray*}
+inStream(h_{outflow,1})&=&h_{outflow,2}\\
+inStream(h_{outflow,2})&=&h_{outflow,1}\\
+inStream(h_{outflow,3})&=&\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_2,0)h_{outflow,2}}{\text{max}(-\dot{m}_1,0)+\text{max}(-\dot{m}_2,0)}
+=\begin{cases}
+h_{outflow,2}&\text{if $\dot{m}_1>=0$}\\
+h_{outflow,1}&\text{if $\dot{m}_1<0$ and $\dot{m}_3=0$}
+\end{cases}
+\end{eqnarray*}
 For the two components with finite mass flow rates (not the sensor), the
 properties discussed for two connected components still hold. The
 connection set equations reflect that the sensor does not any influence
@@ -19740,21 +19784,29 @@ that
   m3.c.m_flow.min = 0; // max(-m3.c.m_flow,0) = 0
 \end{lstlisting}
 results in the following equation:
+\begin{equation*}
+inStream(h_{outflow,1})=\frac{\text{max}(-\dot{m}_2,0)h_{outflow,2}+\text{max}(-\dot{m}_3,0)h_{outflow,3}}{\text{max}(-\dot{m}_2,0)+\text{max}(-\dot{m}_3,0)}=\frac{0}{0}
+\end{equation*}
 
 The inStream() operator cannot be evaluated for a connector, on which
 the mass flow rate has to be negative by definition. The reason is that
 the value is arbitrary, which is why it is defined as follows.
-
+\begin{equation*}
+inStream(h_{outflow,1}):=h_{outflow,1}
+\end{equation*}
 For the remaining connectors the inStream() operator reduces to a simple
 result.
-
+\begin{eqnarray*}
+inStream(h_{outflow,2})&=\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_3,0)h_{outflow,3}}{\text{max}(-\dot{m}_1,0)+\text{max}(-\dot{m}_3,0)}=h_{outflow,1}\\
+inStream(h_{outflow,3})&=\frac{\text{max}(-\dot{m}_1,0)h_{outflow,1}+\text{max}(-\dot{m}_2,0)h_{outflow,2}}{\text{max}(-\dot{m}_1,0)+\text{max}(-\dot{m}_2,0)}=h_{outflow,1}
+\end{eqnarray*}
 Again, the previous non-linear algebraic system of equations is removed.
 This means that utilizing the information about uni-directional flow is
 very important.
 
 To summarize, if all mass flow rates are zero, the balance equations for
-stream variables (1) and for flows (2) are identically fulfilled. In
-such a case, any value of h\_mix fulfills (1), i.e., a unique
+stream variables (\ref{D1}) and for flows (\ref{D2}) are identically fulfilled. In
+such a case, any value of h\_mix fulfills (\ref{D1}), i.e., a unique
 mathematical solution does not exist. This specification only requires
 that a solution fulfills the balance equations. Additionally, a
 recommendation is given to compute all unknowns in a unique way, by
@@ -20454,7 +20506,8 @@ Gerd Kurzbach, ITI GmbH, Dresden, Germany
 
 Jesper Mattsson, Modelon AB, Lund, Sweden
 
-Hans Olsson, Dassault Systèmes, Lund, Sweden\\
+Hans Olsson, Dassault Systèmes, Lund, Sweden
+
 Martin Otter, DLR, Oberpfaffenhofen, Germany
 
 Adrian Pop, Linköping University, Linköping, Sweden
@@ -20587,81 +20640,109 @@ Johan Åkesson, Lund University and Modelon AB, Lund, Sweden
 
 Peter Aronsson, MathCore AB, Linköping, Sweden
 
-Ingrid Bausch-Gall, BAUSCH-GALL GmbH, Munich, Germany\\
+Ingrid Bausch-Gall, BAUSCH-GALL GmbH, Munich, Germany
+
 Volker Beuter, Kämmerer AG, Germany
 
-Torsten Blochwitz, ITI GmbH, Dresden, Germany\\
+Torsten Blochwitz, ITI GmbH, Dresden, Germany
+
 David Broman, PELAB, Linköping University, Sweden
 
 Dag Brück, Dassault Systèmes, Lund, Sweden
 
-Francesco Casella, Politecnico di Milano, Milano, Italy\\
-Christoph Clauss, Fraunhofer, Dresden, Germany\\
+Francesco Casella, Politecnico di Milano, Milano, Italy
+
+Christoph Clauss, Fraunhofer, Dresden, Germany
+
 Mike Dempsey, Claytex Services Limited, Leamington Spa, U.K.
 
 Karin Dietl, TU Hamburg-Harburg, Germany
 
-Francois Dupont, Dassault Systèmes, Brest, France\\
+Francois Dupont, Dassault Systèmes, Brest, France
+
 Jonas Eborn, Modelon, Lund, Sweden
 
-Hilding Elmqvist, Dassault Systèmes, Lund, Sweden\\
-Guilioano Fontanella, AIT, Vienna, Austria\\
+Hilding Elmqvist, Dassault Systèmes, Lund, Sweden
+
+Guilioano Fontanella, AIT, Vienna, Austria
+
 Rüdiger Franke, ABB Power Generation, Mannheim, Germany
 
-Peter Fritzson, PELAB, Linköping University, Sweden\\
-Sébastien Furic, LMS International, Roanne. France\\
+Peter Fritzson, PELAB, Linköping University, Sweden
+
+Sébastien Furic, LMS International, Roanne. France
+
 Leo Gall, BAUSCH-GALL Gmbh, Munich, Germany
 
 Peter Harman, deltatheta uk limited, U.K.
 
-Anton Haumer, AIT, Vienna, Austria\\
-Dan Henriksson, Dassault Systèmes, Lund, Sweden\\
-Christoph Höger, TU Berlin, Berlin, Germany\\
-Christian Kral, AIT, Vienna, Austria\\
+Anton Haumer, AIT, Vienna, Austria
+
+Dan Henriksson, Dassault Systèmes, Lund, Sweden
+
+Christoph Höger, TU Berlin, Berlin, Germany
+
+Christian Kral, AIT, Vienna, Austria
+
 Gerd Kurzbach, ITI GmbH, Dresden, Germany
 
-Kilian Link, Siemens AB, Erlangen, Germany\\
-Krisitin Majetta, Fraunhofer, Dresden, Germany\\
-Martin Malmheden, Dassault Systèmes, Velicy, France\\
+Kilian Link, Siemens AB, Erlangen, Germany
+
+Krisitin Majetta, Fraunhofer, Dresden, Germany
+
+Martin Malmheden, Dassault Systèmes, Velicy, France
+
 Jesper Mattsson, Modelon, Lund, Sweden
 
-Sven Erik Mattsson, Dassault Systèmes, Lund, Sweden\\
-Eric Neuber, ITI GmbH, Dresden, Germany\\
+Sven Erik Mattsson, Dassault Systèmes, Lund, Sweden
+
+Eric Neuber, ITI GmbH, Dresden, Germany
+
 Ramine Nikoukhah, Altair, France
 
 Hans Olsson, Dassault Systèmes, Lund, Sweden
 
 Martin Otter, DLR-RM (German Aerospace Center), Oberpfaffenhofen,
-Germany\\
+Germany
+
 Peter Pepper, Fraunhofer FIRST, Berlin, Germany
 
 Adrian Pop, Linköping University, Linköping, Sweden
 
-Olena Rogovchenko, PELAB, Linköping, Sweden\\
+Olena Rogovchenko, PELAB, Linköping, Sweden
+
 Stefan-Alexander Schneider, BMW, Munich, Germany
 
-Michael Sielemann, German Aerospace Center, Oberpfaffenhofen, Germany\\
-Martin Sjölund, PELAB; Linköping, Sweden\\
+Michael Sielemann, German Aerospace Center, Oberpfaffenhofen, Germany
+
+Martin Sjölund, PELAB; Linköping, Sweden
+
 Kristian Stavåker, PELAB, Linköping, Sweden
 
 Bernhard Thiele, DLR-RM (German Aerospace Center), Oberpfaffenhofen,
-Germany\\
+Germany
+
 Eric Thomas, Dassault Aviation, Paris, France
 
 Michael Tiller, Dassault Systèmes, Velicy, France
 
-Hubertus Tummescheit, Modelon AB, Lund, Sweden\\
-Andreas Uhlig, ITI, Dresden Germany\\
+Hubertus Tummescheit, Modelon AB, Lund, Sweden
+
+Andreas Uhlig, ITI, Dresden Germany
+
 Vladimir Vukovic, AIT, Vienna, Germany
 
-Stefan Vorkoetter, Maplesoft, Waterloo, Canada\\
+Stefan Vorkoetter, Maplesoft, Waterloo, Canada
+
 Daniel Weil, Dassault Systèmes, Grenoble, France
 
 Hans-Jürg Wiesmann, ABB Switzerland, Corporate Research, Baden,
 Switzerland
 
-Dietmar Winkler, Telemark University College, Porsgrunn, Norway\\
-Stefan Wischhusen, XRG Simulation, Hamburg, Germany\\
+Dietmar Winkler, Telemark University College, Porsgrunn, Norway
+
+Stefan Wischhusen, XRG Simulation, Hamburg, Germany
+
 Dirk Zimmer, DLR-RM (German Aerospace Center), Oberpfaffenhofen, Germany
 
 \subsection{Acknowledgments}\doublelabel{acknowledgments1}
@@ -20671,9 +20752,12 @@ synchronous state machines (\ref{state-machines}), and for the understanding of
 fine details of synchronous languages, especially from Lucid Synchrone,
 very helpful discussions with
 
-Albert Benveniste, IRISA/INRIA, Rennes, France\\
-Marc Pouzet, Laboratoire d'Informatique de l'ENS, Paris\\
-Benoit Caillaud, IRISA, Rennes, France\\
+Albert Benveniste, IRISA/INRIA, Rennes, France
+
+Marc Pouzet, Laboratoire d'Informatique de l'ENS, Paris
+
+Benoit Caillaud, IRISA, Rennes, France
+
 Timothy Bourke, INRIA, Rennes, France
 
 are appreciated.
@@ -20840,7 +20924,8 @@ Gerd Kurzbach, ITI GmbH, Dresden, Germany
 
 Jesper Mattsson, Modelon AB, Lund, Sweden
 
-Hans Olsson, Dassault Systèmes, Lund, Sweden\\
+Hans Olsson, Dassault Systèmes, Lund, Sweden
+
 Martin Otter, DLR, Oberpfaffenhofen, Germany
 
 Adrian Pop, Linköping University, Linköping, Sweden
@@ -20966,10 +21051,12 @@ Modelica 3.2 Revision 1 specification (alphabetical list):
 
 Peter Aronsson, MathCore AB, Linköping, Sweden
 
-Peter Fritzson, PELAB, Linköping University, Linköping, Sweden\\
+Peter Fritzson, PELAB, Linköping University, Linköping, Sweden
+
 Christoph Höger, Technical University of Berlin, Berlin, Germany
 
-Gerd Kurzbach, ITI GmbH, Dresden, Germany\\
+Gerd Kurzbach, ITI GmbH, Dresden, Germany
+
 Jesper Mattsson, Modelon AB, Lund, Sweden
 
 Hans Olsson, Dassault Systèmes, Lund, Sweden
@@ -21115,12 +21202,14 @@ Bernhard Bachmann, University of Applied Sciences, Bielefeld, Germany
 
 Jonathan Beck, Dassault Systèmes, Paris, France
 
-Torsten Blochwitz, ITI GmbH, Dresden, Germany\\
+Torsten Blochwitz, ITI GmbH, Dresden, Germany
+
 David Broman, PELAB, Linköping University, Sweden
 
 Dag Brück, Dassault Systèmes, Lund, Sweden
 
-Francesco Casella, Politecnico di Milano, Milano, Italy\\
+Francesco Casella, Politecnico di Milano, Milano, Italy
+
 Mike Dempsey, Claytex Services Limited, Leamington Spa, U.K.
 
 Karin Dietl, TU Hamburg-Harburg, Germany
@@ -21129,27 +21218,32 @@ Filippo Donida, Politecnico di Milano, Milano, Italy
 
 Hilding Elmqvist, Dassault Systèmes, Lund, Sweden
 
-Peter Fritzson, PELAB, Linköping University, Sweden\\
+Peter Fritzson, PELAB, Linköping University, Sweden
+
 Sébastien Furic, LMS International, Roanne. France
 
 Manuel Gräber, TU Braunschweig, Germany
 
 Peter Harman, deltatheta uk limited, U.K.
 
-Anton Haumer, AIT, Vienna, Austria\\
+Anton Haumer, AIT, Vienna, Austria
+
 Carsten Heinrich, Institut für Luft- und Kältetechnik, Dresden, Germany
 
-Dan Henriksson, Dassault Systèmes, Lund, Sweden\\
+Dan Henriksson, Dassault Systèmes, Lund, Sweden
+
 Fredrik Karlsson, PELAB, Linköping University, Sweden
 
-Christian Kral, AIT, Vienna, Austria\\
+Christian Kral, AIT, Vienna, Austria
+
 Imke Krüger, TU Hamburg-Harburg, Hamburg, Germany
 
 Gerd Kurzbach, ITI GmbH, Dresden, Germany
 
 Kilian Link, Siemens AB, Erlangen, Germany
 
-Sven Erik Mattsson, Dassault Systèmes, Lund, Sweden\\
+Sven Erik Mattsson, Dassault Systèmes, Lund, Sweden
+
 Eric Neuber, ITI GmbH, Dresden, Germany
 
 Hans Olsson, Dassault Systèmes, Lund, Sweden
@@ -21162,8 +21256,10 @@ Katrin Prölß, Modelon AB, Lund, Sweden
 
 Michael Sielemann, German Aerospace Center, Oberpfaffenhofen, Germany
 
-Bernhard Thiele, German Aerospace Center, Oberpfaffenhofen, Germany\\
-Thorben Vahlenkamp, XRG Simulation, Hamburg, Germany\\
+Bernhard Thiele, German Aerospace Center, Oberpfaffenhofen, Germany
+
+Thorben Vahlenkamp, XRG Simulation, Hamburg, Germany
+
 Eric Thomas, Dassault Aviation, Paris, France
 
 Michael Tiller, Emmeskay, Plymouth, MI, U.S.A
@@ -21410,7 +21506,8 @@ Magnus Gäfvert, Modelon AB, Lund, Sweden
 Manuel Gräber, TU Braunschweig, Germany
 
 Anton Haumer, Technical Consulting \& Electrical Engineering,
-St.Andrae-Woerdern, Austria\\
+St.Andrae-Woerdern, Austria
+
 Carsten Heinrich, Institut für Luft- und Kältetechnik, Dresden, Germany
 
 Dan Henriksson, Dynasim, Lund, Sweden
@@ -21752,7 +21849,7 @@ specification was edited by Hans Olsson, Michael Tiller and Martin
 Otter.
 
 \subsection{Contributors to the Modelica Language, Version 2.2}\doublelabel{contributors-to-the-modelica-language-version-2-2}
-
+\indent\indent
 Bernhard Bachmann , University of Applied Sciences, Bielefeld, Germany
 
 John Batteh, Ford Motor Company, Dearborn, MI, U.S.A.
@@ -21861,7 +21958,7 @@ Modelica 2.1 was released January 30, 2004. The Modelica 2.1
 specification was edited by Hans Olsson and Martin Otter.
 
 \subsection{Contributors to the Modelica Language, Version 2.1}\doublelabel{contributors-to-the-modelica-language-version-2-1}
-
+\indent\indent
 Mikael Adlers, MathCore, Linköping, Sweden
 
 Peter Aronsson, Linköping University, Sweden
@@ -21983,7 +22080,7 @@ Hans Olsson. Modelica is a registered trademark owned by the Modelica
 Association since November 2001.
 
 \subsection{Contributors to the Modelica Language, Version 2.0}\doublelabel{contributors-to-the-modelica-language-version-2-0}
-
+\indent\indent
 Peter Aronsson, Linköping University, Sweden
 
 Bernhard Bachmann , University of Applied Sciences, Bielefeld
@@ -22103,7 +22200,7 @@ Modelica language. The Modelica 1.4 specification was edited by Hans
 Olsson and Dag Brück.
 
 \subsection{Contributors to the Modelica Language, Version 1.4}\doublelabel{contributors-to-the-modelica-language-version-1-4}
-
+\indent\indent
 Bernhard Bachmann, Fachhochschule Bielefeld, Germany
 
 Peter Bunus, MathCore, Linköping, Sweden
@@ -22148,7 +22245,8 @@ Hubertus Tummescheit, Lund Institute of Technology, Sweden
 Hans-Jürg Wiesmann, ABB Corporate Research Ltd., Baden, Switzerland
 
 \subsection{Contributors to the Modelica Standard Library}\doublelabel{contributors-to-the-modelica-standard-library}
-
+% https://tex.stackexchange.com/questions/31555/how-can-i-indent-the-paragraphs-which-follow-a-heading
+\indent\indent
 Peter Beater, University of Paderborn, Germany
 
 Christoph Clauß, Fraunhofer Institute for Integrated Circuits, Dresden,
