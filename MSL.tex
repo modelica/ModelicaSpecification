@@ -25,6 +25,7 @@
 \usepackage{longtable}
 \usepackage{listings} 
 \usepackage{color}
+\usepackage[table]{xcolor}
 \def\doublelabel#1{\label{#1}\hypertarget{#1}{}}
 \def\S0#1#2{\hypertarget{#2}\chapter{#1}\label{#2}}
 \def\S1#1#2{\hypertarget{#2}\section{#1}\label{#2}}
@@ -97,7 +98,7 @@ morekeywords=[1]{|}
   xrightmargin=-\fboxsep, % 
 } 
 % Note: \lstinline!...! used for inline Modelica
-\usepackage[table]{xcolor}
+
 
 \title{Modelica® - A Unified Object-Oriented Language for Systems
 Modeling\\[2\baselineskip]Language
@@ -1065,7 +1066,7 @@ events are triggered when the return value changes
 discontinuously.}{]}.\\ \hline
 \end{longtable}
 
-\subsubsection{Built-in Mathematical Functions and External Built-in Functions}\label{built-in-mathematical-functions-and-external-built-in-functions}\doublelabel{built-in-mathematical-functions-and-external-built-in-functions}
+\subsubsection{Built-in Mathematical Functions and External Built-in Functions}\doublelabel{built-in-mathematical-functions-and-external-built-in-functions}
 
 The following built-in mathematical functions are available in Modelica
 and can be called directly without any package prefix added to the
@@ -4216,7 +4217,7 @@ and only the first one of them is kept. \emph{{[}This is important for
 function arguments where the order matters.{]}} It is an error if they
 are not identical.
 
-\paragraph{Recursive instantiation of components}\label{recursive-instantiation-of-components}\doublelabel{recursive-instantiation-of-components}
+\paragraph{Recursive instantiation of components}\doublelabel{recursive-instantiation-of-components}
 
 Components (local and inherited) are recursively instantiated.
 
@@ -14863,7 +14864,7 @@ as Boolean in the simulation model. Example:}
 
 \begin{lstlisting}[language=modelica]
   Clock c = Clock(angle > 0, 0.1) // before first tick of c:
-                                                     // interval(c) = 0.1
+                                  // interval(c) = 0.1
 \end{lstlisting}
 
 \emph{The implicitly given interval and time shift can be modified by
@@ -14885,7 +14886,8 @@ String, then no integrator is associated with the returned clock.
 {[}\emph{Examples:}
 \begin{lstlisting}[language=modelica]
   Clock c1 = Clock(1,10) // 100 ms, no solver
-  Clock c2 = Clock(c1, "ImplicitTrapezoid"); // 100 ms, ImplicitTrapezoid solver 
+  Clock c2 = Clock(c1, "ImplicitTrapezoid"); 
+    // 100 ms, ImplicitTrapezoid solver 
   Clock c3 = Clock(c2, ""); // 100 ms, no solver
 \end{lstlisting}
 {]}\strut
@@ -14928,7 +14930,8 @@ expressions are allowed:
 
 \begin{itemize}
 \item
-  Declaring arrays of clocks {[}\emph{Example: \lstinline!Clock c1[3] ={Clock(1), Clock(2), Clock(3)}!} {]}
+  Declaring arrays of clocks {[}\emph{Example:} \lstinline!Clock c1[3] ={Clock(1), Clock(2), Clock(3)}! {]}
+% Ok, that bug in pdflatex was weird: \emph{Example: \lstinline!Clock c1[3] ={Clock(1), Clock(2), Clock(3)}!} {]}
 \item
   Array constructors of clocks: \lstinline!{}, [], cat(...)!.
 \item
@@ -15056,9 +15059,9 @@ local copy during evaluation of the equations in this partition.}{]}
 
 The following operators convert between synchronous clocks:
 
-\begin{longtable}[]{|l|p{12cm}|}
+\begin{longtable}[]{|p{3cm}|p{11cm}|}
 \hline
-\multicolumn{2}{|p{12cm}|}{
+\multicolumn{2}{|p{14cm}|}{
 The operators in this table have the following properties:\newline
 The input argument u is a clocked expression or an expression of type
 Clock. {[}\emph{The operators can operate on all types of clocks}{]}. If
@@ -15090,32 +15093,26 @@ is inferred, see \ref{sub-clock-inferencing}. If a Boolean clock is associated t
 base-clock partition, all its sub-clock partitions must have resulting
 clocks that are sub-sampled with an Integer factor with respect to this
 base clock.
-
 {[}\emph{Example:}
-
-
 \begin{lstlisting}[language=modelica]
   Clock u = Clock(x > 0);
   Clock y1 = subSample(u,4);
   Clock y2 = superSample(y1,2); // fine; y2 =  subSample(u,2)
   Clock y3 = superSample(u ,2); // error
   Clock y4 = superSample(y1,5); // error
-  ]
 \end{lstlisting}
-\\ \hline
+  {]}\\ \hline
 \textbf{shiftSample}(u,\newline
 shiftCounter, resolution)
-&
-{[}\emph{The first activation of the clock of y =
+& {[}\emph{The first activation of the clock of y =
 \textbf{shiftSample}(..) is shifted in time
 shiftCounter/resolution*interval(u) later than the first activation of
 the clock of u.}{]}.
 
 Conceptually, the operator constructs a clock ``cBase''
-
-\textbf{Clock} cBase = \textbf{subSample}(\textbf{superSample}(u,
-resolution), shiftCounter)
-
+\begin{lstlisting}[language=modelica]
+Clock cBase = subSample(superSample(u,resolution), shiftCounter)
+\end{lstlisting}
 and the clock of y = \textbf{shiftSample}(..) starts at the second clock
 tick of cBase. At every tick of the clock of y, the operator returns the
 value of u from the last tick of the clock of u.
@@ -15123,25 +15120,17 @@ value of u from the last tick of the clock of u.
 {[}\emph{Note, due to the restriction of superSample on Boolean clocks,
 shiftSample can only shift the number of ticks of the Boolean clock, but
 cannot introduce new ticks. Example:}
-
+\begin{lstlisting}[language=modelica]
 // Rational interval clock
-
-\textbf{Clock} u = \textbf{Clock}(3, 10); // ticks: 0, 3/10, 6/10, ..
-
-\textbf{Clock} y1 = \textbf{shiftSample}(u,1,3); // ticks: 1/10, 4/10,
+Clock u  = Clock(3, 10); // ticks: 0, 3/10, 6/10, ..
+Clock y1 = shiftSample}(u,1,3); // ticks: 1/10, 4/10,
 ...
-
 // Boolean clock
-
-\textbf{Clock} u = \textbf{Clock}(\textbf{sin}(2*pi*time) \textgreater{}
-0, startInterval=0.0)\\
+Clock u = Clock(sin(2*pi*time)>0, startInterval=0.0)
 // ticks: 0.0, 1.0, 2.0, 3.0, ...
-
-\textbf{Clock} y1 = \textbf{shiftSample}(u,2); // ticks: 2.0, 3.0, ...
-
-\textbf{Clock} y2 = \textbf{shiftSample}(u,2,3);// error (resolution
-must be 1)
-
+Clock y1 = shiftSample(u,2); // ticks: 2.0, 3.0, ...
+Clock y2 = shiftSample(u,2,3);// error (resolution must be 1)
+\end{lstlisting}
 {]}\\ \hline
 \textbf{backSample}(u,\newline
 backCounter, resolution)
@@ -15152,10 +15141,9 @@ the clock of y = \textbf{backSample}(..) is shifted in time
 backCounter/resolution*\textbf{interval}(u) before the first activation
 of the clock of u}{]}. Conceptually, the operator constructs a clock
 ``cBase''
-
-\textbf{Clock} cBase = \textbf{subSample}(\textbf{superSample}(u,
-resolution), backCounter)
-
+\begin{lstlisting}[language=modelica]
+Clock cBase = subSample(superSample(u,resolution), backCounter)
+\end{lstlisting}
 and the clock of y = \textbf{shiftSample}(..) is shifted a time duration
 before the clock of u, such that this duration is identical to the
 duration between the first and second clock tick of cBase. It is an
@@ -15166,34 +15154,24 @@ operator returns the start value of u, see \ref{initialization-of-clocked-partit
 first tick of the clock of u.
 
 \emph{{[}Example:}
-
+\begin{lstlisting}[language=modelica]
 // Rational interval clock 1
 
-\textbf{Clock} u = \textbf{Clock}(3, 10); // ticks: 0, 3/10, 6/10, ..
-
-\textbf{Clock} y1 = \textbf{shiftSample}(u,3); // ticks: 9/10, 12/10, ..
-
-\textbf{Clock} y2 = \textbf{backSample}(y1,2); // ticks: 3/10, 6/10,
-....
-
-\textbf{Clock} y3 = \textbf{backSample}(y1,4); // error (ticks before u)
-
-\textbf{Clock} y4 = \textbf{shiftSample}(u,2,3); // ticks: 2/10, 5/10,
-..
-
-\textbf{Clock} y5 = \textbf{backSample}(y4,1,3); // ticks: 1/10, 4/10,
-..
-
+Clock u  = Clock(3, 10); // ticks: 0, 3/10, 6/10, ..
+Clock y1 = shiftSample(u,3); // ticks: 9/10, 12/10, ..
+Clock y2 = backSample(y1,2); // ticks: 3/10, 6/10,
+...
+Clock y3 = backSample(y1,4); // error (ticks before u)
+Clock y4 = shiftSample(u,2,3); // ticks: 2/10, 5/10,
+...
+Clock y5 = backSample(y4,1,3); // ticks: 1/10, 4/10,
+...
 // Boolean clock
-
-\textbf{Clock} u = \textbf{Clock}(\textbf{sin}(2*pi*time) \textgreater{}
-0, startInterval=xx)\\
+Clock u = Clock(sin(2*pi*time) > 0, startInterval=xx)
 // ticks: 0, 1.0, 2.0, 3.0, ....
-
-\textbf{Clock} y1 = \textbf{shiftSample}(u,3); // ticks: 3.0, 4.0, ...
-
-\textbf{Clock} y2 = \textbf{backSample}(y1,2); // ticks: 1.0, 2.0, ...
-
+Clock y1 = shiftSample(u,3); // ticks: 3.0, 4.0, ...
+Clock y2 = backSample(y1,2); // ticks: 1.0, 2.0, ...
+\end{lstlisting}
 {]}
 \\ \hline
 \textbf{noClock}(u)
@@ -15207,11 +15185,10 @@ first tick of the clock of u, the start value of u is returned.\\ \hline
 \emph{{[}Clarification of backSample(..) operator:}
 
 \emph{Let a and b be positive integers with a \textless{} b, and}
-
-yb = \textbf{backSample} (u, a , b)
-
-ys = \textbf{shiftSample}(u, b-a, b)
-
+\begin{lstlisting}[language=modelica]
+yb = backSample (u, a , b)
+ys = shiftSample(u, b-a, b)
+\end{lstlisting}
 \emph{Then when ys exists, also yb exists and ys = yb.\\
 The variable yb exists for the above parameterization with a \textless{}
 b one clock tick before ys. Therefore, \textbf{backSample} is basically
@@ -15250,14 +15227,12 @@ infinitesimal delay.{]}}
 
 In addition to the previously discussed conditional when-clause, a
 \emph{clocked} when-clause is introduced:
-
-\textbf{when} \emph{clock-expression} \textbf{then}
-
-\emph{clocked-equation}
-
-\emph{\ldots{}}
-
-\textbf{end when};
+\begin{lstlisting}[language=modelica,escapechar=!]
+when !\emph{clock-expression}! then
+  !\emph{clocked-equation}!
+  ...
+end when;
+\end{lstlisting}
 
 The clocked when-clause cannot be nested and does not have any elsewhen
 part. It cannot be used inside an algorithm. General equations are
@@ -15348,8 +15323,7 @@ variables x in \textbf{der}(x), \textbf{pre}(x), and
 
 which lexically appear in e
 
-except as first argument of base-clock conversion operators: sample()
-and hold().
+except as first argument of base-clock conversion operators: sample() and hold().
 
 The resulting set of connected components, is the partitioning of the
 equations and variables, B\textsubscript{i} =
@@ -15646,23 +15620,40 @@ integrating from clock tick \emph{t}\textsubscript{i-1} to clock tick
 \textbf{x}\emph{\textsubscript{i}} =
 \textbf{x}(\emph{t\textsubscript{i}}):
 
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{|p{3cm}|p{11cm}|}
 \hline
-\begin{minipage}[b]{0.47\columnwidth}\raggedright
-\emph{SolverMethod}\strut
-\end{minipage} & \begin{minipage}[b]{0.47\columnwidth}\raggedright
-\emph{Solution method}
-
-(for all methods: )
-\end{minipage}\\ \hline
-
+\emph{SolverMethod} & 
+\emph{Solution method}\newline
+(for all methods: $y_i=g(x_i,u_{c,i},u_{d,i},t_i)$)\\ \hline
 \endhead
-ExplicitEuler &\\ \hline
-ExplicitMidPoint2 &\\ \hline
-ExplicitRungeKutta4 &\\ \hline
-ImplicitEuler &\\ \hline
-ImplicitTrapezoid &\\ \hline
-
+ExplicitEuler & 
+$\begin{aligned}
+x_{i} &:= x_{i-1}+h\cdot\dot{x}_{i-1}\\
+\dot{x}_{i} &:= f(x_i,u_{c,i},u_{d,i},t_i)
+\end{aligned}$\\ \hline
+ExplicitMidPoint2 &
+$\begin{aligned}
+x_{i} &:= x_{i-1}+h\cdot f(x_{i-1}+\frac{1}{2}\cdot h \cdot\dot{x}_{i-1},\frac{u_{c,i-1}+u_{c,i}}{2},u_{d,i-1},t_{i-1}+\tfrac{1}{2}\cdot h)\\
+\dot{x}_{i} &:= f(x_i,u_{c,i},u_{d,i},t_i)
+\end{aligned}$\\ \hline
+ExplicitRungeKutta4 &
+$\begin{aligned}
+k_1 &:= h\cdot \dot{x}_{i-1}\\
+k_2 &:= h\cdot f(x_{i-1}+\tfrac{1}{2}k_1,\frac{u_{c,i-1}+u_{c,i}}{2},u_{d,i-1},t_{i-1}+\tfrac{1}{2}\cdot h)\\
+k_3 &:= h\cdot f(x_{i-1}+\tfrac{1}{2}k_2,\frac{u_{c,i-1}+u_{c,i}}{2},u_{d,i-1},t_{i-1}+\tfrac{1}{2}\cdot h)\\
+k_4 &:= h\cdot f(x_{i-1}+k_3,u_{c,i},u_{d,i},t_i)\\
+x_{i} &:= x_{i-1}+\tfrac{1}{6}\cdot(k_1+2\cdot k_2+2\cdot k_3+k_4)\\
+\dot{x}_{i} &:= f(x_i,u_{c,i},u_{d,i},t_i)
+\end{aligned}$
+\\ \hline
+ImplicitEuler &$\begin{aligned}
+x_{i} &= x_{i-1}+h\cdot\dot{x}_i \textrm{// equations system with unknowns:} x_i,\dot{x}_i\\
+\dot{x}_{i} &= f(x_i,u_{c,i},u_{d,i},t_i)
+\end{aligned}$\\ \hline
+ImplicitTrapezoid &$\begin{aligned}
+x_{i} &= x_{i-1}+\tfrac{1}{2}h\cdot(\dot{x}_i+\dot{x}_{i-1}) \textrm{// equations system with unknowns:} x_i,\dot{x}_i\\
+\dot{x}_{i} &= f(x_i,u_{c,i},u_{d,i},t_i)
+\end{aligned}$\\ \hline
 \end{longtable}
 
 The initial conditions will be used at the first tick of the clock, and
@@ -15670,10 +15661,7 @@ the first integration step will go from the first to the second tick of
 the clock.
 
 {[}\emph{Example:}
-
 \emph{Assume the differential equation}
-
-
 \begin{lstlisting}[language=modelica]
   input Real u;
   Real x(start=1, fixed=true);
@@ -15683,8 +15671,6 @@ equation
 \emph{shall be transformed to a clocked discretized continuous-time
 partition with the ExplicitEuler method. The following model is a manual
 implementation:}
-
-
 
 \begin{lstlisting}[language=modelica]
   input Real u;
@@ -15903,12 +15889,14 @@ proper synchronization. The implication is that testing a Real valued
 time variable to determine sampling instants is not possible. One
 possible method is to use counters to handle sub-sampling scheduling.
 
-Clock\_i\_j\_ticks~=~\textbf{if}~pre(Clock\_i\_j\_ticks)~\textless{}~subSamplingFactor\_i\_j~\textbf{then}~1+pre(Clock\_i\_j\_ticks)~\textbf{else}~1;
+\begin{lstlisting}[language=modelica]
+Clock_i_j_ticks = if pre(Clock_i_j_ticks)<subSamplingFactor_i_j then 1+pre(Clock_i_j_ticks) else 1;
+\end{lstlisting}
 
 and to test the counter to determine when the sub-clock is ticking:
-
-Clock\_i\_j\_activated~=~~BaseClock\_i\_activated~\textbf{and}~Clock\_i\_j\_ticks~\textgreater{}=~subSamplingFactor\_i\_j;
-
+\begin{lstlisting}[language=modelica]
+Clock_i_j_activated = BaseClock_i_activated and Clock_i_j_ticks >= subSamplingFactor_i_j;
+\end{lstlisting}
 The Clock\_i\_j\_activated flag is used as the guard for the sub
 partition equations.
 
@@ -16033,11 +16021,11 @@ appearing in an \textbf{initialState} statement. The following special
 kinds of connect-statements are used to define transitions between
 states and to define the initial state:
 
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline
-\textbf{Statements to define a state machine}\\ \hline
+\multicolumn{2}{|p{12cm}|}{\textbf{Statements to define a state machine}}\\ \hline
 \endhead
-\textbf{transition}(from, to, condition,\newline
+\textbf{transition}(from, to, \newline condition,\newline
 immediate, reset,\newline
 synchronize, priority)
 &
@@ -16077,7 +16065,7 @@ condition, or in when-equations.
 It is possible to query the status of the state machine by using the
 following operators:
 
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{|p{4cm}|p{10cm}|}
 \endhead
 \hline
 \textbf{activeState}(state)&
@@ -16122,39 +16110,23 @@ structure: \textbf{annotation}(Line(\ldots{}), Text(\ldots{})); and for
 and Text annotations defined in \ref{annotations}.6.5.
 
 {[} \emph{Example:}
-
-\emph{\textbf{transition}(state2, state1, x \textless{} 10,
-immediate=\textbf{true}, reset=\textbf{true},
-synchronize=\textbf{false}, priority=1) }
-
-\emph{\textbf{annotation} (}
-
-\emph{Line(}
-
-\emph{points=\{\{-40,-16\},\{-36,-4\},\{-32,8\},\{-40,26\},\{-40,32\},\{-46,50\}\},}
-
-\emph{color=\{175,175,175\},}
-
-\emph{thickness=0.25,}
-
-\emph{smooth=Smooth.Bezier),}
-
-\emph{Text(}
-
-\emph{string="\%condition",}
-
-\emph{extent=\{\{4,-4\},\{4,-10\}\}, }
-
-\emph{fontSize=10,}
-
-\emph{textStyle=\{TextStyle.Bold\},}
-
-\emph{textColor=\{95,95,95\},}
-
-\emph{horizontalAlignment=TextAlignment.Left),}
-
-\emph{);}
-
+\begin{lstlisting}[language=modelica]
+transition(state2, state1, x < 10, immediate=true, reset=true, synchronize=false, priority=1)
+  annotation (
+    Line(
+      points={{-40,-16},{-36,-4},{-32,8},{-40,26},{-40,32},{-46,50}},
+      color={175,175,175},
+      thickness=0.25,
+      smooth=Smooth.Bezier),
+    Text(
+      string="%condition",
+      extent={{4,-4},{4,-10}},
+      fontSize=10,
+      textStyle={TextStyle.Bold},
+      textColor={95,95,95},
+      horizontalAlignment=TextAlignment.Left),
+);
+\end{lstlisting}
 {]}
 
 The Text annotation representing the transition condition can use the
@@ -16205,16 +16177,14 @@ array; and the priorities must be unique for each value of ``from''. The
 states are enumerated from 1 and up. The transition conditions are
 stored in a separate array c{[}:{]} since they are time varying.
 
-\begin{lstlisting}[language=modelica]
-  The semantics model is a discrete-time system with inputs {c[:],
-  active, reset} with t being an array corresponding to the inputs to the
-  transition operator, outputs {activeState, activeReset,
-  activeResetStates[:]} and states {nextState, nextReset,
-  nextResetStates[:]}. For a top level state machine, active is
+  The semantics model is a discrete-time system with inputs \{ c{[}:{]},
+  active, reset\} with t being an array corresponding to the inputs to the
+  transition operator, outputs \{activeState, activeReset,
+  activeResetStates{[}:{]}\} and states {nextState, nextReset,
+  nextResetStates{[}:{]}\}. For a top level state machine, active is
   always true. For sub-state machines, active is true only when the parent
   state is active. For a top level state machine, reset is true at the
   first activation only. For sub-state machine, reset is propagated from
-\end{lstlisting}
 the state machines higher up.
 
 \subsection{State Activation}\doublelabel{state-activation}
@@ -16223,9 +16193,9 @@ The state update starts from nextState, i.e., what has been determined
 to be the next state at the previous time. selectedState takes into
 account if a reset of the state machine is to be done.
 
-~~\textbf{output}
-Integer~selectedState~=~\textbf{if}~reset~\textbf{then}~1~\textbf{else}~previous(nextState);
-
+\begin{lstlisting}[language=modelica]
+  output Integer selectedState = if reset then 1 else previous(nextState);
+\end{lstlisting}
 The integer fired is calculated as the index of the transition to be
 fired by checking that selectedState is the from-state and the condition
 is true for an immediate transition or previous(condition) is true for a
@@ -16233,8 +16203,7 @@ delayed transition. The max function returns the index of the transition
 with highest priority or 0.
 
 \begin{lstlisting}[language=modelica]
-  Integer fired = max(if (if t[i].from == selectedState then (if t[i].immediate then c[i] else previous(c[i])) else false) then i else 0 
-for i in 1:size(t,1));
+  Integer fired = max(if (if t[i].from == selectedState then (if t[i].immediate then c[i] else previous(c[i])) else false) then i else 0 for i in 1:size(t,1));
 \end{lstlisting}
 The start value of c is false. This definition would require that the
 previous value is recorded for all transitions conditions. Below is
@@ -16246,9 +16215,8 @@ transition to potentially be fired by checking that selectedState is the
 from-state and the condition is true. The max function returns the index
 of the transition with true condition and highest priority or 0.
 
-~~Integer~immediate~=~max(\textbf{if}~(\textbf{if}~
 \begin{lstlisting}[language=modelica]
-  t[i].immediate and  t[i].from == selectedState then c[i] else false) then i else 0 for i in 1:size(t,1));
+  Integer immediate = max(if (if t[i].immediate and  t[i].from == selectedState then c[i] else false) then i else 0 for i in 1:size(t,1));
 \end{lstlisting}
 In a similar way, the Integer delayed is calculated as the index for a
 potentially delayed transition, i.e. a transition taking place at the
@@ -16256,14 +16224,14 @@ next clock tick. In this case the from-state needs to be equal to
 nextState:
 
 \begin{lstlisting}[language=modelica]
-  Integer delayed =  max(if  (if not t[i].immediate and t[i].from == nextState
- then c[i] else false) then i else 0 for i in 1:size(t,1));
+  Integer delayed =  max(if  (if not t[i].immediate and t[i].from == nextState then c[i] else false) then i else 0 for i in 1:size(t,1));
 \end{lstlisting}
 The transition to be fired is determined as follows, taking into account
 that a delayed transition might have higher priority than an immediate:
 
-~~Integer~fired~=~max(previous(delayed),~immediate);
-
+\begin{lstlisting}[language=modelica]
+  Integer fired = max(previous(delayed), immediate);
+\end{lstlisting}
 nextState is set to the found transitions to-state:
 
 \begin{lstlisting}[language=modelica]
@@ -16275,9 +16243,7 @@ from-transitions and to determine if the state machine is in a final
 state currently:
 
 \begin{lstlisting}[language=modelica]
-  Boolean finalStates[nStates] = {max(if  t[j].from == i
-  then 1 else 0 for j in 1:size(t,1))
-  == 0 for i in 1:nStates};
+  Boolean finalStates[nStates] = {max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1)) == 0 for i in 1:nStates};
   Boolean stateMachineInFinalState = finalStates[activeState];
 \end{lstlisting}
 To enable a synchronize transition, all the stateMachineInFinalState
@@ -16373,10 +16339,9 @@ different mutually exclusive states needs to be merged.} {]}
 In each state, the outer output variables are solved for and for each
 such variable a single definition is formed:
 
-v := \textbf{if} activeState(state\textsubscript{1}) \textbf{then}
-expre\textsubscript{1} \textbf{elseif}
-activeState(state\textsubscript{2}) \textbf{then} expre\textsubscript{2}
-\textbf{elseif} \ldots{} \textbf{else} last(v)
+\begin{lstlisting}[language=modelica,escapechar=!]
+v := if activeState(state!\textsubscript{1}!) then expre!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then expre!\textsubscript{2}! elseif ... else last(v)
+\end{lstlisting}
 
 \textbf{last}() is special internal semantic operator returning its
 input. It is just used to mark for the sorting that the incidence of its
@@ -16396,34 +16361,31 @@ It is possible to connect several outputs to an input if all the outputs
 come from states of the same state machine. In such cases, we get the
 following constraint equations:
 
-$u_1$ = u\textsubscript{2} = \ldots{} = y\textsubscript{1}
-= y\textsubscript{2} = \ldots{}
-
+\begin{lstlisting}[language=modelica,escapechar=!]
+u!\textsubscript{1}! = u!\textsubscript{2}! = ... = y!\textsubscript{1}! = y!\textsubscript{2}! = ...
+\end{lstlisting}
 with u\textsubscript{i} inputs and y\textsubscript{i} outputs. The
 semantics is defined as follows. Introduce a variable v representing the
 signal flow and rewrite the equation above as a set of equations for
 u\textsubscript{i} and a set of assignment equations for v:
-
-v := \textbf{if} activeState(state\textsubscript{1}) \textbf{then}
-y\textsubscript{1} \textbf{else} last(v);\\
-v := \textbf{if} activeState(state\textsubscript{2}) \textbf{then}
-y\textsubscript{2} \textbf{else} last(v);\\
-\ldots{}\\
-$u_1$ = v\\
-u\textsubscript{2} = v\\
-\ldots{}
+\begin{lstlisting}[language=modelica,escapechar=!]
+v := if activeState(state!\textsubscript{1}!) then y!\textsubscript{1}! else last(v);
+v := if activeState(state!\textsubscript{2}!) then y!\textsubscript{2}! else last(v);
+...
+u!\textsubscript{1}! = v
+u!\textsubscript{2}! = v
+...
+\end{lstlisting}
 
 The merge of the definitions of v is then made according to \ref{merging-variable-definitions}: 
 Merging Variable Definitions. The result is after
 simplification:
-
-v := \textbf{if} activeState(state\textsubscript{1}) \textbf{then}
-y\textsubscript{1} \textbf{elseif} activeState(state\textsubscript{2})
-\textbf{then} y\textsubscript{2} \textbf{elseif} \ldots{} \textbf{else}
-last(v)\\
-$u_1$ = v\\
-u\textsubscript{2} = v\\
-\ldots{}
+\begin{lstlisting}[language=modelica,escapechar=!]
+v := if activeState(state!\textsubscript{1}!) then y!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then y!\textsubscript{2}! elseif ... else last(v); 
+u!\textsubscript{1}! = v
+u!\textsubscript{2}! = v
+...
+\end{lstlisting}
 
 \subsection{Example}\doublelabel{example}
 
@@ -16543,212 +16505,117 @@ end HierarchicalAndParallelStateMachine;
 synchronize transition with condition=true instead. The semantically
 equivalent model is shown below:}
 
-\textbf{block} HierarchicalAndParallelStateMachine
-
-\textbf{extends} StateMachineSemantics(
-
-nStates=2,
-
-t=\{Transition(from=1, to=2, immediate=false, synchronize=true),
-
-Transition(from=2, to=1, immediate=false)\},
-
-c=\{true, v \textgreater{}= 20\});
-
-Boolean init(start=true) = sample(false);
-
-\textbf{block} State1
-
-Boolean active;
-
-Boolean reset;
-
-\textbf{outer input} Integer v\_previous;
-
-\textbf{inner output} Integer v;
-
-\textbf{inner} Integer count(start=0);
-
-\textbf{inner} Integer count\_previous = \textbf{if} reset \textbf{then}
-0 \textbf{else} previous(count);
-
-\textbf{block} StateMachineOf\_stateA
-
-\textbf{extends} StateMachineSemantics(
-
-nStates=4,
-
-t=\{Transition(from=1, to=2, immediate=false),
-
-Transition(from=2, to=3, immediate=false),
-
-Transition(from=3, to=1, immediate=false),
-
-Transition(from=3, to=4, immediate=false)\},
-
-c=\{v \textgreater{}= 6, v==0, true, count \textgreater{}= 2\});
-
-\textbf{outer input} Integer v\_previous;
-
-\textbf{outer output} Integer v;
-
-\textbf{outer input} Integer count\_previous;
-
-\textbf{outer output} Integer count;
-
-\textbf{equation }
-
-inFinalState = true; // no macro states
-
-\textbf{if} activeState == 1 \textbf{then}
-
-// equations for stateA
-
-v = v\_previous + 2;
-
-count = count\_previous;
-
-\textbf{elseif} activeState == 2 \textbf{then}
-
-// equations for stateB
-
-v = v\_previous - 1;
-
-count = count\_previous;
-
-\textbf{elseif} activeState == 3 \textbf{then}
-
-// equations for stateC
-
-v = v\_previous;
-
-count = count\_previous + 1;
-
-\textbf{else} // if activeState == 4 then
-
-// equations for stateD
-
-v = v\_previous;
-
-count = count\_previous;
-
-\textbf{end if};
-
-\textbf{end} StateMachineOf\_stateA;
-
-StateMachineOf\_stateA stateMachineOf\_stateA(active=active,
-reset=reset);
-
-\textbf{block} StateMachineOf\_stateX
-
-\textbf{extends} StateMachineSemantics(
-
-nStates=2,
-
-t=\{Transition(from=1, to=2, immediate=false, reset=false)\},
-
-c=\{i\textgreater{}25\});
-
-\textbf{outer input} Integer v;
-
-Integer i(start=0);
-
-Integer i\_previous;
-
-Integer j(start=0);
-
-Integer j\_previous;
-
-Integer w;
-
-\textbf{equation }
-
-inFinalState = true; // no macro states
-
-\textbf{if} activeState == 1 \textbf{then}
-
-// equations for stateX
-
-i\_previous = \textbf{if} activeReset \textbf{or}
-activeResetStates{[}1{]} \textbf{then} 0 \textbf{else} previous(i);
-
-j\_previous = previous(j);
-
-i = i\_previous + 1;
-
-w = v;
-
-j = j\_previous;
-
-\textbf{else} // if activeState == 2 then
-
-// equations for stateY
-
-i\_previous = previous(i);
-
-j\_previous = \textbf{if} activeReset \textbf{or}
-activeResetStates{[}2{]} \textbf{then} 0 \textbf{else} previous(j);
-
-i = i\_previous;
-
-w = previous(w);
-
-j = j\_previous + 1;
-
-\textbf{end if};
-
-\textbf{end} StateMachineOf\_stateX;
-
-StateMachineOf\_stateX stateMachineOf\_stateX(active=active,
-reset=reset);
-
-Boolean inFinalState = stateMachineOf\_stateA.stateMachineInFinalState
-\textbf{and\\
-} stateMachineOf\_stateX.stateMachineInFinalState;
-
-\textbf{end} State1;
-
-State1 state1;
-
-Integer v(start=0);
-
-\textbf{inner} Integer v\_previous = \textbf{if} reset \textbf{then} 0
-\textbf{else} previous(v);
-
-\textbf{equation }
-
-active = true;
-
-reset = previous(init);
-
-\textbf{if} activeState == 1 \textbf{then}
-
-// equations for state1
-
-inFinalState = state1.inFinalState;
-
-state1.active = true;
-
-state1.reset = activeReset \textbf{or} activeResetStates{[}1{]};
-
-v = state1.v;
-
-\textbf{else} // if activeState == 2 then
-
-// equations for state2
-
-inFinalState = true; // not macro state
-
-state1.active = false;
-
-state1.reset = false;
-
-v = previous(v) + 5;
-
-\textbf{end if};
-
-\textbf{end} HierarchcialAndParallelStateMachine;
-
+\begin{lstlisting}[language=modelica]
+block HierarchicalAndParallelStateMachine
+  extends StateMachineSemantics(
+    nStates=2,
+    t={Transition(from=1, to=2, immediate=false, synchronize=true),
+       Transition(from=2, to=1, immediate=false)},
+    c={true, v >= 20});
+  Boolean init(start=true) = sample(false);
+
+  block State1
+    Boolean active;
+    Boolean reset;
+    outer input Integer v_previous;
+    inner output Integer v;
+    inner Integer count(start=0);
+    inner Integer count_previous = if reset then 0 else previous(count);
+
+    block StateMachineOf_stateA
+      extends StateMachineSemantics(
+        nStates=4,
+        t={Transition(from=1, to=2, immediate=false),
+           Transition(from=2, to=3, immediate=false),
+           Transition(from=3, to=1, immediate=false),
+           Transition(from=3, to=4, immediate=false)},
+        c={v >= 6, v==0, true, count >= 2});
+      outer input Integer v_previous;
+      outer output Integer v;
+      outer input Integer count_previous;
+      outer output Integer count;
+    equation 
+      inFinalState = true; // no macro states
+      if activeState == 1 then
+        // equations for stateA
+        v = v_previous + 2;
+        count = count_previous;
+      elseif activeState == 2 then
+        // equations for stateB
+        v = v_previous - 1;
+        count = count_previous;
+      elseif activeState == 3 then
+        // equations for stateC
+        v = v_previous;
+        count = count_previous + 1;
+      else // if activeState == 4 then
+        // equations for stateD
+        v = v_previous;
+        count = count_previous;
+      end if;
+    end StateMachineOf_stateA;
+
+    StateMachineOf_stateA stateMachineOf_stateA(active=active,
+      reset=reset); 
+
+    block StateMachineOf_stateX
+      extends StateMachineSemantics(
+        nStates=2,
+        t={Transition(from=1, to=2, immediate=false, reset=false)},
+        c={i>25});
+      outer input Integer v;
+      Integer i(start=0);
+      Integer i_previous;
+      Integer j(start=0);
+      Integer j_previous;
+      Integer w;
+    equation 
+      inFinalState = true; // no macro states
+      if activeState == 1 then
+        // equations for stateX
+        i_previous = if activeReset or
+          activeResetStates[1] then 0 else previous(i);
+        j_previous = previous(j);
+        i = i_previous + 1;
+        w = v;
+        j = j_previous;
+      else // if activeState == 2 then
+        // equations for stateY
+        i_previous = previous(i);
+        j_previous = if activeReset or activeResetStates[2] then 0 else previous(j);
+        i = i_previous;
+        w = previous(w);
+        j = j_previous + 1;
+      end if;
+    end StateMachineOf_stateX;
+    
+    StateMachineOf_stateX stateMachineOf_stateX(active=active,
+      reset=reset);
+    Boolean inFinalState = stateMachineOf_stateA.stateMachineInFinalState and
+      stateMachineOf_stateX.stateMachineInFinalState;
+  end State1;
+
+  State1 state1;
+  Integer v(start=0);
+  inner Integer v_previous = if reset then 0 else previous(v);
+equation
+  active = true;
+  reset = previous(init);
+  if activeState == 1 then
+    // equations for state1
+    inFinalState = state1.inFinalState;
+    state1.active = true;
+    state1.reset = activeReset or activeResetStates[1];
+    v = state1.v;
+  else // if activeState == 2 then
+    // equations for state2
+    inFinalState = true; // not macro state
+    state1.active = false;
+    state1.reset = false;
+    v = previous(v) + 5;
+  end if;
+end HierarchcialAndParallelStateMachine;
+\end{lstlisting}
 \chapter{Annotations}\doublelabel{annotations}
 
 Annotations are intended for storing extra information about a model,
@@ -16772,39 +16639,26 @@ vendor name as initial characters of the identifier are used to identify
 vendor-specific annotations.
 
 {[}\emph{Example}:
-
-\textbf{annotation} (
-
-Icon(coordinateSystem(extent=\{\{-100,-100\}, \{100,100\}\}),
-
-graphics=\{\_\_NameOfVendor(Circle(center=\{0,0\}, radius=10))\})
-
-);
-
+\begin{lstlisting}[language=modelica]
+annotation (   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+        graphics={__NameOfVendor(Circle(center={0,0}, radius=10))}) ); 
+\end{lstlisting}
 \emph{This introduces a new graphical primitive} Circle \emph{using the
 hierarchical variant of vendor-specific annotations.}
-
-\textbf{annotation} (
-
-Icon(coordinateSystem(extent=\{\{-100,-100\}, \{100,100\}\}),
-
-graphics=\{Rectangle(extent=\{\{-5,-5\},\{7,7\}\},
-\_\_NameOfVendor\_shadow=2)\})
-
-);
-
+\begin{lstlisting}[language=modelica]
+annotation (
+   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+        graphics={Rectangle(extent={{-5,-5},{7,7}}, __NameOfVendor_shadow=2)}) ); 
+\end{lstlisting}
 \emph{This introduces a new attribute} \_\_NameOfVendor\_shadow
 \emph{for the} Rectangle \emph{primitive using the simple variant of
 vendor-specific annotations.}{]}
 
 \section{Annotations for Documentation}\doublelabel{annotations-for-documentation}
 
+\begin{lstlisting}[language=grammar]
 documentation-annotation:
-
-\textbf{annotation}"(" Documentation "(" "info" "=" STRING
-
-\begin{lstlisting}[language=modelica]
-  ["," "revisions" "=" STRING ] ")" ")"
+   annotation "(" Documentation "(" "info" "=" STRING ["," "revisions" "=" STRING ] ")" ")"
 \end{lstlisting}
 The ``Documentation'' annotation can contain the ``info'' annotation
 giving a textual description, the ``revisions'' annotation giving a list
@@ -16818,28 +16672,29 @@ optionally begin and end of content that is HTML encoded. For external
 links see \ref{external-resources}. Links to Modelica classes may be defined with
 the HTML link command using scheme ``Modelica'', e.g.,
 
-\textless{}a
-href="Modelica://MultiBody.Tutorial"\textgreater{}MultiBody.Tutorial\textless{}/a\textgreater{}
+\begin{lstlisting}[language=modelica]
+<a href="Modelica://MultiBody.Tutorial">MultiBody.Tutorial</a> 
+\end{lstlisting}
 
 Together with scheme ``Modelica'' the (URI) fragment specifiers
 \#diagram, \#info, \#text, \#icon may be used to reference different
 layers. Example:
 
-\textless{}a
-href="Modelica://MultiBody.Joints.Revolute\#info"\textgreater{}Revolute\textless{}/a\textgreater{}
-
+\begin{lstlisting}[language=modelica]
+<a href="Modelica://MultiBody.Joints.Revolute#info">Revolute</a>
+\end{lstlisting}
+\begin{lstlisting}[language=grammar]
 preferred-view-annotation:
-
-\textbf{annotation}"(" preferredView "=" ("info" \textbar{} "diagram"
-\textbar{} "text") ")"
+   annotation "(" preferredView "=" ("info" | "diagram" | "text") ")"
+\end{lstlisting}
 
 The preferredView annotation defines the default view when selecting the
 class. info means info layer, i.e., the documentation of the class,
 diagram means diagram layer and text means the Modelica text layer.
-
+\begin{lstlisting}[language=grammar]
 documentation-class-annotation:
-
-\textbf{annotation}"(" DocumentationClass "=" true ")"
+   annotation "(" DocumentationClass "=" true ")"
+\end{lstlisting}
 
 Only allowed as class annotation on any kind of class and implies that
 this class and all classes within it are treated as having the
@@ -16851,21 +16706,17 @@ of the class names, and if no icon is defined, a special information
 default icon may be displayed in the package browser.{]}}
 
 \section{Annotations for Code Generation}\doublelabel{annotations-for-code-generation}
-
+\begin{lstlisting}[language=grammar]
 code-annotation:
-
-\textbf{annotation}"(" codeGenerationFlag "=" ( \textbf{false}
-\textbar{} \textbf{true} ) ")"
+   annotation"(" codeGenerationFlag "=" ( false | true ) ")"
 
 codeGenerationFlag :
-
-"Evaluate" \textbar{} "HideResult" \textbar{} "Inline" \textbar{}
-"LateInline" \textbar{} "GenerateEvents"
-
+   "Evaluate" | "HideResult" | "Inline" | "LateInline" | "GenerateEvents"
+\end{lstlisting}
 These annotations can influence the code generation. The details are
 defined in the next table:
 
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{|p{5cm}|p{9cm}|}
 \endhead
 \hline
 Evaluate&
@@ -16874,7 +16725,7 @@ declaration, or a base-class of the type-declaration. In the case of
 multiple conflicting annotations it is handled similarly to modifiers
 (e.g., an Evaluate-annotation on the component declaration takes
 precedence). The annotation Evaluate only has effect for a component
-declared with the prefix parameter.\\
+declared with the prefix parameter.\newline
 If Evaluate = true, the model developer proposes to utilize the value
 for the symbolic processing. In that case, it is not possible to change
 the parameter value after symbolic pre-processing.
@@ -16967,14 +16818,10 @@ Modelica.Media.Water.IF97\_Utilities.phase\_dT \emph{to indicate that
 the output should generate an event when it changes.}{]}\\ \hline
 
 \end{longtable}
-
+\begin{lstlisting}[language=grammar]
 smoothOrder-annotation:
-
-\textbf{annotation}"(" smoothOrder "=" UNSIGNED-NUMBER ")" \textbar{}
-
-\textbf{annotation}"(" smoothOrder "(" normallyConstant "=" NAME
-
-\begin{lstlisting}[language=modelica]
+   annotation"(" smoothOrder "=" UNSIGNED-NUMBER ")" |
+   annotation"(" smoothOrder "(" normallyConstant "=" NAME
   ["," normallyConstant "=" NAME] ")"
   "=" UNSIGNED-NUMBER ")"
 \end{lstlisting}
@@ -17008,27 +16855,21 @@ Modelica.Fluid.Dissipation.PressureLoss.StraightPipe.dp\_laminar\_DP\emph{,
 since geometric arguments to these functions are usually constant}{]}
 
 \section{Annotations for Simulation Experiments}\doublelabel{annotations-for-simulation-experiments}
-
+\begin{lstlisting}[language=grammar]
 experiment-annotation:
+   annotation"(" "experiment" "(" [experimentOption] {,
+     experimentOption}] ")"
 
-\begin{lstlisting}[language=modelica]
-  annotation"(" "experiment" "(" [experimentOption] {,
-  experimentOption}] ")"
-  experimentOption:
+experimentOption:
+  StartTime "=" [ "+" | "-" ] UNSIGNED-NUMBER |
+  StopTime  "=" [ "+"  | "-"] UNSIGNED-NUMBER |
+  Interval "=" UNSIGNED-NUMBER |
+  Tolerance "=" UNSIGNED-NUMBER
 \end{lstlisting}
-StartTime "=" {[}"+" \textbar{} "-"{]} UNSIGNED-NUMBER \textbar{}
-
-StopTime "=" {[}"+" \textbar{} "-"{]} UNSIGNED-NUMBER \textbar{}
-
-Interval "=" UNSIGNED-NUMBER
-
-Tolerance "=" UNSIGNED-NUMBER
 
 The experiment annotation defines the default start time (StartTime) in
-\begin{lstlisting}[language=modelica]
-  [s], the default stop time (StopTime) in [s], the suitable time
-  resolution for the result grid (Interval) in [s], and the default
-\end{lstlisting}
+  {[}s{]}, the default stop time (StopTime) in {[}s{]}, the suitable time
+  resolution for the result grid (Interval) in {[}s{]}, and the default
 relative integration tolerance (Tolerance) for simulation experiments to
 be carried out with the model or block at hand.
 
@@ -17036,8 +16877,9 @@ be carried out with the model or block at hand.
 
 For state machines it is useful to have single instances of local
 classes. This can be done using:
-
-\textbf{annotation}(singleInstance=\textbf{true})
+\begin{lstlisting}[language=modelica]
+annotation(singleInstance=true)
+\end{lstlisting}
 
 The annotation singleInstance in a class indicates that there should
 only be one component instance of the class, and it should be in the
@@ -17056,34 +16898,28 @@ layer showing icons of subcomponents and connections between these.
 
 Graphical annotations described in this chapter ties into the Modelica
 grammar as follows.
-
+\begin{lstlisting}[language=grammar]
 graphical-annotations :
-
-\begin{lstlisting}[language=modelica]
   annotation "(" [ layer-annotations ] ")"
-  layer-annotations :
+
+layer-annotations :
+  ( icon\_layer | diagram\_layer ) [ "," layer-annotations ]
 \end{lstlisting}
-( icon\_layer \textbar{} diagram\_layer ) {[}"," layer-annotations {]}
-
 Layer descriptions (start of syntactic description):
-
+\begin{lstlisting}[language=grammar]
 icon-layer :
-
-\begin{lstlisting}[language=modelica]
   "Icon" "(" [ coordsys-specification "," ] graphics ")"
-  diagram-layer :
+
+diagram-layer :
   "Diagram" "(" [ coordsys-specification "," ] graphics ")"
 \end{lstlisting}
 {[}\emph{Example}:
-
-\textbf{annotation} (
-
-Icon(coordinateSystem(extent=\{\{-100,-100\}, \{100,100\}\}),
-
-graphics=\{Rectangle(extent=\{\{-100,-100\}, \{100,100\}\}),
-
-Text(extent=\{\{-100,-100\}, \{100,100\}\}, textString="Icon")\}));
-
+\begin{lstlisting}[language=modelica]
+annotation (
+   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+        graphics={Rectangle(extent={{-100,-100}, {100,100}}),
+                  Text(extent={{-100,-100}, {100,100}}, textString="Icon")})); 
+\end{lstlisting}
 {]}
 
 The graphics is specified as an ordered sequence of graphical
@@ -17210,20 +17046,15 @@ Properties of graphical objects and connection lines are described using
 the following attribute types.
 
 \begin{lstlisting}[language=modelica]
-  type Color = Integer[3](min=0, max=255) "RGB
-representation";
+  type Color = Integer[3](min=0, max=255) "RGB representation";
+
   constant Color Black = zeros(3);
-  type LinePattern = enumeration(None, Solid, Dash, Dot,
-  DashDot, DashDotDot);
-  type FillPattern = enumeration(None, Solid,
-  Horizontal, Vertical,
-  Cross, Forward, Backward, CrossDiag, HorizontalCylinder,
-  VerticalCylinder, Sphere);
-  type BorderPattern = enumeration(None, Raised, Sunken,
-  Engraved);
+  type LinePattern = enumeration(None, Solid, Dash, Dot, DashDot, DashDotDot);
+  type FillPattern = enumeration(None, Solid, Horizontal, Vertical,
+  Cross, Forward, Backward, CrossDiag, HorizontalCylinder, VerticalCylinder, Sphere);
+  type BorderPattern = enumeration(None, Raised, Sunken, Engraved);
   type Smooth = enumeration(None, Bezier);
-  type EllipseClosure = enumeration(None, Chord,
-  Radial);
+  type EllipseClosure = enumeration(None, Chord, Radial);
 \end{lstlisting}
 The LinePattern attribute Solid indicates a normal line, None an
 invisible line, and the other attributes various forms of dashed/dotted
@@ -17291,9 +17122,9 @@ record FilledShape "Style attributes for filled shapes"
   FillPattern fillPattern = FillPattern.None "Interior fill pattern";
   DrawingUnit lineThickness = 0.25 "Line thickness";
 end FilledShape;
+\end{lstlisting}
 The extent/points of the filled shape describe the theoretical
 zero-thickness filled shape, and the actual rendered border is then half
-\end{lstlisting}
 inside and half outside the extent.
 
 \subsection{Component Instance}\doublelabel{component-instance}
@@ -17414,37 +17245,31 @@ from A (but neither from B nor from C).}
 
 A connection is specified with an annotation containing a Line primitive
 and optionally a Text-primitive, as specified below. {[}\emph{Example:}
-
-\textbf{connect}(a.x, b.x)
-
-\textbf{annotation}(Line(points=\{\{-25,30\}, \{10,30\}, \{10, -20\},
-\{40,-20\}\}));
+\begin{lstlisting}[language=modelica]
+  connect(a.x, b.x)
+   annotation(Line(points={{-25,30}, {10,30}, {10, -20}, {40,-20}})); 
+\end{lstlisting}
 
 {]}
 
 The optional Text-primitive defines a text that will be written on the
 connection line. It has the following definition (\emph{it is not equal
-to the Text-primitive as part of graphics -- the differences are marked
-as bold lines}):
-
-\begin{lstlisting}[language=modelica]
+to the Text-primitive as part of graphics -- the differences are additionally indented}):
+% CHANGE: marked as bold
+\begin{lstlisting}[language=modelica,escapechar=!]
 record Text
   extends GraphicItem;
   extends FilledShape;
   Extent extent;
-  String string;
+   String string;
   Real fontSize = 0 "unit pt";
   String fontName;
   TextStyle textStyle[:];
   Color textColor=lineColor;
+   TextAlignment horizontalAlignment = if index<0 then TextAlignment.Right else TextAligment.Left;
+   Integer index;
+end Text;
 \end{lstlisting}
-\textbf{TextAlignment horizontalAlignment = if index\textless{}0 then
-TextAlignment.Right\\
-else TextAligment.Left;}
-
-\textbf{Integer index;}
-
-\textbf{end} Text;
 
 The index is one of the points of Line (numbered 1, 2, 3, \ldots{} where
 -1 can be used to indicate the last one). The string may use the special
@@ -17456,12 +17281,12 @@ with transparent background and no border around the text (and without
 outline). The contents inherited from FilledShape is deprecated.
 
 {[}\emph{Example:}
-
-\textbf{~~connect(controlBus.axisControlBus1,~axis1.axisControlBus)~annotation~(\\
-\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}Text(string="\%first",~index=-1,~extent={[}-6,3;~-6,3{]}),~\\
-Line(points=\{\{-80,-10\},\{-80,-14.5\},\{-79,-14.5\},\{-79,-17\},\{-65,-17\},\{-65,-65\},\\
-\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\{-25,-65\}\}));}
-
+\begin{lstlisting}[language=modelica]
+  connect(controlBus.axisControlBus1, axis1.axisControlBus) annotation (
+      Text(string="%first", index=-1, extent=[-6,3; -6,3]),
+      Line(points={{-80,-10},{-80,-14.5},{-79,-14.5},{-79,-17},{-65,-17},{-65,-65},
+           {-25,-65}})); 
+\end{lstlisting}
 \emph{Draws a connection line and adds the text ''axisControlBus1''
 ending at \{-6, 3\}+\{-25, -65\}.}
 
@@ -17483,8 +17308,7 @@ record Line
   Color color = Black;
   LinePattern pattern = LinePattern.Solid;
   DrawingUnit thickness = 0.25;
-  Arrow arrow[2] = {Arrow.None, Arrow.None} "{start arrow, end
-arrow}";
+  Arrow arrow[2] = {Arrow.None, Arrow.None} "{start arrow, end arrow}";
   DrawingUnit arrowSize=3;
   Smooth smooth = Smooth.None "Spline";
 end Line;
@@ -17694,19 +17518,13 @@ references to variables to enable a dynamic behavior.
 {[}\emph{Example}: \emph{The level of a tank could be animated by a
 rectangle expanding in vertical direction and its color depending on a
 variable overflow:}
-
-\textbf{annotation} (
-
-Icon(graphics=\{Rectangle(
-
-extent=DynamicSelect(\{\{0,0\},\{20,20\}\},\{\{0,0\},\{20,level\}\}),
-
-fillColor=DynamicSelect(\{0,0,255\},
-
 \begin{lstlisting}[language=modelica]
-if overflow then {255,0,0} else
-  {0,0,255}))}
-  );
+  annotation (
+   Icon(graphics={Rectangle(
+     extent=DynamicSelect({{0,0},{20,20}},{{0,0},{20,level}}),
+      fillColor=DynamicSelect({0,0,255},
+                              if overflow then {255,0,0} else {0,0,255}))}
+ );
 \end{lstlisting}
 {]}
 
@@ -17759,10 +17577,9 @@ Note that several interaction objects can be associated with the same
 graphical item or component.
 
 {[}\emph{Example}:
-
-interaction=\{ OnMouseDownSetBoolean(on, true), OnMouseUpSetBoolean(on,
-false)\};
-
+\begin{lstlisting}[language=modelica]
+interaction={ OnMouseDownSetBoolean(on, true), OnMouseUpSetBoolean(on, false)};
+\end{lstlisting}
 {]}
 
 The OnMouseMoveXSetReal interaction object sets the variable to the
@@ -17825,26 +17642,30 @@ end OnMouseDownEditString;
 
 A class may have the following annotations to define properties of the
 graphical user interface:
-
-\textbf{annotation}(defaultComponentName = "name")
+\begin{lstlisting}[language=modelica]
+ annotation(defaultComponentName = "name") 
+\end{lstlisting}
 
 When creating a component of the given class, the recommended component
 name is name.
-
-\textbf{annotation}(defaultComponentPrefixes = "prefixes")
+\begin{lstlisting}[language=modelica]
+  annotation(defaultComponentPrefixes = "prefixes")
+\end{lstlisting}
 
 When creating a component, it is recommended to generate a declaration
 of the form
-
-prefixes class-name component-name
+\begin{lstlisting}[language=modelica]
+  prefixes class-name component-name 
+\end{lstlisting}
 
 The following prefixes may be included in the string prefixes: inner,
 outer, replaceable, constant, parameter, discrete. {[}\emph{In
 combination with} defaultComponentName \emph{it can be used to make it
 easy for users to create} inner \emph{components matching the} outer
 \emph{declarations; see also example below}{]}
-
-\textbf{annotation}(missingInnerMessage = "message")
+\begin{lstlisting}[language=modelica]
+  annotation(missingInnerMessage = "message")
+\end{lstlisting}
 
 When an outer component of the class does not have a corresponding inner
 component, the string message may be used as a diagnostic message, see
@@ -17862,14 +17683,16 @@ end World;
 \end{lstlisting}
 When an instance of model World is dragged in to the diagram layer, the
 following declaration is generated:
-
-\textbf{inner} \textbf{replaceable} World world;
+\begin{lstlisting}[language=modelica]
+  inner replaceable World world;
+\end{lstlisting}
 
 {]}
 
 A simple type or component of a simple type may have:
-
-\textbf{annotation}(absoluteValue=false);
+\begin{lstlisting}[language=modelica]
+  annotation(absoluteValue=false); 
+\end{lstlisting}
 
 If false, then the variable defines a relative quantity, and if true an
 absolute quantity. {[}\emph{When converting between units (in the
@@ -17879,8 +17702,9 @@ This annotation is used in the Modelica Standard Library for example in
 Modelica.SIunits for the type definition TemperatureDifference.}{]}
 
 A model or block definition may contain:
-
-\textbf{annotation}(defaultConnection-StructurallyInconsistent=true);
+\begin{lstlisting}[language=modelica]
+  annotation(defaultConnectionStructurallyInconsistent=true)
+\end{lstlisting}
 
 If true, it is stated that a default connection will result in a
 structurally inconsistent model or block\footnote{For the precise
@@ -17904,15 +17728,18 @@ which class the error is present. This annotation avoids then to show a
 wrong error message.}{]}
 
 A class may have the following annotation:
+\begin{lstlisting}[language=modelica]
+  annotation(obsolete = "message");
+\end{lstlisting}
 
-\textbf{annotation}(obsolete = "message");
 
 It indicates that the class ideally should not be used anymore and gives
 a message indicating the recommended action.
 
 A declaration may have the following annotations:
-
-\textbf{annotation}(unassignedMessage = "message");
+\begin{lstlisting}[language=modelica]
+  annotation(unassignedMessage = "message"); 
+\end{lstlisting}
 
 When the variable to which this annotation is attached in the
 declaration cannot be computed due to the structure of the equations,
@@ -17929,31 +17756,22 @@ connector Frame "Frame of a mechanical system"
   ...
   flow Modelica.SIunits.Force f[3]
   annotation(unassignedMessage =
+      "All Forces cannot be uniquely calculated. The reason could be that the
+     mechanism contains a planar loop or that joints constrain the same motion.
+     For planar loops, use in one revolute joint per loop the option
+     PlanarCutJoint=true in the Advanced menu.
+     ");
+end Frame; 
 \end{lstlisting}
-"All \emph{Forces} cannot be uniquely calculated. The reason could be
-that the
-
-mechanism contains a planar loop or that joints constrain the same
-motion.
-
-For planar loops, use in one revolute joint per loop the option
-
-PlanarCutJoint=true in the Advanced menu.
-
-");
-
-\textbf{end} Frame;
-
 {]}
-
-\textbf{annotation}(\textbf{Dialog}(\textbf{enable} = \textbf{true},
-\textbf{tab} = "General",\\
-\textbf{group} = "Parameters",\\
-\textbf{showStartAttribute} = false,\\
-\textbf{colorSelector} = false,\\
-\textbf{groupImage}="modelica://MyPackage/Resources/Images/switch.png",
-
-\textbf{connectorSizing} = false));
+\begin{lstlisting}[language=modelica]
+annotation(Dialog(enable = true, tab = "General",
+                  group = "Parameters",
+                  showStartAttribute = false,
+                  colorSelector = false,
+                  groupImage="modelica://MyPackage/Resources/Images/switch.png",
+                  connectorSizing = false)); 
+\end{lstlisting}
 
 The annotations \textbf{tab} and \textbf{group} define the placement of
 the component or of variables in a dialog with optional tab and group
@@ -18098,17 +17916,16 @@ rules:}
   Other types of outside connections do not lead to an automatic update
   of a (connectorSizing) parameter. Example:} \emph{Assume there is a
   connector inPorts and a component step1:\\
-  } \textbf{parameter} Integer nIn=0
-  \textbf{annotation}(\textbf{Dialog}(\textbf{connectorSizing}=\textbf{true}));\\
+  } 
 \begin{lstlisting}[language=modelica]
+  parameter Integer nIn=0 annotation(Dialog(connectorSizing=true)); 
   StepIn inPorts[nIn];
   Step step1(nIn=0);
 \end{lstlisting}
   \emph{Drawing a connection line between connectors inPorts and
-  step1.inPorts results in:}\\
-  \textbf{parameter} Integer nIn=0
-  \textbf{annotation}(\textbf{Dialog}(\textbf{connectorSizing}=\textbf{true}));\\
+  step1.inPorts results in:}
 \begin{lstlisting}[language=modelica]
+  parameter Integer nIn=0 annotation(Dialog(connectorSizing=true)); 
   StepIn inPorts[nIn];
   Step step1(nIn=nIn); // nIn=0 changed to nIn=nIn
   equation
@@ -18123,9 +17940,8 @@ rules:}
   parameter of the component is set to zero or the modifier is removed}.
   \emph{Example:} \emph{Assume the connection line in (3) is removed.
   This results in:}\\
-  \textbf{parameter} Integer nIn=0
-  \textbf{annotation}(\textbf{Dialog}(\textbf{connectorSizing}=\textbf{true}));\\
 \begin{lstlisting}[language=modelica]
+  parameter Integer nIn=0 annotation(Dialog(connectorSizing=true));
   StepIn inPorts[nIn];
   Step step1; // modifier nIn=nIn is removed
 \end{lstlisting}
@@ -18152,9 +17968,9 @@ rules:}
   (connectorSizing) parameter is decremented by one and all connections
   with index above the deleted connection index are also decremented by
   one}. \emph{Example:} \emph{Assume there are 4 connections:}\\
-  Step step1(nIn=4);\\
-  \textbf{equation\\}
 \begin{lstlisting}[language=modelica]
+  Step step1(nIn=4);
+equation
   connect(a1, step1.inPorts[1]);
   connect(a2, step1.inPorts[2]);
   connect(a3, step1.inPorts[3]);
@@ -18162,9 +17978,10 @@ rules:}
 \end{lstlisting}
   \emph{and the connection from a2 to step1. inPorts{[}2{]} is deleted.
   This results in\\
-  } Step step1(nIn=3);\\
-  \textbf{equation\\}
+  } 
 \begin{lstlisting}[language=modelica]
+  Step step1(nIn=3);
+equation
   connect(a1, step1.inPorts[1]);
   connect(a3, step1.inPorts[2]);
   connect(a4, step1.inPorts[3]);
@@ -18175,10 +17992,11 @@ rules:}
 defined in {superclass}. Example:} \emph{Assume that step1 is defined in
 superclass CompositeStep with 3 connections, and a new connection is
 performed in a subclass. The result is:}\\
-\textbf{extends} CompositeStep(step1(nIn=4)); // new modifier nIn=4\\
-\textbf{equation}\\
-\textbf{connect}(.., step1.inPorts{[}4{]}); // new connect equation
-
+\begin{lstlisting}[language=modelica]
+  extends CompositeStep(step1(nIn=4)); // new modifier nIn=4
+equation
+  connect(.., step1.inPorts[4]);  // new connect equation 
+\end{lstlisting}
 {]}
 
 \section{Annotations for Version Handling}\doublelabel{annotations-for-version-handling}
@@ -18306,7 +18124,7 @@ to be done without access to the old version of the library (by suitable
 modifications of the lookup). Another alternative is to use the old
 version of the library during the conversion.}{]}
 
-\paragraph{convertClass("OldClass","NewClass")}\doublelabel{convertclassoldclassnewclass}
+\paragraph*{convertClass("OldClass","NewClass")}\doublelabel{convertclassoldclassnewclass}
 
 Convert class OldClass to NewClass.
 
@@ -18314,7 +18132,7 @@ Match longer path first, so if converting both A to C and A.B to D then
 A.F is converted to C.F and A.B.E to D.E. This is considered before
 convertMessage for the same OldClass.
 
-\paragraph{convertClassIf("OldClass", "oldElement", "whenValue","NewClass")}\doublelabel{convertclassifoldclass-oldelement-whenvalue-newclass}
+\paragraph*{convertClassIf("OldClass", "oldElement", "whenValue","NewClass")}\doublelabel{convertclassifoldclass-oldelement-whenvalue-newclass}
 
 Convert class OldClass to NewClass if the literal modifier for
 oldElement has the value whenValue, and also remove the modifier for
@@ -18323,14 +18141,14 @@ oldElement.
 These are considered before convertClass and convertMessage for the same
 OldClass.
 
-\paragraph{convertElement("OldClass","OldName","NewName")}\doublelabel{convertelementoldclassoldnamenewname}
+\paragraph*{convertElement("OldClass","OldName","NewName")}\doublelabel{convertelementoldclassoldnamenewname}
 
 In OldClass convert element OldName to NewName. Both OldName and NewName
 normally refer to components -- but they may also refer to
 class-parameters, or hierarchical names. For hierarchical names the
 longest match is used first.
 
-\paragraph{convertModifiers}\doublelabel{convertmodifiers}
+\paragraph*{convertModifiers}\doublelabel{convertmodifiers}
 
 convertModifiers("OldClass",\{"OldModifier1=default1","OldModifier2=default2",...\},\{"NewModifier1=...\%OldModifier1\%"\}{[}, simplify=true{]})
 
@@ -18375,7 +18193,7 @@ handled. {[}\emph{In case a parameter is simply renamed it is preferable
 to use convertElement, since that also handles e.g. binding equations
 using the parameter.}{]}
 
-\paragraph{convertMessage("OldClass", "Failed Message");}\doublelabel{convertmessageoldclass-failed-message}
+\paragraph*{convertMessage("OldClass", "Failed Message");}\doublelabel{convertmessageoldclass-failed-message}
 
 For any use of OldClass (or element of OldClass) report that conversion
 could not be applied with the given message. \emph{{[}This may be useful
@@ -18440,19 +18258,15 @@ package Modelica
   versionDate = "2008-04-10",
   versionBuild = 4,
   dateModified = "2009-02-15 16:33:14Z",
-\end{lstlisting}
-revisionId = "\$Id:: package.mo 2566 2009-05-26 13:25:54Z \#\$");
+  revisionId = "$Id:: package.mo 2566 2009-05-26 13:25:54Z #$");
+end Modelica;
 
-\textbf{end} Modelica;
-
-\begin{lstlisting}[language=modelica]
 model M1
   annotation(uses(Modelica(version = "3.0.1"))); // Common case
 end M1
 
 model M2
-  annotation(uses(Modelica(version = "3.0.1", versionBuild =
-  4)));
+  annotation(uses(Modelica(version = "3.0.1", versionBuild = 4)));
 end M2
 \end{lstlisting}
 {]}
@@ -18528,10 +18342,9 @@ different encryption formats.}{]}
 
 \textbf{Definitions:}
 
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{|p{2cm}|p{12cm}|}
 \hline
 \emph{Term} & \emph{Description}\\ \hline
-
 \endhead
 \textbf{Protection} & Define what parts of a class are
 visible.\\ \hline
@@ -18697,21 +18510,16 @@ authorization file, the corresponding classes are not visible and cannot
 be used, not even internally in the package.
 
 {[}\emph{Examples:}
-
-// Requires license feature "LicenseOption"
-
-\textbf{annotation}(Protection(features=\{"LicenseOption"\}));
-
-// Requires license features "LicenseOption1" or "LicenseOption2"
-
-\textbf{annotation}(Protection(features=\{"LicenseOption1",
-"LicenseOption2"\}));
-
-// Requires license features ("LicenseOption1" and "LicenseOption2") or
-"LicenseOption3"
-
-\textbf{annotation}(Protection(features=\{"LicenseOption1
-LicenseOption2", "LicenseOption3"\}));
+\begin{lstlisting}[language=modelica]
+// Requires license feature "LicenseOption" 
+annotation(Protection(features={"LicenseOption"})); 
+ 
+// Requires license features "LicenseOption1" or "LicenseOption2" 
+annotation(Protection(features={"LicenseOption1", "LicenseOption2"})); 
+ 
+// Requires license features ("LicenseOption1" and "LicenseOption2") or "LicenseOption3"
+annotation(Protection(features={"LicenseOption1 LicenseOption2", "LicenseOption3"})); 
+\end{lstlisting}
 
 {]}
 
@@ -18724,23 +18532,18 @@ define start/end dates for different sets of targets individually:
 
 \begin{lstlisting}[language=modelica]
 record Authorization
-  String licensor="" "Optional string to show information about the
-  licensor";
-String libraryKey "Matching the key in the class. Must be encrypted and
-  not visible";
-License license[:] "Definition of the license options and of the
-  access rights";
+  String licensor="" "Optional string to show information about the licensor";
+  String libraryKey "Matching the key in the class. Must be encrypted and not visible";
+  License license[:] "Definition of the license options and of the access rights";
 end Authorization;
+
 record License
-String licensee ="" "Optional string to show information about the
-  licensee";
-String id[:] "Unique machine identifications, e.g. MAC addresses";
-  String features[:] =fill("", 0) "Activated library license
-  features";
-String startDate ="" "Optional start date in UTCformat YYYY-MM-DD";
-  String expirationDate="" "Optional expiration date in UTCformat
-  YYYY-MM-DD";
-String operations[:]=fill("",0) "Library usage conditions";
+  String licensee ="" "Optional string to show information about the licensee";
+  String id[:] "Unique machine identifications, e.g. MAC addresses";
+  String features[:] =fill("", 0) "Activated library license features";
+  String startDate ="" "Optional start date in UTCformat YYYY-MM-DD";
+  String expirationDate="" "Optional expiration date in UTCformat YYYY-MM-DD";
+  String operations[:]=fill("",0) "Library usage conditions";
 end License;
 \end{lstlisting}
 The format of the strings used for libraryKey and id are not specified
@@ -18770,18 +18573,15 @@ package can also decrypt it.}{]}
 
 {[}\emph{Example (before encryption):}
 
-// File MyLibrary\textbackslash{}package.mo
-
 \begin{lstlisting}[language=modelica]
+// File MyLibrary\package.mo
 package MyLibrary
   annotation(Protection(License(libraryKey="15783-A39323-498222-444ckk4ll",
   licenseFile="MyLibraryAuthorization_Tool.mo_lic), ...));
 end MyLibrary;
-\end{lstlisting}
-// File MyLibrary\textbackslash{}MyLibraryAuthorization\_Tool.mo\\
-// (authorization file before encryption)
 
-\begin{lstlisting}[language=modelica]
+// File MyLibrary\MyLibraryAuthorization_Tool.mo\
+// (authorization file before encryption)
 package MyLibraryAuthorization_Tool
   annotation(Authorization(
   libraryKey="15783-A39323-498222-444ckk4ll",
@@ -18959,10 +18759,8 @@ algorithm symbolically. (See \ref{statements-and-algorithm-sections}.)
 \textbf{array} or array variable: a component whose components are array
 elements. For an array, the ordering of its components matters: The kth
 element in the sequence of components of an array x is the array element
-\begin{lstlisting}[language=modelica]
-  with index k, denoted x[k]. All elements of an array have the same
+  with index k, denoted x{[}k{]}. All elements of an array have the same
   type. An array element may again be an array, i.e. arrays can be nested.
-\end{lstlisting}
 An array element is hence referenced using n indices in general, where n
 is the number of dimensions of the array. Special cases are matrix (n=2)
 and vector (n=1). Integer indices start with 1, not zero. (See Chapter
@@ -19027,9 +18825,7 @@ identifiers and indices. A component reference is equivalent to the
 referenced object, which must be a component. A component reference is
 resolved (evaluated) in the scope of a class (or expression for the case
 of a local iterator variable). A scope defines a set of visible
-\begin{lstlisting}[language=modelica]
-  components and classes. Example reference: Ele.Resistor.u[21].r (See
-\end{lstlisting}
+  components and classes. Example reference: Ele.Resistor.u{[}21{]}.r (See
 \ref{component-declarations} and \ref{slice-operation}.)
 
 \textbf{declaration assignment}: assignment of the form x := expression
@@ -19212,27 +19008,22 @@ transitively non-replaceable if there are no replaceable elements in the
 referenced class, or any of its base classes or constraining types
 transitively at any level. (See \ref{transitively-non-replaceable}.)
 
-\begin{lstlisting}[language=modelica]
-type or interface: property of an instance,
-  expression, consisting of a number of attributes and a set of public
-\end{lstlisting}
+\textbf{type} or interface: property of an instance, expression, consisting of a number of attributes and a set of public
 elements consisting of element name, element type, and element
 attributes. Note: The concept of class type is a property of a class
 definition. (See \ref{interface-or-type}.)
 
 \textbf{variability}: property of an expression: one of
-
-• \textbf{continuous}: an expression that may change its value at any
+\begin{itemize}
+\item \textbf{continuous}: an expression that may change its value at any
 point in time.
-
-• \textbf{discrete}: may change its value only at events during
+\item \textbf{discrete}: may change its value only at events during
 simulation.
-
-• \textbf{parameter}: constant during the entire simulation, recommended
+\item \textbf{parameter}: constant during the entire simulation, recommended
 to change for a component.
-
-• \textbf{constant}: constant during the entire simulation (can be used
+\item \textbf{constant}: constant during the entire simulation (can be used
 in a package) .
+\end{itemize}
 
 Assignments x := expr and binding equations x = expr must satisfy a
 variability constraint: The expression must not have a higher
@@ -19696,7 +19487,7 @@ the following form where ( ):
 
 and where
 
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{|p{2cm}|p{12cm}|}
 \hline
 \endhead
 \textbf{p} & Modelica variables declared as \emph{parameter} or
@@ -19771,23 +19562,18 @@ the equations, this is not explicitly shown by an additional index in
 At an event instant, including the initial event, the model equations
 are reinitialized according to the following iteration procedure:
 
-known variables: \textbf{x}, t, \textbf{p}
-
-unkown variables: d\textbf{x}/dt, \textbf{y}, \textbf{m},
-pre(\textbf{m}), c
-
-// pre(\textbf{m}) = value of \textbf{m} before event occured
-
-\textbf{loop}
-
-solve (1) \textbf{for} the unknowns, with pre(\textbf{m}) fixed
-
 \begin{lstlisting}[language=modelica]
-if m == pre(m) then break
-  pre(m ) := m
-end loop
-Solving (1) for the unknowns is non-trivial, because this set of
+    known  variables: x, t, p
+    unkown variables: dx/dt, y, m, pre(m), c 
+
+   // pre(m) = value of m before event occured
+   loop
+      solve (1) for the unknowns, with pre(m) fixed
+      if m == pre(m) then break
+      pre(m) := m    
+   end loop 
 \end{lstlisting}
+Solving (1) for the unknowns is non-trivial, because this set of 
 equations contains not only Real, but also Boolean and Integer unknowns.
 Usually, in a first step these equations are sorted and in many cases
 the Boolean and Integer unknowns can be just computed by a forward
@@ -22170,23 +21956,18 @@ The main changes in Modelica 2.1 are:
   '1').
 \item
   New annotations:
-\end{itemize}
-
-- For version handling of libraries and models (version, uses,
+\begin{itemize}
+\item For version handling of libraries and models (version, uses,
 conversion),
-
-- for revision logging (revisions),
-
-- for using a Modelica name as link in a HTML documentation text,
-
-- for convenient ``inner'' declaration in a GUI (defaultComponentName,
+\item for revision logging (revisions),
+\item for using a Modelica name as link in a HTML documentation text,
+\item for convenient ``inner'' declaration in a GUI (defaultComponentName,
 defaultComponentPrefixes),
-
-- for parameter menu structuring (Dialog, enable, tab, group), and
-
-- for library specific error messages (missingInnerMessage,
+\item for parameter menu structuring (Dialog, enable, tab, group), and
+\item for library specific error messages (missingInnerMessage,
 unassignedMessage).
-
+\end{itemize}
+\end{itemize}
 Fixing some minor errors in the grammar and semantic specification.
 
 The language changes are backward compatible, except for the
