@@ -1,0 +1,454 @@
+\chapter{Stream Connectors}\doublelabel{stream-connectors}
+
+The two basic variable types in a connector -- ``potential'' (or across)
+variable and ``flow'' (or through) variable -- are not sufficient to
+describe in a numerically sound way the bi-directional flow of matter
+with convective transport of specific quantities, such as specific
+enthalpy and chemical composition. The values of these specific
+quantities are determined from the upstream side of the flow, i.e., they
+depend on the flow direction. When using across and through variables,
+the corresponding models would include nonlinear systems of equations
+with Boolean unknowns for the flow directions and singularities around
+zero flow. Such equation systems cannot be solved reliably in general.
+The model formulations can be simplified when formulating two different
+balance equations for the two possible flow directions. This is not
+possible with across and through variables though.
+
+This fundamental problem is addressed in Modelica by introducing a third
+type of connector variable, called stream variable, declared with the
+prefix \textbf{stream}. A stream variable describes a quantity that is
+carried by a flow variable, i.e., a purely convective transport
+phenomenon. The value of the stream variable is the specific property
+inside the component close to the boundary, assuming that matter flows
+out of the component into the connection point. In other words, it is
+the value the carried quantity would have if the fluid was flowing out
+of the connector, irrespective of the actual flow direction.
+
+The rationale of the definition and typical use cases are described in
+\ref{derivation-of-stream-equations}.
+
+\section{Definition of Stream Connectors}\doublelabel{definition-of-stream-connectors}
+
+If at least one variable in a connector has the \textbf{stream} prefix,
+the connector is called ``stream connector'' and the corresponding
+variable is called ``stream variable''. The following definitions hold:
+
+\begin{itemize}
+\item
+  The \textbf{stream} prefix can only be used in a connector
+  declaration.
+\item
+  A stream connector must have exactly one scalar variable with the
+  \textbf{flow} prefix. {[}\emph{The idea is that all stream variables
+  of a connector are associated with this flow variable}{]}\emph{.}
+\item
+  For every outside connector {[}\emph{see \ref{inside-and-outside-connectors}}{]}, one
+  equation is generated for every variable with the \textbf{stream}
+  prefix {[}\emph{to describe the propagation of the stream variable
+  along a model hierarchy}{]}. For the exact definition, see the end of
+  \ref{stream-operator-instream-and-connection-equations}.
+\item
+  For inside connectors {[}\emph{see \ref{inside-and-outside-connectors}}{]}, variables
+  with the \textbf{stream} prefix do not lead to connection equations.
+\item
+  Connection equations with stream variables are generated in a model
+  when using the \textbf{inStream}() operator or the
+  \textbf{actualStream}() operator, see \ref{stream-operator-instream-and-connection-equations}
+  and \ref{stream-operator-actualstream}.
+\end{itemize}
+
+{[}\emph{Example:}
+
+\begin{lstlisting}[language=modelica]
+connector FluidPort
+  replaceable package Medium =
+    Modelica.Media.Interfaces.PartialMedium;
+  Medium.AbsolutePressure p "Pressure in connection point";
+  flow Medium.MassFlowRate m_flow "> 0, if flow into component";
+  stream Medium.SpecificEnthalpy h_outflow "h close to port if m_flow < 0";
+  stream Medium.MassFraction X_outflow[Medium.nX] "X close to port if m_flow < 0";
+end FluidPort;
+\end{lstlisting}
+\emph{FluidPort is a stream connector, because some connector variables
+have the \textbf{stream} prefix. The Medium definition and the stream
+variables are associated with the only flow variable (m\_flow) that
+defines a fluid stream. The Medium and the stream variables are
+transported with this flow variable. The stream variables h\_outflow and
+X\_outflow are the stream properties inside the component close to the
+boundary, when fluid flows out of the component into the connection
+point. The stream properties for the other flow direction can be
+inquired with the built-in operator \textbf{inStream}(). The value of
+the stream variable corresponding to the actual flow direction can be
+inquired through the built-in operator \textbf{actualStream}(), see
+\ref{stream-operator-actualstream}.}{]}
+
+\section{Stream Operator inStream and Connection Equations}\doublelabel{stream-operator-instream-and-connection-equations}
+
+In combination with the stream variables of a connector, the
+\textbf{inStream()} operator is designed to describe in a numerically
+reliable way the bi-directional transport of specific quantities carried
+by a flow of matter.
+
+\textbf{inStream}(v) is only allowed on stream variables v and is
+informally the value the stream variable has, assuming that the flow is
+from the connection point into the component. This value is computed
+from the stream connection equations of the flow variables and of the
+stream variables.
+
+For the following definition it is assumed that N inside connectors
+m\textsubscript{j}.c (j=1,2,...,N) and M outside connectors
+c\textsubscript{k} (k=1,2,...,M) belonging to the same connection set
+{[}\emph{see definition in \ref{inside-and-outside-connectors}}{]} are connected
+together and a stream variable h\_outflow is associated with a flow
+variable m\_flow in connector c.
+
+\begin{lstlisting}[language=modelica]
+connector FluidPort
+  ...
+  flow Real m_flow "Flow of matter; m_flow > 0 if flow into component";
+  stream Real h_outflow "Specific variable in component if m_flow < 0"
+end FluidPort
+
+model FluidSystem
+  ...
+  FluidComponent m_1, m_2, ...,
+  m_N;
+  FluidPort c_1, c_2, ...,
+  c_M;
+equation
+  connect(m_1.c, m_2.c);
+  connect(m_1.c, m_3.c);
+  ...
+  connect(m_1.c, m_N.c);
+  connect(m_1.c, c_1);
+  connect(m_1.c, c_2);
+  ...
+  connect(m_1.c, c_M);
+  ...
+end FluidSystem;
+\end{lstlisting}
+\begin{figure}
+\caption{Examplary FluidSystem with N=3 and M=2}
+\includegraphics[width=2.3in,height=2.08125in]{media/fluidsystem}
+\end{figure} 
+
+{[}\emph{The connection set represents an infinitesimally small control
+volume, for which the stream connection equations are equivalent to the
+conservation equations for mass and energy.}{]}
+
+With these prerequisites, the semantics of the expression
+\textbf{inStream}(m\textsubscript{i}.c.h\_outflow)is given implicitly by
+defining an additional variable h\_mix\_in\textsubscript{i}, and by
+adding to the model the conservation equations for mass and energy
+corresponding to the infinitesimally small volume spanning the
+connection set. The connection equation for the flow variables has
+already been added to the system according to the connection semantics
+of flow variables defined in \ref{generation-of-connection-equations}.
+
+\begin{lstlisting}[language=modelica]
+// Standard connection equation for flow variables
+0 = sum(mj.c.m_flow for j in 1:N) + sum(-ck.m_flow for k in 1:M);
+\end{lstlisting}
+
+Whenever the \textbf{inStream()} operator is applied to a stream
+variable of an inside connector, the balance equation of the transported
+property must be added under the assumption of flow going into the
+connector
+
+\begin{lstlisting}[language=modelica]
+// Implicit definition of the inStream() operator applied to inside connector i
+0 = sum(mj.c.m_flow*(if mj.c.m_flow > 0 or j==i then h_mix_ini else mj.c.h_outflow)
+        for j in 1:N) +
+    sum(-ck.m_flow* (if -ck.m_flow > 0 then h_mix_ini else inStream(ck.h_outflow)
+         for k in 1:M);
+inStream(mi.c.h_outflow) = h_mix_ini;
+\end{lstlisting}
+
+Note that the result of the
+\textbf{inStream}(m\textsubscript{i}.c.h\_outflow) operator is different
+for each port i, because the assumption of flow entering the port is
+different for each of them.
+
+Additional equations need to be generated for the stream variables of
+outside connectors.
+
+\begin{lstlisting}[language=modelica]
+// Additional connection equations for outside connectors
+for q in 1:M loop
+  0 = sum(m_j.c.m_flow*(if
+  m_j.c.m_flow > 0 then
+  h_mix_out_q
+  else m_j.c.h_outflow) for j
+  in 1:N) +
+  sum(-c_k.m_flow* (if
+  --c_k.m_flow > 0 or k==q
+  then h_mix_out_q
+  else inStream(c_k.h_outflow)
+  for k in 1:M);
+    c_q.h_outflow = h_mix_out_q;
+  end for;
+\end{lstlisting}
+
+Neglecting zero flow conditions, the solution of the above-defined
+stream connection equations for inStream values of inside connectors and
+outflow stream variables of outside connectors is (for a derivation, see
+\ref{derivation-of-stream-equations}):
+
+\begin{lstlisting}[language=modelica,mathescape=true]
+inStream($m_i$.c.h_outflow) :=
+  (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in cat(1,1:i-1, i+1:N) +
+   sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in 1:M))/
+  (sum(max(-$m_j$.c.m_flow,0) for j in  cat(1,1:i-1, i+1:N) +
+   sum(max( $c_k$.m_flow ,0) for k in 1:M));
+  
+// Additional equations to be generated for outside connectors q
+for q in 1:M loop
+  $c_q$.h_outflow :=
+    (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in 1:N) +
+     sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in cat(1,1:q-1, q+1:M))/
+    (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
+     sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+end for;
+\end{lstlisting}
+
+\emph{Note, that \textbf{inStream}(c\textsubscript{k}.h\_outflow) is
+computed from the connection set that is present one hierarchical level
+above. At this higher level c\textsubscript{k}.h\_outflow is no longer
+an outside connector, but an inside connector and then the formula from
+above for inside connectors can be used to compute it.}
+
+If the argument of \textbf{inStream}() is an array, the implicit
+equation system holds elementwise, i.e., \textbf{inStream}() is
+vectorizable.
+
+The stream connection equations have singularities and/or multiple
+solutions if one or more of the flow variables become zero. When all the
+flows are zero, a singularity is always present, so it is necessary to
+approximate the solution in an open neighbourhood of that point.
+{[}\emph{For example assume that m\textsubscript{j}.c.m\_flow =
+c\textsubscript{k}.m\_flow = 0, then all equations above are identically
+fulfilled and \textbf{inStream}(..) can have any value}{]}. However,
+specific optimizations may be applied to avoid the regularization if the
+flow through one port is zero or non-negative, see \ref{derivation-of-stream-equations}. It is
+required that the \textbf{inStream}() operator is appropriately
+approximated when regularization is needed and the approximation must
+fulfill the following requirements:
+
+\begin{enumerate}
+\item
+  \textbf{inStream}(m\textsubscript{i}.c.h\_outflow) and
+  \textbf{inStream}(c\textsubscript{k}.h\_outflow) must be unique with
+  respect to all values of the flow and stream variables in the
+  connection set, and must have a continuous dependency on them.
+\item
+  Every solution of the implicit equation system above must fulfill the
+  equation system identically {[}\emph{upto the usual numerical
+  accuracy}{]}, provided the absolute value of every flow variable in
+  the connection set is greater than a small value
+  (\textbar{}m\textsubscript{1}.c.m\_flow\textbar{} \textgreater{} eps
+  \textbf{and} \textbar{}m\textsubscript{2}.c.m\_flow\textbar{}
+  \textgreater{} eps \textbf{and} ... \textbf{and}
+  \textbar{}c\textsubscript{M}.m\_flow\textbar{} \textgreater{} eps).
+\end{enumerate}
+
+{[}\emph{Based on the above requirements, the following implementation
+is recommended:}
+
+\begin{itemize}
+% This shouldn't be an itemized list, but a list of definitions
+% faking that by using raggedright
+\raggedright
+\item \textbf{N = 1, M = 0:}\newline
+\begin{lstlisting}[language=modelica,mathescape=true]
+inStream($m_1$.c.h_outflow) =$m_1$.c.h_outflow;
+\end{lstlisting}
+\item
+\textbf{N = 2, M = 0:}\newline
+\begin{lstlisting}[language=modelica,mathescape=true]
+inStream($m_1$.c.h_outflow) =$m_2$.c.h_outflow;
+inStream($m_2$.c.h_outflow) =$m_1$.c.h_outflow;
+\end{lstlisting}
+\item \textbf{N = 1, M = 1:}\newline
+\begin{lstlisting}[language=modelica,mathescape=true]
+inStream($m_1$.c.h_outflow) =inStream($c_1$.h_outflow);
+// Additional equation to be generated
+$c_1$.h_outflow = $m_1$.c.h_outflow;
+\end{lstlisting}
+\item \textbf{N = 0, M = 2:}\newline
+\begin{lstlisting}[language=modelica,mathescape=true]
+// Additional equation to be generated
+c1.h_outflow = inStream(c2.h_outflow);
+c2.h_outflow = inStream(c1.h_outflow);
+\end{lstlisting}
+
+\item\textbf{All other cases:}\newline
+\begin{lstlisting}[language=modelica,mathescape=true]
+if $m_j$.c.m_flow.min >= 0  for all j = 1:N with j <> i  and  
+   $c_k$.m_flow.max <= 0 for all k = 1:M
+then 
+    inStream($m_i$.c.h_outflow) =  $m_i$.c.h_outflow;
+ else 
+    si = sum (max(-$m_j$.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) + 
+         sum(max( $c_k$.m_flow ,0) for k  in 1:M);
+    inStream($m_i$.c.h_outflow) = 
+       (sum(positiveMax(-$m_j$.c.m_flow,$s_i$)*$m_j$.c.h_outflow)
+      +  sum(positiveMax($c_k$.m_flow,s_i)*inStream($c_k$.h_outflow)))/ 
+     (sum(positiveMax(-$m_j$.c.m_flow,s_i))
+        +  sum(positiveMax($c_k$.m_flow,s_i)))  
+                  for j in 1:N and i <> j and $m_j$.c.m_flow.min < 0, 
+                  for k in 1:M and $c_k$.m_flow.max > 0
+// Additional equations to be generated
+for q in 1:M loop
+   if $m_j$.c.m_flow.min >= 0 for all j = 1:N and 
+       $c_k$.m_flow.max <= 0 for all k = 1:M and k <> q
+   then
+       $c_q$.h_outflow = 0;
+    else
+       $s_q$ =  (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
+                    sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+       $c_q$.h_outflow = (sum(positiveMax(-$m_j$.c.m_flow,s_q)*$m_j$.c.h_outflow) +
+                 sum(positiveMax($c_k$.m_flow,$s_q$)* inStream($c_k$.h_outflow)))/
+                (sum(positiveMax(-$m_j$.c.m_flow,s_q)) +
+                 sum(positiveMax($c_k$.m_flow,s_q)))  
+		  for j in 1:N and $m_j$.c.m_flow.min < 0,
+                  for k in 1:M and k <> q and $c_k$.m_flow.max > 0
+end for;
+\end{lstlisting}
+\end{itemize}
+\emph{The operator}
+\textbf{positiveMax}(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})
+\emph{should be such that:}
+
+\begin{itemize}
+\item
+  \emph{positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}) =
+  -m\textsubscript{j}.c\_m\_flow if
+  -m\textsubscript{j}.c.m\_flow\textgreater{}eps1\textsubscript{j}\textgreater{}=0,
+  where eps1\textsubscript{j} are small flows, compared to typical
+  problem-specific value,}
+\item
+  \emph{all denominators should be \textgreater{} eps2 \textgreater{} 0,
+  where eps2 is also a small flow, compared to typical problem-specific
+  values.}
+\end{itemize}
+
+\emph{Trivial implementation of positiveMax guarantees continuity of
+inStream():}
+\begin{lstlisting}[language=modelica,mathescape=true]
+postiveMax(-$m_j$.c.m_flow, $s_i$)= max(-m_j.c.m_flow, eps1); // so $s_i$ is not needed
+\end{lstlisting}
+\emph{More sophisticated implementation, with smooth approximation,
+applied only when {all} flows are small:}
+\begin{lstlisting}[language=modelica,escapechar=!,mathescape=true]
+// Define a "small number" eps (!\textbf{nominal}!(v) is the nominal value of v !--! see !\ref{attributes-start-fixed-nominal-and-unbounded}!)
+  eps := relativeTolerance*min(nominal($m_j$.c.m_flow));
+  
+// Define a smooth curve, such that  alpha($s_i>=eps$)=1 and alpha($s_i<0$)=0
+  alpha := smooth(1, if $s_i$ > eps then 1 else
+                     if $s_i$ > 0 then  ( $s_i$/eps)^2*(3-2* $s_i$/eps)) else 0);
+    
+  // Define function positiveMax(v,s_i) as a linear combination of max (v,0)
+  // and of eps along alpha
+  positiveMax((-$m_j$.c.m_flow,s_i)  := alpha*max(-$m_j$.c.m_flow,0) +  (1-alpha)*eps;
+\end{lstlisting}
+
+
+\emph{The derivation of this implementation is discussed in}
+\emph{\ref{derivation-of-stream-equations}. Note that in the cases N = 1, M =0 (unconnected port,
+physically corresponding to a plugged-up flange), and N = 2, M=0
+(one-to-one connection), the result of \textbf{inStream()} is trivial
+and no non-linear equations are left in the model, despite the fact that
+the original definition equations are nonlinear.}
+
+\emph{The following properties hold for this implementation:}
+
+\begin{itemize}
+\item
+  \emph{\textbf{inStream}(..) is continuous (and differentiable),
+  provided that m\textsubscript{j}.c.h}\_\emph{outflow,
+  m\textsubscript{j}.c.m}\_\emph{flow,
+  c\textsubscript{k}.h}\_\emph{outflow, and
+  c\textsubscript{k}.m}\_\emph{flow are continuous and differentiable.}
+\end{itemize}
+
+\begin{itemize}
+\item
+  \emph{A division by zero can no longer occur (since
+  \textbf{sum}(\textbf{positiveMax}(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}))\textgreater{}=eps2
+  \textgreater{} 0), so the result is always well-defined.}
+\item
+  \emph{The balance equations are exactly fulfilled if the denominator
+  is not close to zero\\
+  (since the exact formula is used, if
+  sum(\textbf{positiveMax}(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})
+  ) \textgreater{} eps).}
+\item
+  \emph{If all flows are zero,
+  \textbf{inStream}(m\textsubscript{i}.c.h}\_\emph{outflow) =
+  \textbf{sum}(m\textsubscript{j}.c.h\_outflow \textbf{for}
+  j\textless{}\textgreater{}i \textbf{and} m\textsubscript{j}.c.m\_flow.min \textless{}
+  0)/Np, i.e., it is the mean value of all the Np variables
+  m\textsubscript{j}.c.h}\_\emph{outflow, such that
+  j\textless{}\textgreater{}i and
+  m\textsubscript{j}.c.m}\_\emph{flow.min \textless{} 0. This is a
+  meaningful approximation, considering the physical diffusion effects
+  that are relevant at small flow rates in a small connection volume
+  (thermal conduction for enthalpy, mass diffusion for mass fractions).}
+\end{itemize}
+
+\emph{The value of relativeTolerance should be larger than the relative
+tolerance of the nonlinear solver used to solve the implicit algebraic
+equations.}
+
+\emph{As a final remark, further symbolic simplifications could be
+carried out by taking into account equations that affect the flows in
+the connection set (i.e., equivalent to m\textsubscript{j}.c.m\_flow =
+0, which then implies m\textsubscript{j}.c.m\_flow.min \textgreater{}=
+0). This is interesting, e.g., in the case of a valve when the stem
+position is set identically to closed by its controller.}
+
+{]}
+
+\section{Stream Operator actualStream}\doublelabel{stream-operator-actualstream}
+
+The \textbf{actualStream}(v) operator is provided for convenience, in
+order to return the actual value of the stream variable, depending on
+the actual flow direction. The only argument of this built-in operator
+needs to be a reference to a stream variable. The operator is
+vectorizable, in the case of vector arguments. For the following
+definition it is assumed that an (inside or outside) connector c
+contains a stream variable h\_outflow which is associated with a flow
+variable m\_flow in the same connector c:
+
+\begin{lstlisting}[language=modelica]
+actualStream(c.h_outflow) = if c.m_flow > 0 then inStream(c.h_outflow) else c.h_outflow;
+\end{lstlisting}
+
+{[}\emph{The \textbf{actualStream}(v) operator is typically used in two
+contexts:}
+\begin{lstlisting}[language=modelica]
+  der(U) = c.m_flow*actualStream(c.h_outflow);  // (1)energy balance equation
+  h_c = actualStream(c.h);                      // (2)monitoring the enthalpy at port c
+\end{lstlisting}
+\emph{In the case of equation (1), although the actualStream() operator
+is discontinuous, the product with the flow variable is not, because
+actualStream() is discontinuous when the flow is zero by construction.
+Therefore, a tool might infer that the expression is smooth(0, ...)
+automatically, and decide whether or not to generate an event. If a user
+wants to avoid events entirely, he/she may enclose the right-hand side
+of (1) with the noEvent() operator. }
+
+\emph{Equations like (2) might be used for monitoring purposes (e.g.
+plots), in order to inspect what the `actual' enthalpy of the fluid
+flowing through a port is. In this case, the user will probably want to
+see the change due to flow reversal at the exact instant, so an event
+should be generated. If the user doesn't bother, then he/she should
+enclose the right-hand side of (2) with noEvent(). Since the output of
+actualStream() will be discontinuous, it should not be used by itself to
+model physical behaviour (e.g., to compute densities used in momentum
+balances) - inStream() should be used for this purpose. The operator
+actualStream() should be used to model physical behaviour only when
+multiplied by the corresponding flow variable (like in the above energy
+balance equation), because this removes the discontinuity.}
+
+{]}

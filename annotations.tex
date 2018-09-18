@@ -1,0 +1,1992 @@
+
+\chapter{Annotations}\doublelabel{annotations}
+
+Annotations are intended for storing extra information about a model,
+such as graphics, documentation or versioning, etc. A Modelica tool is
+free to define and use other annotations, in addition to those defined
+here, according to \ref{vendor-specific-annotations}. The only requirement is that any tool
+shall save files with all annotations from this chapter and all
+vendor-specific annotations intact. To ensure this, annotations must be
+represented with constructs according to the Modelica grammar (for
+replaceable class declarations with a constraining-clause also refer to
+\ref{constraining-clause-annotations}). The specification in this document defines the
+semantic meaning if a tool implements any of these annotations.
+
+\section{Vendor-Specific Annotations}\doublelabel{vendor-specific-annotations}
+
+A vendor may -- anywhere inside an annotation -- add specific, possibly
+undocumented, annotations which are not intended to be interpreted by
+other tools. Two variants of vendor-specific annotations exist; one
+simple and one hierarchical. Double underscore concatenated with a
+vendor name as initial characters of the identifier are used to identify
+vendor-specific annotations.
+
+{[}\emph{Example}:
+\begin{lstlisting}[language=modelica]
+annotation (
+   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+        graphics={__NameOfVendor(Circle(center={0,0}, radius=10))}) ); 
+\end{lstlisting}
+\emph{This introduces a new graphical primitive} Circle \emph{using the
+hierarchical variant of vendor-specific annotations.}
+\begin{lstlisting}[language=modelica]
+annotation (
+   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+        graphics={Rectangle(extent={{-5,-5},{7,7}}, __NameOfVendor_shadow=2)}) ); 
+\end{lstlisting}
+\emph{This introduces a new attribute} \_\_NameOfVendor\_shadow
+\emph{for the} Rectangle \emph{primitive using the simple variant of
+vendor-specific annotations.}{]}
+
+\section{Annotations for Documentation}\doublelabel{annotations-for-documentation}
+
+\begin{lstlisting}[language=grammar]
+documentation-annotation:
+   annotation "(" Documentation "(" "info" "=" STRING ["," "revisions" "=" STRING ] ")" ")"
+\end{lstlisting}
+The ``Documentation'' annotation can contain the ``info'' annotation
+giving a textual description, the ``revisions'' annotation giving a list
+of revisions and other annotations defined by a tool {[}\emph{The
+``revisions'' documentation may be omitted in printed documentation}{]}.
+How the tool interprets the information in ``Documentation'' is
+unspecified. Within a string of the ``Documentation'' annotation, the
+tags \textless{}HTML\textgreater{} and \textless{}/HTML\textgreater{} or
+\textless{}html\textgreater{} and \textless{}/html\textgreater{} define
+optionally begin and end of content that is HTML encoded. For external
+links see \ref{external-resources}. Links to Modelica classes may be defined with
+the HTML link command using scheme ``Modelica'', e.g.,
+
+\begin{lstlisting}[language=modelica]
+<a href="Modelica://MultiBody.Tutorial">MultiBody.Tutorial</a> 
+\end{lstlisting}
+
+Together with scheme ``Modelica'' the (URI) fragment specifiers
+\#diagram, \#info, \#text, \#icon may be used to reference different
+layers. Example:
+
+\begin{lstlisting}[language=modelica]
+<a href="Modelica://MultiBody.Joints.Revolute#info">Revolute</a>
+\end{lstlisting}
+\begin{lstlisting}[language=grammar]
+preferred-view-annotation:
+   annotation "(" preferredView "=" ("info" | "diagram" | "text") ")"
+\end{lstlisting}
+
+The preferredView annotation defines the default view when selecting the
+class. info means info layer, i.e., the documentation of the class,
+diagram means diagram layer and text means the Modelica text layer.
+\begin{lstlisting}[language=grammar]
+documentation-class-annotation:
+   annotation "(" DocumentationClass "=" true ")"
+\end{lstlisting}
+
+Only allowed as class annotation on any kind of class and implies that
+this class and all classes within it are treated as having the
+annotation preferredView="info". If the annotation preferredView is
+explicitly set for a class, it has precedence over a DocumentationClass
+annotation \emph{{[}A tool may display such classes in special ways. For
+example, the description texts of the classes might be displayed instead
+of the class names, and if no icon is defined, a special information
+default icon may be displayed in the package browser.{]}}
+
+\section{Annotations for Code Generation}\doublelabel{annotations-for-code-generation}
+\begin{lstlisting}[language=grammar]
+code-annotation:
+   annotation"(" codeGenerationFlag "=" ( false | true ) ")"
+
+codeGenerationFlag :
+   "Evaluate" | "HideResult" | "Inline" | "LateInline" | "GenerateEvents"
+\end{lstlisting}
+These annotations can influence the code generation. The details are
+defined in the next table:
+
+\begin{longtable}[]{|p{4.2cm}|p{10cm}|}
+\hline \endhead
+Evaluate&
+The annotation Evaluate can occur in the component declaration, its type
+declaration, or a base-class of the type-declaration. In the case of
+multiple conflicting annotations it is handled similarly to modifiers
+(e.g., an Evaluate-annotation on the component declaration takes
+precedence). The annotation Evaluate only has effect for a component
+declared with the prefix parameter.
+
+If \lstinline!Evaluate = true!, the model developer proposes to utilize the value
+for the symbolic processing. In that case, it is not possible to change
+the parameter value after symbolic pre-processing.
+
+If \lstinline!Evaluate = false!, the model developer proposes to not utilize the
+value of the corresponding parameter for the symbolic processing.
+
+{[}Evaluate \emph{is for example used for axis of rotation parameters in
+the} Modelica.Mechanics.MultiBody \emph{library in order to improve the
+efficiency of the generated code}{]}\\ \hline
+HideResult &
+\lstinline!HideResult = true! defines that the model developer proposes to not show
+the simulator results of the corresponding component {[}\emph{e.g., it
+will not be possible to plot this variable}{]}.
+
+\lstinline!HideResult = false! defines that the developer proposes to show the
+corresponding component {[}\emph{if a variable is declared in a
+protected section, a tool might not include it in a simulation result.
+By setting} HideResult = false\emph{, the modeler would like to have the
+variable in the simulation result, even if in the protected section}{]}.
+
+{[}HideResult \emph{is for example used in the connectors of the}
+Modelica.StateGraph \emph{library to not show variables to the modeler
+that are of no interest to him and would confuse him}{]}\\ \hline
+Inline &
+Has only an effect within a function declaration.
+
+If ``\lstinline!Inline = true!'', the model developer proposes to inline the
+function. This means, that the body of the function is included at all
+places where the function is called.
+
+If ``\lstinline!Inline = true!'', the model developer proposes to not inline the
+function.
+
+% Added "The annotation" to avoid bad formatting.
+{[}The annotation \lstinline!Inline = true! \emph{is for example used in}
+Modelica\allowbreak{}.Mechanics\allowbreak{}.MultiBody\allowbreak{}.Frames \emph{and in functions of}
+Modelica\allowbreak{}.Media \emph{to have no overhead for function calls such as
+resolving a vector in a different coordinate system and at the same time
+the function can be analytically differentiated, e.g., for index
+reduction needed for mechanical systems.}{]}\\ \hline
+LateInline
+&
+Has only an effect within a function declaration.
+
+If ``\lstinline!LateInline = true!'', the model developer proposes to inline the
+function after all symbolic transformations have been performed
+\emph{{[}especially differentiation and inversion of functions; for
+efficiency reasons it is then useful to replace all function calls with
+identical input arguments by one function call, before the inlining{]}}.
+
+If ``\lstinline!LateInline = false!'', the model developer proposes to not inline
+the function after symbolic transformations have been performed.
+
+``\lstinline!Inline=true, LateInline=false!'' is identical to ``\lstinline!Inline=true!''
+
+``\lstinline!Inline=true, LateInline=true!'' is identical to ``\lstinline!LateInline=true!''
+
+``\lstinline!Inline=false, LateInline=true!'' is identical to ``\lstinline!LateInline=true!''
+
+{[}\emph{This annotation is for example used in
+Modelica\allowbreak{}.Media\allowbreak{}.}Water\allowbreak{}.IF97\_Utilities\allowbreak{}.T\_props\_ph \emph{to provide in
+combination with common subexpression elimination the automatic caching
+of function calls. Furthermore, it is used in order that a tool is able
+to propagate specific enthalpy over connectors in the Modelica\_Fluid
+library.}{]}\\ \hline
+InlineAfterIndexReduction\strut
+&
+Has only an effect within a function declaration.
+
+If true, the model developer proposes to inline the function after the
+function is differentiated for index reduction, and before any other
+symbolic transformations are performed. This annotation cannot be
+combined with annotations Inline and LateInline.
+
+{[}\emph{This annotation is for example used in}
+Modelica\allowbreak{}.Mechanics\allowbreak{}.Rotational\allowbreak{}.Sources\allowbreak{}.Move \emph{to define that an input
+signal is the derivative of another input signal.}{]}\\ \hline
+GenerateEvents\strut
+&
+Has only an effect within a function declaration
+
+If ``\lstinline!GenerateEvents = true!'', the model developer proposes that crossing
+functions in the function should generate events (one possibility of
+doing this is to inline the function and generate events for the inlined
+function).
+
+{[}\emph{This annotation is for example used in}
+Modelica\allowbreak{}.Media\allowbreak{}.Water\allowbreak{}.IF97\_Utilities.phase\_dT \emph{to indicate that
+the output should generate an event when it changes.}{]}\\ \hline
+
+\end{longtable}
+\begin{lstlisting}[language=grammar]
+smoothOrder-annotation:
+   annotation"(" smoothOrder "=" UNSIGNED-NUMBER ")" |
+   annotation"(" smoothOrder "(" normallyConstant "=" NAME
+  ["," normallyConstant "=" NAME] ")"
+  "=" UNSIGNED-NUMBER ")"
+\end{lstlisting}
+This annotation has only an effect within a function declaration.
+smoothOrder defines the number of differentiations of the function, in
+order that all of the differentiated outputs are continuous provided all
+input arguments and their derivatives up to order smoothOrder are
+continuous {[}\emph{This means that the function is at least}
+C\textsuperscript{smoothOrder}. smoothOrder = 1 \emph{means that the
+function can be differentiated at least once in order that all output
+arguments are still continuous, provided the input arguments are
+continuous. If a tool needs the derivative of a function, e.g. for index
+reduction or to compute an analytic Jacobian, the function can be
+differentiated analytically at least smoothOrder times}{]}.
+
+The optional argument normallyConstant of smoothOrder defines that the
+function argument NAME is usually constant {[}\emph{A tool might check
+whether the actual argument to NAME is a parameter expression at the
+place where the function is called. If this is the case, the derivative
+of the function might be constructed under the assumption that the
+corresponding argument is constant, to enhance efficiency. Typically, a
+tool would generate at most two different derivative functions of a
+function: One, under the assumption that all normallyConstant arguments
+are actually constant. And one, under the assumption that all input
+arguments are time varying. Based on the actual arguments of the
+function call either of the two derivative functions is used.}
+
+\emph{This annotation is used by many functions of the} Modelica.Fluid
+\emph{library, such as}
+Modelica\allowbreak{}.Fluid\allowbreak{}.Dissipation\allowbreak{}.PressureLoss\allowbreak{}.StraightPipe\allowbreak{}.dp\_laminar\_DP\emph{,
+since geometric arguments to these functions are usually constant}{]}
+
+\section{Annotations for Simulation Experiments}\doublelabel{annotations-for-simulation-experiments}
+\begin{lstlisting}[language=grammar]
+experiment-annotation:
+   annotation"(" "experiment" "(" [experimentOption] {,
+     experimentOption}] ")"
+
+experimentOption:
+  StartTime "=" [ "+" | "-" ] UNSIGNED-NUMBER |
+  StopTime  "=" [ "+"  | "-"] UNSIGNED-NUMBER |
+  Interval "=" UNSIGNED-NUMBER |
+  Tolerance "=" UNSIGNED-NUMBER
+\end{lstlisting}
+
+The experiment annotation defines the default start time (StartTime) in
+  {[}s{]}, the default stop time (StopTime) in {[}s{]}, the suitable time
+  resolution for the result grid (Interval) in {[}s{]}, and the default
+relative integration tolerance (Tolerance) for simulation experiments to
+be carried out with the model or block at hand.
+
+\section{Annotation for single use of class}\doublelabel{annotation-for-single-use-of-class}
+
+For state machines it is useful to have single instances of local
+classes. This can be done using:
+\begin{lstlisting}[language=modelica]
+annotation(singleInstance=true)
+\end{lstlisting}
+
+The annotation singleInstance in a class indicates that there should
+only be one component instance of the class, and it should be in the
+same scope as the class is defined. The intent is to remove the class
+when the component is removed and to prevent duplication of the
+component.
+
+\section{Annotations for Graphical Objects}\doublelabel{annotations-for-graphical-objects}
+
+A graphical representation of a class consists of two abstraction
+layers, icon layer and diagram layer showing graphical objects,
+component icons, connectors and connection lines. The icon
+representation typically visualizes the component by hiding hierarchical
+details. The hierarchical decomposition is described in the diagram
+layer showing icons of subcomponents and connections between these.
+
+Graphical annotations described in this chapter ties into the Modelica
+grammar as follows.
+\begin{lstlisting}[language=grammar]
+graphical-annotations :
+  annotation "(" [ layer-annotations ] ")"
+
+layer-annotations :
+  ( icon\_layer | diagram\_layer ) [ "," layer-annotations ]
+\end{lstlisting}
+Layer descriptions (start of syntactic description):
+\begin{lstlisting}[language=grammar]
+icon-layer :
+  "Icon" "(" [ coordsys-specification "," ] graphics ")"
+
+diagram-layer :
+  "Diagram" "(" [ coordsys-specification "," ] graphics ")"
+\end{lstlisting}
+{[}\emph{Example}:
+\begin{lstlisting}[language=modelica]
+annotation (
+   Icon(coordinateSystem(extent={{-100,-100}, {100,100}}),
+        graphics={Rectangle(extent={{-100,-100}, {100,100}}),
+                  Text(extent={{-100,-100}, {100,100}}, textString="Icon")})); 
+\end{lstlisting}
+{]}
+
+The graphics is specified as an ordered sequence of graphical
+primitives, which are described below. First base-class contents is
+drawn according to the order of the extends-clauses, and then graphical
+primitives are drawn according to the order such that later objects can
+cover earlier ones. {[}\emph{Note that the ordered sequence is
+syntactically a valid Modelica annotation, although there is no
+mechanism for defining an array of heterogeneous objects in
+Modelica.}{]}
+
+These Icon, Diagram, and Documentation annotations are only allowed
+directly in classes (e.g. not on components or connections). The allowed
+annotations for a short class definition is the union of the allowed
+annotations in classes and on extends-clauses.
+
+\subsection{Common Definitions}\doublelabel{common-definitions}
+
+The following common definitions are used to define graphical
+annotations in the later sections.
+
+\begin{lstlisting}[language=modelica]
+  type DrawingUnit = Real(final unit="mm");
+  type Point = DrawingUnit[2] "{x, y}";
+  type Extent = Point[2] "Defines a rectangular area {{x1, y1}, {x2, y2}}";
+\end{lstlisting}
+The interpretation of "unit" is with respect to printer output in
+natural size (not zoomed).
+
+All graphical entities have a visible attribute which indicates if the
+entity should be shown.
+
+\begin{lstlisting}[language=modelica]
+partial record GraphicItem
+  Boolean visible = true;
+  Point origin = {0, 0};
+  Real rotation(quantity="angle", unit="deg")=0;
+end GraphicItem;
+\end{lstlisting}
+The origin attribute specifies the origin of the graphical item in the
+coordinate system of the layer in which it is defined. The origin is
+used to define the geometric information of the item and for all
+transformations applied to the item. All geometric information is given
+relative the origin attribute, which by default is \{0, 0\}.
+
+The rotation attribute specifies the rotation of the graphical item
+counter-clockwise around the point defined by the origin attribute.
+
+\subsubsection{Coordinate Systems}\doublelabel{coordinate-systems}
+
+Each of the layers has its own coordinate system. A coordinate system is
+defined by the coordinates of two points, the left (x1) lower (y1)
+corner and the right (x2) upper (y2) corner, where the coordinates of
+the first point shall be less than the coordinates of the second point
+{[}\emph{a first quadrant coordinate system}{]}.
+
+The attribute preserveAspectRatio specifies a constraint on the shape of
+components of the class. If preserveAspectRatio is true, changing the
+extent of components shall preserve the aspect ratio of the coordinate
+system of the class.
+
+The attribute initialScale specifies the default component size as
+initialScale times the size of the coordinate system of the class. An
+application may use a different default value of initialScale.
+
+The attribute grid specifies the spacing between grid points which can
+be used by tools for alignment of points in the coordinate system
+{[}\emph{e.g. ``snap-to-grid''}{]}. Its use and default value is
+tool-dependent.
+
+\begin{lstlisting}[language=modelica]
+record CoordinateSystem
+  Extent extent;
+  Boolean preserveAspectRatio=true;
+  Real initialScale = 0.1;
+  DrawingUnit grid[2];
+end CoordinateSystem;
+\end{lstlisting}
+{[}\emph{Example}: \emph{A coordinate system for an icon could for
+example be defined as:}
+\begin{lstlisting}[language=modelica]
+CoordinateSystem(extent = {{-10, -10}, {10, 10}});
+\end{lstlisting}
+\emph{i.e. a coordinate system with width 20 units and height 20
+units.}{]}
+
+The coordinate systems for the icon and diagram layers are by default
+defined as follows; where the array of GraphicsItem represents an
+ordered list of graphical primitives.
+
+\begin{lstlisting}[language=modelica]
+record Icon "Representation of the icon layer"
+  CoordinateSystem coordinateSystem(extent = {{-100, -100}, {100, 100}});
+  GraphicItem[:] graphics;
+end Icon;
+
+record Diagram "Representation of the diagram layer"
+  CoordinateSystem coordinateSystem(extent = {{-100, -100}, {100, 100}});
+  GraphicItem[:] graphics;
+end Diagram;
+\end{lstlisting}
+The coordinate system (including preserveAspectRatio) of a class is
+defined by the following priority:
+
+\begin{enumerate}
+\item
+  The coordinate system annotation given in the class (if specified).
+\item
+  The coordinate systems of the first base-class where the extent on the
+  extends-clause specifies a null-region (if any). Note that null-region
+  is the default for base-classes, see \ref{extends-clause}.
+\item
+  The default coordinate system CoordinateSystem(extent=\{\{-100,
+  -100\}, \{100, 100\}\}).
+\end{enumerate}
+
+\subsubsection{Graphical Properties}\doublelabel{graphical-properties}
+
+Properties of graphical objects and connection lines are described using
+the following attribute types.
+
+\begin{lstlisting}[language=modelica]
+  type Color = Integer[3](min=0, max=255) "RGB representation";
+
+  constant Color Black = zeros(3);
+  type LinePattern = enumeration(None, Solid, Dash, Dot, DashDot, DashDotDot);
+  type FillPattern = enumeration(None, Solid, Horizontal, Vertical,
+  Cross, Forward, Backward, CrossDiag, HorizontalCylinder, VerticalCylinder, Sphere);
+  type BorderPattern = enumeration(None, Raised, Sunken, Engraved);
+  type Smooth = enumeration(None, Bezier);
+  type EllipseClosure = enumeration(None, Chord, Radial);
+\end{lstlisting}
+The LinePattern attribute Solid indicates a normal line, None an
+invisible line, and the other attributes various forms of dashed/dotted
+lines.
+
+The FillPattern attributes Horizontal, Vertical, Cross, Forward,
+Backward and CrossDiag specify fill patterns drawn with the line color
+over the fill color.
+
+The attributes HorizontalCylinder, VerticalCylinder and Sphere specify
+gradients that represent a horizontal cylinder, a vertical cylinder and
+a sphere, respectively. The gradient goes from line color to fill color.
+
+\includegraphics[width=2.08333in,height=1.66667in]{media/bezierpoints}
+
+The border pattern attributes Raised, Sunken and Engraved represent frames
+which are rendered in a tool-dependent way -- inside the extent of the
+filled shape.
+
+The smooth attribute specifies that a line can be drawn as straight line
+segments (None) or using a spline (Bezier), where the line's points
+specify control points of a quadratic Bezier curve.
+
+For lines with only two points, the smooth attribute has no effect.
+
+For lines with three or more points (P\textsubscript{1},
+P\textsubscript{2}, \ldots{}, P\textsubscript{n}), the middle point of
+each line segment (P\textsubscript{12}, P\textsubscript{23}, \ldots{},
+P\textsubscript{(n-1)n}) becomes the starting point and ending points of
+each quadratic Bezier curve. For each quadratic Bezier curve, the common
+point of the two line segment becomes the control point. For instance,
+point P\textsubscript{2} becomes the control point for the Bezier curve
+starting at P\textsubscript{12} and ending at P\textsubscript{23}. A
+straight line is drawn between the starting point of the line and the
+starting point of the first quadratic Bezier curve, as well as between
+the ending point of the line and the ending point of the last quadratic
+Bezier curve.
+
+In the illustration above, the square points (P\textsubscript{1},
+P\textsubscript{2}, P\textsubscript{3,} and P\textsubscript{4})
+represent the points that define the line, and the circle points
+(P\textsubscript{12}, P\textsubscript{23}, and P\textsubscript{34}) are
+the calculated middle points of each line segment. Points
+P\textsubscript{12}, P\textsubscript{2}, and P\textsubscript{23} define
+the first quadratic Bezier curve, and the points P\textsubscript{23},
+P\textsubscript{3}, and P\textsubscript{34} define the second quadratic
+Bezier curve. Finally a straight line is drawn between points
+P\textsubscript{1} and P\textsubscript{12} as well as between
+P\textsubscript{34} and P\textsubscript{4}.
+
+The values of the EllipseClosure enumeration specify if and how the
+endpoints of an elliptical arc are to be joined (see \ref{ellipse} Ellipse).
+
+\begin{lstlisting}[language=modelica]
+  type Arrow = enumeration(None, Open, Filled, Half);
+  type TextStyle = enumeration(Bold, Italic, UnderLine);
+  type TextAlignment = enumeration(Left, Center, Right);
+\end{lstlisting}
+Filled shapes have the following attributes for the border and interior.
+
+\begin{lstlisting}[language=modelica]
+record FilledShape "Style attributes for filled shapes"
+  Color lineColor = Black "Color of border line";
+  Color fillColor = Black "Interior fill color";
+  LinePattern pattern = LinePattern.Solid "Border line pattern";
+  FillPattern fillPattern = FillPattern.None "Interior fill pattern";
+  DrawingUnit lineThickness = 0.25 "Line thickness";
+end FilledShape;
+\end{lstlisting}
+The extent/points of the filled shape describe the theoretical
+zero-thickness filled shape, and the actual rendered border is then half
+inside and half outside the extent.
+
+\subsection{Component Instance}\doublelabel{component-instance}
+
+A component instance can be placed within a diagram or icon layer. It
+has an annotation with a Placement modifier to describe the placement.
+Placements are defined in term of coordinate systems transformations:
+
+\begin{lstlisting}[language=modelica]
+record Transformation
+  Point origin = {0, 0};
+  Extent extent;
+  Real rotation(quantity="angle", unit="deg")=0;
+end Transformation;
+\end{lstlisting}
+The origin attribute defines the position of the component in the
+coordinate system of the enclosing class. The extent defines the
+position, size and flipping of the component, relative to the origin
+attribute. The extent is defined relative to the origin attribute of the
+component instance. Given an extent \{\{x1, y1\}, \{x2, y2\}\},
+x2\textless{}x1 defines horizontal flipping and y2\textless{}y1 defines
+vertical flipping around the center of the object.
+
+The rotation attribute specifies rotation of the extent around the point
+defined by the origin attribute.
+
+The graphical operations are applied in the order: scaling, flipping and
+rotation.
+
+\begin{lstlisting}[language=modelica]
+record Placement
+  Boolean visible = true;
+  Transformation transformation "Placement in the diagram layer";
+  Transformation iconTransformation "Placement in the icon layer";
+end Placement;
+\end{lstlisting}
+If no iconTransformation is given the transformation is also used for
+placement in the icon layer.
+
+{[}\emph{A connector can be shown in both an icon layer and a diagram
+layer of a class. Since the coordinate systems typically are different,
+placement information needs to be given using two different coordinate
+systems. More flexibility than just using scaling and translation is
+needed since the abstraction views might need different visual placement
+of the connectors. The attribute transformation gives the placement in
+the diagram layer and iconTransformation gives the placement in the icon
+layer. When a connector is shown in a diagram layer, its diagram layer
+is shown to facilitate opening up a hierarchical connector to allow
+connections to its internal subconnectors.}{]}
+
+For connectors, the icon layer is used to represent a connector when it
+is shown in the icon layer of the enclosing model. The diagram layer of
+the connector is used to represent it when shown in the diagram layer of
+the enclosing model. Protected connectors are only shown in the diagram
+layer. Public connectors are shown in both the diagram layer and the
+icon layer. Non-connector components are only shown in the diagram
+layer.
+
+\subsection{Extends clause}\doublelabel{extends-clause}
+
+Each extends clause may have layer specific annotations which describe
+the rendering of the base class' icon and diagram layers in the
+subclass.
+
+\begin{lstlisting}[language=modelica]
+record IconMap
+  Extent extent = {{0, 0}, {0, 0}};
+  Boolean primitivesVisible = true;
+end IconMap;
+
+record DiagramMap
+  Extent extent = {{0, 0}, {0, 0}};
+  Boolean primitivesVisible = true;
+end DiagramMap;
+\end{lstlisting}
+All graphical objects are by default inherited from a base class. If the
+primitivesVisible attribute is false, components and connections are
+visible but graphical primitives are not.
+
+\begin{itemize}
+\item
+  If the extent of the extends-clause defines a null region (the
+  default), the base class contents is mapped to the same coordinates in
+  the derived class, and the coordinate system (including
+  preserveAspectRatio) can be inherited as described in 
+  \ref{coordinate-systems}.
+\item
+  If the extent of the extends-clause defines a non-null region, the
+  base class coordinate system is mapped to the region specified by the
+  attribute extent, if preserveAspectRatio is true for the base class
+  the mapping shall preserve the aspect ratio. The base class coordinate
+  system (and preserveAspectRatio) is not inherited.
+\end{itemize}
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+model A
+  extends B annotation(
+  IconMap(extent={{-100,-100}, {100,100}},primitivesVisible=false),
+  DiagramMap(extent={{-50,-50}, {0,0}},primitivesVisible=true)
+  );
+end A;
+
+model B
+  extends C annotation(DiagramMap(primitivesVisible=false));
+  ...
+end B;
+\end{lstlisting}
+\emph{In this example the diagram of A contain the graphical primitives
+from A and B (but not from C since they were hidden in B) -- the ones
+from B are rescaled, and the icon of A contain the graphical primitives
+from A (but neither from B nor from C).}
+
+{]}
+
+\subsection{Connections}\doublelabel{connections1}
+
+A connection is specified with an annotation containing a Line primitive
+and optionally a Text-primitive, as specified below. {[}\emph{Example:}
+\begin{lstlisting}[language=modelica]
+  connect(a.x, b.x)
+   annotation(Line(points={{-25,30}, {10,30}, {10, -20}, {40,-20}})); 
+\end{lstlisting}
+
+{]}
+
+The optional Text-primitive defines a text that will be written on the
+connection line. It has the following definition (\emph{it is not equal
+to the Text-primitive as part of graphics -- the differences are marked as bold lines}):
+% NOTE: Technically just the names - not the entire lines are marked ni bold
+\begin{lstlisting}[language=modelica,escapechar=!,emph={horizontalAlignment,string,index}, emphstyle=\textbf]
+record Text
+  extends GraphicItem;
+  extends FilledShape;
+  Extent extent;
+  String string;
+  Real fontSize = 0 "unit pt";
+  String fontName;
+  TextStyle textStyle[:];
+  Color textColor=lineColor;
+  TextAlignment horizontalAlignment = if index<0 then TextAlignment.Right else TextAligment.Left;
+  Integer index;
+end Text;
+\end{lstlisting}
+
+The index is one of the points of Line (numbered 1, 2, 3, \ldots{} where
+-1 can be used to indicate the last one). The string may use the special
+symbols ``\%first'' and ``\%second'' to indicate the connectors in the
+connect-equation.
+
+The textColor attribute defines the color of the text. The text is drawn
+with transparent background and no border around the text (and without
+outline). The contents inherited from FilledShape is deprecated.
+
+{[}\emph{Example:}
+\begin{lstlisting}[language=modelica]
+  connect(controlBus.axisControlBus1, axis1.axisControlBus) annotation (
+      Text(string="%first", index=-1, extent=[-6,3; -6,3]),
+      Line(points={{-80,-10},{-80,-14.5},{-79,-14.5},{-79,-17},{-65,-17},{-65,-65},
+           {-25,-65}})); 
+\end{lstlisting}
+\emph{Draws a connection line and adds the text ''axisControlBus1''
+ending at \{-6, 3\}+\{-25, -65\}.}
+
+{]}
+
+\subsection{Graphical primitives}\doublelabel{graphical-primitives}
+
+This section describes the graphical primitives that can be used to
+define the graphical objects in an annotation.
+
+\subsubsection{Line}\doublelabel{line}
+
+A line is specified as follows:
+
+\begin{lstlisting}[language=modelica]
+record Line
+  extends GraphicItem;
+  Point points[:];
+  Color color = Black;
+  LinePattern pattern = LinePattern.Solid;
+  DrawingUnit thickness = 0.25;
+  Arrow arrow[2] = {Arrow.None, Arrow.None} "{start arrow, end arrow}";
+  DrawingUnit arrowSize=3;
+  Smooth smooth = Smooth.None "Spline";
+end Line;
+\end{lstlisting}
+Note that the Line primitive is also used to specify the graphical
+representation of a connection.
+
+For arrows:
+
+\begin{itemize}
+\item
+  The arrow is drawn with an aspect ratio of 1/3 for each arrow part.
+\item
+  The arrowSize gives the width of the arrow (including the imagined
+  other half for Half) so that lineThickness=10 and arrowSize=10 will
+  touch at the outer parts.
+\item
+  All arrow variants overlap for overlapping lines.
+\item
+  The lines for the Open and Half variants are drawn with lineThickness.
+\end{itemize}
+
+\subsubsection{Polygon}\doublelabel{polygon}
+
+A polygon is specified as follows:
+
+\begin{lstlisting}[language=modelica]
+record Polygon
+  extends GraphicItem;
+  extends FilledShape;
+  Point points[:];
+  Smooth smooth = Smooth.None "Spline outline";
+end Polygon;
+\end{lstlisting}
+The polygon is automatically closed, if the first and the last points
+are not identical.
+
+\subsubsection{Rectangle}\doublelabel{rectangle}
+
+A rectangle is specified as follows:
+
+\begin{lstlisting}[language=modelica]
+record Rectangle
+  extends GraphicItem;
+  extends FilledShape;
+  BorderPattern borderPattern = BorderPattern.None;
+  Extent extent;
+  DrawingUnit radius = 0 "Corner radius";
+end Rectangle;
+\end{lstlisting}
+The extent attribute specifies the bounding box of the rectangle. If the
+radius attribute is specified, the rectangle is drawn with rounded
+corners of the given radius.
+
+\subsubsection{Ellipse}\doublelabel{ellipse}
+
+An ellipse is specified as follows:
+
+\begin{lstlisting}[language=modelica]
+record Ellipse
+  extends GraphicItem;
+  extends FilledShape;
+  Extent extent;
+  Real startAngle(quantity="angle", unit="deg")=0;
+  Real endAngle(quantity="angle", unit="deg")=360;
+  EllipseClosure closure = if startAngle == 0 and endAngle == 360
+  then EllipseClosure.Chord
+  else EllipseClosure.Radial;
+end Ellipse;
+\end{lstlisting}
+The extent attribute specifies the bounding box of the ellipse.
+
+Partial ellipses can be drawn using the startAngle and endAngle
+attributes. These specify the endpoints of the arc prior to the stretch
+and rotate operations. The arc is drawn counter-clockwise from
+startAngle to endAngle, where startAngle and endAngle are defined
+counter-clockwise from 3 o'clock (the positive x-axis).
+
+The closure attribute specifies whether the endpoints specified by
+startAngle and endAngle are to be joined by lines to the centre of the
+extent (closure=EllipseClosure.Radial), joined by a single straight line
+between the end points (closure=EllipseClosure.Chord), or left
+unconnected (closure=EllipseClosure.None). In the latter case, the
+ellipse is treated as an open curve instead of a closed shape, and the
+fillPattern and fillColor are not applied (if present, they are
+ignored).
+
+The default closure is EllipseClosure.Chord when startAngle is 0 and
+endAngle is 360, or EllipseClosure.Radial otherwise. \emph{{[}The
+default for a closed ellipse is not EllipseClosure.None, since that
+would result in fillColor and fillPattern being ignored, making it
+impossible to draw a filled ellipse. EllipseClosure.Chord is equivalent
+in this case, since the chord will be of zero length.{]}}
+
+\subsubsection{Text}\doublelabel{text}
+
+A text string is specified as follows:
+
+\begin{lstlisting}[language=modelica]
+record Text
+  extends GraphicItem;
+  extends FilledShape;
+  Extent extent;
+  String textString;
+  Real fontSize = 0 "unit pt";
+  String fontName;
+  TextStyle textStyle[:];
+  Color textColor=lineColor;
+  TextAlignment horizontalAlignment = TextAlignment.Center;
+end Text;
+\end{lstlisting}
+The textColor attribute defines the color of the text. The text is drawn
+with transparent background and no border around the text (and without
+outline). The contents inherited from FilledShape is deprecated.
+
+There are a number of common macros that can be used in the text, and
+they should be replaced when displaying the text as follows:
+
+\begin{itemize}
+\item
+  \%\emph{par} and \%\{\emph{par\}} replaced by the value of the
+  parameter \emph{par}. The intent is that the text is easily readable,
+  thus if par is of an enumeration type, replace \%par by the item name,
+  not by the full name.\\
+  \emph{{[}Example: if par="Modelica.Blocks.Types.Enumeration.Periodic",
+  then \%par should be displayed as "Periodic"{]}} The form
+  \%\{\emph{par\}} allows component-references, and can be directly
+  followed by a letter. Thus \emph{\%\{par\}m} gives the value of par
+  directly followed by m -- and \emph{\%parm} gives the value of the
+  parameter parm. If the parameter does not exist it is an error.
+\item
+  \%\% replaced by \%
+\item
+  \%name replaced by the name of the component (i.e. the identifier for
+  it in in the enclosing class).
+\item
+  \%class replaced by the name of the class.
+\end{itemize}
+
+The style attribute fontSize specifies the font size. If the fontSize
+attribute is 0 the text is scaled to fit its extent. Otherwise, the size
+specifies the absolute size. The text is vertically centered in the
+extent.
+
+If the extent specifies a box with zero width and positive height the
+height is used as height for the text (unless fontSize attribute is
+non-zero -- which specifies the absolute size), and the text is not
+truncated (the horizontalAlignment is still used in this case).
+\emph{{[}This is convenient for handling texts where the width is
+unknown.{]}}
+
+If the string fontName is empty, the tool may choose a font. The font
+names "serif", "sans-serif", and "monospace" shall be recognized. If
+possible the correct font should be used - otherwise a reasonable match,
+or treat as if font-name was empty.
+
+The style attribute textStyle specifies variations of the font.
+
+\subsubsection{Bitmap}\doublelabel{bitmap}
+
+A bitmap image is specified as follows:
+
+\begin{lstlisting}[language=modelica]
+record Bitmap
+  extends GraphicItem;
+  Extent extent;
+  String fileName "Name of bitmap file";
+  String imageSource "Base64 representation of bitmap";
+end Bitmap;
+\end{lstlisting}
+The Bitmap primitive renders a graphical bitmap image. The data of the
+image can either be stored on an external file or in the annotation
+itself. The image is scaled to fit the extent. Given an extent \{\{x1,
+y1\}, \{x2, y2\}\}, x2\textless{}x1 defines horizontal flipping and
+y2\textless{}y1 defines vertical flipping around the center of the
+object.
+
+The graphical operations are applied in the order: scaling, flipping and
+rotation.
+
+When the attribute fileName is specified, the string refers to an
+external file containing image data. The mapping from the string to the
+file is specified for some URIs in \ref{external-resources}. The supported file
+formats include PNG, BMP and JPEG, other supported file formats are
+unspecified.
+
+When the attribute imageSource is specified, the string contains the
+image data -- and the image format is determined based on the contents.
+The image is represented as a Base64 encoding of the image file format
+(see RFC~4648, \url{http://tools.ietf.org/html/rfc4648}).
+
+The image is uniformly scaled {[}\emph{to preserve aspect ratio}{]} so
+it exactly fits within the extent {[}\emph{touching the extent along one
+axis}{]}. The center of the image is positioned at the center of the
+extent.
+
+\subsection{Variable Graphics and Schematic Animation}\doublelabel{variable-graphics-and-schematic-animation}
+
+Any value (coordinates, color, text, etc.) in graphical annotations can
+be dependent on class variables using the DynamicSelect expression.
+DynamicSelect has the syntax of a function call with two arguments,
+where the first argument specifies the value of the editing state and
+the second argument the value of the non-editing state. The first
+argument must be a literal expression. The second argument may contain
+references to variables to enable a dynamic behavior.
+
+{[}\emph{Example}: \emph{The level of a tank could be animated by a
+rectangle expanding in vertical direction and its color depending on a
+variable overflow:}
+\begin{lstlisting}[language=modelica]
+  annotation (
+   Icon(graphics={Rectangle(
+     extent=DynamicSelect({{0,0},{20,20}},{{0,0},{20,level}}),
+      fillColor=DynamicSelect({0,0,255},
+                              if overflow then {255,0,0} else {0,0,255}))}
+ );
+\end{lstlisting}
+{]}
+
+\subsection{User input}\doublelabel{user-input}
+
+It is possible to interactively modify variables during a simulation.
+The variables may either be parameters, discrete variables or states.
+New numeric values can be given, a mouse click can change a Boolean
+variable or a mouse movement can change a Real variable. Input fields
+may be associated with a GraphicItem or a component as an array named
+interaction. The interaction array may occur as an attribute of a
+graphic primitive, an attribute of a component annotation or as an
+attribute of the layer annotation of a class.
+
+\subsubsection{Mouse input}\doublelabel{mouse-input}
+
+A Boolean variable can be changed when the cursor is held over a
+graphical item or component and the selection button is pressed if the
+interaction annotation contains OnMouseDownSetBoolean:
+
+\begin{lstlisting}[language=modelica]
+record OnMouseDownSetBoolean
+  Boolean variable "Name of variable to change when mouse button pressed";
+  Boolean value "Assigned value";
+end OnMouseDownSetBoolean;
+\end{lstlisting}
+{[}\emph{Example}: \emph{A button can be represented by a rectangle
+changing color depending on a Boolean variable} on \emph{and toggles the
+variable when the rectangle is clicked on:}
+
+\begin{lstlisting}[language=modelica]
+  annotation (Icon(graphics={Rectangle(extent=[0,0; 20,20],
+  fillColor=if  on then {255,0,0} else
+  {0,0,255})},
+  interaction={ OnMouseDownSetBoolean (on, not on)}));
+\end{lstlisting}
+{]}
+
+In a similar way, a variable can be changed when the mouse button is
+\emph{released}:
+
+\begin{lstlisting}[language=modelica]
+record OnMouseUpSetBoolean
+  Boolean variable "Name of variable to change when mouse button released";
+  Boolean value "Assigned value";
+end OnMouseUpSetBoolean;
+\end{lstlisting}
+Note that several interaction objects can be associated with the same
+graphical item or component.
+
+{[}\emph{Example}:
+\begin{lstlisting}[language=modelica]
+interaction={ OnMouseDownSetBoolean(on, true), OnMouseUpSetBoolean(on, false)};
+\end{lstlisting}
+{]}
+
+The OnMouseMoveXSetReal interaction object sets the variable to the
+position of the cursor in X direction in the local coordinate system
+mapped to the interval defined by the minValue and maxValue attributes.
+
+\begin{lstlisting}[language=modelica]
+record OnMouseMoveXSetReal
+  Real xVariable "Name of variable to change when cursor moved in x direction";
+  Real minValue;
+  Real maxValue;
+end OnMouseMoveXSetReal;
+\end{lstlisting}
+The OnMouseMoveYSetReal interaction object works in a corresponding way
+as the OnMouseMoveXSetReal object but in the Y direction.
+
+\begin{lstlisting}[language=modelica]
+record OnMouseMoveYSetReal
+  Real yVariable "Name of variable to change when cursor moved in y direction";
+  Real minValue;
+  Real maxValue;
+end OnMouseMoveYSetReal;
+\end{lstlisting}
+\subsubsection{Edit input}\doublelabel{edit-input}
+
+The OnMouseDownEditInteger interaction object presents an input field
+when the graphical item or component is clicked on. The field shows the
+actual value of the variable and allows changing the value. If a too
+small or too large value according to the min and max parameter values
+of the variable is given, the input is rejected.
+
+\begin{lstlisting}[language=modelica]
+record OnMouseDownEditInteger
+  Integer variable "Name of variable to change";
+end OnMouseDownEditInteger;
+\end{lstlisting}
+The OnMouseDownEditReal interaction object presents an input field when
+the graphical item or component is clicked on. The field shows the
+actual value of the variable and allows changing the value. If a too
+small or too large value according to the min and max parameter values
+of the variable is given, the input is rejected.
+
+\begin{lstlisting}[language=modelica]
+record OnMouseDownEditReal
+  Real variable "Name of variable to change";
+end OnMouseDownEditReal;
+\end{lstlisting}
+The OnMouseDownEditString interaction object presents an input field
+when the graphical item or component is clicked on. The field shows the
+actual value of the variable and allows changing the value.
+
+\begin{lstlisting}[language=modelica]
+record OnMouseDownEditString
+  String variable "Name of variable to change";
+end OnMouseDownEditString;
+\end{lstlisting}
+\section{Annotations for the Graphical User Interface}\doublelabel{annotations-for-the-graphical-user-interface}
+
+A class may have the following annotations to define properties of the
+graphical user interface:
+\begin{lstlisting}[language=modelica]
+ annotation(defaultComponentName = "name") 
+\end{lstlisting}
+
+When creating a component of the given class, the recommended component
+name is name.
+\begin{lstlisting}[language=modelica]
+  annotation(defaultComponentPrefixes = "prefixes")
+\end{lstlisting}
+
+When creating a component, it is recommended to generate a declaration
+of the form
+\begin{lstlisting}[language=modelica]
+  prefixes class-name component-name 
+\end{lstlisting}
+
+The following prefixes may be included in the string prefixes: inner,
+outer, replaceable, constant, parameter, discrete. {[}\emph{In
+combination with} defaultComponentName \emph{it can be used to make it
+easy for users to create} inner \emph{components matching the} outer
+\emph{declarations; see also example below}{]}
+\begin{lstlisting}[language=modelica]
+  annotation(missingInnerMessage = "message")
+\end{lstlisting}
+
+When an outer component of the class does not have a corresponding inner
+component, the string message may be used as a diagnostic message, see
+\ref{instance-hierarchy-name-lookup-of-inner-declarations}.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+model World
+  ...
+  annotation(defaultComponentName = "world",
+  defaultComponentPrefixes = "inner replaceable",
+  missingInnerMessage = "The World object is missing");
+end World;
+\end{lstlisting}
+When an instance of model World is dragged in to the diagram layer, the
+following declaration is generated:
+\begin{lstlisting}[language=modelica]
+  inner replaceable World world;
+\end{lstlisting}
+
+{]}
+
+A simple type or component of a simple type may have:
+\begin{lstlisting}[language=modelica]
+  annotation(absoluteValue=false); 
+\end{lstlisting}
+
+If false, then the variable defines a relative quantity, and if true an
+absolute quantity. {[}\emph{When converting between units (in the
+user-interface for plotting and entering parameters), the offset must be
+ignored, for a variable defined with annotation absoluteValue = false.
+This annotation is used in the Modelica Standard Library for example in
+Modelica.SIunits for the type definition TemperatureDifference.}{]}
+
+A model or block definition may contain:
+\begin{lstlisting}[language=modelica]
+  annotation(defaultConnectionStructurallyInconsistent=true)
+\end{lstlisting}
+
+If true, it is stated that a default connection will result in a
+structurally inconsistent model or block\footnote{For the precise
+  definition of "structurally inconsistent" see the article:
+  \href{http://epubs.siam.org/doi/abs/10.1137/0909014}{Pantelides C.C.:
+  The Consistent Initialization of Differential-Algebraic Systems, SIAM
+  J. Sci. and Stat. Comput. Volume 9, Issue 2, pp. 213--231 (March
+  1988)}}. A "default connection" is constructed by instantiating the
+respective model or block and for every input u providing an equation
+0=f(u), and for every (potential,flow) pair of the form (v,i), providing
+an equation of the form 0=f(v,i).
+
+{[}\emph{It is useful to check all models/blocks of a Modelica package
+in a simple way. One check is to default connect every model/block and
+to check whether the resulting class is structurally consistent (= a
+stronger requirement as ``balanced''). It is rarely needed; but is for
+example used in Modelica.Blocks.Math.InverseBlockConstraints, in order
+to prevent a wrong error message. Additionally, when a user defined
+model is structurally inconsistent, a tool should try to pinpoint in
+which class the error is present. This annotation avoids then to show a
+wrong error message.}{]}
+
+A class may have the following annotation:
+\begin{lstlisting}[language=modelica]
+  annotation(obsolete = "message");
+\end{lstlisting}
+
+
+It indicates that the class ideally should not be used anymore and gives
+a message indicating the recommended action.
+
+A declaration may have the following annotations:
+\begin{lstlisting}[language=modelica]
+  annotation(unassignedMessage = "message"); 
+\end{lstlisting}
+
+When the variable to which this annotation is attached in the
+declaration cannot be computed due to the structure of the equations,
+the string message can be used as a diagnostic message. {[}\emph{When
+using BLT partitioning, this means if a variable ``a'' or one of its
+aliases ``b = a'', ``b = -a'', cannot be assigned, the message is
+displayed. This annotation is used to provide library specific error
+messages.}{]}
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+connector Frame "Frame of a mechanical system"
+  ...
+  flow Modelica.SIunits.Force f[3]
+  annotation(unassignedMessage =
+      "All Forces cannot be uniquely calculated. The reason could be that the
+     mechanism contains a planar loop or that joints constrain the same motion.
+     For planar loops, use in one revolute joint per loop the option
+     PlanarCutJoint=true in the Advanced menu.
+     ");
+end Frame; 
+\end{lstlisting}
+{]}
+\begin{lstlisting}[language=modelica]
+annotation(Dialog(enable = true, tab = "General",
+                  group = "Parameters",
+                  showStartAttribute = false,
+                  colorSelector = false,
+                  groupImage="modelica://MyPackage/Resources/Images/switch.png",
+                  connectorSizing = false)); 
+\end{lstlisting}
+
+The annotations \textbf{tab} and \textbf{group} define the placement of
+the component or of variables in a dialog with optional tab and group
+specification. If \textbf{enable} = \textbf{false}, the input field may
+be disabled {[}\emph{and no input can be given}{]}. If
+\textbf{showStartAttribute} = true the dialog should allow the user to
+set the start-value and the fixed attribute for the variable instead of
+the value-attribute {[}\emph{this is primarily intended for
+non-parameter values and avoids introducing a separate parameter for the
+start-value of the variable{]}}.
+
+If colorSelector=true, it indicates that an rgb-value selector can be
+presented for a vector of three elements and generate values 0..255 (the
+annotation should be useable both for vectors of Integers and Reals).
+
+The annotation \textbf{groupImage} references an image using an URI (see
+\ref{external-resources}), and the image is intended to be shown together with the
+parameter-group (only one image per group is supported). Disabling the
+input field will not disable the image.
+
+The value of the connectorSizing annotation must be a literal
+\textbf{false} or \textbf{true} value {[}\emph{since if the value is an
+expression, the connectorSizing functionality is conditional and this
+will then lead easily to wrong models}{]}. If \textbf{connectorSizing =
+false}, this annotation has no effect. If \textbf{connectorSizing =
+true}, the corresponding variable must be declared with the
+\textbf{parameter} prefix, must be a subtype of a scalar Integer and
+must have a literal default value of zero {[}\emph{since this annotation
+is designed for a parameter that is used as vector dimension and the
+dimension of the vector should be zero when the component is dragged or
+redeclared; furthermore, when a tool does not support the
+connectorSizing annotation, dragging will still result in a correct
+model}{]}.
+
+If \textbf{connectorSizing = true}, a tool may set the parameter value
+in a modifier automatically, if used as dimension size of a vector of
+connectors. {[}\emph{The connectorSizing annotation is used in cases
+where connections to a vector of connectors shall be made and a new
+connection requires to resize the vector and to connect to the new index
+(unary connections). The annotation allows a tool to perform these two
+actions in many cases automatically. This is, e.g., very useful for
+state machines and for certain components of fluid libraries.}{]}
+
+Annotation ``Dialog'' is defined as:
+
+\begin{lstlisting}[language=modelica]
+record Dialog
+  parameter String tab = "General";
+  parameter String group = "Parameters";
+  parameter Boolean enable = true;
+  parameter Boolean showStartAttribute = false;
+  parameter Boolean colorSelector = false;
+  parameter Selector loadSelector;
+  parameter Selector saveSelector;
+  parameter String groupImage = "";
+  parameter Boolean connectorSizing = false;
+end Dialog;
+
+record Selector
+  parameter String filter="";
+  parameter String caption="";
+end Selector;
+\end{lstlisting}
+A parameter dialog is a sequence of tabs with a sequence of groups
+inside them.
+
+A Selector displays a file dialog to select a file. Setting filter only
+shows files that fulfill the given pattern defined by ``text1
+(*.ext1);;text2 (*.ext2)'' to show only files with file extension
+ext1 or ext2 and displaying a description text ``text1'' and
+``text2'', respectively. Parameter caption is the text displayed in the
+dialog menu. Parameter loadSelector is used to select an existing file
+for reading, whereas parameter saveSelector is used to define a file for
+writing.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+model DialogDemo
+  parameter Boolean b = true "Boolean parameter";
+  parameter Modelica.SIunits.Length length "Real parameter with unit";
+  parameter Integer nInports=0 
+     annotation(Dialog(connectorSizing=true));
+  parameter Real r1 "Real parameter in Group 1"
+     annotation(Dialog(group="Group 1"));
+  parameter Real r2 "Disabled Real parameter in Group 1"
+     annotation(Dialog(group="Group 1",enable = not b));
+  parameter Real r3 "Real parameter in Tab 1"
+     annotation(Dialog(tab="Tab 1"));
+  parameter Real r4 "Real parameter in Tab 1 and Group 2"
+     annotation(Dialog(tab="Tab 1", group="Group 2"));
+  StepIn stepIn[nInports];
+  ...
+end DialogDemo;
+\end{lstlisting}
+\emph{When clicking on an instance of model DialogDemo, a menu pops up
+that may have the following layout (other layouts are also possible,
+this is vendor specific). Note, parameter nInports is not present in the
+menu since it has the ``connectorSizing'' annotation and therefore it
+should not be modified by the user (an alternative is to show parameter
+nInports in the menu but with disabled input field): }
+
+\includegraphics[width=2.25in,height=1.125in]{media/disabledparameter}
+\includegraphics[width=2.625in,height=0.89583in]{media/tabparameter}
+
+\emph{The following part is non-normative text and describes a useful
+way to handle the connectorSizing annotation in a tool (still a tool may
+use another strategy and/or may handle other cases than described
+below). The recommended rules are clarified at hand of the following
+example which represents a connector and a model from the
+Modelica.StateGraph library:}
+
+\begin{lstlisting}[language=modelica]
+connector StepIn // Only 1:1 connections are possible since input used
+  output Boolean occupied;
+  input Boolean set;
+end StepIn;
+
+model Step
+  // nIn cannot be set in the parameter dialog (but maybe shown)
+  parameter Integer nIn=0
+  annotation(Dialog(connectorSizing=true));
+  StepIn inPorts[nIn];
+  ...
+end Step;
+\end{lstlisting}
+\emph{If the parameter is used as dimension size of a {vector of
+connectors}, it is automatically updated according to the following
+rules:}
+
+\begin{enumerate}
+\item
+  \emph{If a new connection line is drawn between one outside and one
+  inside vector of connectors both dimensioned with (connectorSizing)
+  parameters, a connection between the two vectors is performed and the
+  (connectorSizing) parameter is propagated from connector to component.
+  Other types of outside connections do not lead to an automatic update
+  of a (connectorSizing) parameter. Example:} \emph{Assume there is a
+  connector inPorts and a component step1:} 
+\begin{lstlisting}[language=modelica]
+  parameter Integer nIn=0 annotation(Dialog(connectorSizing=true)); 
+  StepIn inPorts[nIn];
+  Step step1(nIn=0);
+\end{lstlisting}
+  \emph{Drawing a connection line between connectors inPorts and
+  step1.inPorts results in:}
+\begin{lstlisting}[language=modelica]
+  parameter Integer nIn=0 annotation(Dialog(connectorSizing=true)); 
+  StepIn inPorts[nIn];
+  Step step1(nIn=nIn); // nIn=0 changed to nIn=nIn
+  equation
+  connect(inPorts, step1.inPorts); // new connect equation
+\end{lstlisting}
+\item
+  \emph{If a connection line is deleted between one outside and one
+  inside vector of connectors both dimensioned with (connectorSizing)
+  parameters, the connect equation is removed and the (connectorSizing)
+  parameter of the component is set to zero or the modifier is removed}.
+  \emph{Example:} \emph{Assume the connection line in (3) is removed.
+  This results in:}
+\begin{lstlisting}[language=modelica]
+  parameter Integer nIn=0 annotation(Dialog(connectorSizing=true));
+  StepIn inPorts[nIn];
+  Step step1; // modifier nIn=nIn is removed
+\end{lstlisting}
+\item
+  \emph{If a new connection line is drawn to an inside connector with
+  connectorSizing and case 1 does not apply then, the parameter is
+  incremented by one and the connection is performed for the new highest
+  index. Example:} \emph{Assume that 3 connections are present and a new
+  connection is performed. The result is:}
+\begin{lstlisting}[language=modelica]
+    Step step1(nIn=4); // index changed from nIn=3 to nIn=4
+  equation
+    connect(.., step1.inPorts[4]); // new connect equation
+\end{lstlisting}
+  \emph{In some applications, like state machines, the vector index is
+  used as a priority, e.g., to define which transition is firing if
+  several transitions become active at the same time instant. It is then
+  not sufficient to only provide a mechanism to always connect to the
+  last index. Instead, some mechanism to select an index conveniently
+  should be provided. }
+\item
+  \emph{If a connection line is deleted to an inside connector with
+  connectorSizing and case 2 does not apply then, then the
+  (connectorSizing) parameter is decremented by one and all connections
+  with index above the deleted connection index are also decremented by
+  one}. \emph{Example:} \emph{Assume there are 4 connections:}
+\begin{lstlisting}[language=modelica]
+  Step step1(nIn=4);
+equation
+  connect(a1, step1.inPorts[1]);
+  connect(a2, step1.inPorts[2]);
+  connect(a3, step1.inPorts[3]);
+  connect(a4, step1.inPorts[4]);
+\end{lstlisting}
+  \emph{and the connection from a2 to step1. inPorts{[}2{]} is deleted.
+  This results in} 
+\begin{lstlisting}[language=modelica]
+  Step step1(nIn=3);
+equation
+  connect(a1, step1.inPorts[1]);
+  connect(a3, step1.inPorts[2]);
+  connect(a4, step1.inPorts[3]);
+\end{lstlisting}
+\end{enumerate}
+
+\emph{These rules also apply if the connectors and/or components are
+defined in {superclass}. Example:} \emph{Assume that step1 is defined in
+superclass CompositeStep with 3 connections, and a new connection is
+performed in a subclass. The result is:}
+\begin{lstlisting}[language=modelica]
+  extends CompositeStep(step1(nIn=4)); // new modifier nIn=4
+equation
+  connect(.., step1.inPorts[4]);  // new connect equation 
+\end{lstlisting}
+{]}
+
+\section{Annotations for Version Handling}\doublelabel{annotations-for-version-handling}
+
+A top-level package or model can specify the version of top-level
+classes it uses, its own version number, and if possible how to convert
+from previous versions. This can be used by a tool to guarantee that
+consistent versions are used, and if possible to upgrade usage from an
+earlier version to a current one.
+
+\subsection{Version Numbering}\doublelabel{version-numbering}
+
+Version numbers are of the forms:
+
+\begin{itemize}
+\item
+  Main release versions: """ UNSIGNED-INTEGER \{ "." UNSIGNED-INTEGER \}
+  """ {[}\emph{Example: "2.1"}{]}
+\item
+  Pre-release versions: """ UNSIGNED-INTEGER \{ "." UNSIGNED-INTEGER \}
+  " " \{S-CHAR\} """ {[}\emph{Example: "2.1 Beta 1"}{]}
+\item
+  Un-ordered versions: """ NON-DIGIT \{S-CHAR\} """\\
+  {[}\emph{Example: "Test 1"}{]}
+\end{itemize}
+
+The main release versions are ordered using the hierarchical numerical
+names, and follow the corresponding pre-release versions. The
+pre-release versions of the same main release version are internally
+ordered alphabetically.
+
+\subsection{Version Handling}\doublelabel{version-handling}
+
+In a top-level class, the version number and the dependency to earlier
+versions of this class are defined using one or more of the following
+annotations:
+
+\begin{itemize}
+\item
+  version = CURRENT-VERSION-NUMBER\\
+  Defines the version number of the model or package. All classes within
+  this top-level class have this version number.
+\item
+  conversion ( noneFromVersion = VERSION-NUMBER)\\
+  Defines that user models using the VERSION-NUMBER can be upgraded to
+  the CURRENT-VERSION-NUMBER of the current class without any changes.
+\item
+  conversion ( from (version = \emph{Versions}, {[}to=VERSION-NUMBER,{]}
+  \emph{Convert}) )
+
+  where \emph{Versions} is VERSION-NUMBER \textbar{}
+  \{VERSION-NUMBER,VERSION-NUMBER,\ldots{}\}\\
+  and \emph{Convert} is script="\ldots{}" \textbar{}
+  change=\{conversionRule(), \ldots{}, conversionRule()\}\\
+  Defines that user models using the VERSION-NUMBER or any of the given
+  VERSION-NUMBER can be upgraded to the given VERSION-NUMBER (if the
+  to-tag is missing this is the CURRENT-VERSION-NUMBER) of the current
+  class by applying the given conversion rules. The script consists of
+  an unordered sequence of conversionRule(); (and optionally Modelica
+  comments). The conversionRule functions are defined in \ref{conversion-rules}.
+  \emph{{[}The to-tag is added for clarity and optionally allows a tool
+  to convert in multiple steps.{]}}
+\item
+  uses(IDENT (version = VERSION-NUMBER) )\\
+  Defines that classes within this top-level class uses version
+  VERSION-NUMBER of classes within the top-level class IDENT.
+\end{itemize}
+
+The annotations uses and conversion may contain several different
+sub-entries.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+package Modelica
+  ...
+  annotation(version="3.1",
+  conversion(noneFromVersion="3.1 Beta 1",
+  noneFromVersion="3.1 Beta 2",
+  from(version={"2.1", "2.2", "2.2.1"},
+  script="convertTo3.mos"),
+  from(version="1.5",
+  script="convertFromModelica1_5.mos")));
+end Modelica;
+
+model A
+  ...
+  annotation(version="1.0",
+  uses(Modelica(version="1.5")));
+end A;
+
+model B
+  ...
+  annotation(uses(Modelica(version="3.1 Beta 1")));
+end B;
+\end{lstlisting}
+\emph{In this example the model} A \emph{uses an older version of the
+Modelica library and can be upgraded using the given script, and model}
+B \emph{uses an older version of the Modelica library but no changes are
+required when upgrading. }
+
+{]}
+
+\subsubsection{Conversion rules}\doublelabel{conversion-rules}
+
+There are a number of functions: convertClass, convertClassIf,
+convertElement, convertModifiers, convertMessage defined as follows. The
+calls of these functions do not directly convert, instead they define
+conversion rules as below. The order between the function calls does not
+matter, instead the longer paths (in terms number of hierarchical names)
+are used first as indicated below, and it is an error if there are any
+ambiguities.
+
+These functions can be called with literal strings or array of strings
+and vectorize according to \ref{scalar-functions-applied-to-array-arguments}.
+
+Both convertElement and convertModifiers only use inheritance among user
+models, and not in the library that is used for the conversion -- thus
+conversions of base-classes will require multiple conversion-calls; this
+ensures that the conversion is independent of the new library structure.
+The class-name used as argument to convertElement and convertModifiers
+is similarly the old name of the class, i.e. the name before it is
+possibly converted by convertClass. {[}\emph{This allows the conversion
+to be done without access to the old version of the library (by suitable
+modifications of the lookup). Another alternative is to use the old
+version of the library during the conversion.}{]}
+
+\paragraph*{convertClass("OldClass","NewClass")}\doublelabel{convertclassoldclassnewclass}
+
+Convert class OldClass to NewClass.
+
+Match longer path first, so if converting both A to C and A.B to D then
+A.F is converted to C.F and A.B.E to D.E. This is considered before
+convertMessage for the same OldClass.
+
+\paragraph*{convertClassIf("OldClass", "oldElement", "whenValue","NewClass")}\doublelabel{convertclassifoldclass-oldelement-whenvalue-newclass}
+
+Convert class OldClass to NewClass if the literal modifier for
+oldElement has the value whenValue, and also remove the modifier for
+oldElement.
+
+These are considered before convertClass and convertMessage for the same
+OldClass.
+
+\paragraph*{convertElement("OldClass","OldName","NewName")}\doublelabel{convertelementoldclassoldnamenewname}
+
+In OldClass convert element OldName to NewName. Both OldName and NewName
+normally refer to components -- but they may also refer to
+class-parameters, or hierarchical names. For hierarchical names the
+longest match is used first.
+
+\paragraph*{convertModifiers}\doublelabel{convertmodifiers}
+
+convertModifiers("OldClass",
+\{"OldModifier1=default1", "OldModifier2=default2", ...\},
+\{"NewModifier1=...\%OldModifier1\%"\}{[}, simplify=true{]})
+
+Normal case; if any modifier among OldModifier exist then replace all of
+them with the NewModifiers. The defaults (if present) are used if there
+are multiple OldModifier and not all are set in the component instance.
+
+If simplify is specified and true then perform obvious simplifications
+to clean up the new modifier; otherwise leave as is. \emph{Note:
+simplify is primarily intended for converting enumerations and emulated
+enumerations that naturally lead to large nested if-expressions. The
+simplifications may also simplify parts of the original expression.}
+
+Behaviour in unusual cases:
+
+\begin{itemize}
+\item
+  if NewModifier list is empty then the modifier is just removed
+\item
+  If OldModifer list is empty it is added for all uses of the class
+\item
+  If OldModifier\_i is cardinality(a)=0 the conversion will only be
+  applied for a component comp if there is no inside connection to
+  comp.a. This can be combined with other modifiers that are handled in
+  the usual way.
+\item
+  If OldModifier\_i is cardinality(a)=1 the conversion will only be
+  applied for a component comp if there is are any inside connections to
+  comp.a
+\end{itemize}
+
+Converting modifiers with cardinality is used to remove the deprecated
+operator cardinality from model libraries, and replace tests on
+cardinality in models by parameters explicitly enabling the different
+cases. {[}\emph{I.e. instead of model A internally testing if its
+connector B is connected, there will be a parameter for enabling
+connector B, and the conversion ensures that each component of model A
+will have this parameter set accordingly.}{]} The case where the old
+class is used as a base-class, and there are any outside connections to
+a, and there is convertModifiers involving the cardinality of a is not
+handled. {[}\emph{In case a parameter is simply renamed it is preferable
+to use convertElement, since that also handles e.g. binding equations
+using the parameter.}{]}
+
+\paragraph*{convertMessage("OldClass", "Failed Message");}\doublelabel{convertmessageoldclass-failed-message}
+
+For any use of OldClass (or element of OldClass) report that conversion
+could not be applied with the given message. \emph{{[}This may be useful
+if there is no possibility to convert a specific class. An alternative
+is to construct ObsoleteLibraryA for problematic cases, which may be
+more work but allows users to directly run the models after the
+conversion and later convert them.{]}}
+
+\subsection{Mapping of Versions to File System}\doublelabel{mapping-of-versions-to-file-system}
+
+A top-level class, IDENT, with version VERSION-NUMBER can be stored in
+one of the following ways in a directory given in the MODELICAPATH:
+
+\begin{itemize}
+\item
+  The file IDENT ".mo" {[}\emph{Example:} Modelica.mo{]}
+\item
+  The file IDENT " " VERSION-NUMBER ".mo" {[}\emph{Example:} Modelica
+  2.1.mo{]}
+\item
+  The directory IDENT {[}\emph{Example:} Modelica{]} with the file
+  package.mo directly inside it
+\item
+  The directory IDENT " " VERSION-NUMBER {[}\emph{Example:} Modelica
+  2.1{]} with the file package.mo directly inside it
+\end{itemize}
+
+This allows a tool to access multiple versions of the same package.
+
+\subsection{Version Date and Build Information}\doublelabel{version-date-and-build-information}
+
+Besides version information, a top level class can have additionally the
+following top-level annotations to specify associated information to the
+version number:
+
+String versionDate "UTC date of first version build (in format:
+YYYY-MM-DD)";
+
+Integer versionBuild "Larger number is a more recent maintenance
+update";
+
+String dateModified "UTC date and time of the latest change to the
+package in the
+
+following format (with one space between date and time):
+
+YYYY-MM-DD hh:mm:ssZ";
+
+String revisionId "Revision identifier of the version management system
+used
+
+to manage this library. It marks the latest submitted change to
+
+any file belonging to the package";
+
+{[}\emph{Example:}
+
+\begin{lstlisting}[language=modelica]
+package Modelica
+  ...
+  annotation(version = "3.0.1",
+  versionDate = "2008-04-10",
+  versionBuild = 4,
+  dateModified = "2009-02-15 16:33:14Z",
+  revisionId = "$Id:: package.mo 2566 2009-05-26 13:25:54Z #$");
+end Modelica;
+
+model M1
+  annotation(uses(Modelica(version = "3.0.1"))); // Common case
+end M1
+
+model M2
+  annotation(uses(Modelica(version = "3.0.1", versionBuild = 4)));
+end M2
+\end{lstlisting}
+{]}
+
+The meaning of these annotation is:
+
+\begin{itemize}
+\item
+  ``\textbf{version}'' is the version number of the released library,
+  see \ref{version-handling}.
+\item
+  ``\textbf{versionDate}'' is the date in UTC format (according to ISO
+  8601) when the library was released. This string is updated by the
+  library author to correspond with the version number.
+\item
+  ``\textbf{versionBuild}'' is the optional build number of the library.
+  When a new version is released ``versionBuild'' should be omitted or
+  ``versionBuild = 1''. There might be bug fixes to the library that do
+  not justify a new library version. Such maintenance changes are called
+  a ``build'' release of the library. For every new maintenance change,
+  the ``versionBuild'' number is increased. A ``versionBuild'' number A
+  that is higher as ``versionBuild'' number B, is a newer release of the
+  library. There are no conversions between the same versions with
+  different build numbers. \emph{\\
+  }Two releases of a library with the same ``version'' but different
+  ``versionBuild'' are in general assumed to be compatible. In special
+  cases, the uses clause of a model may specify ``versionBuild'' and/or
+  ``dateModified'' {[}\emph{in such a case the tool is expected to give
+  a warning if there is a mismatch between library and model}{]}\emph{.}
+\item
+  ``\textbf{dateModified}'' is the UTC date and time (according to ISO
+  8601) of the last modification of the package. {[}\emph{The intention
+  is that a Modelica tool updates this annotation whenever the package
+  or part of it was modified and is saved on persistent storage (like
+  file or database system).}{]}
+\item
+  ``\textbf{revisionId}'' is a tool specific revision identifier
+  possibly generated by a source code management system (e.g. Subversion
+  or CVS). This information allows to exactly identify the library
+  source code in the source code management system.
+\end{itemize}
+
+The versionBuild and dateModified annotations can also be specified in
+the ``uses'' annotation (together with the version number). {[}\emph{The
+recommendation is that they are not stored in the uses annotation
+automatically by a tool.}{]}
+
+\section{Annotations for Access Control to Protect Intellectual Property}\doublelabel{annotations-for-access-control-to-protect-intellectual-property}
+
+This section presents annotations to define the protection and the
+licensing of packages. The goal is to unify basic mechanisms to control
+the access to a package in order to protect the intellectual property
+contained in it. This information is used to encrypt a package and bind
+it optionally to a particular target machine, and/or restrict the usage
+for a particular period of time.
+
+{[}\emph{Protecting the intellectual property of a Modelica package is
+considerably more difficult than protecting code from a programming
+language. The reason is that a Modelica tool needs the model equations
+in order that it can process the equations symbolically, as needed for
+acausal modeling. Furthermore, if a Modelica tool generates C-code of
+the processed equations, this code is then potentially available for
+inspection by the user. Finally, the Modelica tool vendors have to be
+trusted, that they do not have a backdoor in their tools to store the
+(internally) decrypted classes in human readable format. The only way to
+protect against such misuse is legally binding warranties of the tool
+vendors. }
+
+\emph{The intent of this section is to enable a library vendor to
+maintain one source version of their Modelica library that can be
+encrypted and used with several different Modelica tools, using
+different encryption formats.}{]}
+
+\textbf{Definitions:}
+
+\begin{longtable}[]{|p{2.5cm}|p{12cm}|}
+\hline
+\emph{Term} & \emph{Description}\\ \hline
+\endhead
+\textbf{Protection} & Define what parts of a class are
+visible.\\ \hline
+\textbf{Obfuscation} & Changing a Modelica class or generated code so
+that it is difficult to inspect by a user {[}\emph{(e.g. by
+automatically renaming variables to non-meaningful
+names).}{]}\\ \hline
+\textbf{Encryption} & Encoding of a model or a package in a form so that
+the modeler cannot inspect any content of a class without an appropriate
+key. An encrypted package that has the Protection annotation is
+read-only; the way to modify it is to generate a new encrypted
+version.\\ \hline
+\textbf{Licensing} & Restrict the use of an encrypted package for
+particular users for a specified period of time.\\ \hline
+
+\end{longtable}
+
+In this section annotations are defined for ``Protection'' and
+``Licensing''. Obfuscation and encryption are not standardized.
+``Protection'' and ``Licensing'' are both defined inside the
+``Protection'' annotation:
+
+\textbf{annotation}(Protection(...));
+
+\subsection{Protection of Classes}\doublelabel{protection-of-classes}
+
+A class may have the following annotations to define what parts of a
+class are visible (if a class is encrypted and no Protection annotation
+is defined, the access annotation has the default value
+Access.documentation):
+
+\begin{lstlisting}[language=modelica]
+  type Access = enumeration(hide, icon, documentation,
+  diagram, nonPackageText, nonPackageDuplicate,
+  packageText, packageDuplicate);
+  annotation(Protection(access = Access.documentation));
+\end{lstlisting}
+The items of the Access enumeration have the following meaning:
+
+\begin{enumerate}
+\item
+  Access.hide\\
+  Do not show the class anywhere (it is not possible to inspect any part
+  of the class).
+\item
+  Access.icon\textbf{\\
+  }The class can be instantiated and public parameter, constant, input,
+  output variables as well as public connectors can be accessed, as well
+  as the icon annotation, as defined in \ref{annotations-for-graphical-objects} (the declared
+  information of these elements can be shown). Additionally, the class
+  name and its description text can be accessed.
+\item
+  Access.documentation\\
+  Same as Access.icon and additionally the documentation annotation (as
+  defined in \ref{annotations-for-documentation}) can be accessed. HTML-generation in the
+  documentation annotation is normally performed before encryption, but
+  the generated HTML is intended to be used with the encrypted package.
+  Thus the HTML-generation should use the same access as the encrypted
+  version-- even before encryption.
+\item
+  Access.diagram\\
+  Same as Access.documentation and additionally, the diagram annotation,
+  and all components and connect equations that have a graphical
+  annotation can be accessed.
+\item
+  Access.nonPackageText\\
+  Same as Access.diagram and additionally if it is not a package: the
+  whole class definition can be accessed (but cannot be copied).
+\item
+  Access.nonPackageDuplicate\\
+  Same as Access.nonPackageText and additionally if it is not a package:
+  the class, or part of the class, can be copied and pasted.
+\item
+  Access.packageText\\
+  Same as Access.diagram (note: \textbf{not} including all rights of
+  Access.nonPackageDuplicate) and additionally the whole class
+  definition can be accessed (but cannot be copied).
+\item
+  Access.packageDuplicate\\
+  Same as Access.packageText and additionally the class, or part of the
+  class, can be copied and pasted.
+\end{enumerate}
+
+The ``access'' annotation holds for the respective class and all classes
+that are hierarchically on a lower level, unless overriden by a
+Protection annotation with ``access'' {[}\emph{e.g. if the annotation is
+given on the top level of a package and at no other class in this
+package, then the annotation holds for all classes in this package}{]}.
+Overriding ``access=Access.hide'' and ``access=Access.packageDuplicate''
+has no meaningful effect.
+
+{[}\emph{It is currently not standardized which result variables are
+accessible for plotting. It seems natural to not introduce new flags for
+this, but reuse the} Access.XXX \emph{definition, e.g., for} Access.icon
+\emph{only the variables can be stored in a result file that can also be
+inspected in the class, and for} Access.nonPackageText \emph{all public
+and protected variables can be stored in a result file, because all
+variables can be inspected in the class.}
+
+\begin{lstlisting}[language=modelica]
+package CommercialFluid // Access icon, documentation, diagram
+  package Examples // Access icon, documentation, diagram
+    model PipeExample // Access everything, can be copied
+    end PipeExample;
+
+    package Circuits // Access icon, documentation, diagram
+      model ClosedCircuit // Access everything, can be copied
+      end ClosedCircuit;
+    end Circuits;
+
+    model SecretExample // No access
+      annotation(Protection(access=Access.hide));
+    end SecretExample;
+    annotation(Protection(access=Access.nonPackageDuplicate));
+  end Examples;
+
+  package Pipe // Access icon
+    model StraightPipe // Access icon
+    end StraightPipe;
+    annotation(Protection(access=Access.icon));
+  end Pipe;
+
+  package Vessels // Access icon, documentation, diagram
+    model Tank // Access icon, documentation, diagram, text
+    end Tank;
+  end Vessels;
+  annotation(Protection(access=Access.nonPackageText));
+end CommercialFluid;
+\end{lstlisting}
+{]}
+
+\subsection{Licensing}\doublelabel{licensing}
+
+In this section annotations within the ``Protection'' annotation are
+defined to restrict the usage of the encrypted package:
+
+\begin{lstlisting}[language=modelica]
+record Protection
+  ...
+  String features[:]=fill("", 0) "Required license features";
+  record License
+    String libraryKey;
+    String licenseFile="" "Optional, default mapping if empty";
+  end License;
+end Protection;
+\end{lstlisting}
+The License annotation has only an effect on the top of an encrypted
+class and is then valid for the whole class hierarchy. {[}\emph{Usually
+the licensed class is a package}{]}. The libraryKey is a secret string
+from the library vendor and is the protection mechanism so that a user
+cannot generate his/her own authorization file since the libraryKey is
+unknown to him/her.
+
+The features annotation defines the required license options. If the
+features vector has more than one element, then at least a license
+feature according to one of the elements must be present. As with the
+other annotations, the ``features'' annotation holds for the respective
+class and for all classes that are hierarchically on a lower level,
+unless further restricted by a corresponding annotation. If no license
+according to the ``features'' annotation is provided in the
+authorization file, the corresponding classes are not visible and cannot
+be used, not even internally in the package.
+
+{[}\emph{Examples:}
+\begin{lstlisting}[language=modelica]
+// Requires license feature "LicenseOption" 
+annotation(Protection(features={"LicenseOption"})); 
+ 
+// Requires license features "LicenseOption1" or "LicenseOption2" 
+annotation(Protection(features={"LicenseOption1", "LicenseOption2"})); 
+ 
+// Requires license features ("LicenseOption1" and "LicenseOption2") or "LicenseOption3"
+annotation(Protection(features={"LicenseOption1 LicenseOption2", "LicenseOption3"})); 
+\end{lstlisting}
+
+{]}
+
+In order that the protected class can be used either a tool specific
+license manager, or a license file (called ``licenseFile'') must be
+present. The license file is standardized. It is a Modelica package
+without classes that has a Protection annotation of the following form
+which specifies a sequence of target records, which makes it natural to
+define start/end dates for different sets of targets individually:
+
+\begin{lstlisting}[language=modelica]
+record Authorization
+  String licensor="" "Optional string to show information about the licensor";
+  String libraryKey "Matching the key in the class. Must be encrypted and not visible";
+  License license[:] "Definition of the license options and of the access rights";
+end Authorization;
+
+record License
+  String licensee ="" "Optional string to show information about the licensee";
+  String id[:] "Unique machine identifications, e.g. MAC addresses";
+  String features[:] =fill("", 0) "Activated library license features";
+  String startDate ="" "Optional start date in UTCformat YYYY-MM-DD";
+  String expirationDate="" "Optional expiration date in UTCformat YYYY-MM-DD";
+  String operations[:]=fill("",0) "Library usage conditions";
+end License;
+\end{lstlisting}
+The format of the strings used for libraryKey and id are not specified
+(they are vendor specific). The libraryKey is a secret of the library
+developer. The operations define the usage conditions and the following
+are default names:
+
+\begin{itemize}
+\item
+  "ExportBinary" Binary code generated from the Modelica code of the
+  library can be can be included in binaries produced by a simulation
+  tool.
+\item
+  "ExportSource" Source code generated from the Modelica code of the
+  library can be included in sources produced by a simulation tool.
+\end{itemize}
+
+Additional tool-specific names can also be used. To protect the
+``libraryKey'' and the target definitions, the authorization file must
+be encrypted and must never show the libraryKey. {[}\emph{All other
+information, especially licensor and license should be visible, in order
+that the user can get information about the license. It is useful to
+include the name of the tool in the authorization file name with which
+it was encrypted. Note, it is not useful to store this information in
+the annotation, because only the tool that encrypted the Authorization
+package can also decrypt it.}{]}
+
+{[}\emph{Example (before encryption):}
+
+\begin{lstlisting}[language=modelica]
+// File MyLibrary\package.mo
+package MyLibrary
+  annotation(Protection(License(libraryKey="15783-A39323-498222-444ckk4ll",
+  licenseFile="MyLibraryAuthorization_Tool.mo_lic), ...));
+end MyLibrary;
+
+// File MyLibrary\MyLibraryAuthorization_Tool.mo\
+// (authorization file before encryption)
+package MyLibraryAuthorization_Tool
+  annotation(Authorization(
+  libraryKey="15783-A39323-498222-444ckk4ll",
+  licensor ="Organization A\nRoad, Country",
+ license={
+  License(licensee="Organization B, Mr.X",
+    id ={"lic:1269"}), // tool license number
+  License(licensee="Organization C, Mr. Y",
+    id ={"lic:511"}, expirationDate="2010-06-30",
+   operations={"ExportBinary"}),
+  License(licensee="Organization D, Mr. Z",
+    id ={"mac:0019d2c9bfe7"}) // MAC address
+  }));
+end MyLibraryAuthorization_Tool;
+\end{lstlisting}
+{]}
+
+\section{Annotations for Functions}\doublelabel{annotations-for-functions}
+
+\subsection{Function Derivative Annotations}\doublelabel{function-derivative-annotations}
+
+See \ref{using-the-derivative-annotation}
+
+\subsection{Inverse Function Annotation}\doublelabel{inverse-function-annotation}
+
+See \ref{declaring-inverses-of-functions}.
+
+\subsection{External Function Annotations}\doublelabel{external-function-annotations}
+
+See \ref{annotations-for-external-libraries-and-include-files}.
+
+\subsection{Annotation Choices for Modifications and Redeclarations}\doublelabel{annotation-choices-for-modifications-and-redeclarations}
+
+See \ref{annotation-choices-for-suggested-redeclarations-and-modifications}.
+
+\subsection{Annotation for External Libraries and Include Files}\doublelabel{annotation-for-external-libraries-and-include-files}
+
+See \ref{annotations-for-external-libraries-and-include-files}.

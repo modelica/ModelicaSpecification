@@ -1,0 +1,379 @@
+\chapter{Packages}\doublelabel{packages}
+
+\section{Package as Specialized Class}\doublelabel{package-as-specialized-class}
+
+The package concept is a specialized class (\ref{specialized-classes}), using the
+keyword package.
+
+\section{Motivation and Usage of Packages}\doublelabel{motivation-and-usage-of-packages}
+
+{[}\emph{Packages in Modelica may contain definitions of constants and
+classes including all kinds of specialized classes, functions, and
+subpackages. By the term subpackage we mean that the package is declared
+inside another package, no inheritance relationship is implied.
+Parameters and variables cannot be declared in a package. The
+definitions in a package should typically be related in some way, which
+is the main reason they are placed in a particular package. Packages are
+useful for a number of reasons:}
+
+\begin{itemize}
+\item
+  Definitions that are related to some particular topic are typically
+  grouped into a package. This makes those definitions easier to find
+  and the code more understandable.
+\item
+  \emph{Packages provide encapsulation and coarse-grained structuring
+  that reduces the complexity of large systems. An important example is
+  the use of packages for construction of (hierarchical) class
+  libraries.}
+\item
+  \emph{Name conflicts between definitions in different packages are
+  eliminated since the package name is implicitly prefixed to names of
+  definitions declared in a package.}
+\item
+  \emph{Information hiding and encapsulation can be supported to some
+  extent by declaring} protected \emph{classes, types, and other
+  definitions that are available only inside the package and therefore
+  inaccessible to outside code.}
+\item
+  \emph{Modelica defines a method for locating a package by providing a
+  standard mapping of package names to storage places, typically file or
+  directory locations in the file system. }
+\end{itemize}
+
+{]}
+
+\subsection{Importing Definitions from a Package}\doublelabel{importing-definitions-from-a-package}
+
+The import-clause makes public classes and other public definitions
+declared in some package available for use by shorter names in a class
+or a package. It is the only way of referring to definitions declared in
+some other package for use inside an encapsulated package or class.
+
+{[}\emph{Import-clauses in a package or class fill the following two
+needs:}
+
+\begin{itemize}
+\item
+  Making definitions from other packages available for use (by shorter
+  names) in a package or class.
+\item
+  \emph{Explicit declaration of usage dependences on other packages.}
+\end{itemize}
+
+{]}
+
+An import-clause can occur in one of the following five syntactic forms:
+
+\textbf{import} \emph{packagename}; (qualified import)
+
+\textbf{import} {[}\emph{packagename}.{]}\emph{definitionname}; (single
+definition import)
+
+\textbf{import}
+{[}\emph{packagename}.{]}\{\emph{def1,def2,\ldots{}defN}\}; (multiple
+definition import)
+
+\textbf{import} \emph{packagename}.*; (unqualified import)
+
+\textbf{import} \emph{shortpackagename} = \emph{packagename}; (renaming
+import)
+
+\textbf{import} \emph{shortpackagename} =
+{[}\emph{packagename.{]}definitionname}; (renaming single def. import)
+
+Here \emph{packagename} is the fully qualified name of the imported
+package including possible dot notation and \emph{definitionname} is the
+name of an element in a package. The multiple definition import is
+equivalent to multiple single definition imports with corresponding
+packagename and definition names.
+
+\subsubsection{Lookup of Imported Names}\doublelabel{lookup-of-imported-names}
+
+This section only defines how the imported name is looked up in the
+import clause. For lookup in general -- including how import clauses are
+used, see \ref{static-name-lookup}.
+
+Lookup of the name of an imported package or class, e.g. A.B.C in the
+clauses import A.B.C; import D=A.B.C; import A.B.C.*, deviates from the
+normal lexical lookup by starting the lexical lookup of the first part
+of the name at the top-level.
+
+Qualified import clauses may only refer to packages or elements of
+packages, i.e., in import A.B.C; or import D=A.B.C;, A.B must be a
+package. Unqualified import clauses may only import from packages, i.e.,
+in import A.B.*;, A.B must be a package. {[}\emph{Note: in} import A;
+\emph{the class} A \emph{can be any class which is an element of the
+unnamed top-level package}{]}
+
+{[}\emph{For example, if the package} ComplexNumbers \emph{would have
+been declared as a subpackage inside the package} Modelica.Math\emph{,
+its fully qualified name would be} Modelica.Math.ComplexNumbers\emph{.
+Definitionname is the simple name without dot notation of a single
+definition that is imported. A shortpackagename is a simple name without
+dot notation that can be used to refer to the package after import
+instead of the presumably much longer packagename.}
+
+\emph{The forms of import are exemplified below assuming that we want to
+access the addition operation of the hypothetical package}
+Modelica.Math.ComplexNumbers:
+
+\begin{lstlisting}[language=modelica]
+  import Modelica.Math.ComplexNumbers; // Accessed by ComplexNumbers.Add
+  import Modelica.Math.ComplexNumbers.Add; // Accessed by Add
+  import Modelica.Math.ComplexNumbers.{Add,Sub}; // Accessed by Add and Sub
+  import Modelica.Math.ComplexNumbers.*; // Accessed by Add
+  import Co = Modelica.Math.ComplexNumbers; // Accessed by Co.Add
+\end{lstlisting}
+{]}
+
+\subsubsection{Summary of Rules for Import Clauses}\doublelabel{summary-of-rules-for-import-clauses}
+
+The following rules apply to import-clauses:
+
+\begin{itemize}
+\item
+  Import-clauses are \emph{not} inherited.
+\item
+  Import-clauses are not named elements of a class or package. This
+  means that import-clauses cannot be changed by modifiers or
+  redeclarations.
+\item
+  The \emph{order} of import-clauses does not matter.
+\item
+  One can only import \emph{from} packages, not from other kinds of
+  classes. Both packages and classes can be imported \emph{into} i.e.,
+  they may contain import-clauses.
+\item
+  An imported package or definition should always be referred to by its
+  fully qualified name in the import-clause.
+\item
+  Multiple qualified import-clauses may not have the same import name.
+\end{itemize}
+
+\subsection{Mapping Package/Class Structures to a Hierarchical File System}\doublelabel{mapping-package-class-structures-to-a-hierarchical-file-system}
+
+Packages/classes may be represented in the hierarchical structure of the
+operating system {[}\emph{the file system}{]}. For classes with version
+information see also \ref{mapping-of-versions-to-file-system}. The nature of such an external
+entity falls into one of the following two groups:
+
+\begin{itemize}
+\item
+  Directory in the file system.
+\end{itemize}
+
+\begin{itemize}
+\item
+  File in the file system.
+\end{itemize}
+
+Each Modelica file in the file-system is stored in UTF-8 format (defined
+by The Unicode Consortium; http://www.unicode.org) and may start with
+the UTF-8 encoded byte order mark (0xef 0xbb 0xbf); this is treated as
+white-space in the grammar. \emph{{[}Tools may also store classes in
+data-base systems, but that is not standardized.{]}}
+
+\subsubsection{Mapping a Package/Class Hierarchy into a Directory Hierarchy (Structured Entity)}\doublelabel{mapping-a-package-class-hierarchy-into-a-directory-hierarchy-structured-entity}
+
+A directory shall contain a node, the file package.mo. The node shall contain a stored-definition that defines a class {[}A{]} with a name
+matching the name of the structured entity. {[}\emph{The node typically
+contains documentation and graphical information for a package, but may
+also contain additional elements of the class} A.{]}
+
+A directory may also contain one or more sub-entities (directories or
+files). The sub-entities are mapped as elements of the class defined by
+their enclosing structured entity. {[}\emph{For example, if directory} A
+\emph{contains the three files} package.mo, B.mo \emph{and} C.mo
+\emph{the classes defined are} A, A.B, \emph{and} A.C.{]} Two
+sub-entities shall not define classes with identical names {[}\emph{for
+example, a directory shall not contain both the sub-directory} A
+\emph{and the file} A.mo{]}.
+
+In order to preserve the order of sub-entities it is advisable to create
+a file package.order where each line contains the name of one class or
+constant. If a package.order is present when reading a structured entity
+the classes and constants are added in this order; if the contents does
+not exactly match the classes and constants in the package, the
+resulting order is tool specific and a warning may be given. Classes and
+constants that are stored in package.mo are also present in
+package.order but their relative order should be identical to the one in
+package.mo (this ensures that the relative order between classes and
+constants stored in different ways is preserved).
+
+\subsubsection{Mapping a Package/Class Hierarchy into a Single File (Nonstructured Entity)}\doublelabel{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}
+
+When mapping a package or class-hierarchy to a file {[}\emph{e.g. the
+  file} A.mo{]}, that file shall only define a single class {[}A.mo{]} with a
+name matching the name of the nonstructured entity. In a file hierarchy
+the files shall have the extension ``.mo''.
+
+A ".mo" file defining more than one class cannot be part of the mapping
+to file-structure and it is an error if it is loaded from the
+MODELICAPATH
+
+\subsubsection{The within Clause}\doublelabel{the-within-clause}
+
+A within-clause has the following syntax:
+
+\begin{lstlisting}[language=grammar]
+  within [ packageprefixname ] ";"
+\end{lstlisting}
+  A non-top-level entity shall begin with a within-clause which for the
+  class defined in the entity specifies the location in the Modelica class
+    hierarchy. A top-level class may contain a within-clause with no name.
+    For a sub-entity of an enclosing structured entity, the within-clause
+shall designate the class of the enclosing entity; and this class must
+exist and must not have been defined using a short class definition.
+
+{[}\emph{Example: The subpackage} Rotational \emph{declared within}
+Modelica.Mechanics \emph{has the fully qualified name}
+Modelica.Mechanics.Rotational\emph{, which is formed by concatenating
+the packageprefixname with the short name of the package. The
+declaration of} Rotational \emph{could be given as below}:
+
+\begin{lstlisting}[language=modelica]
+  within Modelica.Mechanics;
+  package Rotational // Modelica.Mechanics.Rotational
+    ...
+\end{lstlisting}
+{]}
+
+\subsection{External resources}\doublelabel{external-resources}
+
+In order to reference external resources from documentation (such as
+links and images in html-text) and/or to reference images in the Bitmap
+annotation (see \ref{bitmap}). URIs should be used, for example
+file:/// and the URI scheme modelica:// which can be used to retrieve
+resources associated with a package. {[}\emph{Note scheme names are
+case-insensitive, but the lower-case form should be used, that is
+`}Modelica://\emph{' is allowed but `}modelica://\emph{' is the
+recommended form.}{]}
+
+The Modelica-scheme has the ability to reference a hierarchical
+structure of resources associated with packages. The same structure is
+used for all kind of resource references, independent of use (external
+file, image in documentation, bitmap in icon layer, and link to external
+file in the documentation), and regardless of the storage mechanism.
+
+Any Modelica-scheme URI containing a slash after the package-name is
+interpreted as a reference to a resource. The `authority' portion of the
+URI is interpreted as a fully qualified package name and the path
+portion of the URI is interpreted as the path (relative to the package)
+of the resource. Each storage scheme can define its own interpretation
+of the path (but care should be taken when converting from one storage
+scheme or when restructuring packages that resource references resolve
+to the same resource). Any storage scheme should be constrained such
+that a resource with a given path should be unique for any package name
+that precedes it. The first part of the path may not be the name of a
+class in the package given by the authority.
+
+When Modelica packages are stored hierarchically in a file-system (i.e.
+package A in a directory A containing "package.mo") the resource
+"modelica://A/Resources/C.jpg" should be stored in the file
+"A/Resources/C.jpg", it is not recommend to use "modelica://A.B/C.jpg"
+for referencing resources; it could be stored in the file "A/B/C.jpg" -
+which is counter-intuitive if A.B is stored together with A. When
+Modelica packages are stored in other formats a similar mapping should
+be defined, such that a resource with a given path should be unique for
+any package name that precedes it. The first part of the path may not be
+the name of a class in the package given by the authority. As above for
+"Modelica 3.2.1/package.mo" i.e. resources starting from "Modelica
+3.2.1", and "modelica://Modelica.Mechanics/C.jpg" is "Modelica
+3.2.1/Mechanics/C.jpg" - regardless of whether Modelica.Mechanics is
+stored in "Modelica 3.2.1/package.mo", "Modelica
+3.2.1/Mechanics/package.mo", or "Modelica 3.2.1/Mechanics.mo".
+
+For a Modelica-package stored as a single file, "A.mo", the resource
+"modelica://A/C.jpg" refers to a file "C.jpg" stored in the same
+directory as "A.mo", but using resources in this variant is not
+recommended since multiple packages will share resources.
+
+In case the class-name contains quoted identifiers, the single-quote "`"
+and any reserved characters (``:'', ``/'', ``?'', ``\#'', ``{[}``,
+``{]}'', ``@'', ``!'', ``\$'', ``\&'', ``(``, ``)'', ``*'', ``+'',
+``,'', ``;'', ``='') should be percent-encoded as normal in URIs.
+
+{[}\emph{Example:}
+
+\emph{Consider a top-level package} Modelica \emph{and a class}
+Mechanics \emph{inside it, a reference such as}
+modelica://Modelica.Mechanics/C.jpg \emph{is legal, while}
+modelica://Modelica/Mechanics/C.jpg \emph{is illegal. The reference}
+modelica://Modelica.Mechanics/C.jpg \emph{must also refer to a different
+resource than} modelica://Modelica/C.jpg\emph{.}{]}
+
+\subsection{The Modelica Library Path---MODELICAPATH}\doublelabel{the-modelica-library-path-modelicapath}
+
+The top-level scope implicitly contains a number of classes stored
+externally. If a top-level name is not found at global scope, a Modelica
+translator shall look up additional classes in an ordered list of
+library roots, called MODELICAPATH. {[}\emph{The implementation of}
+MODELICAPATH \emph{is tool dependent. In order that a user can work in
+parallel with different Modelica tools, it is advisable to not have this
+list as environment variable, but as a setting in the respective tool.
+Since MODELICAPATH is tool dependent, it is not specified in which way
+the list of library roots is stored. Typically, on a Windows system
+MODELICAPATH is a string with path names separated by ``;'' whereas on a
+Linux system it is a string with path names separated by a ``:''.}{]}
+
+In addition a tool may define an internal list of libraries, since it is
+in general not advisable for a program installation to modify global
+environment variables. The version information for a library (as defined
+in \ref{annotations-for-version-handling}) may also be used during this search to search for a
+specific version of the library (e.g. if Modelica library version 2.2 is
+needed and the first directory in MODELICAPATH contain Modelica library
+version 2.1, whereas the second directory contains Modelica version 2.2,
+then Modelica library version 2.2 is loaded from the second directory.).
+
+{[}\emph{The first part of the path} A.B.C (\emph{i.e.}, A) \emph{is
+located by searching the ordered list of roots in} MODELICAPATH.
+\emph{If no root contains} A \emph{the lookup fails}. \emph{If} A
+\emph{has been found in one of the roots, the rest of the path is
+located in} A; \emph{if that fails, the entire lookup fails without
+searching} \emph{for} A \emph{in any of the remaining roots in}
+MODELICAPATH.{]}
+
+\subsubsection{Example of Searching MODELICAPATH}\doublelabel{example-of-searching-modelicapath}
+
+If during lookup a top-level name is not found in the unnamed top-level
+scope, the search continues in the package hierarchies stored in these
+directories. {[}\emph{Figure 13-1 below shows an example MODELICAPATH =
+"C:\textbackslash{}library;C:\textbackslash{}lib1;C:\textbackslash{}lib2",
+with three directories containing the roots of the package hierarchies
+Modelica, MyLib, and ComplexNumbers. The first two are represented as
+the subdirectories C:\textbackslash{}library\textbackslash{}Modelica and
+C:\textbackslash{}lib1\textbackslash{}MyLib, whereas the third is stored
+as the file C:\textbackslash{}lib2\textbackslash{}ComplexNumbers.mo.}
+
+Figure 13.1\textbf{. Roots of package hierarchies, e.g.,}
+Modelica\textbf{,} MyLib\textbf{, and} ComplexNumbers \textbf{in}
+MODELICAPATH =
+"C:\textbackslash{}library;C:\textbackslash{}lib1;C:\textbackslash{}lib2"\textbf{.}
+
+\emph{Assume that we want to access the package} MyLib.Pack2 \emph{in
+Figure 13-1 above, e.g. through an} import \emph{clause} import
+MyLib.Pack2;\emph{. During lookup we first try to find a package} MyLib
+\emph{corresponding to the first part of the import name. It is not
+found in the top-level scope since it has not previously been loaded
+into the environment. }
+
+\emph{Since the name was not found in the top-level scope the search
+continues in the directories in the} MODELICAPATH \emph{in the specified
+order. For the search to succeed, there must be a subdirectory} MyLib
+\emph{or a file} MyLib.mo \emph{in one of the directories mentioned in
+the} MODELICAPATH\emph{. If there is no such subdirectory or file, the
+lookup fails. If} MyLib \emph{is found in one of the directories, the
+rest of the name, in this case} Pack2\emph{, is located in} MyLib\emph{.
+If that fails, the entire lookup fails without continuing the search in
+possibly remaining directories.}
+
+\emph{In this example the name matches the subdirectory named} MyLib
+\emph{in the second directory} ``C:\textbackslash{}lib1''
+\emph{mentioned in the} MODELICAPATH\emph{. This subdirectory must have
+a file} package.mo \emph{containing a definition of the package}
+MyLib\emph{, according to the Modelica rules on how to map a package
+hierarchy to the file system. The subpackage} Pack2 \emph{is stored in
+its own subdirectory or file in the subdirectory} MyLib\emph{. In this
+case the search succeeds and the package} MyLib.Pack2 \emph{is loaded
+into the environment.}{]}

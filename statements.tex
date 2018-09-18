@@ -1,0 +1,541 @@
+\chapter{Statements and Algorithm Sections}\doublelabel{statements-and-algorithm-sections}
+
+Whereas equations are very well suited for physical modeling, there are
+situations where computations are more conveniently expressed as
+algorithms, i.e., sequences of statements. In this chapter we describe
+the algorithmic constructs that are available in Modelica.
+
+Statements are imperative constructs allowed in algorithm sections.
+
+\section{Algorithm Sections}\doublelabel{algorithm-sections}
+
+An algorithm section is comprised of the keyword algorithm followed by a
+sequence of statements. The formal syntax is as follows:
+
+algorithm-section :
+
+{[} \textbf{initial} {]} \textbf{algorithm} \{ statement ";" \textbar{}
+annotation ";" \}
+
+Equation equality = or any other kind of equation (see \ref{equations}) shall
+not be used in an algorithm section.
+
+\subsection{Initial Algorithm Sections}\doublelabel{initial-algorithm-sections}
+
+See \ref{initialization-initial-equation-and-initial-algorithm} for a description of both initial algorithm sections and
+initial equation sections.
+
+\subsection{Execution of an algorithm in a model}\doublelabel{execution-of-an-algorithm-in-a-model}
+
+An algorithm section is conceptually a code fragment that remains
+together and the statements of an algorithm section are executed in the
+order of appearance. Whenever an algorithm section is invoked, all
+variables appearing on the left hand side of the assignment operator
+":=" are initialized (at least conceptually):
+
+\begin{itemize}
+\item
+  A non-discrete variable is initialized with its start value (i.e. the
+  value of the start-attribute).
+\item
+  A discrete variable v is initialized with \textbf{pre}(v).
+\item
+  If at least one element of an array appears on the left hand side of
+  the assignment operator, then the complete array is initialized in
+  this algorithm section.
+\end{itemize}
+
+{[}\emph{Initialization is performed, in order that an algorithm section
+cannot introduce a "memory" (except in the case of discrete states which
+are explicitly given), which could invalidate the assumptions of a
+numerical integration algorithm. Note, a Modelica tool may change the
+evaluation of an algorithm section, provided the result is identical to
+the case, as if the above conceptual processing is performed.}
+
+\emph{An algorithm section is treated as an atomic vector-equation,
+which is sorted together with all other equations. For the sorting
+process (BLT), every algorithm section with N different left-hand side
+variables, is treated as an atomic N-dimensional vector-equation
+containing all variables appearing in the algorithm section. This
+guarantees that all N equations end up in an algebraic loop and the
+statements of the algorithm section remain together.}
+
+\emph{Example:}
+
+\begin{lstlisting}[language=modelica]
+model Test // wrong Modelica model (has 4 equations for 2 unknowns)
+  Real x[2](start={-11, -22});
+algorithm // conceptually: x = {1,-22}
+  x[1] := 1;
+algorithm // conceptually: x = {-11,2}
+  x[2] := 2;
+end Test;
+\end{lstlisting}
+{]}
+
+\subsection{Execution of the algorithm in a function}\doublelabel{execution-of-the-algorithm-in-a-function}
+
+See \ref{initialization-and-declaration-assignments-of-components-in-functions} ``Initialization and Declaration Assignments of
+Components in Functions''.
+
+\section{Statements}\doublelabel{statements}
+
+Statements are imperative constructs allowed in algorithm sections. A
+flattened statement is identical to the corresponding nonflattened
+statement.
+
+Names in statements are found as follows:
+
+\begin{itemize}
+\item
+  If the name occurs inside an expression: it is first found among the
+  lexically enclosing reduction functions (see \ref{reduction-functions-and-operators}) in order
+  starting from the inner-most, and if not found it proceeds as if it
+  were outside an expression:
+\item
+  Names in a statement are first found among the lexically enclosing
+  for-statements in order starting from the inner-most, and if not
+  found:
+\item
+  Names in a statement shall be found by looking up in the partially
+  flattened enclosing class of the algorithm section.
+\end{itemize}
+
+The syntax of statements is as follows:
+
+statement :
+
+( component-reference ( ":=" expression \textbar{} function-call-args )
+
+\textbar{} "(" output-expression-list ")" ":=" component-reference
+function-call-args
+
+\textbar{} \textbf{break}
+
+\textbar{} \textbf{return}
+
+\textbar{} if-statement
+
+\textbar{} for-statement
+
+\textbar{} while-statement
+
+\textbar{} when-statement )
+
+comment
+
+\subsection{Simple Assignment Statements}\doublelabel{simple-assignment-statements}
+
+The syntax of simple assignment statement is as follows:
+
+component-reference ":=" expression
+
+The expression is evaluated. The resulting value is stored into the
+variable denoted by component-reference.
+
+\subsubsection{Assignments from Called Functions with Multiple Results}\doublelabel{assignments-from-called-functions-with-multiple-results}
+
+There is a special form of assignment statement that is used only when
+the right-hand side contains a call to a function with multiple results.
+The left-hand side contains a parenthesized, comma-separated list of
+variables receiving the results from the function call. A function with
+\emph{n} results needs \emph{m\textless{}=n} receiving variables on the
+left-hand side, and the variables are assigned from left to right.
+
+(out1, out2, out3) := function\_name(in1, in2, in3, in4);
+
+It is possible to omit receiving variables from this list:
+
+(out1,, out3) := function\_name(in1, in2, in3, in4);
+
+{[}\emph{Example: The function} f \emph{called below has three results
+and two inputs}:
+
+\begin{lstlisting}[language=modelica]
+  (a, b, c) := f(1.0, 2.0);
+  (x[1], x[2], x[1]) := f(3,4);
+\end{lstlisting}
+\emph{In the second example above x{[}1{]} is assigned twice -- first
+with the first output and then with the third output. For that case the
+following will give the same result:}
+
+\begin{lstlisting}[language=modelica]
+  (, x[2], x[1]) := f(3,4);
+\end{lstlisting}
+{]}
+
+The syntax of an assignment statement with a call to a function with
+multiple results is as follows:
+\begin{lstlisting}[language=grammar]
+"(" output-expression-list ")" ":=" component-reference function-call-args
+\end{lstlisting}
+
+{[}\emph{Also see \ref{simple-equality-equations} regarding calling functions with
+multiple results within equations.}{]}
+
+\subsection{For-statement}\doublelabel{for-statement}
+
+The syntax of a for-statement is as follows:
+
+\begin{lstlisting}[language=grammar]
+for for-indices loop
+  { statement ";" }
+end for
+\end{lstlisting}
+For-statements may optionally use several iterators (for-indices), see
+\ref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
+
+\begin{lstlisting}[language=grammar]
+for-indices:
+   for-index {"," for-index}
+
+for-index:
+   IDENT [ in  expression ]
+\end{lstlisting}
+The following is an example of a prefix of a for-statement:
+
+\begin{lstlisting}[language=modelica]
+for IDENT in expression loop
+\end{lstlisting}
+The expression of a for-statement shall be a vector expression. It is
+evaluated once for each for-statement, and is evaluated in the scope
+immediately enclosing the for-statement. The loop-variable (IDENT) is in
+scope inside the loop-construct and shall not be assigned to. The
+loop-variable has the same type as the type of the elements of the
+vector expression.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+for i in 1:10 loop // i takes the values 1,2,3,...,10
+for r in 1.0 : 1.5 : 5.5 loop // r takes the values 1.0, 2.5, 4.0, 5.5
+for i in {1,3,6,7} loop // i takes the values 1, 3, 6, 7
+for i in TwoEnums loop // i takes the values TwoEnums.one, TwoEnums.two
+        // for TwoEnums = enumeration(one,two)
+\end{lstlisting}
+\emph{The loop-variable may hide other variables as in the following
+example. Using another name for the loop-variable is, however, strongly
+recommended.}
+
+\begin{lstlisting}[language=modelica]
+  constant Integer j=4;
+  Real x[j];
+equation
+  for j in 1:j loop // The loop-variable j takes the values 1,2,3,4
+    x[j]=j; // Uses the loop-variable j
+  end for;
+\end{lstlisting}
+{]}
+
+\subsubsection{Implicit Iteration Ranges}\doublelabel{implicit-iteration-ranges}
+
+An iterator IDENT in range-expr without the in range-expr requires that
+the IDENT appears as the subscript of one or several subscripted
+expressions. The dimension size of the array expression in the indexed
+position is used to deduce the range-expr as
+1:size(array-expression,indexpos) if the indices are a subtype of
+Integer, or as E.e1:E.en if the indices are of an enumeration type
+E=enumeration(e1, \ldots{}, en), or as false:true if the indices are of
+type Boolean. If it is used to subscript several expressions, their
+ranges must be identical. The IDENT may also, inside a
+reduction-expression, array constructor expression, for-statement, or
+for-equation, occur freely outside of subscript positions, but only as a
+reference to the variable IDENT, and not for deducing ranges.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+  Real x[4];
+  Real xsquared[:]={x[i]*x[i] for  i};
+  // Same as: {x[i]*x[i] for i in 1:size(x,1)}
+  Real xsquared2[size(x,1)];
+  Real xsquared3[size(x,1)];
+equation
+  for i loop // Same as: for i in 1:size(x,1) loop ...
+    xsquared2[i]=x[i]^2;
+  end for;
+algorithm
+  for i loop // Same as: for i in 1:size(x,1) loop ...
+    xsquared3[i] := x[i]^2;
+  end for;
+\end{lstlisting}
+
+\begin{lstlisting}[language=modelica]
+  type FourEnums=enumeration(one,two,three,four);
+  Real xe[FourEnums]= x;
+  Real xsquared3[FourEnums]={xe[i]*xe[i] for i};
+  Real xsquared4[FourEnums]={xe[i]*xe[i] for i in FourEnums};
+  Real xsquared5[FourEnums]={x[i]*x[i] for  i};
+\end{lstlisting}
+{]}
+
+The size of an array -- the iteration range is evaluated on entry to the
+for-loop and the array size may not change during the execution of the
+for-loop.
+
+\subsubsection{Types as Iteration Ranges }\doublelabel{types-as-iteration-ranges}
+
+The iteration range can be specified as Boolean or as an enumeration
+type. This means iteration over the type from min to max, i.e. for
+Boolean it is the same as false:true and for an enumeration E it is the
+same as E.min:E.max. This can be used for for loops and reduction
+expressions.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+  type FourEnums=enumeration(one,two,three,four);
+  Real xe[FourEnums];
+  Real xsquared1[FourEnums];
+  Real xsquared2[FourEnums]={xe[i]*xe[i] for i in FourEnums};
+equation
+  for i in FourEnums loop
+    xsquared1[i]=xe[i]^2;
+  end for;
+\end{lstlisting}
+{]}
+
+\subsubsection{Nested For-Loops and Reduction Expressions with Multiple Iterators}\doublelabel{nested-for-loops-and-reduction-expressions-with-multiple-iterators}
+
+The notation with several iterators is a shorthand notation for nested
+for-statements or for-equations (or reduction-expressions). For
+for-statements or for-equations it can be expanded into the usual form
+by replacing each ``,'' by `loop for' and adding extra `end for'. For
+reduction-expressions it can be expanded into the usual form by
+replacing each `,' by `) for' and prepending the reduction-expression
+with `function-name(`.
+
+{[}\emph{Example}:
+
+\begin{lstlisting}[language=modelica]
+  Real x[4,3];
+algorithm
+  for j, i in 1:2 loop
+    // The loop-variable j takes the values 1,2,3,4 (due to use)
+    // The loop-variable i takes the values 1,2 (given range)
+    x[j,i] := j+i;
+  end for;
+\end{lstlisting}
+{]}
+
+\subsection{While-Statement}\doublelabel{while-statement}
+
+The while-statement has the following syntax:
+
+\begin{lstlisting}[language=grammar]
+while expression loop
+  { statement ";" }
+end while
+\end{lstlisting}
+The expression of a while-statement shall be a scalar Boolean
+expression. The while-statement corresponds to while-statements in
+programming languages, and is formally defined as follows:
+\begin{enumerate}
+\item The expression of the while-statement is evaluated.
+\item If the expression of the while-statement is false, the execution
+continues after the while-statement.
+\item If the expression of the while-statement is true, the entire body of
+the while-statement is executed (except if a break-statement, see
+\ref{break-statement}, or a return-statement, see \ref{return-statements}, is executed),
+and then execution proceeds at step 1.
+\end{enumerate}
+
+\subsection{Break-Statement}\doublelabel{break-statement}
+
+The break-statement breaks the execution of the innermost while or
+for-loop enclosing the break-statement and continues execution after the
+while- or for-loop. It can only be used in a while- or for-loop in an
+algorithm section. It has the following syntax:
+
+\textbf{break};
+
+{[}\emph{Example (note this could alternatively use return)}:
+
+\begin{lstlisting}[language=modelica]
+function findValue "Returns position of val or 0 if not found"
+  input Integer x[:];
+  input Integer val;
+  output Integer index;
+algorithm
+  index := size(x,1);
+  while index >= 1 loop 
+    if x[index]== val then
+      break;
+      else
+      index := index -- 1;
+    end if;
+  end while;
+end findValue;
+\end{lstlisting}
+{]}
+
+\subsection{Return-Statements}\doublelabel{return-statements}
+
+Can only be used inside functions, see \ref{function-return-statements}.
+
+\subsection{If-Statement}\doublelabel{if-statement}
+
+If-statements have the following syntax:
+
+\begin{lstlisting}[language=grammar]
+if expression then
+  { statement ";" }
+  { elseif expression then
+  { statement ";" }
+  }
+  [ else 
+      { statement ";" }
+  ]
+end if;
+\end{lstlisting}
+
+The expression of an if- or elseif-clause must be scalar Boolean
+expression. One if-clause, and zero or more elseif-clauses, and an
+optional else-clause together form a list of branches. One or zero of
+the bodies of these if-, elseif- and else-clauses is selected, by
+evaluating the conditions of the if- and elseif-clauses sequentially
+until a condition that evaluates to true is found. If none of the
+conditions evaluate to true the body of the else-clause is selected (if
+an else-clause exists, otherwise no body is selected). In an algorithm
+section, the selected body is then executed. The bodies that are not
+selected have no effect on that model evaluation.
+
+\subsection{When-Statements}\doublelabel{when-statements}
+
+A when-statement has the following syntax:
+
+\begin{lstlisting}[language=grammar]
+when expression then
+  { statement ";" }
+  { elsewhen expression then
+  { statement ";" } }
+end when
+\end{lstlisting}
+The expression of a when-statement shall be a discrete-time Boolean
+scalar or vector expression. The algorithmic statements within a
+when-statement are activated when the scalar or any one of the elements
+of the vector-expression becomes true.
+
+{[}\emph{Example}:
+
+\emph{Algorithms are activated when} x \emph{becomes \textgreater{} 2:}
+
+\begin{lstlisting}[language=modelica]
+when x > 2 then
+  y1 := sin(x);
+  y3 := 2*x + y1+y2;
+end when;
+\end{lstlisting}
+\emph{The statements inside the when-statement are activated when
+either} x \emph{becomes \textgreater{} 2 or} sample(0,2) \emph{becomes}
+true \emph{or} x \emph{becomes less than 5:}
+
+\begin{lstlisting}[language=modelica]
+when {x > 2, sample(0,2), x < 5}
+  then
+  y1 := sin(x);
+  y3 := 2*x + y1+y2;
+end when;
+\end{lstlisting}
+\emph{For when-statements in algorithm sections the order is significant
+and it is advisable to have only one assignment within the
+when-statement and instead use several algorithm sections having
+when-statements with identical conditions, e.g.:}
+
+\begin{lstlisting}[language=modelica]
+algorithm
+  when x > 2 then
+    y1 := sin(x);
+  end when;
+equation
+  y2 = sin(y1);
+algorithm
+  when x > 2 then
+    y3 := 2*x +y1+y2;
+  end when;
+\end{lstlisting}
+\emph{Merging the when-statements can lead to less efficient code and
+different models with different behavior depending on the order of the
+assignment to} y1 \emph{and} y3 \emph{in the algorithm.}
+
+{]}
+
+\subsubsection{Restrictions on When-Statements}\doublelabel{restrictions-on-when-statements}
+
+\begin{itemize}
+\item
+  A when-statement shall not be used within a function.
+\item
+  When-statements may not occur inside initial algorithms.
+\item
+  When-statements cannot be nested.
+\item
+  When-statements may not occur inside while, if, and for-clauses in
+  algorithms.
+\end{itemize}
+
+{[}\emph{Example}:
+
+The following nested when-statement is invalid:
+
+\begin{lstlisting}[language=modelica]
+when x > 2 then
+  when y1 > 3 then
+    y2 := sin(x);
+  end when;
+end when;
+\end{lstlisting}
+{]}
+
+\subsubsection{Defining When-Statements by If-Statements}\doublelabel{defining-when-statements-by-if-statements}
+
+A when-statement:
+
+\begin{lstlisting}[language=modelica]
+algorithm
+  when {x>1, ..., y>p} then
+    ...
+    elsewhen x > y.start then
+    ...
+  end when;
+\end{lstlisting}
+is similar to the following special if-statement, where Boolean
+  b1{[}N{]}; and Boolean b2; are necessary because the edge() operator can
+only be applied to variables
+
+\begin{lstlisting}[language=modelica]
+  Boolean b1[N](start={x.start>1, ...,
+  y.start>p});
+  Boolean b2(start=x.start>y.start);
+algorithm
+  b1:={x>1, ..., y>p};
+  b2:=x>y.start;
+  if edge(b1[1]) or edge(b1[2]) or ...
+    edge(b1[N]) then 
+    ...
+    elseif edge(b2) then
+    ...
+  end if;
+\end{lstlisting}
+  with \lstinline!edge(A)= A and not pre(A)! and the additional guarantee, that the
+  statements within this special if-statement are only evaluated at event
+  instants. The difference compared to the when-statements is that e.g.
+`pre' may only be used on continuous-time real variables inside the body
+of a when-clause and not inside these if-statements.
+
+\subsection{Special Statements}\doublelabel{special-statements}
+
+These special statements have the same form and semantics as the
+corresponding equations, apart from the general difference in semantics
+between equations and statements.
+
+\subsubsection{Assert Statement}\doublelabel{assert-statement}
+
+See \ref{assert}. A failed assert stops the execution of the current
+algorithm.
+
+\subsubsection{Terminate Statement}\doublelabel{terminate-statement}
+
+See \ref{terminate}. The terminate statement may not be in functions; In
+an algorithm outside a function it does not stop the execution of the
+current algorithm.

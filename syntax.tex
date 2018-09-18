@@ -1,0 +1,421 @@
+\chapter{Modelica Concrete Syntax}\doublelabel{modelica-concrete-syntax}
+\section{Lexical conventions}\doublelabel{lexical-conventions}
+
+The following syntactic meta symbols are used (extended BNF):
+\begin{lstlisting}[language=grammar]
+[ ] optional
+{ } repeat zero or more times
+| or
+"text" The text is treated as a single token (no whitespace between any characters)
+\end{lstlisting}
+
+The following lexical units are defined (the ones in boldface are the
+ones used in the grammar, the rest are just internal to the definition
+of other lexical units):
+
+\begin{lstlisting}[language=grammar]
+IDENT = NONDIGIT { DIGIT | NONDIGIT } | Q-IDENT
+Q-IDENT = "'" ( Q-CHAR | S-ESCAPE ) { Q-CHAR | S-ESCAPE | """ } "'"
+NONDIGIT = "_" | letters "a" to "z" | letters "A" to "Z"
+STRING = """ { S-CHAR | S-ESCAPE } """
+S-CHAR = see below
+Q-CHAR = NONDIGIT | DIGIT | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," |
+         "-" | "." | "/" | ":" | ";" | "<" | ">" | "=" | "?" | "@" | "[" | "]" | "^" |
+        "{" | "}" | "|" | "~" | " "
+S-ESCAPE = "\'" | "\"" | "\?" | "\\" |
+         "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
+DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+UNSIGNED-INTEGER = DIGIT { DIGIT }
+UNSIGNED-NUMBER = UNSIGNED-INTEGER [ "." [ UNSIGNED-INTEGER ] ]
+        [ ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER ]
+\end{lstlisting}
+\textrm{S-CHAR} is any member of the Unicode character set
+(\url{http://www.unicode.org}; see \ref{mapping-package-class-structures-to-a-hierarchical-file-system} for storing as UTF-8 on files) except double-quote """, and backslash "\textbackslash{}"
+
+For identifiers the redundant escapes ('\textbackslash{}?' and
+'\textbackslash{}"') are the same as the corresponding non-escaped
+variants ('?' and '"'). {[}\emph{The single quotes are part of an
+identifier. E.g. 'x' and x are different IDENTs}{]}.
+
+Note:
+
+\begin{itemize}
+\item
+  Whitespace and comments can be used between separate lexical units
+  and/or symbols, and also separates them. Whitespace and comments
+  cannot be used inside other lexical units, except for STRING and
+  Q-IDENT where they are treated as part of the STRING or Q-IDENT
+  lexical unit.
+\item
+  String constant concatenation "a" "b" becoming "ab" (as in C) is
+  replaced by the "+" operator in Modelica.
+\item
+  Modelica uses the same comment syntax as C++ and Java (i.e., //
+  signals the start of a line comment and /* .... */ is a multi-line
+  comment); comments may contain any Unicode character. Modelica also
+  has structured comments in the form of annotations and string
+  comments.
+\item
+  Description strings (= production ``string-comment'' in the grammar)
+  and strings in annotations (= STRING with production annotation in the
+  grammar) may contain any member of the Unicode character set. All
+  other strings have to contain only the sub-set of Unicode characters
+  identical with the 7-bit US-ASCII character set. {[}\emph{As a
+  consequence, operators like ``\textgreater{}'' or ``\textless{}'', and
+  external functions only operate on ASCII strings and not on
+  Unicode-strings.} \emph{Within a description string the tags
+  \textless{}HTML\textgreater{} and \textless{}/HTML\textgreater{} or
+  \textless{}html\textgreater{} and \textless{}/html\textgreater{}
+  define optionally begin and end of content that is HTML encoded.}{]}
+\item
+  Boldface denotes keywords of the Modelica language. Keywords are
+  reserved words and may not be used as identifiers.
+\item
+  Productions use hyphen as separator both in the grammar and in the
+  text. Previously the grammar used underscore.
+\end{itemize}
+
+\section{Grammar}\doublelabel{grammar}
+\subsection{Stored Definition -- Within}\doublelabel{stored-definition-within}
+\begin{lstlisting}[language=grammar]
+stored-definition:    
+   [ within [ name ] ";" ]    
+   { [ final ] class-definition ";" } 
+\end{lstlisting}
+
+\subsection{Class Definition}\doublelabel{class-definition}
+\begin{lstlisting}[language=grammar]
+class-definition :
+   [ encapsulated ] class-prefixes
+   class-specifier
+
+class-prefixes :
+   [ partial ]
+   ( class | model | [ operator ] record | block | [ expandable ] connector | type |
+   package | [ ( pure | impure ) ] [ operator ] function | operator )
+
+class-specifier :
+   long-class-specifier | short-class-specifier | der-class-specifier
+
+long-class-specifier :
+   IDENT string-comment composition end IDENT
+   | extends IDENT [ class-modification ] string-comment composition
+   end IDENT
+
+short-class-specifier :
+   IDENT "=" base-prefix type-specifier [ array-subscripts ]
+   [ class-modification ] comment
+   | IDENT "=" enumeration "(" ( [enum-list] | ":" ) ")" comment
+
+der-class-specifier :
+   IDENT "=" der "(" type-specifier "," IDENT { "," IDENT } ")" comment
+   
+base-prefix :
+   [ input | output ]
+   
+enum-list : enumeration-literal { "," enumeration-literal}
+
+enumeration-literal : IDENT comment
+
+composition :
+   element-list
+   { public element-list |
+     protected element-list |
+     equation-section |
+     algorithm-section
+   }
+   [ external [ language-specification ]
+   [ external-function-call ] [ annotation ] ";" ]
+   [ annotation ";" ]
+
+language-specification :
+   STRING
+   
+external-function-call :
+   [ component-reference "=" ]
+   IDENT "(" [ expression-list ] ")"
+
+element-list :
+   { element ";" }
+
+element :
+   import-clause |
+   extends-clause |
+   [ redeclare ]
+   [ final ]
+   [ inner ] [ outer ]
+   ( ( class-definition | component-clause) |
+   replaceable ( class-definition | component-clause)
+   [constraining-clause comment])
+
+import-clause :
+   import ( IDENT "=" name | name ["." ( "*" | "{" import-list "}" ) ] ) comment
+
+import-list :
+   IDENT { "," IDENT }
+\end{lstlisting}
+
+\subsection{Extends}\doublelabel{extends}
+\begin{lstlisting}[language=grammar]
+extends-clause :
+   extends type-specifier [ class-modification ] [annotation]
+   
+constraining-clause :
+   constrainedby type-specifier [ class-modification ]
+\end{lstlisting}
+
+\subsection{Component Clause}\doublelabel{component-clause}
+\begin{lstlisting}[language=grammar]
+component-clause:
+   type-prefix type-specifier [ array-subscripts ] component-list
+   
+type-prefix :
+   [ flow | stream ]
+   [ discrete | parameter | constant ] [ input | output ]
+component-list :
+   component-declaration { "," component-declaration }
+
+component-declaration :
+   declaration [ condition-attribute ] comment
+
+condition-attribute:
+   if expression
+
+declaration :
+   IDENT [ array-subscripts ] [ modification ]
+\end{lstlisting}
+
+\subsection{Modification}\doublelabel{modification}
+\begin{lstlisting}[language=grammar]
+modification :
+   class-modification [ "=" expression ]
+   | "=" expression
+   | ":=" expression
+   
+class-modification :
+   "(" [ argument-list ] ")"
+   
+argument-list :
+   argument { "," argument }
+   
+argument :
+   element-modification-or-replaceable
+   | element-redeclaration
+   
+element-modification-or-replaceable:
+   [ each ] [ final ] ( element-modification | element-replaceable)
+   
+element-modification :
+   name [ modification ] string-comment
+
+element-redeclaration :
+   redeclare [ each ] [ final ]
+   ( ( short-class-definition | component-clause1) | element-replaceable )
+
+element-replaceable:
+   replaceable ( short-class-definition | component-clause1)
+   [constraining-clause]
+   
+component-clause1 :
+   type-prefix type-specifier component-declaration1
+   
+component-declaration1 :
+   declaration comment
+
+short-class-definition :
+   class-prefixes short-class-specifier
+\end{lstlisting}
+
+\subsection{Equations}\doublelabel{equations1}
+\begin{lstlisting}[language=grammar]
+equation-section :
+   [ initial ] equation { equation ";" }
+   
+algorithm-section :
+   [ initial ] algorithm { statement ";" }
+
+equation :
+   ( simple-expression "=" expression
+     | if-equation
+     | for-equation
+     | connect-clause
+     | when-equation
+     | component-reference function-call-args )
+   comment
+
+statement :
+   ( component-reference ( ":=" expression | function-call-args )
+     | "(" output-expression-list ")" ":=" component-reference function-call-args
+     | break
+     | return
+     | if-statement
+     | for-statement
+     | while-statement
+     | when-statement )
+   comment
+
+if-equation :
+   if expression then
+     { equation ";" }
+   { elseif expression then
+     { equation ";" }
+   }
+   [ else
+     { equation ";" }
+   ]
+   end if
+
+if-statement :
+   if expression then
+     { statement ";" }
+   { elseif expression then
+     { statement ";" }
+   }
+   [ else
+     { statement ";" }
+   ]
+   end if
+
+for-equation :
+   for for-indices loop
+     { equation ";" }
+   end for
+
+for-statement :
+   for for-indices loop
+     { statement ";" }
+   end for
+
+for-indices :
+   for-index {"," for-index}
+
+for-index:
+   IDENT [ in expression ]
+
+while-statement :
+   while expression loop
+   { statement ";" }
+   end while
+
+when-equation :
+   when expression then
+     { equation ";" }
+   { elsewhen expression then
+     { equation ";" } }
+   end when
+
+when-statement :
+   when expression then
+     { statement ";" }
+   { elsewhen expression then
+     { statement ";" } }
+   end when
+
+connect-clause :
+   connect "(" component-reference "," component-reference ")"
+\end{lstlisting}
+\subsection{Expressions}\doublelabel{expressions1}
+\begin{lstlisting}[language=grammar]
+expression :
+   simple-expression
+   | if expression then expression { elseif expression then expression }
+   else expression
+   
+simple-expression :
+   logical-expression [ ":" logical-expression [ ":" logical-expression ] ]
+   
+logical-expression :
+   logical-term { or logical-term }
+   
+logical-term :
+   logical-factor { and logical-factor }
+
+logical-factor :
+   [ not ] relation
+   
+relation :
+   arithmetic-expression [ relational-operator arithmetic-expression ]
+
+relational-operator :
+   "<" | "<=" | ">" | ">=" | "==" | "<>"
+
+arithmetic-expression :
+   [ add-operator ] term { add-operator term }
+
+add-operator :
+   "+" | "-" | ".+" | ".-"
+
+term :
+   factor { mul-operator factor }
+
+mul-operator :
+   "*" | "/" | ".*" | "./"
+
+factor :
+   primary [ ("^" | ".^") primary ]
+
+primary :
+   UNSIGNED-NUMBER
+   | STRING
+   | false
+   | true
+   | (component-reference | der | initial | pure ) function-call-args
+   | component-reference
+   | "(" output-expression-list ")"
+   | "[" expression-list { ";" expression-list } "]"
+   | "{" array-arguments "}"
+   | end
+   
+type-specifier : ["."] name
+
+name : IDENT { "." IDENT }
+
+component-reference :
+   [ "." ] IDENT [ array-subscripts ] { "." IDENT [ array-subscripts ] }
+
+function-call-args :
+   "(" [ function-arguments ] ")"
+
+function-arguments :
+expression [ "," function_arguments-non-first | for for_indices ]
+   | function name "(" [ named_arguments ] ")" [ "," function-arguments-non-first ]
+   | named-arguments
+
+function-arguments-non-first :
+   function-argument [ "," function-arguments-non-first ]
+   | named-arguments
+
+array-arguments :
+   expression [ "," array-arguments-non-first | for for-indices ]
+
+array-arguments-non-first :
+   expression [ "," array-arguments-non-first ]
+
+named-arguments: named-argument [ "," named-arguments ]
+
+named-argument: IDENT "=" function-argument
+
+function-argument :
+   function name "(" [ named-arguments ] ")" | expression
+   
+output-expression-list:
+   [ expression ] { "," [ expression ] }
+   
+expression-list :
+   expression { "," expression }
+   
+array-subscripts :
+   "[" subscript { "," subscript } "]"
+   
+subscript :
+   ":" | expression
+   
+comment :
+   string-comment [ annotation ]
+   
+string-comment :
+[ STRING { "+" STRING } ]
+
+annotation :
+   annotation class-modification
+\end{lstlisting}

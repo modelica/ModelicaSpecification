@@ -1,0 +1,151 @@
+\chapter{Modelica DAE Representation}\doublelabel{modelica-dae-representation}
+
+In this appendix, the mapping of a Modelica model into an appropriate
+mathematical description form is discussed.
+
+In a first step, a Modelica translator transforms a hierarchical
+Modelica simulation model into a ``flat'' set of Modelica
+``statements'', consisting of the equation and algorithm sections of all
+used components by:
+
+\begin{itemize}
+\item
+  expanding all class definitions (flattening the inheritance tree) and
+  adding the equations and assignment statements of the expanded classes
+  for every instance of the model.
+\item
+  replacing all connect-equations by the corresponding equations of the
+  connection set (see \ref{generation-of-connection-equations}).
+\item
+  mapping all algorithm sections to equation sets.
+\item
+  mapping all when-clauses to equation sets (see \ref{when-equations}).
+\end{itemize}
+
+As a result of this transformation process, a set of equations is
+obtained consisting of differential, algebraic and discrete equations of
+the following form where ( ):
+
+and where
+
+\begin{longtable}[]{|p{2cm}|p{12cm}|}
+\hline \endhead
+\textbf{p} & Modelica variables declared as \emph{parameter} or
+\emph{constant}, i.e., variables without any
+time-dependency.\\ \hline
+\emph{t} & Modelica variable \emph{time}, the independent (real)
+variable.\\ \hline
+\textbf{x}(t) & Modelica variables of type \emph{Real}, appearing
+differentiated.\\ \hline
+\textbf{m}(t\textsubscript{e}) & Modelica variables of type
+\emph{discrete Real, Boolean, Integer} which are unknown. These
+variables change their value only at event instants t\textsubscript{e}.
+pre(m) are the values of m immediately before the current event
+occurred.\\ \hline
+\textbf{y}(t) & Modelica variables of type \emph{Real} which do not fall
+into any other category (= algebraic variables).\\ \hline
+c\textbf{(}t\textsubscript{e}) & The conditions of all if-expressions
+generated including when-clauses after conversion, see \ref{when-equations}).\\ \hline
+\emph{relation}(\textbf{v}) & A relation containing variables
+v\textsubscript{i}, e.g. v\textsubscript{1} \textgreater{}
+v\textsubscript{2}, v\textsubscript{3} \textgreater{}= 0.\\ \hline
+
+\end{longtable}
+
+For simplicity, the special cases of the noEvent() operator and of the
+reinit() operator are not contained in the equations above and are not
+discussed below.
+
+The generated set of equations is used for simulation and other analysis
+activities. Simulation means that an initial value problem is solved,
+i.e., initial values have to be provided for the states x, \ref{initialization-initial-equation-and-initial-algorithm}.
+The equations define a DAE (Differential Algebraic Equations) which may
+have discontinuities, a variable structure and/or which are controlled
+by a discrete-event system. Such types of systems are called
+\emph{hybrid DAEs}. Simulation is performed in the following way:
+
+\begin{enumerate}
+\item
+  The DAE (1c) is solved by a numerical integration method. In this
+  phase the conditions c of the if- and when-clauses, as well as the
+  discrete variables m are kept constant. Therefore, (1c) is a
+  continuous function of continuous variables and the most basic
+  requirement of numerical integrators is fulfilled.
+\item
+  During integration, all relations from (1a) are monitored. If one of
+  the relations changes its value an event is triggered, i.e., the exact
+  time instant of the change is determined and the integration is
+  halted. As discussed in \ref{events-and-synchronization}, relations which depend only on
+  time are usually treated in a special way, because this allows to
+  determine the time instant of the next event in advance.
+\item
+  At an event instant, (1) is a mixed set of algebraic equations which
+  is solved for the Real, Boolean and Integer unknowns.
+\item
+  After an event is processed, the integration is restarted with 1.
+\end{enumerate}
+
+Note, that both the values of the conditions c as well as the values of
+m (all discrete Real, Boolean and Integer variables) are only changed at
+an event instant and that these variables remain constant during
+continuous integration. At every event instant, new values of the
+discrete variables m and of new initial values for the states x are
+determined. The change of discrete variables may characterize a new
+structure of a DAE where elements of the state vector x are
+\emph{disabled}. In other words, the number of state variables,
+algebraic variables and residue equations of a DAE may change at event
+instants by disabling the appropriate part of the DAE. For clarity of
+the equations, this is not explicitly shown by an additional index in
+(1).
+
+At an event instant, including the initial event, the model equations
+are reinitialized according to the following iteration procedure:
+
+\begin{lstlisting}[language=modelica]
+    known  variables: x, t, p
+    unkown variables: dx/dt, y, m, pre(m), c 
+
+   // pre(m) = value of m before event occured
+   loop
+      solve (1) for the unknowns, with pre(m) fixed
+      if m == pre(m) then break
+      pre(m) := m    
+   end loop 
+\end{lstlisting}
+Solving (1) for the unknowns is non-trivial, because this set of 
+equations contains not only Real, but also Boolean and Integer unknowns.
+Usually, in a first step these equations are sorted and in many cases
+the Boolean and Integer unknowns can be just computed by a forward
+evaluation sequence. In some cases, there remain systems of equations
+(e.g. for ideal diodes, Coulomb friction elements) and specialized
+algorithms have to be used to solve them.
+
+Due to the construction of the equations by "flattening" a Modelica
+model, the hybrid DAE (1) contains a huge number of sparse equations.
+Therefore, direct simulation of (1) requires sparse matrix methods.
+However, solving this initial set of equations directly with a numerical
+method is both unreliable and inefficient. One reason is that many
+Modelica models, like the mechanical ones, have a DAE index of 2 or 3,
+i.e., the overall number of states of the model is less than the sum of
+the states of the sub-components. In such a case, every direct numerical
+method has the difficulty that the numerical condition becomes worse, if
+the integrator step size is reduced and that a step size of zero leads
+to a singularity. Another problem is the handling of idealized elements,
+such as ideal diodes or Coulomb friction. These elements lead to mixed
+systems of equations having both Real and Boolean unknowns. Specialized
+algorithms are needed to solve such systems.
+
+To summarize, symbolic transformation techniques are needed to transform
+(1) in a set of equations which can be numerically solved reliably. Most
+important, the algorithm of Pantelides should to be applied to
+differentiate certain parts of the equations in order to reduce the
+index. Note, that also explicit integration methods, such as Runge-Kutta
+algorithms, can be used to solve (1c), after the index of (1c) has been
+reduced by the Pantelides algorithm: During continuous integration, the
+integrator provides x and t. Then, (1c) is a linear or nonlinear system
+of equations to compute the algebraic variables y and the state
+derivatives dx/dt and the model returns dx/dt to the integrator by
+solving these systems of equations. Often, (1c) is just a linear system
+of equations in these unknowns, so that the solution is straightforward.
+This procedure is especially useful for real-time simulation where
+usually explicit one-step methods are used.
