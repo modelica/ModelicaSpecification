@@ -1,4 +1,5 @@
-This directory should contain the rationale behind Modelica Change Proposals, MCPs, 
+
+-This directory should contain the rationale behind Modelica Change Proposals, MCPs, 
 (and possibly rationale behind other decisions as well).
 
 Each MCP should use a separate sub-directory based on the MCP-number.
@@ -12,22 +13,23 @@ but the rest of the development on a branch/pull-request before being accepted.
 
 The existing MCPs are:
 
-- MCP0029 License Export
-- MCP0028 Record Derivatives mixing Real and non-Real (added in Modelica 3.4), #2137
+- MCP0030 IsClocked Operator, https://github.com/modelica/ModelicaSpecification/issues/2238
+- MCP0029 License Export, https://github.com/modelica/ModelicaSpecification/issues/2217
+- MCP0028 Record Derivatives mixing Real and non-Real (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/2137
 - MCP0027 Units of Literal Constants (active)
-- MCP0026 Arc-only Ellipse (added in Modelica 3.4), #2045
+- MCP0026 Arc-only Ellipse (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/2045
 - MCP0025 Functions with input output
-- MCP0024 Initialization of Clocked States (added in Modelica 3.4), #2007
-- MCP0023 Model to Record (added in Modelica 3.4), #1953
-- MCP0022 Integer to Enumeration (added in Modelica 3.4), #1842
+- MCP0024 Initialization of Clocked States (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/2007
+- MCP0023 Model to Record (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/1953
+- MCP0022 Integer to Enumeration (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/1842
 - MCP0021 Component iterators (active)
 - MCP0020 Model as Arguments to Functions (added in Modelica 3.4)
-- MCP0019 Improvement of Flattening Description (added in Modelica 3.4), #1829
+- MCP0019 Improvement of Flattening Description (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/1829
 - MCP0018 Change specification format (done post Modelica 3.4)
 - MCP0017 Portable import of FMUs
 - MCP0016 Semantic Versions
 - MCP0015 Language Version Header
-- MCP0014 Conversion (added in Modelica 3.4), #1622
+- MCP0014 Conversion (added in Modelica 3.4), https://github.com/modelica/ModelicaSpecification/issues/1622
 - MCP0013 Introducing polymorphic functions
 - MCP0012 Calling blocks as functions
 - MCP0011 Allow user-defined functions in reductions
