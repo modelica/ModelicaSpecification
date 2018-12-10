@@ -132,7 +132,7 @@ in states of hierarchical state machines.\\ \hline
 {[} \emph{The recommended layout of state machines is shown below for a
 simple state machine with 5 transitions. }
 
-\includegraphics[width=4.85417in,height=3.42708in]{media/statemachine}
+\includegraphics[width=4.85417in,height=3.42708in]{statemachine}
 
 \emph{For
 the 5 transitions above, the settings are as follows, from left to
@@ -345,21 +345,21 @@ machine should be reset";
   Integer selectedState = if reset then 1 else previous(nextState);
   Boolean selectedReset = if reset then true else previous(nextReset);
   // For strong (immediate) and weak (delayed) transitions
-  Integer immediate = max(if (if t[i].immediate and t[i].from == selectedState 
+  Integer immediate = max(if (if t[i].immediate and t[i].from == selectedState
     then c[i] else false) then i else 0 for i in 1:size(t,1));
-  Integer delayed = max(if  (if not t[i].immediate and t[i].from == nextState 
+  Integer delayed = max(if  (if not t[i].immediate and t[i].from == nextState
     then c[i] else false) then i else 0 for i in 1:size(t,1));
   Integer fired = max(previous(delayed), immediate);
   output Integer activeState = if reset then 1 elseif fired > 0 then t[fired].to else selectedState;
   output Boolean activeReset = if reset then true elseif fired > 0 then t[fired].reset else selectedReset;
-  
+
   // Update states
   Integer nextState = if active then activeState else previous(nextState);
   Boolean nextReset = if active then false else previous(nextReset);
   // Delayed resetting of individual states
-  output Boolean activeResetStates[nStates] = {if reset then true else 
+  output Boolean activeResetStates[nStates] = {if reset then true else
     previous(nextResetStates[i]) for i in 1:nStates};
-  Boolean nextResetStates[nStates] = if active then {if selectedState == i then false 
+  Boolean nextResetStates[nStates] = if active then {if selectedState == i then false
     else activeResetStates[i] for i in 1:nStates} else previous(nextResetStates);
   Boolean finalStates[nStates] = {max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1))== 0 for i in 1:nStates};
   Boolean stateMachineInFinalState = finalStates[activeState];
@@ -414,11 +414,11 @@ u!\textsubscript{2}! = v
 ...
 \end{lstlisting}
 
-The merge of the definitions of v is then made according to \ref{merging-variable-definitions}: 
+The merge of the definitions of v is then made according to \ref{merging-variable-definitions}:
 Merging Variable Definitions. The result is after
 simplification:
 \begin{lstlisting}[language=modelica,escapechar=!]
-v := if activeState(state!\textsubscript{1}!) then y!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then y!\textsubscript{2}! elseif ... else last(v); 
+v := if activeState(state!\textsubscript{1}!) then y!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then y!\textsubscript{2}! elseif ... else last(v);
 u!\textsubscript{1}! = v
 u!\textsubscript{2}! = v
 ...
@@ -428,7 +428,7 @@ u!\textsubscript{2}! = v
 
 \emph{{[} Consider the following hierarchical state machine:}
 
-\includegraphics[width=5.34375in,height=5.72917in]{media/statemachine2}
+\includegraphics[width=5.34375in,height=5.72917in]{statemachine2}
 
 \emph{The model demonstrates the following properties:}
 
@@ -469,68 +469,68 @@ block HierarchicalAndParallelStateMachine
 
   State1 state1;
   State2 state2;
-equation 
+equation
   initialState(state1);
   transition(state1,state2,activeState(state1.stateD) and
     activeState(state1.stateY), immediate=false);
   transition(state2,state1,v >= 20, immediate=false);
-  
-public 
+
+public
   block State1
     inner Integer count(start=0);
     inner outer output Integer v;
-    
+
     block StateA
       outer output Integer v;
-    equation 
+    equation
       v = previous(v) + 2;
     end StateA;
     StateA stateA;
-    
+
     block StateB
       outer output Integer v;
-    equation 
+    equation
       v = previous(v) - 1;
     end StateB;
     StateB stateB;
-    
+
     block StateC
       outer output Integer count;
-    equation 
+    equation
       count = previous(count) + 1;
     end StateC;
     StateC stateC;
-    
+
     block StateD
     end StateD;
     StateD stateD;
-    
-  equation 
+
+  equation
     initialState(stateA);
     transition(stateA, stateB, v >= 6, immediate=false);
     transition(stateB, stateC, v == 0, immediate=false);
     transition(stateC, stateA, true, immediate=false, priority=2);
     transition(stateC, stateD, count >= 2, immediate=false);
-  
-  public 
+
+  public
     block StateX
       outer input Integer v;
       Integer i(start=0);
       Integer w; // = v;
-    equation 
+    equation
       i = previous(i) + 1;
       w = v;
     end StateX;
     StateX stateX;
-    
+
     block StateY
       Integer j(start=0);
-    equation 
+    equation
       j = previous(j) + 1;
     end StateY;
     StateY stateY;
-    
-  equation 
+
+  equation
     initialState(stateX);
     transition(stateX, stateY, stateX.i > 20, immediate=false,
     reset=false);
@@ -538,7 +538,7 @@ public
 
   block State2
     outer output Integer v;
-  equation 
+  equation
     v = previous(v) + 5;
   end State2;
 end HierarchicalAndParallelStateMachine;
@@ -546,7 +546,7 @@ end HierarchicalAndParallelStateMachine;
 
 \emph{The behavior of the state machine can be seen in the plots of v:}
 \begin{figure}
-\includegraphics[width=4.16667in,height=2.91667in]{media/statemachineplot}
+\includegraphics[width=4.16667in,height=2.91667in]{statemachineplot}
 \end{figure}
 \emph{The transition from state1 to state2 could have been done with a
 synchronize transition with condition=true instead. The semantically
@@ -581,7 +581,7 @@ block HierarchicalAndParallelStateMachine
       outer output Integer v;
       outer input Integer count_previous;
       outer output Integer count;
-    equation 
+    equation
       inFinalState = true; // no macro states
       if activeState == 1 then
         // equations for stateA
@@ -603,7 +603,7 @@ block HierarchicalAndParallelStateMachine
     end StateMachineOf_stateA;
 
     StateMachineOf_stateA stateMachineOf_stateA(active=active,
-      reset=reset); 
+      reset=reset);
 
     block StateMachineOf_stateX
       extends StateMachineSemantics(
@@ -616,7 +616,7 @@ block HierarchicalAndParallelStateMachine
       Integer j(start=0);
       Integer j_previous;
       Integer w;
-    equation 
+    equation
       inFinalState = true; // no macro states
       if activeState == 1 then
         // equations for stateX
@@ -635,7 +635,7 @@ block HierarchicalAndParallelStateMachine
         j = j_previous + 1;
       end if;
     end StateMachineOf_stateX;
-    
+
     StateMachineOf_stateX stateMachineOf_stateX(active=active,
       reset=reset);
     Boolean inFinalState = stateMachineOf_stateA.stateMachineInFinalState and

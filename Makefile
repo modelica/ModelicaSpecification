@@ -7,7 +7,7 @@
 all: MLS.pdf MLS.html
 
 clean:
-	rm *.aux MLS.log MLS.toc MLS.pdf 
+	rm *.aux MLS.log MLS.toc MLS.pdf
 	rm MLS.xml *.html
 
 MLS.pdf: *.tex
@@ -15,4 +15,4 @@ MLS.pdf: *.tex
 
 MLS.html: *.tex
 	$(LATEXMLPREFIX)latexml MLS.tex --dest MLS.xml
-	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=LatexML-maybeMathJax.js --navigationtoc=context --css=LaTeXML-navbar-left.css --dest MLS.html
+	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html
