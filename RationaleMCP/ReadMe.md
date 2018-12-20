@@ -1,6 +1,6 @@
 # MCP Rationale
 This directory should contain the rationale behind Modelica Change Proposals, MCPs,
-(and possibly rationale behind other decisions as well).
+(and possibly rationale behind other decisions as well). The proposals shall adhere to the [guiding principles](GuidingPrinciples.MD).
 
 Each MCP should use a separate sub-directory based on the MCP-number.
 
