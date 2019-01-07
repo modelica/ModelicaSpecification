@@ -6,7 +6,31 @@ This repository contains the Modelica Language Specification, hosted at https://
 
 ## Description
 
-Modelica® https://modelica.org/ is a non-proprietary, object-oriented, equation based language to conveniently model complex physical systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
+Modelica® https://modelica.org is a non-proprietary, object-oriented, equation based language to conveniently model complex physical systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
+
+## Releases
+
+Version | Link                                                              | Published |
+------- | ----------------------------------------------------------------- | --------|
+3.5-dev | [Master branch](https://github.com/modelica/ModelicaSpecification)| not yet |
+3.4     | [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
+3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
+3.2rev2 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision2.pdf) | 2013    |
+3.2rev1 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision1.pdf) | 2012    |
+3.3     | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2012    |
+3.2     | [PDF](https://modelica.org/documents/ModelicaSpec32.pdf)          | 2010    |
+3.1     | [PDF](https://modelica.org/documents/ModelicaSpec31.pdf)          | 2009    |
+3.0     | [PDF](https://modelica.org/documents/ModelicaSpec30.pdf)          | 2007    |
+2.2     | [PDF](https://modelica.org/documents/ModelicaSpec22.pdf)          | 2005    |
+2.1     | [PDF](https://modelica.org/documents/ModelicaSpec21.pdf)          | 2004    |
+2.0     | [PDF](https://modelica.org/documents/ModelicaSpec20.pdf)          | 2002    |
+1.4     | [PDF](https://modelica.org/documents/ModelicaSpec14.pdf)          | 2000    |
+1.3     | [PDF](https://modelica.org/documents/ModelicaSpec13norev.pdf)     | 1999    |
+1.2     | [PDF](https://modelica.org/documents/modelicaspec12norev.pdf)     | 1999    |
+1.1     | [PDF](https://modelica.org/documents/ModelicaSpec11.pdf)          | 1998    |
+1.0     | [PDF](https://modelica.org/documents/Modelica1.pdf)               | 1997    |
+
+More Info on released versions: https://www.modelica.org/documents
 
 ## Contribution
 1. If you find an error and are not certain that you can correct it, first check that it is not already reported and then open an [issue](https://github.com/modelica/ModelicaSpecification/issues) describing it in detail - focusing on why it should be changed.
