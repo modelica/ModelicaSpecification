@@ -21,6 +21,7 @@ New MCP should be added to the following list - on the main branch to keep track
 but the rest of the development on a branch/pull-request before being accepted.
 
 ## List of existing MCPs
+- MCP0031 Flat Modelica and MLS modularization
 - MCP0030 IsClocked Operator ([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))
 - MCP0029 License Export ([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))
 - MCP0028 Record Derivatives mixing Real and non-Real (added in Modelica 3.4) ([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))
