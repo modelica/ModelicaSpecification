@@ -8,6 +8,8 @@ This MCP is a new attempt at introducing a specification of an intermediate form
 
 Other important reasons for having a specification of Flat Modelica include making it easier to organize the development work of a Modelica tool, helping users understand the mysterious ways of the Modelica language by showing them the flattened models, and making it possible to compare different Modelica back ends with the same flattened model.
 
+A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
+
 ## Revisions
 | Date | Description |
 | --- | --- |
