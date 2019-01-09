@@ -1,7 +1,7 @@
-# Modelica Change Proposal MCP-0031 
-### Flat Modelica and MLS modularization
-### Henrik Tidefelt, ...
-### (In Development) 
+# Modelica Change Proposal MCP-0031<br/>Flat Modelica and MLS modularization
+Henrik Tidefelt, ...
+
+**(In Development)**
 
 ## Summary
 This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Flat Modelica_.  There are several reasons for specifying such a format, but the driving reason this time is the need to separate Modelica front end matters (the high level constructs of the Modelica language) from back end matters (the execution model for the hybrid differential-algebraic equations).  Generally speaking, the two different matters will attract attention from people with quite different interests and areas of expertise, and a separation will facilitate more efficient work and rapid development of the two aspects of the Modelica language.  The back end matters could then get some well deserved attention after many years of almost no attention at all.
