@@ -1,5 +1,5 @@
 # Modelica Change Proposal MCP-0031<br/>Flat Modelica and MLS modularization
-Henrik Tidefelt, ...
+Henrik Tidefelt, Peter Harman, …
 
 **(In Development)**
 
