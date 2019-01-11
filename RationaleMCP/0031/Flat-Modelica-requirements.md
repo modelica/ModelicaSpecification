@@ -11,12 +11,14 @@ Things that the Flat Modelica format should support:
 - Equations and algorithms, both scalar, array-valued, and record-valued.
 - Optional source locations to for use in error messages.  (This will require some thought in order to be flexible and precise enough without interfering with too much with the rest of the grammar.)
 - Documentation strings.
-- Vendor-specific annoations.
+- Vendor-specific annotations.
 - All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Flat Modelica model is exported to an FMU for Model Exchange.)
 - List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during flattening for other reasons.
 - Values for all constants, even those that have been inlined everywhere, since the values should be part of the simulation result.
 - Less restricted forms of record field access and array subscripting?
 - Efficient handling of large constant arrays (constant evaluation is not an option, since the same large array literal might then be repeated in many places).
+- Expressions for all variables that were treated as aliases during flattening, giving the variable that it is an alias of and the sign of the relationship
+- Function declarations that are utilised in the model.
 
 Examples of things that should be gone after flattening and shouldn't exist in Flat Modelica:
 - Complex classes that may contain equations.
