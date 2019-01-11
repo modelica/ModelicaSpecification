@@ -24,8 +24,19 @@ used components by:
 
 As a result of this transformation process, a set of equations is
 obtained consisting of differential, algebraic and discrete equations of
-the following form where ( ):
-
+the following form where ($v:=\lbrack \dot{x}; x; y; t; m; \text{pre}(m); p\rbrack$ ):
+\begin{subequations}
+\begin{equation}
+c:=f_c(relation(v))\label{eq:crossings}
+\end{equation}
+\begin{equation}
+\dot{m}:=f_m(v, v)
+\end{equation}
+\begin{equation}
+0=f_x(v, v)\label{eq:dae}
+\end{equation}
+\label{eq:hydrid-dae}
+\end{subequations}
 and where
 
 \begin{longtable}[]{|p{2cm}|p{12cm}|}
@@ -66,20 +77,20 @@ by a discrete-event system. Such types of systems are called
 
 \begin{enumerate}
 \item
-  The DAE (1c) is solved by a numerical integration method. In this
+  The DAE (\ref{eq:dae}) is solved by a numerical integration method. In this
   phase the conditions c of the if- and when-clauses, as well as the
-  discrete variables m are kept constant. Therefore, (1c) is a
+  discrete variables m are kept constant. Therefore, (\ref{eq:dae}) is a
   continuous function of continuous variables and the most basic
   requirement of numerical integrators is fulfilled.
 \item
-  During integration, all relations from (1a) are monitored. If one of
+  During integration, all relations from (\ref{eq:crossing}) are monitored. If one of
   the relations changes its value an event is triggered, i.e., the exact
   time instant of the change is determined and the integration is
   halted. As discussed in \ref{events-and-synchronization}, relations which depend only on
   time are usually treated in a special way, because this allows to
   determine the time instant of the next event in advance.
 \item
-  At an event instant, (1) is a mixed set of algebraic equations which
+  At an event instant, (\ref{eq:hydrid-dae}) is a mixed set of algebraic equations which
   is solved for the Real, Boolean and Integer unknowns.
 \item
   After an event is processed, the integration is restarted with 1.
@@ -96,7 +107,7 @@ structure of a DAE where elements of the state vector x are
 algebraic variables and residue equations of a DAE may change at event
 instants by disabling the appropriate part of the DAE. For clarity of
 the equations, this is not explicitly shown by an additional index in
-(1).
+(\ref{eq:hydrid-dae}).
 
 At an event instant, including the initial event, the model equations
 are reinitialized according to the following iteration procedure:
@@ -112,7 +123,7 @@ are reinitialized according to the following iteration procedure:
       pre(m) := m    
    end loop 
 \end{lstlisting}
-Solving (1) for the unknowns is non-trivial, because this set of 
+Solving (\ref{eq:hydrid-dae}) for the unknowns is non-trivial, because this set of 
 equations contains not only Real, but also Boolean and Integer unknowns.
 Usually, in a first step these equations are sorted and in many cases
 the Boolean and Integer unknowns can be just computed by a forward
@@ -121,8 +132,8 @@ evaluation sequence. In some cases, there remain systems of equations
 algorithms have to be used to solve them.
 
 Due to the construction of the equations by "flattening" a Modelica
-model, the hybrid DAE (1) contains a huge number of sparse equations.
-Therefore, direct simulation of (1) requires sparse matrix methods.
+model, the hybrid DAE (\ref{eq:hydrid-dae}) contains a huge number of sparse equations.
+Therefore, direct simulation of (\ref{eq:hydrid-dae}) requires sparse matrix methods.
 However, solving this initial set of equations directly with a numerical
 method is both unreliable and inefficient. One reason is that many
 Modelica models, like the mechanical ones, have a DAE index of 2 or 3,
@@ -140,12 +151,12 @@ To summarize, symbolic transformation techniques are needed to transform
 important, the algorithm of Pantelides should to be applied to
 differentiate certain parts of the equations in order to reduce the
 index. Note, that also explicit integration methods, such as Runge-Kutta
-algorithms, can be used to solve (1c), after the index of (1c) has been
+algorithms, can be used to solve (\ref{eq:dae}), after the index of (\ref{eq:dae}) has been
 reduced by the Pantelides algorithm: During continuous integration, the
-integrator provides x and t. Then, (1c) is a linear or nonlinear system
+integrator provides x and t. Then, (\ref{eq:dae}) is a linear or nonlinear system
 of equations to compute the algebraic variables y and the state
 derivatives dx/dt and the model returns dx/dt to the integrator by
-solving these systems of equations. Often, (1c) is just a linear system
+solving these systems of equations. Often, (\ref{eq:dae}) is just a linear system
 of equations in these unknowns, so that the solution is straightforward.
 This procedure is especially useful for real-time simulation where
 usually explicit one-step methods are used.
