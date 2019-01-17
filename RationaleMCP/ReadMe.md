@@ -8,19 +8,20 @@ Each MCP should use a separate sub-directory based on the MCP-number.
 
 A template for the rationale of the MCP is found as either [Markdown](MCPTemplate.MD) or [Word](MCP_Template_Overview.dotx).
 
-## Workflow 
+## Workflow
 
 The MCPs will be handled as pull request also containing the actual specification changes, but
 before focusing on that it is preferable to explain the reason for the changes, investigation of alternatives,
 and give some indication of the implementation effort.
 
-The workflow before moving to GitHub is captured in this image. 
+The workflow before moving to GitHub is captured in this image.
 ![StateMachine](MCP-StateMachine-Figure.png)
 
 New MCP should be added to the following list - on the main branch to keep track of them,
 but the rest of the development on a branch/pull-request before being accepted.
 
 ## List of existing MCPs
+- MCP0031 Flat Modelica and MLS modularization
 - MCP0030 IsClocked Operator ([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))
 - MCP0029 License Export ([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))
 - MCP0028 Record Derivatives mixing Real and non-Real (added in Modelica 3.4) ([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))
