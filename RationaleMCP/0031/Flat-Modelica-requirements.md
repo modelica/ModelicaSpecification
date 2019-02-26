@@ -41,6 +41,7 @@ Examples of things that should be gone after flattening and shouldn't exist in F
 - Graphical and documentation annotations.
 - All redeclarations
 - Anything overloaded
+- Imports
 - Extends clauses?
 - Hierarchical modifications?
 - Package structure?
@@ -78,3 +79,22 @@ Content of that should go into this section:
 - Global and local balancing of equations and variables.
 - Instantiation.
 - Flattening.
+
+## An alternative view of grouping Modelica semantics (@mtiller)
+
+One advantage to this approach would be to organize the semantics of Modelica by when they apply.  In this sense, I'd like to see a description of:
+
+- Semantics needed in order to create a Modelica editor
+  - Package structure
+  - Name lookup
+  - Graphical appearance
+  - Connection semantics
+  - Inheritance
+- Semantics needed to represent mathematical structure and behavior
+  - Variables
+  - Equations
+  - Functions
+  
+From this perspective, expressions can almost be treated as "pass through".  The editor doesn't really need to
+interpret them in any way. For the most part they just pass through to the flattened form (but with some
+potential simplifications or restrictions, as described above).
