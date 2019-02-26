@@ -1,5 +1,8 @@
 \chapter{Stream Connectors}\doublelabel{stream-connectors}
 
+%TODO-BACK This chapter uses _ in code blocks and inline code. This is no real Modelica code, but indicates a mathematical index. Needs to be checked and formatted in a proper way.
+% For inline code, one could use \texttt{m\textsubscript j}
+
 The two basic variable types in a connector -- ``potential'' (or across)
 variable and ``flow'' (or through) variable -- are not sufficient to
 describe in a numerically sound way the bi-directional flow of matter
@@ -95,15 +98,14 @@ from the connection point into the component. This value is computed
 from the stream connection equations of the flow variables and of the
 stream variables.
 
-%TODO-BACK How to mj?
 For the following definition it is assumed that \lstinline[basicstyle=\ttfamily]!N! inside connectors
-m\textsubscript{j}.c (j=1,2,...,N) and \lstinline[basicstyle=\ttfamily]!M! outside connectors
-c\textsubscript{k} (k=1,2,...,M) belonging to the same connection set
+\texttt{m\textsubscript{j}.c} (j=1,2,...,N) and \lstinline[basicstyle=\ttfamily]!M! outside connectors
+\texttt{c\textsubscript{k}} (k=1,2,...,M) belonging to the same connection set
 {[}\emph{see definition in \autoref{inside-and-outside-connectors}}{]} are connected
 together and a stream variable \lstinline[basicstyle=\ttfamily]!h_outflow! is associated with a flow
 variable \lstinline[basicstyle=\ttfamily]!m_flow! in connector \lstinline[basicstyle=\ttfamily]!c!.
 
-\begin{lstlisting}[language=modelica]
+\begin{lstlisting}[language=modelica,mathescape=true]
 connector FluidPort
   ...
   flow Real m_flow "Flow of matter; m_flow > 0 if flow into component";
@@ -112,19 +114,19 @@ end FluidPort
 
 model FluidSystem
   ...
-  FluidComponent m_1, m_2, ...,
+  FluidComponent $m_1$, $m_2$, ...,
   m_N;
-  FluidPort c_1, c_2, ...,
+  FluidPort $c_1$, $c_2$, ...,
   c_M;
 equation
-  connect(m_1.c, m_2.c);
-  connect(m_1.c, m_3.c);
+  connect($m_1$.c, $m_2$.c);
+  connect($m_1$.c, $m_3$.c);
   ...
-  connect(m_1.c, m_N.c);
-  connect(m_1.c, c_1);
-  connect(m_1.c, c_2);
-  ...
-  connect(m_1.c, c_M);
+  connect($m_1$.c, $m_N$.c);
+  connect($m_1$.c, $c_1$);
+  connect($m_1$.c, $c_2$);
+  ...         
+  connect($m_1$.c, $c_M$);
   ...
 end FluidSystem;
 \end{lstlisting}
@@ -139,20 +141,18 @@ end FluidSystem;
 volume, for which the stream connection equations are equivalent to the
 conservation equations for mass and energy.}{]}
 
-%TODO-BACK How to change textsubscript? Replace by [i]?
 With these prerequisites, the semantics of the expression
-\lstinline[basicstyle=\ttfamily]!inStream(m[i].c.h_outflow)! is given implicitly by
-defining an additional variable h\_mix\_in\textsubscript{i}, and by
+\texttt{inStream(m\textsubscript i.c.h\_outflow)} is given implicitly by
+defining an additional variable \texttt{h\_mix\_in\textsubscript{i}}, and by
 adding to the model the conservation equations for mass and energy
 corresponding to the infinitesimally small volume spanning the
 connection set. The connection equation for the flow variables has
 already been added to the system according to the connection semantics
 of flow variables defined in \autoref{generation-of-connection-equations}.
 
-%TODO-BACK Automatic conversion to latex did not do the right thing for "mj"? But what is the right thing, if it should be Modelica Code has been converted in a wrong way? It's also not consistent with one of the next lstlistings, which has "m_j"
-\begin{lstlisting}[language=modelica]
+\begin{lstlisting}[language=modelica,mathescape=true]
 // Standard connection equation for flow variables
-0 = sum(mj.c.m_flow for j in 1:N) + sum(-ck.m_flow for k in 1:M);
+0 = sum(m_j.c.m_flow for j in 1:N) + sum(-ck.m_flow for k in 1:M);
 \end{lstlisting}
 
 Whenever the \lstinline[basicstyle=\ttfamily]!inStream()! operator is applied to a stream
@@ -169,29 +169,28 @@ connector
 inStream(mi.c.h_outflow) = h_mix_ini;
 \end{lstlisting}
 
-%TODO-BACK How to change textsubscript?
 Note that the result of the
-\textbf{inStream}(m\textsubscript{i}.c.h\_outflow) operator is different
+\texttt{inStream(m\textsubscript{i}.c.h\_outflow)} operator is different
 for each port i, because the assumption of flow entering the port is
 different for each of them.
 
 Additional equations need to be generated for the stream variables of
 outside connectors.
 
-\begin{lstlisting}[language=modelica]
+\begin{lstlisting}[language=modelica,mathescape=true]
 // Additional connection equations for outside connectors
 for q in 1:M loop
-  0 = sum(m_j.c.m_flow*(if
-  m_j.c.m_flow > 0 then
+  0 = sum($m_j$.c.m_flow*(if
+  $m_j$.c.m_flow > 0 then
   h_mix_out_q
-  else m_j.c.h_outflow) for j
+  else $m_j$.c.h_outflow) for j
   in 1:N) +
-  sum(-c_k.m_flow* (if
-  --c_k.m_flow > 0 or k==q
-  then h_mix_out_q
-  else inStream(c_k.h_outflow)
+  sum(-$c_k$.m_flow* (if
+  --$c_k$.m_flow > 0 or k==q
+  then h_mix_out$_q$
+  else inStream($c_k$.h_outflow)
   for k in 1:M);
-    c_q.h_outflow = h_mix_out_q;
+    $c_q$.h_outflow = h_mix_out$_q$;
   end for;
 \end{lstlisting}
 
@@ -217,7 +216,6 @@ for q in 1:M loop
 end for;
 \end{lstlisting}
 
-%TODO-BACK How to change textsubscript?
 \emph{Note, that \textbf{inStream}(c\textsubscript{k}.h\_outflow) is
 computed from the connection set that is present one hierarchical level
 above. At this higher level c\textsubscript{k}.h\_outflow is no longer
@@ -228,7 +226,6 @@ If the argument of \lstinline[basicstyle=\ttfamily]!inStream()! is an array, the
 equation system holds elementwise, i.e., \lstinline[basicstyle=\ttfamily]!inStream()! is
 vectorizable.
 
-%TODO-BACK How to change textsubscript?
 The stream connection equations have singularities and/or multiple
 solutions if one or more of the flow variables become zero. When all the
 flows are zero, a singularity is always present, so it is necessary to
@@ -370,7 +367,6 @@ the original definition equations are nonlinear.}
 
 \emph{The following properties hold for this implementation:}
 
-%TODO-BACK How to change textsubscript?
 \begin{itemize}
 \item
   \emph{\textbf{inStream}(..) is continuous (and differentiable),
