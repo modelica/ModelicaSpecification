@@ -25,7 +25,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 - MCP0030 IsClocked Operator ([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))
 - MCP0029 License Export ([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))
 - MCP0028 Record Derivatives mixing Real and non-Real (added in Modelica 3.4) ([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))
-- MCP0027 Units of Literal Constants (active)
+- MCP0027 Units of Literal Constants (active) ([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))
 - MCP0026 Arc-only Ellipse (added in Modelica 3.4) ([#2045](https://github.com/modelica/ModelicaSpecification/issues/2045))
 - MCP0025 Functions with input output
 - MCP0024 Initialization of Clocked States (added in Modelica 3.4) ([#2007](https://github.com/modelica/ModelicaSpecification/issues/2007))
