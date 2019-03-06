@@ -9,6 +9,7 @@ Things that the Flat Modelica format should support:
 - Arrays.
 - Component declarations (with both public and protected visibility).
   - Comment (@mtiller): It doesn't seem very flat if we preserve (potentially deeply nested) components instances
+  - Remove (that is, expand) records?
 - Equations and algorithms, both scalar, array-valued, and record-valued.
 - Optional source locations for use in error messages.
    - Add this to the formal grammar?  If so, this will require some thought in order to be flexible and precise enough without interfering with too much with the rest of the grammar.
@@ -19,16 +20,17 @@ Things that the Flat Modelica format should support:
 - All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Flat Modelica model is exported to an FMU for Model Exchange.)
   - Comment (@mtiller): The semantics of this are unclear.  When you say constant evaluation, do you mean constant folding?  What about `final` parameters?  Should those be parameters in an FMU? I wouldn't think so.  It seems like they should just be `output`s. 
 - List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during flattening for other reasons.
+  - `final` can probably be replaced by using normal equation instead of binding equation. meaning that binding eqations can always be treated as non-final.
   - Comment (@mtiller): Why not just add an `Evaluate=true` annotation to indicate these.
 - Values for all constants, even those that have been inlined everywhere, since the values should be part of the simulation result.
 - Less restricted forms of record field access and array subscripting?
   - Comment (@mtiller): Wouldn't we expect to restrict forms of record field access and array subscripting?  If so, then I would suggest saying "Restrict some forms of record field access and array subscripting" or "A more restrictive subset of record field access and array subscripting".
-- Efficient handling of large constant arrays (constant evaluation is not an option, since the same large array literal might then be repeated in many places).
-  - Comment (@mtiller): Factor out constant subexpressions to unique variables?  Perhaps filter all literals (scalars and arrays) completely out of the flattened form and provide them in a separate file?
+ - Comment (@mtiller): Factor out constant subexpressions to unique variables?  Perhaps filter all literals (scalars and arrays) completely out of the flattened form and provide them in a separate file?
+  - Needs Standardized naming for introduced intermediate variables.
 - Expressions for all variables that were treated as aliases during flattening, specifying the variable that it is an alias of and the sign of the relationship
-  - Comment (@mtiller): Doesn't the expression already tell us all that (*e.g.,* `b = -a`...`-a` is an expression and it tells us that `b` is an alias of `a` with the opposite sign?  Or did you want something more explicit?
+  - Comment (@mtiller): Doesn't the expression already tell us all that (*e.g.,* `b = -a`...`-a` is an expression and it tells us that `b` is an alias of `a` with the opposite sign?  Or did you want something more explicit?  Should there be a special form of equation (perhaps in the form of an assignment statement) that can be used to indicate solved equations in general, and alias relations in particular?
 - Function declarations that are utilised in the model.
-  - Comment (@mtiller): Do we flatten the functions?  I say that because functions can use features like `extends` or `redeclare` in their definitions.  Presumably we want all that removed in a flattened form, no?
+  - Comment (@mtiller): Do we flatten the functions?  I say that because functions can use features like `extends` or `redeclare` in their definitions.  Presumably we want all that removed in a flattened form, no?  Functions should probably be allowed to have arguments of array and record type.
 
 Examples of things that should be gone after flattening and shouldn't exist in Flat Modelica:
 - Complex classes that may contain equations.
