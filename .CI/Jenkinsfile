@@ -46,5 +46,27 @@ pipeline {
       sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(remoteDirectory: "${env.GIT_BRANCH}", sourceFiles: '*.html,*.css,MLS.pdf,media/**,css/**')])])
     }
   }
+  stage('index') {
+    agent {
+      docker {
+        image 'modelicaspec/markdown:20190307'
+        label 'linux'
+        alwaysPull true
+      }
+    }
+    when {
+      allOf {
+        not {
+          changeRequest()
+        }
+        branch 'master'
+      }
+      beforeAgent true
+    }
+    steps {
+      sh 'python3 .CI/index.py'
+      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(sourceFiles: 'index.html')])])
+    }
+  }
   }
 }
