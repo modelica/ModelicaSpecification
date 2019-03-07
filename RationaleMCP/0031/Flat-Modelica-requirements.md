@@ -9,14 +9,17 @@ Things that the Flat Modelica format should support:
 - Arrays.
 - Component declarations (with both public and protected visibility).
   - Comment (@mtiller): It doesn't seem very flat if we preserve (potentially deeply nested) components instances
+  - Comment (@harmanpa): This should be changed to Component declarations of the scalar types, record and enumeration types, and arrays of each; not hierarchical. Component declarations have dot-notation names.
   - Remove (that is, expand) records?
 - Equations and algorithms, both scalar, array-valued, and record-valued.
 - Optional source locations for use in error messages.
    - Add this to the formal grammar?  If so, this will require some thought in order to be flexible and precise enough without interfering with too much with the rest of the grammar.
-   - Add this as standard annotations?  Already supported by current grammar. (@mtiller)
+   - Comment (@mtiller): Add this as standard annotations?  Already supported by current grammar.
+   - Comment (@harmanpa): Agreed as that also allows other meta-data. Unfortunately having `annotation(__something_LineNumber=12)` on every statement could become quite verbose.
 - Documentation strings.
 - Vendor-specific annotations.
   - Comment (@mtiller): So annotations are present in the grammar but all annotations except vendor annotations are stripped.  If the concern is bloat from annotations that are no longer relevant in the flattened form (*e.g.,* graphical annotations), why not identify what gets excluded vs. what gets included? (see comment about source locations above)
+  - Comment (@harmanpa): I agree, I'd like to be able to put arbitary meta-data in.
 - All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Flat Modelica model is exported to an FMU for Model Exchange.)
   - Comment (@mtiller): The semantics of this are unclear.  When you say constant evaluation, do you mean constant folding?  What about `final` parameters?  Should those be parameters in an FMU? I wouldn't think so.  It seems like they should just be `output`s. 
 - List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during flattening for other reasons.
@@ -29,8 +32,10 @@ Things that the Flat Modelica format should support:
   - Needs Standardized naming for introduced intermediate variables.
 - Expressions for all variables that were treated as aliases during flattening, specifying the variable that it is an alias of and the sign of the relationship
   - Comment (@mtiller): Doesn't the expression already tell us all that (*e.g.,* `b = -a`...`-a` is an expression and it tells us that `b` is an alias of `a` with the opposite sign?  Or did you want something more explicit?  Should there be a special form of equation (perhaps in the form of an assignment statement) that can be used to indicate solved equations in general, and alias relations in particular?
+  - Comment (@harmanpa): Yes syntactically it is just that expression, however that isn't necessarily the expression that the alias came from. e.g. the model might contain `a = c` and `a = -b` but we decide to keep `b`, so in our aliases section we store `b = -a` and `b = -c`.
 - Function declarations that are utilised in the model.
   - Comment (@mtiller): Do we flatten the functions?  I say that because functions can use features like `extends` or `redeclare` in their definitions.  Presumably we want all that removed in a flattened form, no?  Functions should probably be allowed to have arguments of array and record type.
+  - Comment (@harmanpa): Yes. Additionally we might have multiple versions of functions, because we might call a function with different dimension inputs. We need a naming convention for this.
 
 Examples of things that should be gone after flattening and shouldn't exist in Flat Modelica:
 - Complex classes that may contain equations.
