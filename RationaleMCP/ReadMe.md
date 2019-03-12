@@ -1,3 +1,4 @@
+
 # MCP Rationale
 This directory should contain the rationale behind Modelica Change Proposals, MCPs,
 (and possibly rationale behind other decisions as well). The proposals shall adhere to the [guiding principles](GuidingPrinciples.MD).
@@ -21,6 +22,7 @@ New MCP should be added to the following list - on the main branch to keep track
 but the rest of the development on a branch/pull-request before being accepted.
 
 ## List of existing MCPs
+- MCP0032 Selective Model Extension
 - MCP0031 Flat Modelica and MLS modularization
 - MCP0030 IsClocked Operator ([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))
 - MCP0029 License Export ([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))
