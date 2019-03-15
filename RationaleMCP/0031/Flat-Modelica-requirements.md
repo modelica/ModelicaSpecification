@@ -105,3 +105,37 @@ One advantage to this approach would be to organize the semantics of Modelica by
 From this perspective, expressions can almost be treated as "pass through".  The editor doesn't really need to
 interpret them in any way. For the most part they just pass through to the flattened form (but with some
 potential simplifications or restrictions, as described above).
+
+## Comments from regensburg design meeting (added by @HansOlsson)
+
+Need to support start-value priority (source location or special built-in operator,
+either complete source location or just needed hiearachy level).
+Do after Linköping meeting?
+Need to design grammar: Sub-set of current Modelica or some additions?
+
+One major issue is variable declaration as we have e.g. `a[1].b` as a variable,
+and also need record variables. 
+One possibility would be quoted identifiers - but can clash.
+  Can we always quote a quoted one without ambiguity? Just use anything - even base64.
+Another possibility is extended grammar - but looks ambiguous. 
+E.g. `a[1].b` could be either a variable, or access to member of array of records.
+
+For declarations we need to know if array dimensions are part of variable or not.
+
+Might need accessing record elements using `.` and `[` for non record variables, 
+  e.g., `f(x)[1]` and `f(x).x[1]`
+  
+Array of components. Repeated equations (using quoted identifiers to be clear here):
+  `'a[1].x'='a[1].y';`
+  `'a[2].x'='a[2].y';`
+But should be possible to preserve as array equations in some way (see new frontend for OM)?
+
+Need to test-implement? Current Flat-Modelica in e.g. Dymola is different:
+e.g., records are not done like this (record values are missing), functions are missing.
+
+Pull-requests:
+- Variable naming
+- Source location?
+- Handling modifier level for start-attribute, e.g.: Real p(start=modifierLevel(3, 5)); or extension
+
+Some minor comments.
