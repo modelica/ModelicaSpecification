@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 export PATH="/tmp/texlive/bin/x86_64-linux:$PATH"
 
@@ -11,4 +11,4 @@ if ! command -v tlmgr > /dev/null; then
 fi
 
 tlmgr update --self --all --reinstall-forcibly-removed;
-tlmgr install listings xcolor float multirow tocloft;
+tlmgr install listings xcolor float multirow tocloft parskip;
