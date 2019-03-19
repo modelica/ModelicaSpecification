@@ -11,4 +11,4 @@ if ! command -v tlmgr > /dev/null; then
 fi
 
 tlmgr update --self --all --reinstall-forcibly-removed;
-tlmgr install listings xcolor float multirow tocloft parskip;
+tlmgr install listings xcolor float multirow tocloft parskip etoolbox;
