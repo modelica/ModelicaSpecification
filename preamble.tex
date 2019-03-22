@@ -4,6 +4,9 @@
 % change the layout that can wait
 \hfuzz=50pt
 
+% The general view was that parskip without indent was most readable, so use it
+\usepackage{parskip}
+
 % Uses some packages:
 \usepackage{amsmath}
 \allowdisplaybreaks
@@ -99,12 +102,18 @@
 % Note: Changed comment color from green to [rgb]{0,0.4,0} - since the other variant was too distracting
 % And added pure,impure,stream as keywords
 % Remove cross as red
-% Note: have basicstyle=\footnotesize\ttfamily in all languages,
+% Note: have basicstyle=\small\ttfamily in all languages,
 % except the dialect [short]modelica - which is used for inline listings.
 % Apart from that change that dialect should be identical to modelica
+
+% The red keyword part is a bit unclear.
+% The current logic is that "operators" are marked specially, but not normal functions.
+% 
+% Note that Integer is both a predefined type and a function; we cannot treat them differently.
+% Another solution would be to remove this completely.
 \lstdefinelanguage{modelica}{%
     alsoletter={...},%
-	basicstyle=\footnotesize\ttfamily,        % size of fonts used for the code
+	basicstyle=\small\ttfamily,        % size of fonts used for the code
     %otherkeywords={-, =, +, [, ], (, ), \{, \}, :, *, !},%
     morekeywords=[1]{},% blue Keywords
     morekeywords=[2]{% blue + bold keywords
@@ -115,10 +124,11 @@
         size,stream,terminate,then,type,when,while,algorithm,equation,%
         protected,public,and,false,not,or,true,pure,impure,transition,initialState},%
     % Note: initial is in both variants - depending on context, use first variant
-    morekeywords=[3]{% red keywords
-        abs,acos,asin,atan,atan2,connect,cos,cosh,der,edge,exp,%
-        noEvent,pre,reinit,sample,sign,sin,sinh,tan,tanh,terminal,%
-        start,Real,Integer,Boolean,String,homotopy,spatialDistribution,cardinality},%
+    morekeywords=[3]{% red keywords - only special functions and classes: 3.7.2 #derivative-and-special-purpose-operators-with-function-syntax
+	    % 3.7.3 #event-related-operators-with-function-syntax (except initial) and 4.8 #predefined-types-and-classes 
+        connect,der,delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName%
+        terminal,noEvent,smooth,sample,pre,edge,change,reinit,
+        Real,Integer,Boolean,String},%
     comment=[l]{//}, % comment lines
     morecomment=[s]{/*}{*/}, % comment blocs
     morestring=[b]{'}, %
@@ -137,10 +147,11 @@
         size,stream,terminate,then,type,when,while,algorithm,equation,%
         protected,public,and,false,not,or,true,pure,impure,transition,initialState},%
     % Note: initial is in both variants - depending on context, use first variant
-    morekeywords=[3]{% red keywords
-        abs,acos,asin,atan,atan2,connect,cos,cosh,der,edge,exp,%
-        noEvent,pre,reinit,sample,sign,sin,sinh,tan,tanh,terminal,%
-        start,Real,Integer,Boolean,String,homotopy,spatialDistribution,cardinality},%
+    morekeywords=[3]{% red keywords - only special functions and classes: 3.7.2 #derivative-and-special-purpose-operators-with-function-syntax
+	    % 3.7.3 #event-related-operators-with-function-syntax (except initial) and 4.8 #predefined-types-and-classes 
+        connect,der,delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName%
+        terminal,noEvent,smooth,sample,pre,edge,change,reinit,
+        Real,Integer,Boolean,String},%
     comment=[l]{//}, % comment lines
     morecomment=[s]{/*}{*/}, % comment blocs
     morestring=[b]{'}, %
@@ -150,7 +161,7 @@
 \lstdefinelanguage{grammar}{
 alsoletter={...},
 alsodigit={-},
-basicstyle=\footnotesize\ttfamily,        % size of fonts used for the code
+basicstyle=\small\ttfamily,        % size of fonts used for the code
 breaklines=true,
 breakatwhitespace=true,
 morekeywords=[2]{letters,
@@ -165,7 +176,7 @@ morekeywords=[1]{|}
 }[keywords,comments,strings]
 \lstset{ %
   backgroundcolor=\color{white},   % choose the background color
-  %basicstyle=\footnotesize\ttfamily,        % size of fonts used for the code
+  %basicstyle=\small\ttfamily,        % size of fonts used for the code
   breaklines=true,                % automatic line breaking only at whitespace
   captionpos=b,                    % sets the caption-position to bottom
   commentstyle=\color[rgb]{0,0.4,0}\sffamily,    % comment style
@@ -183,7 +194,7 @@ morekeywords=[1]{|}
 
 % Duplicate this definition here to avoid issue - and name it "fortran77" to avoid problem in LatexML
 \lstdefinelanguage{fortran77}%
-  {basicstyle=\footnotesize\ttfamily,        % size of fonts used for the code
+  {basicstyle=\small\ttfamily,        % size of fonts used for the code
    morekeywords={ASSIGN,BACKSPACE,CALL,CHARACTER,%
       CLOSE,COMMON,COMPLEX,CONTINUE,DATA,DIMENSION,DO,DOUBLE,%
       ELSE,ELSEIF,END,ENDIF,ENDDO,ENTRY,EQUIVALENCE,EXTERNAL,%
@@ -208,7 +219,7 @@ morekeywords=[1]{|}
    morestring=[d]'%
   }[keywords,comments,strings]%
 \lstdefinelanguage{C}%
-  {basicstyle=\footnotesize\ttfamily,        % size of fonts used for the code
+  {basicstyle=\small\ttfamily,        % size of fonts used for the code
    morekeywords={auto,break,case,char,const,continue,default,do,double,%
       else,enum,extern,float,for,goto,if,int,long,register,return,%
       short,signed,sizeof,static,struct,switch,typedef,union,unsigned,%
@@ -224,6 +235,30 @@ morekeywords=[1]{|}
   }[keywords,comments,strings,directives]%
 
 % Note: \lstinline!...! used for inline Modelica using [short]modelica
+
+% Change all autoref variants below chapter to use "section"
+\def\subsectionautorefname{section}
+\def\subsubsectionautorefname{section}
+\def\paragraphautorefname{section}
+\def\subparagraphautorefname{section}
+% Introduce \nonnormative{....} to mark non-normative text. 
+% Text is in emph-style surrounded by []
+%
+% An optional argument can be used to only start the block with [ (s) and/or end it(e) with ]
+% So \nonnormative[s]{a} \nonnormative[]{b} \nonnormative[e]{c} should create [\emph{abc}]
+% which normally would be just \nonnormative{abc}
+% But don't use it unless needed.
+% A reason for using these arguments is to avoid having listings as part of the nonnormative-text since it seems messy.
+% Similarly having environments using emph is a bit tricky
+\def\ifEqString#1#2{\def\testa{#1}\def\testb{#2}\ifx\testa\testb} 
+\newcommand{\nonnormative}[2][se]{
+\ifEqString{#1}{s}{{[}}\fi
+\ifEqString{#1}{se}{{[}}\fi
+\emph{#2}
+\ifEqString{#1}{e}{{]}}\fi
+\ifEqString{#1}{se}{{]}}\fi
+}
+
 \title{Modelica® - A Unified Object-Oriented Language for Systems
 Modeling\\[2\baselineskip]Language
 Specification\\[2\baselineskip]Version 3.5-dev}
