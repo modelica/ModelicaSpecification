@@ -1,5 +1,5 @@
 # Structure of annotations
-The purpose of this document is to facilitate discussion around the actual structure and scope of standardized annotations for predefined plots.  The starting point is taken from an email previously send to MAP-Lib, which was based on Wolfram SystemModeler's current vendor-specific annotatios, but removing the `__Wolfram` part and just a tiny bit of cleanup.
+The purpose of this document is to facilitate discussion around the actual structure and scope of standardized annotations for predefined plots.  The starting point was taken from an email previously send to MAP-Lib, which was based on Wolfram SystemModeler's current vendor-specific annotatios, but removing the `__Wolfram` part and just a tiny bit of cleanup.
 
 ## Simulation model top level annotation
 A model's class annotation might look like this:
@@ -51,7 +51,7 @@ When an axis label isn't provided, the tool produces a default label (SystemMode
 ## Naming and grouping of plots
 A Plot may also define a `group` which is a `String` similar to the `group` in the `Dialog` annotation.  It is used to organize plots in models with a large `PlotSet`.
 
-SystemModeler has chosen to not make a distinction between the identifier of a `Plot` and its `title`.  This is something could be reconsidered when writing an MCP.
+SystemModeler has chosen to not make a distinction between the identifier of a `Plot` and its title.  This is something that could be reconsidered when writing an MCP.
 
 ## Axis ranges
 A `SubPlot` may, in addition to the `curves` seen above, also define `range`:
