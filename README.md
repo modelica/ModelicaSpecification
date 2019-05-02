@@ -12,7 +12,7 @@ Modelica® https://modelica.org is a non-proprietary, object-oriented, equation 
 
 Version | Link                                                              | Published |
 ------- | ----------------------------------------------------------------- | --------|
-3.5-dev | [Master branch](https://github.com/modelica/ModelicaSpecification)| not yet |
+3.5-dev | [Master branch](https://specification.modelica.org/modelica/ModelicaSpecification) [HTML](https://specification.modelica.org/master/MLS.html) [PDF](https://specification.modelica.org/master/MLS.pdf)| not yet |
 3.4     | [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
 3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
 3.2rev2 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision2.pdf) | 2013    |
@@ -41,9 +41,9 @@ CLA: Contributor's license agreement. (Details to follow.)
 
 How to edit and generate final documents
 * For online editing you can use www.overleaf.com (details to follow)
-* The pdf-documents are generated with pdflatex, which is part of most LaTeX installations, we used http://miktex.org/download 
+* The pdf-documents are generated with pdflatex, which is part of most LaTeX installations, we used http://miktex.org/download
 * The HTML-documents are generated with LaTeXML. That is more complicated to install - and can optionally be skipped:
 1. First you need perl, we used http://strawberryperl.com/
-2. And then ideally the official LaTeXML package: http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML 
+2. And then ideally the official LaTeXML package: http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
 3. Except that awaiting one correction we use https://github.com/HansOlsson/LaTeXML/tree/UseLabel
 4. The exact commands are in the Makefile
