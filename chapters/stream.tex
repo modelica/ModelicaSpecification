@@ -1,7 +1,8 @@
 \chapter{Stream Connectors}\doublelabel{stream-connectors}
 
-%TODO-BACK This chapter uses _ in code blocks and inline code. This is no real Modelica code, but indicates a mathematical index. Needs to be checked and formatted in a proper way.
-% For inline code, one could use \texttt{m\textsubscript j}
+%TODO-FORMAT This chapter uses _ in code blocks and inline code. 
+%This is no real Modelica code, but indicates a mathematical index. 
+%We currently use \texttt{m\textsubscript j} instead of \lstinline!m_j!
 
 The two basic variable types in a connector -- ``potential'' (or across)
 variable and ``flow'' (or through) variable -- are not sufficient to
@@ -171,7 +172,7 @@ inStream(mi.c.h_outflow) = h_mix_ini;
 
 Note that the result of the
 \texttt{inStream(m\textsubscript{i}.c.h\_outflow)} operator is different
-for each port i, because the assumption of flow entering the port is
+for each port \lstinline!i!, because the assumption of flow entering the port is
 different for each of them.
 
 Additional equations need to be generated for the stream variables of
@@ -216,9 +217,9 @@ for q in 1:M loop
 end for;
 \end{lstlisting}
 
-\emph{Note, that \textbf{inStream}(c\textsubscript{k}.h\_outflow) is
+\emph{Note, that} \texttt{inStream(c\textsubscript{k}.h\_outflow)} \emph{is
 computed from the connection set that is present one hierarchical level
-above. At this higher level c\textsubscript{k}.h\_outflow is no longer
+above. At this higher level} \texttt{c\textsubscript{k}.h\_outflow} \emph{is no longer
 an outside connector, but an inside connector and then the formula from
 above for inside connectors can be used to compute it.}
 
@@ -230,8 +231,8 @@ The stream connection equations have singularities and/or multiple
 solutions if one or more of the flow variables become zero. When all the
 flows are zero, a singularity is always present, so it is necessary to
 approximate the solution in an open neighbourhood of that point.
-{[}\emph{For example assume that m\textsubscript{j}.c.m\_flow =
-c\textsubscript{k}.m\_flow = 0, then all equations above are identically
+{[}\emph{For example assume that} \texttt{m\textsubscript{j}.c.m\_flow =
+c\textsubscript{k}.m\_flow = 0}\emph{, then all equations above are identically
 fulfilled and \lstinline!inStream(..)! can have any value}{]}. However,
 specific optimizations may be applied to avoid the regularization if the
 flow through one port is zero or non-negative, see \autoref{derivation-of-stream-equations}. It is
@@ -239,11 +240,10 @@ required that the \lstinline!inStream()! operator is appropriately
 approximated when regularization is needed and the approximation must
 fulfill the following requirements:
 
-%TODO-BACK How to change textsubscript?
 \begin{enumerate}
 \item
-  \textbf{inStream}(m\textsubscript{i}.c.h\_outflow) and
-  \textbf{inStream}(c\textsubscript{k}.h\_outflow) must be unique with
+  \texttt{inStream(m\textsubscript{i}.c.h\_outflow)} and
+  \texttt{inStream(c\textsubscript{k}.h\_outflow)} must be unique with
   respect to all values of the flow and stream variables in the
   connection set, and must have a continuous dependency on them.
 \item
@@ -251,10 +251,10 @@ fulfill the following requirements:
   equation system identically {[}\emph{upto the usual numerical
   accuracy}{]}, provided the absolute value of every flow variable in
   the connection set is greater than a small value
-  (\textbar{}m\textsubscript{1}.c.m\_flow\textbar{} \textgreater{} eps
+  (\texttt{\textbar{}m\textsubscript{1}.c.m\_flow\textbar{} \textgreater{} eps
   \textbf{and} \textbar{}m\textsubscript{2}.c.m\_flow\textbar{}
   \textgreater{} eps \textbf{and} ... \textbf{and}
-  \textbar{}c\textsubscript{M}.m\_flow\textbar{} \textgreater{} eps).
+  \textbar{}c\textsubscript{M}.m\_flow\textbar{} \textgreater{} eps}).
 \end{enumerate}
 
 {[}\emph{Based on the above requirements, the following implementation
@@ -322,7 +322,7 @@ end for;
 \end{lstlisting}
 \end{itemize}
 \emph{The operator}
-\textbf{positiveMax}(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})
+\texttt{positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})}
 \emph{should be such that:}
 
 \begin{itemize}
@@ -338,8 +338,8 @@ end for;
   values.}
 \end{itemize}
 
-\emph{Trivial implementation of positiveMax guarantees continuity of
-inStream():}
+\emph{Trivial implementation of positiveMax guarantees continuity of}
+\lstinline!inStream()!\emph{:}
 \begin{lstlisting}[language=modelica,mathescape=true]
 postiveMax(-$m_j$.c.m_flow, $s_i$)= max(-m_j.c.m_flow, eps1); // so $s_i$ is not needed
 \end{lstlisting}
@@ -369,33 +369,32 @@ the original definition equations are nonlinear.}
 
 \begin{itemize}
 \item
-  \emph{\textbf{inStream}(..) is continuous (and differentiable),
-  provided that m\textsubscript{j}.c.h}\_\emph{outflow,
-  m\textsubscript{j}.c.m}\_\emph{flow,
-  c\textsubscript{k}.h}\_\emph{outflow, and
-  c\textsubscript{k}.m}\_\emph{flow are continuous and differentiable.}
+  \lstinline!inStream(..)! \emph{is continuous (and differentiable),
+  provided that} \texttt{m\textsubscript{j}.c.h\_outflow,
+  m\textsubscript{j}.c.m\_flow,
+  c\textsubscript{k}.h\_outflow}\emph{, and}
+  \texttt{c\textsubscript{k}.m\_flow} \emph{are continuous and differentiable.}
 \end{itemize}
 
 \begin{itemize}
 \item
-  \emph{A division by zero can no longer occur (since
-  \textbf{sum}(\textbf{positiveMax}(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}))\textgreater{}=eps2
-  \textgreater{} 0), so the result is always well-defined.}
+  \emph{A division by zero can no longer occur (since} \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}))\textgreater{}=eps2
+  \textgreater{} 0)}\emph{, so the result is always well-defined.}
 \item
   \emph{The balance equations are exactly fulfilled if the denominator
   is not close to zero\\
-  (since the exact formula is used, if
-  sum(\textbf{positiveMax}(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})
+  (since the exact formula is used, if}
+  \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})
   ) \textgreater{} eps).}
 \item
-  \emph{If all flows are zero,
-  \textbf{inStream}(m\textsubscript{i}.c.h}\_\emph{outflow) =
-  \textbf{sum}(m\textsubscript{j}.c.h\_outflow \textbf{for}
-  j\textless{}\textgreater{}i \textbf{and} m\textsubscript{j}.c.m\_flow.min \textless{}
-  0)/Np, i.e., it is the mean value of all the Np variables
-  m\textsubscript{j}.c.h}\_\emph{outflow, such that
-  j\textless{}\textgreater{}i and
-  m\textsubscript{j}.c.m}\_\emph{flow.min \textless{} 0. This is a
+  \emph{If all flows are zero,}
+  \texttt{inStream(m\textsubscript{i}.c.h\_outflow) =
+  sum(m\textsubscript{j}.c.h\_outflow for
+  j\textless{}\textgreater{}i and m\textsubscript{j}.c.m\_flow.min \textless{}
+  0)/Np}\emph{, i.e., it is the mean value of all the} \lstinline!Np! \emph{variables}
+  \texttt{m\textsubscript{j}.c.h\_outflow}\emph{, such that} \texttt{
+  j\textless{}\textgreater{}i} \emph{and}
+  \texttt{m\textsubscript{j}.c.m\_flow.min \textless{} 0}\emph{. This is a
   meaningful approximation, considering the physical diffusion effects
   that are relevant at small flow rates in a small connection volume
   (thermal conduction for enthalpy, mass diffusion for mass fractions).}
