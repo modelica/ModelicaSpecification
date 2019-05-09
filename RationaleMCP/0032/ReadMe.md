@@ -65,8 +65,8 @@ A library with application examples is provided (`SelectiveExtension_13th_Modeli
 
 The available versions are:
 
-1. [**Version 0.1.0**](examples/SelectiveExtension_13th_Modelica_Conference 0.1.0.zip) for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1.
-2. [**Version 0.2.0**](examples/SelectiveExtension_13th_Modelica_Conference 0.2.0.zip) for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as library version 0.1.0).
+1. **Version 0.1.0** for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1.
+2. **Version 0.2.0** for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as library version 0.1.0).
 
 ## Required Patents
 To the best of our knowledge there are no patents required for implementation of this proposal.
