@@ -1,40 +1,35 @@
-# Modelica Change Proposal MCP-0032: Selective Model Extension
+# Modelica Change Proposal MCP-0032: selective model extension
 
 **Authors:** Christoff Bürger (Christoff.Buerger@3ds.com)
 
-**(In Development)**
+**(in development)**
 
 The minutes of _Modelica Design Meetings_ discussing this MCP are summarized in [`minutes.md`](minutes.md).
 
 ## Summary
 **SECTION TODO** Short description of the motivation and central idea of the proposal in 5 to 10 lines.
 
-## Revisions
-| Date | Description |
-| --- | --- |
-| 2019-May-10 | Christoff Bürger. Initial version based on the paper [Modelica language extensions for practical non-monotonic modelling: on the need for selective model extension](https://modelica.org/events/modelica2019/proceedings/html/papers/Modelica2019paper3B1.pdf) published at the _13th International Modelica Conference 2019_. |
+## Prerequisites
 
-## Contributor License Agreement
-All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
+The MCP is based on the paper [_Modelica language extensions for practical non-monotonic modelling: on the need for selective model extension_](https://modelica.org/events/modelica2019/proceedings/html/papers/Modelica2019paper3B1.pdf) published at the _13th International Modelica Conference 2019_ (cf. Section _References_). The motivation, concepts and examples presented in that paper are considered to be know.
 
 ## Rationale
+
 **SECTION TODO** Sketch of the proposal (especially with examples) and an explanation of the business case: Why should this feature be included? What problems can be solved (better) that cannot be solved (as easily) now? 
 Provide at minimum two use cases for your proposal that show how it is applied. For each use case state how it could be implemented by current Modelica at best and why the current Modelica does not suffice for this application. 
 Proposed Changes in Specification
 
 The precise updated text of the specification is part of this branch/pull-request.
 
-## Backwards Compatibility
-**SECTION TODO** It has to be analyzed whether the proposal is backwards compatibile. If any possible, this should be the case. Even if it is backwards compatible, issues should be listed and analyzed that may cause problems. 
+## Backwards compatibility
+The proposed language extensions do not introduce any new keywords. The new context-free derivations for `extends`-clause modifications to deselect connections and components - using the proposed `break`-based syntax - are syntax errors in current Modelica. As a consequence, selective model extension never changes the semantic of existing valid Modelica 3.4 models.
 
-List (preferably existing) examples that would be corrupted by proposed changes in specification. 
+Models that are syntactically invalid could theoretically become valid however, but chances are extremely low. It is not likely that a syntax error happens to satisfy the proposed syntax. It is even less likely that the respective model will further satisfy the semantic constraints of selective model extension _and_ Modelica. Particularly, on the one hand deselections must actually deselect something whereas at the same time it is close to impossible that _just_ deselecting something results in a valid model (consider that deselected elements are likely used somehow and are therefore missing in the resulting model because of existing Modelica well-formedness constraints like _“referenced components must be declared”_ and _“the system of equations must be well-defined”_).
 
-Show what can be done about these cases. Provide a concept for a conversion script or any other solution. 
+## Tool implementation
 
-## Tool Implementation
-
-### Dymola 2020 Prototype
-A prototype of selective model extension has been developed by Dassault Systèmes AB, Lund. Selective extension is supported in _Dymola 2020_ in terms of tool vendor specific annotations for `extends`-clauses.
+### _Dymola 2020_ prototype
+A prototype of selective model extension has been developed by _Dassault Systèmes AB, Lund_. Selective extension is supported in _Dymola 2020_ in terms of tool vendor specific annotations for `extends`-clauses.
 
 For example, to deselect the three connections `connect(voltageSensor.v, filter.u)`, `connect(speedSensor.w, setPointGain.u)` and `connect(voltageController.y, excitationVoltage.v)` of the `Modelica.Electrical.Machines.Examples.SynchronousInductionMachines.SMEE_Rectifier` SMEE rectifier example of the Modelica Standard Library one annotates the respective `extends`-clause as follows:
 
@@ -61,16 +56,31 @@ The _Dymola 2020_ prototype is not feature complete. Besides realizing deselecti
 
 Implementing the _Dymola 2020_ prototype took very little effort; less than 50 lines of code have been required.
 
-### Examples Library
+### _Dymola 2020 FD01_ prototype
 
-A library with application examples is provided (`SelectiveExtension_13th_Modelica_Conference` library); different versions of it can be found in the [`examples`](examples) sub-directory. The contained examples are discussed in detail in the paper _Modelica language extensions for practical non-monotonic modelling: on the need for selective model extension_ (cf. _References_ Section); the conclusions drawn in the paper hold for all library versions.
+A next prototype implementation supporting proper syntax for deselections instead of tool-vendor specific annotations is planned. It is scheduled to be part of _Dymola 2020 FD01_.
+
+### Examples library
+
+A library with application examples is provided (`SelectiveExtension_13th_Modelica_Conference` library); different versions of it can be found in the [`examples`](examples) sub-directory. The contained examples are discussed in detail in the paper _Modelica language extensions for practical non-monotonic modelling: on the need for selective model extension_ (cf. Section _References_); the conclusions drawn in the paper hold for all library versions.
 
 The available versions are:
 
-1. **Version 0.1.0** for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1.
-2. **Version 0.2.0** for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as library version 0.1.0).
+1. **Version 0.1.0** for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1 and using tool-vendor specific annotations for deselection.
+2. **Version 0.2.0** for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 and using tool-vendor specific annotations for deselection (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as in version 0.1.0).
 
-## Required Patents
+## Revisions
+
+| Date        | Description                                                  |
+| ----------- | ------------------------------------------------------------ |
+| 2019-May-10 | Christoff Bürger. Initial version based on the discussion at the _98th Modelica Design Meeting_. |
+
+## Contributor License Agreement
+
+All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
+
+## Required patents
+
 To the best of our knowledge there are no patents required for implementation of this proposal.
 
 ## References

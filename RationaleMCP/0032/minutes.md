@@ -1,6 +1,6 @@
 # Minutes
 
-The following list compiles minutes of all official events and discussions - like Modelica Design Meetings - where selective model extension has been a topic. The list summarizes only the ideas, concerns and final decisions relevant for selective model extension and skips any further topics typically discussed at the listed meetings (such can be found in the official minutes linked to).
+The following list compiles minutes of all official events and discussions - like _Modelica Design Meetings_ - where selective model extension has been a topic. The list summarizes only the ideas, concerns and final decisions relevant for selective model extension and skips any further topics typically discussed at the listed meetings (such can be found in the official minutes linked to).
 
 ## 98th Modelica Design Meeting
 
