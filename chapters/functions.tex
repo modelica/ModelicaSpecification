@@ -2141,13 +2141,13 @@ indicated below for annotation (Library=\ldots{}):
   Modelica compiler. The included code should be valid C89 code.
 \item
   The
-  \lstinline!annotation(IncludeDirectory="modelica://LibraryName/Resources/Include")!,
+  \lstinline!annotation(IncludeDirectory="modelica://ModelicaLibraryName/Resources/Include")!,
   used to specify a location for header files. The preceding one is the
   default and need not be specified; but another location could be
   specified by using an URI name for the include directory, see \autoref{external-resources}.
 \item
   The
-  \lstinline!annotation(LibraryDirectory="modelica://LibraryName/Resources/Library")!,
+  \lstinline!annotation(LibraryDirectory="modelica://ModelicaLibraryName/Resources/Library")!,
   used to specify a location for library files. The preceding one is the
   default and need not be specified; but another location could be
   specified by using an URI name for the library directory, see \autoref{external-resources}. 
@@ -2183,7 +2183,7 @@ text-file as described below: e.g. a text-file "vs2008" containing the
 text "../win32/vs2005" (or "vs2005") suggesting that it is compatible
 with vs2005.}{]}
 
-The \lstinline!LibraryName! used for \lstinline!IncludeDirectory! and \lstinline!LibraryDirectory!
+The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory! and \lstinline!LibraryDirectory!
 indicates the top-level class where the annotation is found in the
 Modelica source code.
 
@@ -2198,25 +2198,30 @@ package ExternalFunctions
     der(x)=-ExternalFunc1(x);
     der(y)=-ExternalFunc2(y);
   end Example;
+  
+  model OtherExample
+    Real x(start=1.0);
+  equation
+    der(x)=-ExternalFunc3(x);
+  end OtherExample;
 
   function ExternalFunc1
     input Real x;
     output Real y;
     external "C"
-    y=ExternalFunc1_ext(x) annotation(Library="ExternalLib11",Include="#include \"ExternalFunc1.h\"");
+    y=ExternalFunc1_ext(x) annotation(Library="ExternalLib1",Include="#include \"ExternalFunc1.h\"");
   end ExternalFunc1;
 
   function ExternalFunc2
     input Real x;
     output Real y;
-    external "C" annotation(Include="\#include \"ExternalFunc3.c\"");
+    external "C" annotation(Library="ExternalLib2", Include="#include \"ExternalFunc2.h\"");
   end ExternalFunc2;
-
+  
   function ExternalFunc3
     input Real x;
     output Real y;
-    external
-    y=ExternalFunc3_ext(x) annotation(Library="ExternalLib11", Include="#include \"ExternalFunc1.h\"");
+    external "C" annotation(Include="#include \"ExternalFunc3.c\"");
   end ExternalFunc3;
 end ExternalFunctions;
 
@@ -2249,7 +2254,8 @@ MyExternalFunctions
    package.mo
 \end{lstlisting}
 \emph{Note that calling MyExternalFunctions.ExternalFunc1 will use
-header and library files from ExternalFunctions.}
+header and library files from ExternalFunction, the ExternalFunctions.Example will not use ExternalFunc3.c,
+and one library file may contain multiple functions.}
 
 \emph{Header file for the function in the dynamic link / shared library
 ExternalLib2 so that the desired functions are defined to be exported
