@@ -4,6 +4,8 @@
 
 **(In Development)**
 
+The minutes of _Modelica Design Meetings_ discussing this MCP are summarized in [`minutes.md`](minutes.md).
+
 ## Summary
 **SECTION TODO** Short description of the motivation and central idea of the proposal in 5 to 10 lines.
 
@@ -78,3 +80,5 @@ The MCP is based on Modelica language extensions presented at the _13th Internat
 > Christoff Bürger, [Modelica language extensions for practical non-monotonic modelling: on the need for selective model extension](https://modelica.org/events/modelica2019/proceedings/html/papers/Modelica2019paper3B1.pdf), 13th International Modelica Conference, March 4-6th 2019, Regensburg, Germany.
 
 The provided `SelectiveExtension_13th_Modelica_Conference` library is documented in above publication.
+
+The minutes of _Modelica Design Meetings_ discussing this MCP are summarized in [`minutes.md`](minutes.md).
