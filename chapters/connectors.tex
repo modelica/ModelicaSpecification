@@ -946,7 +946,7 @@ Every instance of an overdetermined type or record in an overdetermined
 connector is a node in a virtual connection graph that is used to
 determine when the standard equation ``\lstinline!R1 = R2!'' or when the equation
 ``\lstinline!0 = equalityConstraint(R1,R2)!''has to be used for the generation of
-\lstinline!connect(...)! equations. The branches of the virtual connection graph are
+\lstinline!connect(...)! equations. The edges of the virtual connection graph are
 implicitly defined by ``\lstinline!connect(..)!'' and explicitly by
 \lstinline!Connections.branch(...)! statements, see table below. \lstinline!Connections! is a
 built-in package in global scope containing built-in operators.
@@ -959,13 +959,13 @@ hierarchically structured, e.g., \lstinline!A! may be an abbreviation for
 
 \begin{longtable}[]{|p{5.1cm}|p{10cm}|}
 \hline \endhead
-\lstinline!connect(A,B);! & Defines \emph{breakable branches} from the
+\lstinline!connect(A,B);! & Defines \emph{optional spanning-tree edge} from the
 overdetermined type or record instances in connector instance A to the
 corresponding overdetermined type or record instances in connector
 instance B for a virtual connection graph. The types of the
 corresponding overdetermined type or record instances shall be the
 same.\\ \hline
-\lstinline!Connections.branch(A.R,B.R);! & Defines a \emph{non-breakable branch}
+\lstinline!Connections.branch(A.R,B.R);! & Defines a \emph{required spanning-tree edge}
 from the overdetermined type or record instance R in connector instance
 A to the corresponding overdetermined type or record instance R in
 connector instance B for a virtual connection graph. This function can
@@ -1020,14 +1020,14 @@ Modelica.Mechanics.MultiBody.Parts.FixedRotation.}{]}\\ \hline
 
 {[}\emph{Note, that} \lstinline!Connections.branch!\emph{,} \lstinline!Connections.root!\emph{,}
 \lstinline!Connections.potentialRoot! \emph{do not generate equations. They only
-generate nodes and branches in the virtual graph for analysis
+generate nodes and edges in the virtual graph for analysis
 purposes.}{]}
 
 \subsection{Converting the Connection Graph into Trees and Generating Connection Equations}\doublelabel{converting-the-connection-graph-into-trees-and-generating-connection-equations}
 
 Before \lstinline!connect(...)! equations are generated, the virtual connection
-graph is transformed into a set of spanning trees by removing breakable
-branches from the graph. This is performed in the following way:
+graph is transformed into a set of spanning trees by removing optional spanning tree edges
+from the graph. This is performed in the following way:
 
 \begin{enumerate}
 \item
@@ -1043,7 +1043,7 @@ branches from the graph. This is performed in the following way:
   inquired in a class with function \lstinline!Connections.isRoot(..)!, see table
   above.
 \item
-  If there are n selected roots in a subgraph, then breakable branches
+  If there are n selected roots in a subgraph, then optional spanning-tree edges
   have to be removed such that the result shall be a set of n spanning
   trees with the selected root nodes as roots.
 \end{enumerate}
@@ -1053,11 +1053,11 @@ following way:
 
 \begin{enumerate}
 \item
-  For every breakable branch {[}\emph{i.e., a} \lstinline!connect(A,B)!
+  For optional spanning-tree edge {[}\emph{i.e., a} \lstinline!connect(A,B)!
   \emph{equation,}{]} in one of the spanning trees, the connection
   equations are generated according to \autoref{generation-of-connection-equations}.
 \item
-  For every breakable branch not in any of the spanning trees, the
+  For every optional spanning-tree edge not in any of the spanning trees, the
   connection equations are generated according to \autoref{generation-of-connection-equations}, except
   for overdetermined type or record instances R. Here the equations
   ``\lstinline!0 = R.equalityConstraint(A.R,B.R)!'' are generated instead
@@ -1090,7 +1090,7 @@ type AC_Angle "Angle of source, e.g., rotor of generator"
     input AC_Angle theta2;
     output Real residue[0] "No constraints"
   algorithm
-    /* make sure that theta1 and theta2 from joining branches are identical */
+    /* make sure that theta1 and theta2 from joining edges are identical */
     assert(abs(theta1 - theta2) < 1.e-10, "Consistent angles");
   end equalityConstraint;
 end AC_Angle;
@@ -1120,7 +1120,7 @@ model AC_Inductor
   AC_plug p;
   AC_plug n;
 equation
-  Connections.branch(p.theta,n.theta); //branch in virtual graph
+  Connections.branch(p.theta,n.theta); //edge in virtual graph
   // since n.theta = p.theta
   n.theta = p.theta; // pass angle theta between plugs
   omega = der (p.theta); // frequency of source
@@ -1200,7 +1200,7 @@ equation
 end FixedTranslation;
 \end{lstlisting}
 \emph{Since the transformation matrix} \lstinline!frame_a.R! \emph{is algebraically
-coupled with} \lstinline!frame_b.R!\emph{, a branch in the virtual connection graph
+coupled with} \lstinline!frame_b.R!\emph{, an edge in the virtual connection graph
 has to be defined. At the inertial system, the orientation is
 consistently initialized and therefore the orientation in the inertial
 system connector has to be defined as root}:
