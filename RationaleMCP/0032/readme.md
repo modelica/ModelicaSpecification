@@ -2,9 +2,15 @@
 
 **Authors:** Christoff Bürger (Christoff.Buerger@3ds.com)
 
-**(in development)**
-
 The minutes of _Modelica Design Meetings_ discussing this MCP are summarized in [`minutes.md`](minutes.md).
+
+## Status: in development
+
+- [x] **Concept:** approved
+
+- [x] **Design:** completed, waiting for approval
+
+- [ ] **Specification-incorporation:** not started / to do next
 
 ## Summary
 This MCP defines language extensions for structural non-monotonic model variation. The proposed language features enable selective model extension: the well-defined refinement of models by deselecting components and connections not of interest or inappropriate for a new design. Deselection is modeled in terms of non-exhaustive inheritance; to that end `extends`-clause modifiers now support exclusion of base-class elements from inheritance. Deselected elements are treated in extending models as if they never have been defined in their base-class. In case of deselected components, also all their connections are deselected.
@@ -83,7 +89,7 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 
 ## Required patents
 
-To the best of our knowledge there are no patents required for implementation of this proposal.
+To the best of our knowledge, there exist no conflicting or required patents to incorporate this MCP into the Modelica specification or implement it in Modelica tooling.
 
 ## References
 
