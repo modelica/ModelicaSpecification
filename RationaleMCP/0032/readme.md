@@ -23,11 +23,52 @@ The MCP is based on the paper [_Modelica language extensions for practical non-m
 
 ## Rationale
 
-**SECTION TODO** Sketch of the proposal (especially with examples) and an explanation of the business case: Why should this feature be included? What problems can be solved (better) that cannot be solved (as easily) now? 
-Provide at minimum two use cases for your proposal that show how it is applied. For each use case state how it could be implemented by current Modelica at best and why the current Modelica does not suffice for this application. 
-Proposed Changes in Specification
+### Syntax rules
 
-The precise updated text of the specification is part of this branch/pull-request.
+Additional new syntax rules: introduce new top-level modification which is the only modification capable of performing deselections, i.e., inheritance modifications.
+
+```
+class-or-inheritance-modification :
+      "(" [ argument-list ] ")"
+    | "(" { inheritance-modification "," } inheritance-modification "," [ argument-list ] ")"
+
+inheritance-modification :
+      break connect-clause // Connection and…
+    | break IDENT // …component deselection.
+```
+
+Changed existing syntax rules: use the new top-level modification at all places of the Modelica 3.4 grammar that are capable of non-nested modification applications.
+
+```
+long-class-specifier :
+      IDENT string-comment composition end IDENT
+    | extends IDENT [ class-or-inheritance-modification ] string-comment composition end IDENT
+
+extends-clause :
+    extends type-specifier [ class-or-inheritance-modification ] [annotation]
+```
+
+Inheritance modifications are not supported in `short-class-specifier` (which can be part of a `short-class-definition`) and `constraining-clause` because both can be within nested `class-modification`.
+
+Open question:
+
+```
+annotation :
+    annotation class-modification
+```
+
+Should it become:
+
+```
+annotation :
+    annotation class-or-inheritance-modification
+```
+
+Seems to be a general issue: in how far is annotation syntax up-to-date w.r.t. other (recent) syntax fixes and changes that have been incorporated into the specification throughout the past?
+
+### Semantic rules
+
+**TODO**
 
 ## Backwards compatibility
 The proposed language extensions do not introduce any new keywords. The new context-free derivations for `extends`-clause modifications to deselect connections and components - using the proposed `break`-based syntax - are syntax errors in current Modelica. As a consequence, selective model extension never changes the semantic of existing valid Modelica 3.4 models.
