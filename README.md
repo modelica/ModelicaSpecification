@@ -1,4 +1,4 @@
-﻿# ModelicaSpecification
+# ModelicaSpecification
 This repository contains the Modelica Language Specification, hosted at https://github.com/modelica/ModelicaSpecification.
 
 ## Build status
@@ -13,7 +13,7 @@ Modelica® https://modelica.org is a non-proprietary, object-oriented, equation 
 Version | Link                                                              | Published |
 ------- | ----------------------------------------------------------------- | --------|
 3.5-dev | [Master branch](https://specification.modelica.org/modelica/ModelicaSpecification) [HTML](https://specification.modelica.org/master/MLS.html) [PDF](https://specification.modelica.org/master/MLS.pdf)| not yet |
-3.4     | [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
+3.4     | [Tagged release](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)  [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
 3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
 3.2rev2 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision2.pdf) | 2013    |
 3.2rev1 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision1.pdf) | 2012    |
