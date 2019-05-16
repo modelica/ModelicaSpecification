@@ -171,6 +171,8 @@ entity falls into one of the following two groups:
   File in the file system.
 \end{itemize}
 
+\subsubsection{Character Encoding and Byte Order Mark}\doublelabel{character-encoding-and-byte-order-mark}
+
 Each Modelica file in the file-system is stored in UTF-8 format (defined
 by The Unicode Consortium; \lstinline!http://www.unicode.org!) and may start with
 the UTF-8 encoded byte order mark (\lstinline!0xef 0xbb 0xbf!); this is treated as
@@ -224,8 +226,8 @@ A within-clause has the following syntax:
 \begin{lstlisting}[language=grammar]
   within [ packageprefixname ] ";"
 \end{lstlisting}
-  A non-top-level entity shall begin with a within-clause which for the
 
+A non-top-level entity shall begin with a within-clause (following any language version comment, see \autoref{language-version-comment}) which for the
 class defined in the entity specifies the location in the Modelica class
 hierarchy. A top-level class may contain a within-clause with no name.
 For a sub-entity of an enclosing structured entity, the within-clause
@@ -244,6 +246,42 @@ declaration of} \lstinline!Rotational! \emph{could be given as below}:
     ...
 \end{lstlisting}
 {]}
+
+
+\subsubsection{Language Version Comment}\doublelabel{language-version-comment}
+
+Each Modelica file must use a specific version of the Modelica language.  This information may either be specified in the first line of a Modelica file, or be inherited within a package/class hierarchy.
+
+When specified in the first line of a Modelica file, that line (after stripping any byte order mark) is called a \emph{language version comment}, and shall match the following regular expression:
+% Abuse of lstlisting language 'grammar' below; consider defining a separate language for regular expressions.
+\begin{lstlisting}[language=grammar]
+^//![ ]\d+[.]\d+[r.]\d+$
+\end{lstlisting}
+
+\begin{example}
+Language version comment specifying the language release \emph{Modelica 3.4 Revision 1}:
+\begin{lstlisting}[language=modelica]
+//! 3.4r1
+\end{lstlisting}
+\end{example}
+
+The Modelica language version is given by the characters following the space character.  The two first sequences of digits are called the \emph{major} and \emph{minor} components of the version, while the last part is called either the \emph{revision} or the \emph{patch} component, depending on the separating character being \lstinline[language=grammar]![r]! or \lstinline[language=grammar]![.]!.  (The possibility to specify a verison with patch component is reserved for use with future language versioning systems.)  A language version consisting of only a major and minor component is extended with a revision component of ``0'' when referenced in a language version comment.
+
+\begin{example}
+Specification of language release \emph{Modelica 3.4}:
+\begin{lstlisting}[language=modelica]
+//! 3.4r0
+\end{lstlisting}
+\end{example}
+
+For a complete list of existing Modelica versions, see \autoref{modelica-revision-history}.
+
+When a package/class hierarchy is mapped to a directory hierarchy (see \autoref{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}), a language version specified in a structured entity's \emph{package.mo} file is inherited by all sub-entities, and can be overridden by language version comments deeper down in the directory hierarchy.
+
+A tool shall assume that any valid language version comment correctly describes the language version being used in a file, regardless whether the meaning of a language version comment is defined for the specified language version.
+
+A tool must not warn when reading a file using a language version that it can handle without risk of problems.
+
 
 \subsection{External resources}\doublelabel{external-resources}
 
