@@ -31,7 +31,7 @@ When given a valid language version comment, the language version may be unrecog
 
 This proposal allows a Modelica library stored in several files to use different language versions in the different files.  As long as a tool maps all the present language versions to the same implementation, this should not cause any problems.  A similar situation arises when a library uses one language version, but depends on another library using a different language version.  It is a quality of implementation whether a tool handles the more complicated case of working with several language implementations at the same time.  A tool may choose to warn about not being able to handle the situation correctly, but may not warn about the mere need to work with several implementations at the same time, as it may be non-trivial for a user to update all source files of the library to use the same language version, or impossible to address in case of a dependency on a library that cannot be modified by the user.
 
-Reviewing the requirements from Section 1.4:
+Reviewing the [key requirements](rationale.md#key-requirements):
 * (1).  The position right after the optional byte order mark is easy to locate.
 * (2).  Parsing a valid language version comment only requires a very basic regular expression engine (available in any language), not a Modelica parser.
 * (3).  The language version comment uses the syntax of a comment that is allowed in all versions of the Modelica language, so it is syntactically backward compatible.
@@ -42,9 +42,6 @@ Reviewing the requirements from Section 1.4:
 * (8).  See above for possible courses of actions for a tool to take when it encounters a language version comment.
 * (9).  Each Modelica source file contains the specification of the language version it uses.
 * (10). This comment is ignored except as the first line of a top-level package definition.
-
-## Proposed Wording
-The precise text of the proposed changes with respect to Modelica Specification 3.3 are in the accompanying document MCP-0015_LanguageVersion_SpecChanges.pdf.
 
 ## Version Numbers
 The version number in the language version comment is required to have a major, minor and revision/patch component.  The form matches all existing versions of the Modelica language, by extending any release called just x.y to x.yr0.
