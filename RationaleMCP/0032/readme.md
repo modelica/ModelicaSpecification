@@ -6,11 +6,11 @@ The minutes of _Modelica Design Meetings_ discussing this MCP are summarized in 
 
 ## Status: in development
 
-- [x] **Concept:** approved
-
-- [x] **Design:** completed, waiting for approval
-
-- [ ] **Specification-incorporation:** not started / to do next
+- [x] **Concept:** completed and approved
+- [ ] **Design:** completed and approved, still to write down in MCP (to do next)
+- [ ] **Examples:** first version completed, latest design changes still to incorporate (to do next)
+- [ ] **Prototype:** first version completed, latest design changes still to incorporate (to do next)
+- [ ] **Specification-incorporation:** not started
 
 ## Summary
 This MCP defines language extensions for structural non-monotonic model variation. The proposed language features enable selective model extension: the well-defined refinement of models by deselecting components and connections not of interest or inappropriate for a new design. Deselection is modeled in terms of non-exhaustive inheritance; to that end `extends`-clause modifiers now support exclusion of base-class elements from inheritance. Deselected elements are treated in extending models as if they never have been defined in their base-class. In case of deselected components, also all their connections are deselected.
@@ -21,50 +21,50 @@ The main contribution of selective model extension is to enable unforeseen struc
 
 The MCP is based on the paper [_Modelica language extensions for practical non-monotonic modelling: on the need for selective model extension_](https://modelica.org/events/modelica2019/proceedings/html/papers/Modelica2019paper3B1.pdf) published at the _13th International Modelica Conference 2019_ (cf. Section _References_). The motivation, concepts and examples presented in that paper are considered to be know.
 
-## Rationale
+## Syntax and semantic
 
 ### Syntax rules
 
-Additional new syntax rules: introduce new top-level modification which is the only modification capable of performing deselections, i.e., inheritance modifications.
+Introduce new top-level -- i.e., non-nested -- modification called `class-or-inheritance-modification`, which is the only modification capable of performing deselections -- i.e., inheritance modifications. It can be used instead of `class-modification` in the contexts supposed to support deselections:
 
 ```
 class-or-inheritance-modification :
-      "(" [ argument-list ] ")"
-    | "(" { inheritance-modification "," } inheritance-modification "," [ argument-list ] ")"
+      "(" [ argument-list-or-inheritance-modification
+          { "," argument-list-or-inheritance-modification } ] ")"
+
+argument-list-or-inheritance-modification :
+      argument-list
+    | inheritance-modification
 
 inheritance-modification :
       break connect-clause // Connection and…
     | break IDENT // …component deselection.
 ```
 
-Changed existing syntax rules: use the new top-level modification at all places of the Modelica 3.4 grammar that are capable of non-nested modification applications.
+The order of ordinary modifications and deselections does not matter; `inheritance-modification` can be comma separated followed by `argument` and vice-versa. But deselections must be top-level modifications whereas `argument`-based modifications can be nested.
+
+The new `class-or-inheritance-modification` is used instead of `class-modification` at all places of the Modelica 3.4 grammar that should be capable of deselections:
 
 ```
-long-class-specifier :
-      IDENT string-comment composition end IDENT
-    | extends IDENT [ class-or-inheritance-modification ] string-comment composition end IDENT
-
 extends-clause :
     extends type-specifier [ class-or-inheritance-modification ] [annotation]
 ```
 
-Inheritance modifications are not supported in `short-class-specifier` (which can be part of a `short-class-definition`) and `constraining-clause` because both can be within nested `class-modification`.
+Thus, only `extends`-clauses can deselect entities they would otherwise inherit. Deselections are not supported in `short-class-specifier` (which can be part of a `short-class-definition`) and `constraining-clause` because both can be within nested `class-modification`; allowing deselections in such would enable deselections that are not top-level modifications. Note, that the `class-modification` application of `long-class-specifier` is not changed to `class-or-inheritance-modification`. Deselection support for `long-class-specifier` is assumed to be of low interest; such can be added later if considerable use-cases emerge.
 
-Open question:
+Note that, deselection syntax is not supported within annotations. Thus,
 
 ```
 annotation :
     annotation class-modification
 ```
 
-Should it become:
+is _not_ changed to
 
 ```
 annotation :
     annotation class-or-inheritance-modification
 ```
-
-Seems to be a general issue: in how far is annotation syntax up-to-date w.r.t. other (recent) syntax fixes and changes that have been incorporated into the specification throughout the past?
 
 ### Semantic rules
 
@@ -122,7 +122,8 @@ The available versions are:
 
 | Date        | Description                                                  |
 | ----------- | ------------------------------------------------------------ |
-| 2019-May-10 | Christoff Bürger. Initial version based on the discussion at the _98th Modelica Design Meeting_. |
+| 2019-May-20 | Christoff Bürger. Updated minutes with the results of the _99th Modelica Design Meeting_. Updated syntax. |
+| 2019-May-10 | Christoff Bürger. Initial version based on the discussion at the _98th Modelica Design Meeting_. Includes summary, syntax proposal, examples, prototype and minutes. |
 
 ## Contributor License Agreement
 
