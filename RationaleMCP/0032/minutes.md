@@ -1,6 +1,6 @@
 # Minutes
 
-The following list compiles minutes of all official events and discussions - like _Modelica Design Meetings_ - where selective model extension has been a topic. The list summarizes only the ideas, concerns and final decisions relevant for selective model extension and skips any further topics typically discussed at the listed meetings (such can be found in the official minutes linked to).
+The following list compiles minutes of all official events and discussions - like _Modelica Design Meetings_ - where selective model extension has been a topic. The list summarizes only the ideas, concerns and final decisions relevant for selective model extension and skips any further topics typically discussed at the listed meetings (such can be found in the official minutes linked to). On the other hand, the following summaries often contain more detailed notes on decision reasons, open problems and the scope of selective model extension than the official meeting minutes.
 
 ## 98th Modelica Design Meeting
 
@@ -16,7 +16,7 @@ The following list compiles minutes of all official events and discussions - lik
 
 ## 99th Modelica Design Meeting
 
-- [Original minutes](https://svn.modelica.org/projects/ModelicaDesign/trunk/MeetingMinutesMaterial/min99_2019_Linkoeping/)
+- [**Original minutes**](https://svn.modelica.org/projects/ModelicaDesign/trunk/MeetingMinutesMaterial/min99_2019_Linkoeping/)
 
 - **Decision (discussion):** No need to support deselections within `long-class-specifier`. Support deselection only within `extends-clause`.
 
@@ -28,4 +28,14 @@ The following list compiles minutes of all official events and discussions - lik
 
 - **Decision (poll):** For connection deselections, the order of the `connect` arguments does not matter; `break connect(a, b)` deselects the connection between `a` and `b` regardless if it is defined as `connect(a, b)` or `connect(b, a)` in the selectively extended base-class.
 
-  - **Rationale why order of `connect` arguments doesn't matter:** Modelica is declarative; it is a general objective of the Modelica language design that order doesn't matter. Also, a base-class refactoring just switching the order of a connection's arguments should not break existing deselections in models selectively extending the base-class. 
+  - **Rationale why order of `connect` arguments doesn't matter:** Modelica is declarative; it is a general objective of the Modelica language design that order doesn't matter. Also, a base-class refactoring just switching the order of a connection's arguments should not break existing deselections in models selectively extending the base-class.
+
+- **Decision (poll):** Let `a` and `b` be the arguments of a connection deselection _D_ (i.e., _D_ = `break connect(a, b)`). Let _C_ = `connect(c, d)` be a connection defined in the base-class selectively extended by the `extends`-clause _D_ is is a modifier of. _D_ deselects _C_, if, and only if, either, `c` is syntactically equivalent to `a` and `d` is syntactically equivalent to `b` or, vice versa, `c` is syntactically equivalent to `b` and `d` is syntactically equivalent to `a`.
+
+  - Two code fragments `a` and `b` are syntactically equivalent, if, and only if, the context-free derivations of `a` and `b` according to the grammar given in Appendix B of the Modelica 3.4 specification are the same.
+
+- **Decision (discussion):** It is prohibited/not possible to deselect connections defined inside `for-equation` and `if-equation`, i.e., connections that are conditionally defined.
+
+  - **Open question (to discuss next meeting):** What have been the reasons for prohibiting deselection of conditionally defined connections? Is it just that such typically have no graphical representation such that deselecting them from within the diagram layer/graphically is typically not possible but we like deselections to be understandable in terms of graphical diagram edits? Or are there general conceptional issues?
+
+  - **Open question (not discussed):** What is about conditionally declared components? Are there conceptional or practical problems with deselecting such?
