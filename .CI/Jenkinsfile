@@ -4,12 +4,23 @@ pipeline {
     disableConcurrentBuilds()
   }
   stages {
+  stage('verify grammar') {
+    agent {
+      docker {
+        image 'modelicaspec/antlr:20190521'
+        label 'linux'
+      }
+    }
+    steps {
+      sh 'cd grammar && ./build.sh -tree'
+      sh 'cd grammar && java Main /usr/lib/MODELICAPATH'
+    }
+  }
   stage('build') {
     agent {
       docker {
         image 'modelicaspec/latexml:20190214'
         label 'linux'
-        alwaysPull true
       }
     }
     steps {

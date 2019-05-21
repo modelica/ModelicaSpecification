@@ -31,7 +31,7 @@ fragment NONDIGIT : '_' | 'a' .. 'z' | 'A' .. 'Z' ;
 
 STRING : '"' ( S_CHAR | S_ESCAPE )* '"' ;
 
-S_CHAR : NL | ~('\r' | '\n' | '\\' | '"'); // Unicode other than " and \
+fragment S_CHAR : NL | ~('\r' | '\n' | '\\' | '"'); // Unicode other than " and \
 
 fragment DIGIT : '0' .. '9' ;
 
@@ -141,7 +141,7 @@ element :
   ;
 
 import_clause :
-  'import' ( IDENT '=' name | name ('.' ( '*' | '{' import_list '}' ))? ) comment
+  'import' ( IDENT '=' name | name ('.' ( '*' | '{' import_list '}' ) | '.*')? ) comment
   ;
 
 import_list :
