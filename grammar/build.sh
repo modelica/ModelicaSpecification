@@ -1,3 +1,5 @@
+#!/bin/sh -x
+
 export CLASSPATH=.:$CLASSPATH
 make Modelica.g4
 # Test as ANTLR3 grammar; checking k<=2

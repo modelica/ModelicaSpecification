@@ -17,5 +17,3 @@ RUN mkdir -p /work /usr/lib/MODELICAPATH && \
   find . -type f ! -name "*.mo" -exec rm -f {} ";" && \
   find . -type d -depth -exec rmdir {} ";" && \
   mv * /usr/lib/MODELICAPATH
-
-ENV CLASSPATH=/usr/share/java/antlr4.jar:/usr/share/java/antlr3.jar
