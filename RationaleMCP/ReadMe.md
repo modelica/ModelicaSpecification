@@ -40,7 +40,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 - ~~MCP0018~~ Change specification format (done post Modelica 3.4)
 - MCP0017 Portable import of FMUs
 - MCP0016 Semantic Versions
-- MCP0015 Language Version Header
+- MCP0015 Language Version Header ([MCP/0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015))
 - ~~MCP0014~~ Conversion (added in Modelica 3.4) ([#1622](https://github.com/modelica/ModelicaSpecification/issues/1622))
 - MCP0013 Introducing polymorphic functions
 - MCP0012 Calling blocks as functions
