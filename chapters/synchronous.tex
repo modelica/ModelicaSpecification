@@ -354,6 +354,9 @@ defining the operators:
   (``is a Component Expression'').
 \end{itemize}
 
+Note that the operators defined in this chapter do not automatically vectorize,
+but some operate on arrays in a similar way.
+
 \section{Clock Constructors}\doublelabel{clock-constructors}
 
 The following overloaded constructors are available to generate clocks:
@@ -444,8 +447,9 @@ previous(intervalCounter)/resolution; // in seconds
 \textbf{Clock with Real Interval}\\
 
 The input argument, \lstinline!interval!, is a clocked Component Expression (see
-\autoref{argument-restrictions-component-expression}) or a parameter expression of type \textbf{Real} with
-min=0.0 and unit ``s''. The output argument is of base type Clock that
+\autoref{argument-restrictions-component-expression}) or a parameter expression.
+The \lstinline!interval! must be strictly positive (\lstinline!interval>0.0!) of type \textbf{Real} unit ``s''. 
+The output argument is of base type Clock that
 ticks when time becomes t\textsubscript{start},
 t\textsubscript{start}+interval1,
 t\textsubscript{start}+interval1+interval2, ... The clock starts at the
@@ -506,7 +510,7 @@ The first input argument ``\lstinline!c!'' is a clock and the operator returns t
 clock. The returned clock is associated with the second input argument
 of type String ``\lstinline!solverMethod!''. The meaning of solverMethod is defined
 in \autoref{solver-methods}. If the second input argument solverMethod is an empty
-String, then no integrator is associated with the returned clock.
+String, then this Clock-construct does not associate an integrator with the returned clock.
 
 {[}\emph{Examples:}
 \begin{lstlisting}[language=modelica]
@@ -854,6 +858,9 @@ current value of x as clk2 ticks, but will show its previous value (left
 limit). However, y will show the current value, since it has no
 infinitesimal delay.{]}}
 
+Note that it is not legal to compute the derivative of the \lstinline!sample!, \lstinline!subSample!, \lstinline!superSample!, \lstinline!backSample!,
+\lstinline!shiftSample!, and \lstinline!noClock! operators. 
+
 \section{Clocked When Clause}\doublelabel{clocked-when-clause}
 
 In addition to the previously discussed conditional when-clause, a
@@ -918,7 +925,8 @@ records don't not need to be expanded if they have the same clock.}{]}
 
 Furthermore, each non-trivial expression (non-literal, non-constant,
 non-parameter, non-variable), expr\textsubscript{i}, appearing as first
-argument of any clock conversion operator is recursively replaced by a
+argument of a clock conversion operator (except \lstinline!hold! and \lstinline!backSample!) 
+is recursively replaced by a
 unique variable, v\textsubscript{i}, and the equation v\textsubscript{i}
 = expr\textsubscript{i} is added to the equation set.
 
@@ -953,7 +961,7 @@ uses the following incidence definition:
 \multicolumn{4}{p{15cm}}{\textbf{incidence}(e) = the \emph{unknown} variables, as well as
 variables x in \textbf{der}(x), \textbf{pre}(x), and \textbf{previous}(x),}\\
 &\multicolumn{3}{p{14cm}}{which lexically appear in e}\\
-&&\multicolumn{2}{p{13cm}}{except as first argument of base-clock conversion operators: sample() and hold().}
+&&\multicolumn{2}{p{13cm}}{except as first argument of base-clock conversion operators: sample() and hold() and Clock(condition,startInterval).}
 \end{tabular}
 
 The resulting set of connected components, is the partitioning of the
@@ -965,8 +973,8 @@ The base clock partitions are identified as \textbf{clocked} or as
 \textbf{continuous-time partitions} according to the following
 properties:
 
-A variable u in \textbf{sample}(u) and a variable y in y =
-\textbf{hold}(ud) is in a continuous-time partition.
+A variable u in \lstinline!sample(u)!, a variable y in y =
+\lstinline!hold(ud)!, and a variable b in \lstinline!Clock(b, startInterval)! where b is of \lstinline!Boolean! type is in a continuous-time partition.
 
 Correspondingly, variables u and y in y = \textbf{sample}(uc), y =
 \textbf{subSample}(u), y = \textbf{superSample}(u), y =
@@ -1032,7 +1040,7 @@ variables x in \textbf{der}(x), \textbf{pre}(x), and
 \textbf{previous}(x),}\\
 &\multicolumn{3}{p{14cm}}{which lexically appear in e}\\
 &&\multicolumn{2}{p{13cm}}{except as first argument of sub-clock conversion operators:}\\
-&&&\multicolumn{1}{p{12cm}}{subSample, superSample, shiftSample, backSample, and noClock.}
+&&&\multicolumn{1}{p{12cm}}{subSample, superSample, shiftSample, backSample, noClock, and Clock with first argument of \lstinline!Boolean! type.}
 \end{tabular}
 The resulting set of connected components, is the partitioning of the
 equations and variables, S\textsubscript{ij} =
@@ -1139,6 +1147,7 @@ operators such as \lstinline!sample!, \lstinline!hold!, \lstinline!subSample! mu
 signals of the discretized continuous-time partition with other
 partitions. Hereby, a discretized continuous-time partition is seen as a
 clocked partition.
+
 
 \subsection{Clocked Discrete-Time and Clocked Discretized Continuous-Time Partition}\doublelabel{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}
 
@@ -1369,52 +1378,48 @@ with this clock, then the partition is integrated with it.
 
 If a solverMethod is not explicitly associated with a partition, it is
 inferred with a similar mechanism as for sub-clock inferencing, see
-\autoref{sub-clock-inferencing}. The inferencing mechanism is defined using the operator
-``solverExplicitlyDefined(c)'' which returns \textbf{true}, if a
-solverMethod is explicitly associated with clock c and returns
-\textbf{false} otherwise.
+\autoref{sub-clock-inferencing}. 
 
-For every partitioning operator of \autoref{partitioning-operators}, two clocks c1 and c2
-are defined for the input and the output argument of the operator,
-respectively. Furthermore, for every equality and assignment of clocks,
-c1 = c2 or c1 := c2, two clocks are defined as well. In all these cases,
-the following statements are implicitly introduced:
+For each sub-clock partition we build a set corresponding to this sub-clock partition.
+These sets are then merged as follows: for each set without a specified solverMethod we merge it 
+with sets connected to it (these may contain a solverMethod); and this is repeated until it is not possible to merge more sets.
+The sets connected in this way should be part of the same base-clock partition and connected through a sub-clock conversion operator  
+(\lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample!, \lstinline!backSample!, or \lstinline!noClock!).
 
-\begin{lstlisting}[language=modelica]
-if solverExplicitlyDefined(c1) and solverExplicitlyDefined(c2) then
-  // o.k. (no action)
-elseif not solverExplicitlyDefined(c1) and not solverExplicitlyDefined(c2) then
-  assert(c1.solverMethod == c2.solverMethod);
-elseif solverExplicitlyDefined(c1) <>solverExplicitlyDefined(c2) then
-  c1.solverMethod = c2.solverMethod
-end if;
-\end{lstlisting}
-
-The introduced set of, potentially underdetermined or overdetermined
-constraints has to be solved. If no solution exists or if a solution is
-contradictory on some clocks that are associated with clocked
-discrete-time partitions, then this is ignored, since no solverMethod is
-needed for such partitions.
+\begin{itemize}
+\item If this set contains multiple different values for \lstinline!solverMethod! it is an error.
+\item If the set contains continuous time-equations:
+\begin{itemize} 
+\item If this set contains no \lstinline!solverMethod! it is an error.
+\item Otherwise we use the specified solverMethod.
+\end{itemize}
+\item If the set does not contain continuous time-equations there is no need for a solverMethod.
+\end{itemize}
 
 {[}\emph{Example:}
 
 \begin{lstlisting}[language=modelica]
-model InferenceTest "Specific clocks set on all partitions. Decouple constraint"
-  ...
+model InferenceTest
+  Real x(start=3) "Explicitly using ExplicitEuler";
+  Real y "Explicitly using ImplicitEuler method";
+  Real z "Inferred to use ExplicitEuler";
 equation 
-  // Physical model
-  der(x1) = -100*x1 + hold(z2);
-  // Controller submodels
-  der(z1) = -100*z1 + sample(x2,
-  Clock(Clock(1, 100), solverMethod="ImplicitEuler"));
-  w = 0.9*previous (w) + superSample(z1, 3);
-  when Clock(Clock(1,20),
-    solverMethod="ExplicitEuler") then 
-    ww = superSample (w);
-  end when
-  der(z2) = -z2 + ww;
+  der(x)=-x+sample(1,Clock(Clock(1,10), solverMethod="ExplicitEuler"));
+  der(y)=subSample(x,2)+sample(1,Clock(Clock(2,10), solverMethod="ImplicitEuler"));
+  der(z)=subSample(x,2)+1;
 end InferenceTest;
+
+model IllegalInference
+  Real x(start=3) "Explicitly using ExplicitEuler";
+  Real y "Explicitly using ImplicitEuler method";
+  Real z;
+equation 
+  der(x)=-x+sample(1,Clock(Clock(1,10), solverMethod="ExplicitEuler"));
+  der(y)=subSample(x,2)+sample(1,Clock(Clock(2,10), solverMethod="ImplicitEuler"));
+  der(z)=subSample(x,4)+1+subSample(y);
+end IllegalInference;
 \end{lstlisting}
+Here \lstinline!z! is a continuous-time equation connected directly to both \lstinline!x! and \lstinline!y! partitions that have different \lstinline!solverMethod!.
 {]}
 
 \section{Initialization of Clocked Partitions}\doublelabel{initialization-of-clocked-partitions}

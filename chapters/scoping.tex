@@ -24,7 +24,7 @@ a partially flattened class. {[}\emph{For example, this means that a
 declaration can refer to a name inherited through an extends-clause.}{]}
 
 {[}\emph{Example}:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 class C1 ... end C1;
 class C2 ... end C2;
 class C3
@@ -108,13 +108,13 @@ as follows:
   a scalar; and if the composite name is used as a function call, the
   lookup is also performed among the declared named class elements of
   the scalar component, and must find a non-operator function. All
-  identifiers of the rest of the name (e.g., B and B.C] must be
+  identifiers of the rest of the name (e.g., B and B.C) must be
   classes.
 \item
   If the identifier denotes a class, that class is temporarily flattened
   (as if instantiating a component without modifiers of this class, see
   \autoref{modification-environment}) and using the enclosing classes of the denoted class.
-  The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!{]} is looked up among the
+  The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the
   declared named elements of the temporary flattened class. If the class
   does not satisfy the requirements for a package, the lookup is
   restricted to encapsulated elements only. The class we look inside may
@@ -166,6 +166,10 @@ An element declared with the prefix \lstinline!outer! references an element inst
 with the same name but using the prefix \lstinline!inner! which is nearest in the
 enclosing instance hierarchy of the \lstinline!outer! element declaration.
 
+Outer component declarations may not have modifications {[}\emph{including binding equations}{]}. 
+Outer class declarations should be defined using short-class
+definitions without modifications. However, see also \autoref{simultaneous-inner-outer-declarations}.
+
 An \lstinline!outer! element reference in a simulation model requires that one
 corresponding \lstinline!inner! element declaration exist or can be created in a
 unique way:
@@ -211,8 +215,9 @@ class A
   ...
 end A;
 class B
-  inner Real T0;
-  A a1, a2; // B.T0, B.a1.T0 and B.a2.T0 is the same variable
+  inner Real T0=1;
+  A a1, a2; // B.T0, B.a1.T0 and B.a2.T0 will have the same value
+  A a3(T0=4); // Illegal as T0 is an outer variable.
   ...
 end B;
 \end{lstlisting}
@@ -318,11 +323,8 @@ above rules for \lstinline!inner! and another that follows the rules for \lstinl
 references the corresponding element in an enclosing scope with the
 prefix} \lstinline!inner!\emph{.}{]}
 
-Outer component declarations may only have modifications
-{[}\emph{including declaration equations}{]} if they also have the \lstinline!inner!
-prefix. Outer class declarations should be defined using short-class
-definitions which only may have modifications if they also have the
-\lstinline!inner! prefix. For both cases those modifications are only applied to the
+Modifications of elements declared with both the prefixes \lstinline!inner! and \lstinline!outer!
+may have modfications, those modifications are only applied to the
 \lstinline!inner! declaration.
 
 {[}\emph{Example}:

@@ -735,7 +735,7 @@ algorithm
     out1:=interpolate(points, values, 1-(x-x0));
     out0:=values[1]; // similar to in0 but avoiding algebraic loop
   else
-    out0:=interpolate(points, values, (x-x0));
+    out0:=interpolate(points, values, 0-(x-x0));
     out1:=values[end]; // similar to in1 but avoiding algebraic loop
   end if;
   when <acceptedStep> then
@@ -745,14 +745,14 @@ algorithm
         m:=m-1;
       end while;
       values:=cat(1, {in0}, values[1:m], {interpolate(points, values,1-(x-x0))} );
-      points:=cat(1, {0}, points[1:m] .+ (x1-x0), {1} );
+      points:=cat(1, {0}, points[1:m] .+ (x-x0), {1} );
     elseif x<x0 then
       m:=1;
       while (if m<size(points,1) then points[m]+(x-x0)<=0 else false) then
         m:=m+1;
       end while;
       values:=cat(1, {interpolate(points, values, 0-(x-x0))},values[m:end],{in1});
-      points:=cat(1, {0}, points[m:end] .+ (x1-x0), {1});
+      points:=cat(1, {0}, points[m:end] .+ (x-x0), {1});
     end if;
     x0:=x;
   end when;
@@ -1125,9 +1125,10 @@ components of allowed expressions. See also \autoref{noevent-and-smooth}.\\ \hli
 
 % sample
 \lstinline!sample(start, interval)! & Returns \lstinline!true! and triggers time events at time
-instants \lstinline!start + i*interval (i=0,1,...)!. During continuous integration
-the operator returns always \lstinline!false!. The starting time \lstinline!start! and the
-sample interval \lstinline!interval! need to be parameter expressions and need to be
+instants \lstinline!start + i*interval (i=0,1,...)!, and is only true during the first event iteration at those times.
+At event iterations after the first one at each event and during continuous integration 
+the operator always returns \lstinline!false!. The starting time \lstinline!start! and the 
+sample interval \lstinline!interval! must be parameter expressions and need to be 
 a subtype of Real or Integer. The sample interval \lstinline!interval! must be a
 positive number.\\ \hline
 
@@ -1156,7 +1157,7 @@ same restrictions as for the \lstinline!pre()! operator apply.\\ \hline
 
 % reinit
 \lstinline!reinit(x, expr)! & In the body of a when clause, reinitializes \lstinline!x! with
-\lstinline!expr! at an event instant. \lstinline!x! is a Real variable (or an array of Real variables) that is implicitly defined to have \lstinline!StateSelect.always!
+\lstinline!expr! at an event instant. \lstinline!x! is a scalar or array \lstinline!Real! variable that is implicitly defined to have \lstinline!StateSelect.always!
 {[}\emph{so must be selected as a state, and it is an error, if
 this is not possible}{]}. \lstinline!expr! needs to be type-compatible with \lstinline!x!. The
 reinit operator can only be applied once for the same variable - either
@@ -1281,6 +1282,8 @@ Parameter expressions are:
   Constant expressions.
 \item
   Variables declared as parameter.
+\item
+  Input variables in functions behave as though they were parameter expressons.
 \item
   Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!,
   \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with parameter
