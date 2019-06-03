@@ -1,0 +1,72 @@
+pipeline {
+  agent none
+  options {
+    disableConcurrentBuilds()
+  }
+  stages {
+  stage('build') {
+    agent {
+      docker {
+        image 'modelicaspec/latexml:20190319'
+        label 'linux'
+        alwaysPull true
+      }
+    }
+    steps {
+      sh 'latexmk -pdf MLS.tex'
+      sh 'latexml MLS.tex --dest MLS.xml'
+      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html'
+      sh 'tar czf MLS.tar.gz *.html *.css media css/'
+      archiveArtifacts artifacts: 'MLS.tar.gz', fingerprint: true
+      archiveArtifacts artifacts: 'MLS.pdf', fingerprint: true
+      stash name: 'MLS', includes: '*.html,*.css,MLS.pdf,media/**,css/**,MLS.tar.gz'
+    }
+  }
+  stage('upload') {
+    when {
+      allOf {
+        not {
+          changeRequest()
+        }
+        anyOf {
+          buildingTag()
+          anyOf {
+            branch 'master'
+          }
+        }
+      }
+      beforeAgent true
+    }
+    agent {
+      label 'linux'
+    }
+    steps {
+      unstash name: 'MLS'
+      sh "test ! -z ${env.GIT_BRANCH}"
+      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(remoteDirectory: "${env.GIT_BRANCH}", sourceFiles: '*.html,*.css,MLS.pdf,media/**,css/**')])])
+    }
+  }
+  stage('index') {
+    agent {
+      docker {
+        image 'modelicaspec/markdown:20190307'
+        label 'linux'
+        alwaysPull true
+      }
+    }
+    when {
+      allOf {
+        not {
+          changeRequest()
+        }
+        branch 'master'
+      }
+      beforeAgent true
+    }
+    steps {
+      sh 'python3 .CI/index.py'
+      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(sourceFiles: 'index.html')])])
+    }
+  }
+  }
+}
