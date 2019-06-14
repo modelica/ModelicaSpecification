@@ -29,19 +29,16 @@ Introduce new top-level -- i.e., non-nested -- modification called `class-or-inh
 
 ```
 class-or-inheritance-modification :
-      "(" [ argument-list-or-inheritance-modification
-          { "," argument-list-or-inheritance-modification } ] ")"
+    "(" [ argument-or-inheritance-modification-list ] ")"
 
-argument-list-or-inheritance-modification :
-      argument-list
-    | inheritance-modification
+argument-or-inheritance-modification-list :
+    ( argument | inheritance-modification ) { "," ( argument | inheritance-modification ) }
 
 inheritance-modification :
-      break connect-clause // Connection and…
-    | break IDENT // …component deselection.
+    break ( connect-clause | IDENT )
 ```
 
-The order of ordinary modifications and deselections does not matter; `inheritance-modification` can be comma separated followed by `argument` and vice-versa. But deselections must be top-level modifications whereas `argument`-based modifications can be nested.
+The order of ordinary modifications and deselections does not matter; an `inheritance-modification` can be comma separated followed by an `argument` and vice-versa. But deselections must be top-level modifications whereas `argument`-only based modifications can be nested.
 
 The new `class-or-inheritance-modification` is used instead of `class-modification` at all places of the Modelica 3.4 grammar that should be capable of deselections:
 
@@ -50,7 +47,7 @@ extends-clause :
     extends type-specifier [ class-or-inheritance-modification ] [annotation]
 ```
 
-Thus, only `extends`-clauses can deselect entities they would otherwise inherit. Deselections are not supported in `short-class-specifier` (which can be part of a `short-class-definition`) and `constraining-clause` because both can be within nested `class-modification`; allowing deselections in such would enable deselections that are not top-level modifications. Note, that the `class-modification` application of `long-class-specifier` is not changed to `class-or-inheritance-modification`. Deselection support for `long-class-specifier` is assumed to be of low interest; such can be added later if considerable use-cases emerge.
+Thus, only `extends`-clauses can deselect entities they would otherwise inherit. Deselections are not supported in `short-class-specifier` (which can be part of a `short-class-definition`) and `constraining-clause` because both can be within nested `class-modification`; allowing deselections in such would enable deselections that are not top-level modifications. Also the `class-modification` application of `long-class-specifier` is not changed to `class-or-inheritance-modification`; deselection support for `long-class-specifier` is assumed to be of low interest and can be added later if considerable use-cases emerge.
 
 Note that, deselection syntax is not supported within annotations. Thus,
 
