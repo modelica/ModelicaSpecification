@@ -45,6 +45,7 @@ In Modelica, a component reference is a very restricted form of a gneralized exp
 In Flat Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Flat Modelica component reference is not allowed to contain comments, and the only character that may be parsed as whitespace is the _space_ character.
  
 Examples:
+
 | String | Valid Flat Modelica component reference? |
 |--|--|
 | `foo[1,2].bar` | Yes |
@@ -63,6 +64,7 @@ Using `\` as escape character, many strings, including all component references,
 1. Wrap the result in single quotes.
 
 Upquoting a Modelica component reference always results in a valid (Flat) Modelica `Q-IDENT` identifier.  Examples:
+
 | Input | Upquoted string | Remark |
 |--|--|--|
 | `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
@@ -79,6 +81,7 @@ The reverse procedure is denoted _downquoting_:
 1. Remove the leading `\` in any escape sequence.
 
 Unlike upquoting, downquoting breaks much more easily.  Examples:
+
 | Input | Downquoted string | Remark |
 |--|--|--|
 | `'axis.bearingFriction.sa'` | `axis.bearingFriction.sa` | |
@@ -103,6 +106,7 @@ To support fast categorization of identifiers in Flat Modelica, they are divided
   - Otherwise, it is a Flat Modelica reserved name
 
 Examples:
+
 | Flat Modelica identifier | Category |
 |--|--|
 | `class` | Flat Modelica reserved name (happens to be a keyword) |
