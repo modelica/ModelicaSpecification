@@ -112,7 +112,7 @@ Examples:
 | `class` | Flat Modelica reserved name (happens to be a keyword) |
 | `sin` | Flat Modelica reserved name (name of built-in function) |
 | `foo` | Flat Modelica reserved name (reserved for future use) |
-| `_R123` | Generated non-structured name (such as an automatically generated record) |
+| `_R123` | Generated non-structured name (such as an automatically generated record or introduced helper variable) |
 | `'axis.bearingFriction.sa'` | Component reference: `axis.bearingFriction.sa` |
 | `'\'foo!\'.x'` | Component reference: `'foo!'.x` |
 | `'der(x'` | Component reference (can't be parsed) |
