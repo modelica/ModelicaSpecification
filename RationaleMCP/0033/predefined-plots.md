@@ -8,9 +8,9 @@ A model's class annotation might look like this:
 annotation(
   PlotSet(
     plots = {
-      Plot(title = "Battery Voltage", preferred = true, subPlots = {SubPlot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, labels = Labels(y = "Voltage [V]"))}),
-      Plot(title = "Battery Limit Controller", subPlots = {SubPlot(curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
-      Plot(title = "Load Current", subPlots = {SubPlot(curves = {Curve(x = time, y = load.i, legend = "Load current")})})
+      Plot(title = "Battery Voltage", identifier = "Voltage", preferred = true, subPlots = {SubPlot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, labels = Labels(y = "Voltage [V]"))}),
+      Plot(title = "Battery Limit Controller", identifier = "Limit", caption = "...", subPlots = {SubPlot(title = "Batter Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
+      Plot(title = "Load Current", identifier = "Load", subPlots = {SubPlot(curves = {Curve(x = time, y = load.i, legend = "Load current")})})
     }
   )
 )
@@ -23,8 +23,14 @@ Inserting some line breaks into one of the `Plot` objects, it looks like this:
 ```
 Plot(
   title = "Battery Limit Controller",
+  caption = "<html>This illustrates the behavior of the <strong>controller</strong>,
+               in particular the small overshoot when changing the input.
+               The controller is implemented as a PI-controller with anti-windup, for details see...
+             </html>"
+  identifier = "Limit", 
   subPlots = {
     SubPlot(
+	  title = "Batter Limits",
       curves = {
         Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"),
         Curve(x = time, y = battery.LimitController.u, legend = "Limit controller input signal"),
@@ -35,6 +41,7 @@ Plot(
 )
 ```
 
+The optional identifier is intended for programmatic access.
 As is seen in the _Battery Voltage_ plot, this has the `preferred` flag set, meaning that it will be displayed automatically after the model has been simulated.
 
 ## Axis labels
