@@ -474,7 +474,7 @@ this operator can be used, see Clock expressions below.}{]}
 \end{tabular}
 &
 \begin{tabular}{@{}p{119mm}@{}}
-\textbf{Clock with Boolean Condition}\\
+\textbf{Event Clock}\\
 
 The input argument, \lstinline!condition!, is a continuous-time expression of type
 Boolean. The optional \lstinline!startInterval! argument (default = 0.0) is the
@@ -542,10 +542,10 @@ exclusive associations of clocks are possible in one base partition:
   associated multiple times with ``c'' but not multiple times with
   ``Clock(2.5)''}{]}
 \item
-  Exactly one Boolean clock.
+  Exactly one Event clock.
 \item
   A default clock, if neither a Real interval, nor a Rational interval
-  nor a Boolean clock is associated with a base partition. In this case
+  nor an Event clock is associated with a base partition. In this case
   the default clock is associated with the fastest sub-clock partition.
   {[}\emph{Typically, a tool will use Clock(1.0) as a default clock and
   will raise a warning, that it selected a default clock.}{]}
@@ -696,7 +696,7 @@ The input argument u is a clocked expression or an expression of type
 Clock. {[}\emph{The operators can operate on all types of clocks}{]}. If
 u is a clocked expression, the operator returns a clocked variable that
 has the same type as the expression. If u is an expression of type
-Clock, the operator returns a Clock.
+Clock, the operator returns a Clock - except for noClock where it is an error.
 
 The optional input arguments \lstinline!factor! (default=0, min=0), and \lstinline!resolution!
 (default=1, min=1) are parameter expressions of type Integer.
@@ -720,7 +720,7 @@ than the clock of u. At every tick of the clock of y, the operator
 returns the value of u from the last tick of the clock of u. The first
 activation of the clock of y coincides with the first activation of the
 clock of u. If argument factor is not provided or is equal to zero, it
-is inferred, see \autoref{sub-clock-inferencing}. If a Boolean clock is associated to a
+is inferred, see \autoref{sub-clock-inferencing}. If an Event clock is associated to a
 base-clock partition, all its sub-clock partitions must have resulting
 clocks that are sub-sampled with an Integer factor with respect to this
 base clock.
@@ -750,15 +750,15 @@ and the clock of y = \textbf{shiftSample}(..) starts at the second clock
 tick of cBase. At every tick of the clock of y, the operator returns the
 value of u from the last tick of the clock of u.
 
-{[}\emph{Note, due to the restriction of superSample on Boolean clocks,
-shiftSample can only shift the number of ticks of the Boolean clock, but
+{[}\emph{Note, due to the restriction of superSample on Event clocks,
+shiftSample can only shift the number of ticks of the Event clock, but
 cannot introduce new ticks. Example:}
 \begin{lstlisting}[language=modelica]
 // Rational interval clock
 Clock u  = Clock(3, 10); // ticks: 0, 3/10, 6/10, ..
 Clock y1 = shiftSample(u,1,3); // ticks: 1/10, 4/10,
 ...
-// Boolean clock
+// Event clock
 Clock u = Clock(sin(2*pi*time)>0, startInterval=0.0)
 // ticks: 0.0, 1.0, 2.0, 3.0, ...
 Clock y1 = shiftSample(u,2); // ticks: 2.0, 3.0, ...
@@ -801,7 +801,7 @@ Clock y4 = shiftSample(u,2,3); // ticks: 2/10, 5/10,
 ...
 Clock y5 = backSample(y4,1,3); // ticks: 1/10, 4/10,
 ...
-// Boolean clock
+// Event clock
 Clock u = Clock(sin(2*pi*time) > 0, startInterval=xx)
 // ticks: 0, 1.0, 2.0, 3.0, ....
 Clock y1 = shiftSample(u,3); // ticks: 3.0, 4.0, ...
@@ -1456,8 +1456,8 @@ optional argument u is only used for clock inference, see \autoref{clock-partiti
 At the first tick of the clock the following is returned: a) if the
 specified clock interval is parametric, this value is returned; b)
 otherwise the start value of the variable specifying the interval is
-returned; c) for an event clock the additional startInterval argument to
-the event clock constructor is returned. The return value of the
+returned; c) for an Event clock the additional startInterval argument to
+the Event clock constructor is returned. The return value of the
 interval operator is a scalar Real number.
 \\ \hline
 \end{longtable}
