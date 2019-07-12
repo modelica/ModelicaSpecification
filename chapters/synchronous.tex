@@ -556,7 +556,7 @@ Clock variables can be used in a restricted form of expressions.
 Generally, every expression switching between clock variables must have
 parametric variability {[}\emph{in order that clock analysis can be
 performed when translating a model.}{]}.
-Thus subscripts on Clock-variables and conditions for switching between Clock-variables must
+Thus subscripts on Clock-variables and conditions of if-then-else switching between Clock-variables must
 be parameter expressions, and there are similar restrictions for sub-clock conversion operators \autoref{sub-clock-conversion-operators}.
 Otherwise, the following
 expressions are allowed:
@@ -719,7 +719,8 @@ expressions of type Integer (min=0).}
 The clock of y = \textbf{subSample}(u,factor) is factor-times slower
 than the clock of u. At every factor ticks of the clock of u, the
 operator returns the value of u.. The first activation of the clock of y
-coincides with the first activation of the clock of u. If argument
+coincides with the first activation of the clock of u, and then every activation of the clock of y
+coincides with the every factor-th activativation of the clock of u. If argument
 factor is not provided or is equal to zero, it is inferred, see
 \autoref{sub-clock-inferencing}.
 \\ \hline
@@ -729,7 +730,12 @@ The clock of y = \textbf{superSample}(u,factor) is factor-times faster
 than the clock of u. At every tick of the clock of y, the operator
 returns the value of u from the last tick of the clock of u. The first
 activation of the clock of y coincides with the first activation of the
-clock of u. If argument factor is not provided or is equal to zero, it
+clock of u, and then the interval between activations of the clock of u is split equidistantly
+into factor activations, such that the activation 1+k*factor of y coincides with the 1+k activation of u.
+\begin{nonnormative}
+Thus \lstinline!subSample(superSample(u, factor), factor)=u!
+\end{nonnormative}
+If argument factor is not provided or is equal to zero, it
 is inferred, see \autoref{sub-clock-inferencing}. If an Event clock is associated to a
 base-clock partition, all its sub-clock partitions must have resulting
 clocks that are sub-sampled with an Integer factor with respect to this
@@ -747,18 +753,11 @@ base clock.
 \textbf{shiftSample}(u,\\
 shiftCounter, resolution)
 \end{tabular}
-& {[}\emph{The first activation of the clock of y =
-\textbf{shiftSample}(..) is shifted in time
-shiftCounter/resolution*interval(u) later than the first activation of
-the clock of u.}{]}.
-
-Conceptually, the operator constructs a clock ``cBase''
+& The operator \lstinline!shiftSample(u,k)! skips the first k ticks of u, and is then returning every tick.
+With resolution it is defined as:
 \begin{lstlisting}[language=modelica]
-Clock cBase = subSample(superSample(u,resolution), shiftCounter)
+shiftSample(u,k,resolution)=subSample(shiftSample(superSample(u,resolution),k),resolution)
 \end{lstlisting}
-and the clock of y = \textbf{shiftSample}(..) starts at the second clock
-tick of cBase. At every tick of the clock of y, the operator returns the
-value of u from the last tick of the clock of u.
 
 {[}\emph{Note, due to the restriction of superSample on Event clocks,
 shiftSample can only shift the number of ticks of the Event clock, but
@@ -781,18 +780,13 @@ backCounter, resolution)
 \end{tabular}
 &
 The input argument u is either a Component Expression (see
-\autoref{argument-restrictions-component-expression}) or an expression of type Clock. {[}\emph{The first activation of
-the clock of y = \textbf{backSample}(..) is shifted in time
-backCounter/resolution*\textbf{interval}(u) before the first activation
-of the clock of u}{]}. Conceptually, the operator constructs a clock
-``cBase''
-\begin{lstlisting}[language=modelica]
-Clock cBase = subSample(superSample(u,resolution), backCounter)
-\end{lstlisting}
-and the clock of y = \textbf{shiftSample}(..) is shifted a time duration
-before the clock of u, such that this duration is identical to the
-duration between the first and second clock tick of cBase. It is an
-error, if the clock of y starts before the base clock of u. At every
+\autoref{argument-restrictions-component-expression}) or an expression of type Clock.
+This is an inverse of shiftSample such that \lstinline!Clock y=backSample(u, cnt, res)! implicitly defines
+a clock y such that \lstinline!shiftSample(y, cnt, res)! activates at the same times as u.
+It is an
+error, if the clock of y starts before the base clock of u.
+
+At every
 tick of the clock of y, the operator returns the value of u from the
 last tick of the clock of u. If u is a clocked Component Expression, the
 operator returns the start value of u, see \autoref{initialization-of-clocked-partitions}, before the
