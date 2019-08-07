@@ -419,27 +419,20 @@ component_reference :
   '.'? IDENT array_subscripts? ( '.' IDENT array_subscripts? )*
   ;
 
-// function_call_args have been rewritten due to #2250 and also resolves
-// ambiguity with named arg or expression
-// f(a, b=3) ANTLR4 said "f(a, b" parsed, expecting ")"
-
 function_call_args :
   '(' function_arguments? ')'
   ;
 
 function_arguments
-  : expression ( function_arguments_non_first | 'for' for_indices )
-  | function_partial_application function_arguments_non_first
+  : expression ( ',' function_arguments_non_first | 'for' for_indices )?
+  | function_partial_application (',' function_arguments_non_first)?
   | named_arguments
   ;
 
 function_arguments_non_first
-  : ( ','
-    ( IDENT '=' function_argument named_arguments_non_first
-    | expression function_arguments_non_first
-    | function_partial_application function_arguments_non_first
+  : ( function_argument (',' function_arguments_non_first)?
+    | named_arguments
     )
-    )?
   ;
 
 array_arguments :
@@ -447,11 +440,7 @@ array_arguments :
   ;
 
 named_arguments :
-  named_argument named_arguments_non_first
-  ;
-
-named_arguments_non_first :
-  ( ',' named_argument )*
+  named_argument ( ',' named_argument )* /* TODO: Changed to repetition */
   ;
 
 named_argument :
@@ -463,8 +452,8 @@ function_argument
   | expression
   ;
 
-function_partial_application
-  : 'function' name '(' named_arguments? ')'
+function_partial_application /* TODO: This is a new rule; refactored out */
+  : 'function' type_specifier '(' named_arguments? ')'
   ;
 
 output_expression_list :
