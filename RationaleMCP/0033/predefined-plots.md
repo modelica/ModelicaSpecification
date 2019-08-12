@@ -9,7 +9,7 @@ annotation(
   PlotSet(
     plots = {
       Plot(title = "Battery Voltage", identifier = "Voltage", preferred = true, subPlots = {SubPlot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, labels = Labels(y = "Voltage [V]"))}),
-      Plot(title = "Battery Limit Controller", identifier = "Limit", caption = "...", subPlots = {SubPlot(title = "Batter Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
+      Plot(title = "Battery Limit Controller", identifier = "Limit", caption = "...", subPlots = {SubPlot(title = "Battery Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
       Plot(title = "Load Current", identifier = "Load", subPlots = {SubPlot(curves = {Curve(x = time, y = load.i, legend = "Load current")})})
     }
   )
@@ -30,7 +30,7 @@ Plot(
   identifier = "Limit", 
   subPlots = {
     SubPlot(
-	  title = "Batter Limits",
+	  title = "Battery Limits",
       curves = {
         Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"),
         Curve(x = time, y = battery.LimitController.u, legend = "Limit controller input signal"),
