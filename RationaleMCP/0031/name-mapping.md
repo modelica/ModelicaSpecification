@@ -42,19 +42,17 @@ Additional requirements:
 
 In Modelica, a component reference is a very restricted form of a gneralized expression where literal array subscripting and record member referencing can be applied to any sub-expression.  As such, they are identified with their abstract syntax tree representation.  In particular, their textual input form is insensitive to whitespace and comments.
 
-In Flat Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Flat Modelica component reference is not allowed to contain comments, and the only character that may be parsed as whitespace is the _space_ character.
+In Flat Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Flat Modelica component reference is not allowed to contain whitespace or comments.
  
 Examples:
 
 | String | Valid Flat Modelica component reference? |
 |--|--|
 | `foo[1,2].bar` | Yes |
-| `foo [ 1, 2 ]` | Yes |
-| `foo[1 2]` | No (doesn't parse) |
-| `foo(1, 2)` | No (illegal kind of expression) |
-| `foo[1 /* one */, 2 /* two */]` | No (comments not allowed) |
-
-Note that the same component reference may appear with different formatting in different places of the same Flat Modelica model.
+| `foo[1, 2]` | No (whitespace not allowed) |
+| `foo[1,,2]` | No (doesn't parse) |
+| `foo(1,2)` | No (illegal kind of expression) |
+| `foo[1/* one */,2/* two */]` | No (comments not allowed) |
 
 
 ### Upquoting and downquoting
@@ -69,7 +67,7 @@ Upquoting a Modelica component reference always results in a valid (Flat) Modeli
 |--|--|--|
 | `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
 | `foo[1,2].bar` | `'foo[1,2].bar'` | |
-| `'foo'` | `'\'foo\''` | |
+| `'foo bar'` | `'\'foo bar\''` | |
 | `'foo\''` | `'\'foo\\\'\''` | |
 | `der(foo)` | `'der(foo)'` | Input is not valid component reference, but result is still valid identifier |
 | `'foo\` | `'\'foo\\'` | Same as above. |
@@ -114,7 +112,7 @@ Examples:
 | `foo` | Flat Modelica reserved name (reserved for future use) |
 | `_R123` | Generated non-structured name (such as an automatically generated record or introduced helper variable) |
 | `'axis.bearingFriction.sa'` | Component reference: `axis.bearingFriction.sa` |
-| `'\'foo!\'.x'` | Component reference: `'foo!'.x` |
+| `'\'foo bar!\'.x'` | Component reference: `'foo bar!'.x` |
 | `'der(x'` | Component reference (can't be parsed) |
 | `'=der(x)'` | Generated structured name (might refer to derivative of `x`) |
 | `'/foo.bar/start'` | Generated structured name (might refer to `start` attribute of `foo.bar`) |
