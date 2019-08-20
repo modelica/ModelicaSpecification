@@ -79,6 +79,7 @@ To obtain the Flat Modelica component reference out of a Modelica component refe
 
 Examples:
 | Modelica component reference | Flat Modelica | Remark |
+|--|--|--|
 | `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
 | `foo[1 /* first */]` | `'foo[1,2]'` | Whitespace and comments on the Modelica side is stripped |
 
