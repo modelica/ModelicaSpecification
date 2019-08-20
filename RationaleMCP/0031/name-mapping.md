@@ -78,6 +78,7 @@ To obtain the Flat Modelica component reference out of a Modelica component refe
 1. Upquote
 
 Examples:
+
 | Modelica component reference | Flat Modelica | Remark |
 |--|--|--|
 | `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
