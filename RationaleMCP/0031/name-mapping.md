@@ -82,7 +82,7 @@ Examples:
 | Modelica component reference | Flat Modelica | Remark |
 |--|--|--|
 | `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
-| `foo[1 /* first */]` | `'foo[1,2]'` | Whitespace and comments on the Modelica side is stripped |
+| `foo[1 /* first */]` | `'foo[1]'` | Whitespace and comments on the Modelica side is stripped |
 
 A substring consisting of "`\`" followed by one more character is called an _escape sequence_.
 
