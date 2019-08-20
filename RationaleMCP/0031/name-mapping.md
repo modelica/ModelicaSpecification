@@ -52,7 +52,7 @@ Examples:
 | `foo[1, 2]` | No (whitespace not allowed) |
 | `foo[1,,2]` | No (doesn't parse) |
 | `foo(1,2)` | No (illegal kind of expression) |
-| `foo[1/* one */,2/* two */]` | No (comments not allowed) |
+| `foo[1/* first */]` | No (comments not allowed) |
 
 
 ### Upquoting and downquoting
@@ -69,8 +69,18 @@ Upquoting a Modelica component reference always results in a valid (Flat) Modeli
 | `foo[1,2].bar` | `'foo[1,2].bar'` | |
 | `'foo bar'` | `'\'foo bar\''` | |
 | `'foo\''` | `'\'foo\\\'\''` | |
+| `foo[1 /* first */]` | `'foo[1 /* first */]'` | Stripping whitespace and comments is not par of upquoting |
 | `der(foo)` | `'der(foo)'` | Input is not valid component reference, but result is still valid identifier |
 | `'foo\` | `'\'foo\\'` | Same as above. |
+
+To obtain the Flat Modelica component reference out of a Modelica component reference,
+1. Strip whitespace and comments.
+1. Upquote
+
+Examples:
+| Modelica component reference | Flat Modelica | Remark |
+| `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
+| `foo[1 /* first */]` | `'foo[1,2]'` | Whitespace and comments on the Modelica side is stripped |
 
 A substring consisting of "`\`" followed by one more character is called an _escape sequence_.
 
