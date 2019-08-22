@@ -112,22 +112,22 @@ following syntactic rules:
 \begin{lstlisting}[language=grammar]
 component-clause:
   type-prefix type-specifier [ array-subscripts ] component-list
-  
+
 type-prefix :
   [ flow | stream ]
   [ discrete | parameter | constant ] [ input | output ]
-  
+
 type-specifier :
   name
   component-list :
   component-declaration { "," component-declaration }
-  
+
 component-declaration :
   declaration [ condition-attribute ] comment
-  
+
 condition-attribute:
   if expression
-  
+
 declaration :
   IDENT [ array-subscripts ] [ modification ]
 \end{lstlisting}
@@ -191,8 +191,27 @@ environment is the result of merging
 \end{itemize}
 in that order.
 
-Array dimensions shall be non-negative parameter expressions, or the
-colon operator denoting that the array dimension is left unspecified.
+Array dimensions shall be scalar non-negative parameter expressions of type Integer,
+a reference to a type (which must an enumeration type or Boolean, see \autoref{enumeration-types}),
+or the colon operator denoting that the array dimension is left unspecified (see \autoref{array-declarations}).
+All variants can also be part of short class definitions.
+
+\begin{nonnormative}
+Example of variables with array dimensions.
+\begin{lstlisting}[language=modelica]
+model ArrayVariants
+  type T=Real[:];                     // Unspecified size for type
+  parameter T x=ones(4);
+  parameter T y[3]=ones(3, 4);
+  parameter Real a[2]=ones(2);        // Specified using Integer
+  parameter Real b[2, 0]=ones(2, 0);  // Size 0 is allowed
+  parameter Real c[:]=ones(0);        // Unspecified size for variable
+  parameter Integer n=0;
+  Real x[n*2]=cat(1,ones(n),zeros(n)};// Parameter expressions are allowed
+  Boolean notV[Boolean]={true,false}; // Indexing with type
+end ArrayVariants;
+\end{lstlisting}
+\end{nonnormative}
 
 The rules for components in functions are described in \autoref{function-as-a-specialized-class}.
 
@@ -210,7 +229,7 @@ equations are associated with each element.
 Variables declared with the \lstinline!flow! or the \lstinline!stream! type prefix shall be a
 subtype of Real.
 
-Type prefixes (that is , \lstinline!flow!, \lstinline!stream!, \lstinline!discrete!, 
+Type prefixes (that is , \lstinline!flow!, \lstinline!stream!, \lstinline!discrete!,
 \lstinline!parameter!, \lstinline!constant!,
 \lstinline!input!, \lstinline!output!) shall only be applied for type, record and connector
 components -- see also record specialized class, \autoref{specialized-classes}.
@@ -236,7 +255,7 @@ declared with the flow prefix). When any of the type prefixes \lstinline!flow!,
 \lstinline!stream!, \lstinline!input! and \lstinline!output! are applied for a structured component, no
 element of the component may have any of these type prefixes.
 {[}\emph{For example,} \lstinline!input! \emph{can only be used, if none of the
-elements has a} \lstinline!flow!, \lstinline!stream!, \lstinline!input! \emph{or} 
+elements has a} \lstinline!flow!, \lstinline!stream!, \lstinline!input! \emph{or}
 \lstinline!output! \emph{type
 prefix}{]}. The corresponding rules for the type prefixes \lstinline!discrete!,
 \lstinline!parameter! and \lstinline!constant! are described in \autoref{variability-of-structured-entities} for structured
@@ -387,10 +406,10 @@ even though it was not declared with the prefix \lstinline!discrete!. A Real
 variable not assigned in any when-clause and without any type prefix is
 a continuous-time variable.
 
-The default variability for \lstinline!Integer!, \lstinline!String!, 
+The default variability for \lstinline!Integer!, \lstinline!String!,
 \lstinline!Boolean!, or \lstinline!enumeration!
 variables is discrete-time, and it is not possible to declare
-continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or 
+continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or
 \lstinline!enumeration! variables.
 {[}\emph{A Modelica translator is able to guarantee this property due to
 restrictions imposed on discrete expressions, see \autoref{variability-of-expressions}}{]}
@@ -480,7 +499,7 @@ end A;
 parameter A a;
   // a.pi is a constant
   // a.y and a.i are parameters
-  
+
 A b;
   // b.pi is a constant
   // b.y is a continuous-time variable
@@ -564,14 +583,14 @@ special variants described in later sections.
 
 \begin{lstlisting}[language=grammar]
 class-definition :
-  [ encapsulated ] class-prefixes  
+  [ encapsulated ] class-prefixes
   class-specifier
-  
+
 class-prefixes :
   [ partial ]
   ( class | model | [ operator ] record | block | [ expandable ] connector | type |
   package | [ ( pure | impure ) ] [ operator ] function | operator )
-  
+
 class-specifier :
   long-class-specifier | short-class-specifier | der-class-specifier
 
@@ -579,18 +598,18 @@ long-class-specifier :
   IDENT string-comment composition end IDENT
   | extends IDENT [ class-modification ] string-comment composition
   end IDENT
-  
+
 short-class-specifier :
   IDENT "=" base-prefix name [ array-subscripts ]
   [ class-modification ] comment
   | IDENT "=" enumeration "(" ( [enum-list] | ":" ) ")" comment
-  
+
 der-class-specifier :
   IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
-  
+
 base-prefix :
   [ input | output ]
-  
+
 enum-list : enumeration-literal { "," enumeration-literal}
 
 enumeration-literal : IDENT comment
@@ -661,7 +680,7 @@ array class
 \end{lstlisting}
 
 Such an array class has exactly one anonymous component (\_); see also
-\autoref{restriction-on-combining-base-classes-and-other-elements}. 
+\autoref{restriction-on-combining-base-classes-and-other-elements}.
 When a component of such an array class type is
 flattened, the resulting flattened component type is an array type with
 the same dimensions as \_ and with the optional modifier applied.
@@ -734,7 +753,7 @@ model Integrators = Integrator[3]; // Legal
 
 model IllegalModel
   extends Integrators;
-  Real x; // Illegal combination of component and array class 
+  Real x; // Illegal combination of component and array class
 end IllegalModel;
 
 connector IllegalConnector
@@ -784,7 +803,7 @@ Moreover, they have additional properties called enhancements. The
 following table summarizes the definition of the specialized classes
 (additional restrictions on inheritance are in \autoref{restrictions-on-the-kind-of-base-class}):
 
-\begin{longtable}{|p{4cm}|p{9cm}|} 
+\begin{longtable}{|p{4cm}|p{9cm}|}
 \hline \endhead
 \lstinline!record! & Only public sections are allowed in the definition or
 in any of its components (i.e., equation, algorithm, initial equation,
@@ -796,7 +815,7 @@ see \autoref{record-constructor-functions}. Additionally, record components can 
 component references in expressions and in the left hand side of
 assignments, subject to normal type compatibility rules. The components
 directly declared in a record may only be of specialized class record
-and type..\\ \hline
+and type.\\ \hline
 \lstinline!type! & May only be predefined types, enumerations, array of
 type, or classes extending from type.\\ \hline
 \lstinline!model! & Identical to \lstinline!class!, the basic class concept, i.e., no
@@ -971,7 +990,7 @@ following numbers:
   The number of equations defined locally (i.e. not in any model or
   block component), including binding equations, and equations generated
   from connect-equations. \emph{This includes the proper count for
-  when-clauses (see \autoref{when-equations}), and algorithms (see \autoref{algorithm-sections}), 
+  when-clauses (see \autoref{when-equations}), and algorithms (see \autoref{algorithm-sections}),
   and is also used for the flat Hybrid DAE formulation
   (see \autoref{modelica-dae-representation})}.
 \item
@@ -1091,9 +1110,9 @@ model Capacitor
   Pin p, n;
   Real u;
 equation
-  0 = p.i + n.i; 
+  0 = p.i + n.i;
   u = p.v - n.v;
-  C*der(u) = p.i; 
+  C*der(u) = p.i;
 end Capacitor;
 \end{lstlisting}
 
@@ -1103,7 +1122,7 @@ the following analysis:}
 \emph{Locally unknown variables}: \lstinline!p.i, p.v, n.i, n.v, u!
 
 %TODO-FORMAT Should this be verbatim code instead?
-\emph{Local equations}: 
+\emph{Local equations}:
 \begin{eqnarray*}
 0 &=& p.i + n.i;\\
 u &=& p.v - n.v;\\
@@ -1149,9 +1168,9 @@ model Capacitor
   extends TwoPin;
   Real u;
 equation
-  0 = p.i + n.i; 
+  0 = p.i + n.i;
   u = p.v - n.v;
-  C*der(u) = p.i; 
+  C*der(u) = p.i;
 end Capacitor;
 
 model Circuit
@@ -1177,11 +1196,11 @@ flow variables for} \lstinline!t (t.p.i, t.n.i)!
 
 \emph{and 2 flow variable for} \lstinline!c (c.p.i, c.n.i).!
 
-\emph{Local equations}: 
+\emph{Local equations}:
 \begin{eqnarray*} \text{p.v} &=& \text{t.p.v};\\
 0 &=& \text{p.i}-\text{t.p.i};\\
-\text{c.p.v} &=& \text{load.n.v};\\
-0 &=& \text{c.p.i}+\text{load.n.i};\\
+\text{c.p.v} &=& \text{t.n.v};\\
+0 &=& \text{c.p.i}+\text{t.n.i};\\
 \text{n.v} &=& \text{c.n.v};\\
 0 &=& \text{n.i}-\text{c.n.i};
 \end{eqnarray*}
@@ -1212,7 +1231,7 @@ partial model BaseProperties
   SI.Temperature            T;
   SI.Density                d;
   SI.SpecificInternalEnergy u;
-  
+
   connector InputAbsolutePressure = input SI.AbsolutePressure;
   connector InputSpecificEnthalpy = input SI.SpecificEnthalpy;
   connector InputMassFraction = input SI.MassFraction;
@@ -1261,7 +1280,7 @@ flattening) is:}
   3 \emph{(}\lstinline!T!\emph{,} \lstinline!d!\emph{,} \lstinline!u!\emph{: variables defined in}
   \lstinline!BaseProperties! \emph{and inherited in} \lstinline!SimpleAir!\emph{), plus}
 \item
-  2+\lstinline!nXi! \emph{(}\lstinline!p!\emph{,} \lstinline!h!\emph{,} 
+  2+\lstinline!nXi! \emph{(}\lstinline!p!\emph{,} \lstinline!h!\emph{,}
 	\lstinline!Xi!\emph{: variables inside
   connectors defined in} \lstinline!BaseProperties! \emph{and inherited in}
   \lstinline!SimpleAir!\emph{)}
@@ -1351,7 +1370,7 @@ to select} \lstinline!p,T! \emph{as states, since these variables have}
 \lstinline!StateSelect.prefer! \emph{in the} \lstinline!SimpleAir! \emph{model (this means that
 the default states} \lstinline!U,M! \emph{are derived quantities). If this state
 selection is performed, all intrinsic medium variables are computed
-from} \lstinline!medium.p! \emph{and} \lstinline!medium.T!\emph{, although} 
+from} \lstinline!medium.p! \emph{and} \lstinline!medium.T!\emph{, although}
 \lstinline!p! \emph{and} \lstinline!h!
 \emph{are the input arguments to the medium model. This demonstrates
 that in Modelica input/output does not define the computational
@@ -1461,7 +1480,7 @@ define tolerances in relative terms, see \autoref{attributes-start-fixed-nominal
 
 \subsection{Integer Type}\doublelabel{integer-type}
 The following is the predefined \lstinline!Integer! type:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type Integer // Note: Defined with Modelica syntax although predefined
   IntegerType value; // Accessed without dot-notation
   parameter StringType quantity = "";
@@ -1476,7 +1495,7 @@ end Integer;
 
 \subsection{Boolean Type}\doublelabel{boolean-type}
 The following is the predefined \lstinline!Boolean! type:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type Boolean // Note: Defined with Modelica syntax although predefined
   BooleanType value; // Accessed without dot-notation
   parameter StringType quantity = "";
@@ -1489,7 +1508,7 @@ end Boolean;
 \subsection{String Type}\doublelabel{string-type}
 
 The following is the predefined \lstinline!String! type:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type String // Note: Defined with Modelica syntax although predefined
   StringType value; // Accessed without dot-notation
   parameter StringType quantity = "";
@@ -1502,7 +1521,7 @@ end String;
 \subsection{Enumeration Types}\doublelabel{enumeration-types}
 
 A declaration of the form
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type E = enumeration([enum-list]);
 \end{lstlisting}
 
@@ -1513,7 +1532,7 @@ inside the scope of E. Each enumeration literal in the \lstinline!enum-list! has
 type E.
 
 {[}\emph{Example}:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type Size = enumeration(small, medium, large, xlarge);
 Size t_shirt_size = Size.medium;
 \end{lstlisting}
@@ -1524,7 +1543,7 @@ An optional comment string can be specified with each enumeration
 literal:
 
 {[}\emph{Example}:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type Size2 = enumeration(small "1st", medium "2nd", large "3rd", xlarge "4th");
 \end{lstlisting}
 
@@ -1538,13 +1557,13 @@ declaration and to specify the range in a for loop range expression; see
 an expression {[}\emph{e.g. an array index value}{]}.
 
 {[}\emph{Example}:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type DigitalCurrentChoices = enumeration(zero, one);
 // Similar to Real, Integer
 \end{lstlisting}
 
 \emph{Setting attributes: }
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type DigitalCurrent = DigitalCurrentChoices(quantity="Current",
                                start = DigitalCurrentChoices.one, fixed = true);
 DigitalCurrent c(start = DigitalCurrent.one, fixed = true);
@@ -1552,7 +1571,7 @@ DigitalCurrentChoices c(start = DigitalCurrentChoices.one, fixed = true);
 \end{lstlisting}
 
 \emph{Using enumeration types as expressions:}
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 Real x[DigitalCurrentChoices];
 
 // Example using the type name to represent the range
@@ -1604,13 +1623,13 @@ end Mixing2;
 \subsubsection{Attributes of Enumeration Types}\doublelabel{attributes-of-enumeration-types}
 
 For each enumeration:
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type E=enumeration(e1, e2, ..., en);
 \end{lstlisting}
 
 a new simple type is conceptually defined as
 
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type E // Note: Defined with Modelica syntax although predefined
   EnumType value; // Accessed without dot-notation
   parameter StringType quantity = "";
@@ -1638,7 +1657,7 @@ where \lstinline!Integer(E.e1) =1, Integer(E.en) = n!, for an enumeration type
 \lstinline!E=enumeration(e1, ..., en)!.
 
 \lstinline!String(E.enumvalue)! gives the string representation of the enumeration
-value. 
+value.
 
 {[}\emph{Example:} \lstinline!String(E.Small)! \emph{gives
 "}\lstinline!Small!\emph{".}{]}
@@ -1661,12 +1680,12 @@ Attempting to convert an integer argument that does not correspond to a
 value of the enumeration type is an error.
 
 \emph{{[}Example: }
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type Colors = enumeration ( RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW );
 \end{lstlisting}
 
 \emph{Converting from Integer to Colors: }
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 c = Colors(i);
 c = Colors(10); // An error
 \end{lstlisting}
@@ -1675,14 +1694,12 @@ c = Colors(10); // An error
 
 \subsubsection{Unspecified enumeration}\doublelabel{unspecified-enumeration}
 
-An enumeration type defined using enumeration(:) is unspecified and can
+An enumeration type defined using \lstinline!enumeration(:)! is unspecified and can
 be used as a replaceable enumeration type that can be freely redeclared
 to any enumeration type. There can be no enumeration variables declared
-using enumeration(:) in a simulation model.
+using \lstinline!enumeration(:)! in a simulation model.
 
-\subsection{Clock Types}\doublelabel{clock-types}
 
-See \autoref{clocks-and-clocked-variables} and \autoref{clock-constructors}.
 
 \subsection{Attributes start, fixed, nominal, and unbounded}\doublelabel{attributes-start-fixed-nominal-and-unbounded}
 
@@ -1722,7 +1739,7 @@ The predefined \lstinline!StateSelect! enumeration type is the type of the
 \lstinline!stateSelect! attribute of the \lstinline!Real! type. It is used to explicitly control
 state selection.
 
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type StateSelect = enumeration(
  never "Do not use as state at all.",
  avoid "Use as state, if it cannot be avoided (but only if variable appears
@@ -1746,7 +1763,7 @@ See \autoref{external-objects} for information about the predefined type
 
 The predefined \lstinline!AssertionLevel! enumeration type is used together with
 \lstinline!assert!, \autoref{assert}.
-\begin{lstlisting}[language=Modelica]
+\begin{lstlisting}[language=modelica]
 type AssertionLevel=enumeration(warning, error);
 \end{lstlisting}
 
@@ -1761,3 +1778,7 @@ A number of ``predefined'' record types and enumeration types for
 graphical annotations are described in \autoref{annotations}. These types are not
 predefined in the usual sense since they cannot be referenced in
 ordinary Modelica code, only within annotations.
+
+\subsubsection{Clock Types}\doublelabel{clock-types}
+
+See \autoref{clocks-and-clocked-variables} and \autoref{clock-constructors}.

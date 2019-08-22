@@ -185,10 +185,7 @@ If \lstinline!true!, the model developer proposes to inline the function after t
 function is differentiated for index reduction, and before any other
 symbolic transformations are performed. This annotation cannot be
 combined with annotations \lstinline!Inline! and \lstinline!LateInline!.
-
-{[}\emph{This annotation is for example used in}
-\lstinline!Modelica.Mechanics.Rotational.Sources.Move! \emph{to define that an input
-signal is the derivative of another input signal.}{]}\\ \hline
+\\ \hline
 \lstinline!GenerateEvents!\strut
 &
 Has only an effect within a function declaration
@@ -242,8 +239,8 @@ since geometric arguments to these functions are usually constant}{]}
 \section{Annotations for Simulation Experiments}\doublelabel{annotations-for-simulation-experiments}
 \begin{lstlisting}[language=grammar]
 experiment-annotation:
-   annotation"(" "experiment" "(" [experimentOption] {,
-     experimentOption}] ")"
+   annotation "(" "experiment" [ "(" [experimentOption
+      {"," experimentOption}] ")" ] ")"
 
 experimentOption:
   StartTime "=" [ "+" | "-" ] UNSIGNED-NUMBER |
@@ -256,7 +253,7 @@ The experiment annotation defines the default start time (StartTime) in
   {[}s{]}, the default stop time (StopTime) in {[}s{]}, the suitable time
   resolution for the result grid (Interval) in {[}s{]}, and the default
 relative integration tolerance (Tolerance) for simulation experiments to
-be carried out with the model or block at hand.
+be carried out with the model or block at hand. If StartTime is not specified it is assumed to be \lstinline!0.0!.
 
 \section{Annotation for single use of class}\doublelabel{annotation-for-single-use-of-class}
 
@@ -361,9 +358,10 @@ corner and the right (x2) upper (y2) corner, where the coordinates of
 the first point shall be less than the coordinates of the second point
 {[}\emph{a first quadrant coordinate system}{]}.
 
-The attribute \lstinline!preserveAspectRatio! specifies a constraint on the shape of
-components of the class. If \lstinline!preserveAspectRatio! is true, changing the
-extent of components shall preserve the aspect ratio of the coordinate
+The attribute \lstinline!preserveAspectRatio! specifies a hint for the shape of
+components of the class, but does not actually influence the rendering of the component.
+If \lstinline!preserveAspectRatio! is true, changing the
+extent of components should preserve the current aspect ratio of the coordinate
 system of the class.
 
 The attribute \lstinline!initialScale! specifies the default component size as
@@ -441,7 +439,7 @@ The \lstinline!LinePattern! attribute \lstinline!Solid! indicates a normal line,
 invisible line, and the other attributes various forms of dashed/dotted
 lines.
 
-The \lstinline!FillPattern! attributes \lstinline!Horizontal!, \lstinline!Vertical!, 
+The \lstinline!FillPattern! attributes \lstinline!Horizontal!, \lstinline!Vertical!,
 \lstinline!Cross!, \lstinline!Forward!,
 \lstinline!Backward! and \lstinline!CrossDiag! specify fill patterns drawn with the line color
 over the fill color.
@@ -541,11 +539,14 @@ rotation.
 record Placement
   Boolean visible = true;
   Transformation transformation "Placement in the diagram layer";
-  Transformation iconTransformation "Placement in the icon layer";
+
+  Boolean iconVisible "Visible in icon layer; for public connector";
+  Transformation iconTransformation "Placement in the icon layer; for public connector";
 end Placement;
 \end{lstlisting}
 If no \lstinline!iconTransformation! is given the \lstinline!transformation! is also used for
-placement in the icon layer.
+placement in the icon layer. If no \lstinline!iconVisible! is given for a public connector the
+\lstinline!visible! is also used for visibility in the icon layer.
 
 {[}\emph{A connector can be shown in both an icon layer and a diagram
 layer of a class. Since the coordinate systems typically are different,
@@ -568,7 +569,8 @@ layer.
 
 \subsection{Extends clause}\doublelabel{extends-clause}
 
-Each extends clause may have layer specific annotations which describe
+Each extends-clause (and short-class-definition, as stated in \autoref{annotations-for-graphical-objects})
+may have layer specific annotations which describe
 the rendering of the base class' icon and diagram layers in the
 subclass.
 
@@ -638,7 +640,7 @@ and optionally a Text-primitive, as specified below. {[}\emph{Example:}
 The optional Text-primitive defines a text that will be written on the
 connection line. It has the following definition (\emph{it is not equal
 to the Text-primitive as part of graphics -- the differences are marked as bold lines}):
-% NOTE: Technically just the names - not the entire lines are marked ni bold
+% NOTE: Technically just the names - not the entire lines are marked in bold
 \begin{lstlisting}[language=modelica,escapechar=!,emph={horizontalAlignment,string,index}, emphstyle=\textbf]
 record Text
   extends GraphicItem;
@@ -654,25 +656,31 @@ record Text
 end Text;
 \end{lstlisting}
 
-The index is one of the points of Line (numbered 1, 2, 3, \ldots{} where
--1 can be used to indicate the last one). The string may use the special
+The \lstinline!index! is one of the points of Line (numbered 1, 2, 3, \ldots{} where
+negative numbers count from the end, thus -1 indicate the last one). The \lstinline!string!
+may use the special
 symbols ``\%first'' and ``\%second'' to indicate the connectors in the
 connect-equation.
 
+The \lstinline!extent! and \lstinline!rotation! are relative to the \lstinline!origin! (default \lstinline!{0,0}!)
+and the \lstinline!origin! is relative to the point on the Line.
+
 The textColor attribute defines the color of the text. The text is drawn
 with transparent background and no border around the text (and without
-outline). The contents inherited from FilledShape is deprecated.
+outline). The contents inherited from FilledShape is deprecated, but kept for compatibility reasons.
+The default value for \lstinline!horizontalAlignment! is deprecated.
+Having a zero size for the extent is deprecated and is handled as if upper part is moved up an appropriate amount.
 
 {[}\emph{Example:}
 \begin{lstlisting}[language=modelica]
   connect(controlBus.axisControlBus1, axis1.axisControlBus) annotation (
-      Text(string="%first", index=-1, extent=[-6,3; -6,3]),
+      Text(string="%first", index=-1, extent=[-6,3; -6,7]),
       Line(points={{-80,-10},{-80,-14.5},{-79,-14.5},{-79,-17},{-65,-17},{-65,-65},
            {-25,-65}}));
 \end{lstlisting}
 \emph{Draws a connection line and adds the text ''axisControlBus1''
-ending at \{-6, 3\}+\{-25, -65\}.}
-
+ending at \{-6, 3\}+\{-25, -65\} and 4 vertical units of space for the text.
+Using a height of zero, such as \lstinline!extent=[-6,3; -6,3]! is deprecated, but gives similar result.}
 {]}
 
 \subsection{Graphical primitives}\doublelabel{graphical-primitives}
@@ -780,7 +788,7 @@ ellipse is treated as an open curve instead of a closed shape, and the
 ignored).
 
 The default closure is \lstinline!EllipseClosure.Chord! when \lstinline!startAngle! is 0 and
-\lstinline!endAngle! is 360, or \lstinline!EllipseClosure.Radial! otherwise. 
+\lstinline!endAngle! is 360, or \lstinline!EllipseClosure.Radial! otherwise.
 \emph{{[}The
 default for a closed ellipse is not} \lstinline!EllipseClosure.None!\emph{, since that
 would result in} \lstinline!fillColor! and \lstinline!fillPattern! \emph{being ignored, making it
@@ -806,7 +814,7 @@ end Text;
 \end{lstlisting}
 The \lstinline!textColor! attribute defines the color of the text. The text is drawn
 with transparent background and no border around the text (and without
-outline). The contents inherited from \lstinline!FilledShape! is deprecated.
+outline). The contents inherited from \lstinline!FilledShape! is deprecated, but kept for compatibility reasons.
 
 There are a number of common macros that can be used in the text, and
 they should be replaced when displaying the text as follows:
@@ -814,22 +822,25 @@ they should be replaced when displaying the text as follows:
 \begin{itemize}
 \item
   \%\emph{par} and \%\{\emph{par\}} replaced by the value of the
-  parameter \emph{par}. The intent is that the text is easily readable,
+  parameter \emph{par}.
+  If the value is numeric, tools shall display the value with displayUnit, formatted according to bipm-specification.
+  E.g., for \lstinline!parameter Real t(unit="s",displayUnit="ms")=0.1! tools shall display \lstinline!100 ms!.
+  The intent is that the text is easily readable,
   thus if par is of an enumeration type, replace \%par by the item name,
   not by the full name.\\
   \emph{{[}Example: if par="Modelica.Blocks.Types.Enumeration.Periodic",
   then \%par should be displayed as "Periodic"{]}} The form
   \%\{\emph{par\}} allows component-references, and can be directly
-  followed by a letter. Thus \emph{\%\{par\}m} gives the value of par
-  directly followed by m -- and \emph{\%parm} gives the value of the
-  parameter parm. If the parameter does not exist it is an error.
+  followed by a letter. Thus \lstinline!%{w}x%{h}! gives the value of w
+  directly followed by x and the value of h -- and \lstinline!%wxh! gives the value of the
+  parameter wxh. If the parameter does not exist it is an error.
 \item
   \%\% replaced by \%
 \item
   \%name replaced by the name of the component (i.e. the identifier for
   it in in the enclosing class).
 \item
-  \%class replaced by the name of the class.
+  \%class replaced by the name of the class (only the last part of the hierarchical name).
 \end{itemize}
 
 The style attribute \lstinline!fontSize! specifies the font size. If the \lstinline!fontSize!
@@ -1049,7 +1060,7 @@ easy for users to create} inner \emph{components matching the} outer
 \end{lstlisting}
 
 When an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner!
-component, the string message may be used as a diagnostic message, see
+component, the literal string message may be used as part of a diagnostic message (together with appropriate context), see
 \autoref{instance-hierarchy-name-lookup-of-inner-declarations}.
 
 {[}\emph{Example}:
@@ -1115,6 +1126,10 @@ A class may have the following annotation:
 
 It indicates that the class ideally should not be used anymore and gives
 a message indicating the recommended action.
+This annotation is not inherited, the assumption is that if a class uses
+an obsolete class (as a base-class or as the class of one of the components)
+that shall be updated - ideally without impacting users of the class.
+If that is not possible the current class can have also have an obsolete-annotation.
 
 A declaration may have the following annotations:
 \begin{lstlisting}[language=modelica]
@@ -1172,10 +1187,12 @@ The annotation \lstinline!groupImage! references an image using an URI (see
 parameter-group (only one image per group is supported). Disabling the
 input field will not disable the image.
 
+The background of the \lstinline!groupImage! and any image used in HTML-documentation is recommended to be transparent (intended to be a light color) - or white.
+
 The value of the connectorSizing annotation must be a literal
 \lstinline!false! or \lstinline!true! value {[}\emph{since if the value is an
 expression, the connectorSizing functionality is conditional and this
-will then lead easily to wrong models}{]}. If \lstinline!connectorSizing = false!, this annotation has no effect. 
+will then lead easily to wrong models}{]}. If \lstinline!connectorSizing = false!, this annotation has no effect.
 If \lstinline!connectorSizing = true!, the corresponding variable must be declared with the
 \lstinline!parameter! prefix, must be a subtype of a scalar Integer and
 must have a literal default value of zero {[}\emph{since this annotation
@@ -1428,7 +1445,7 @@ annotations:
   \emph{{[}The to-tag is added for clarity and optionally allows a tool
   to convert in multiple steps.{]}}
 \item
-  \lstinline!uses(IDENT (version = VERSION-NUMBER) )!\\
+  \lstinline!uses(IDENT (version = VERSION-NUMBER [, versionBuild=INTEGER] [, dateModified=STRING] ) )!\\
   Defines that classes within this top-level class uses version
   \lstinline!VERSION-NUMBER! of classes within the top-level class \lstinline!IDENT!.
 \end{itemize}
@@ -1481,7 +1498,7 @@ ambiguities.
 These functions can be called with literal strings or array of strings
 and vectorize according to \autoref{scalar-functions-applied-to-array-arguments}.
 
-Both convertElement and convertModifiers only use inheritance among user
+All of these convert-functions only use inheritance among user
 models, and not in the library that is used for the conversion -- thus
 conversions of base-classes will require multiple conversion-calls; this
 ensures that the conversion is independent of the new library structure.
@@ -1511,7 +1528,7 @@ These are considered before \lstinline!convertClass! and \lstinline!convertMessa
 
 \paragraph*{convertElement("OldClass","OldName","NewName")}\doublelabel{convertelementoldclassoldnamenewname}
 
-In \lstinline!OldClass! convert element \lstinline!OldName! to \lstinline!NewName!. 
+In \lstinline!OldClass! convert element \lstinline!OldName! to \lstinline!NewName!.
 Both \lstinline!OldName! and \lstinline!NewName!
 normally refer to components -- but they may also refer to
 class-parameters, or hierarchical names. For hierarchical names the
@@ -1530,10 +1547,14 @@ them with the \lstinline!NewModifiers!. The defaults (if present) are used if th
 are multiple \lstinline!OldModifier! and not all are set in the component instance.
 
 If \lstinline!simplify! is specified and true then perform obvious simplifications
-to clean up the new modifier; otherwise leave as is. \emph{Note:}
-\lstinline!simplify! \emph{is primarily intended for converting enumerations and emulated
+to clean up the new modifier; otherwise leave as is.
+\begin{nonnormative}
+Note: \lstinline!simplify! is primarily intended for converting enumerations and emulated
 enumerations that naturally lead to large nested if-expressions. The
-simplifications may also simplify parts of the original expression.}
+simplifications may also simplify parts of the original expression.
+\end{nonnormative}
+
+If the modifiers contain literal string values they must be quoted.
 
 Behaviour in unusual cases:
 
@@ -1589,7 +1610,7 @@ one of the following ways in a directory given in the \lstinline!MODELICAPATH!:
   The directory \lstinline!IDENT! {[}\emph{Example:} \lstinline!Modelica!{]} with the file
   package.mo directly inside it
 \item
-  The directory \lstinline!IDENT " " VERSION-NUMBER! {[}\emph{Example:} 
+  The directory \lstinline!IDENT " " VERSION-NUMBER! {[}\emph{Example:}
 	\lstinline!Modelica 2.1!{]} with the file package.mo directly inside it
 \end{itemize}
 
@@ -1734,8 +1755,8 @@ In this section annotations are defined for ``Protection'' and
 \subsection{Protection of Classes}\doublelabel{protection-of-classes}
 
 A class may have the following annotations to define what parts of a
-class are visible (if a class is encrypted and no Protection annotation
-is defined, the access annotation has the default value
+class are visible, and only the parts explicitly listed as visible below can be accessed
+(if a class is encrypted and no Protection annotation is defined, the access annotation has the default value
 \lstinline!Access.documentation!):
 
 \begin{lstlisting}[language=modelica]
@@ -1795,8 +1816,8 @@ that are hierarchically on a lower level, unless overriden by a
 Protection annotation with ``\lstinline!access!'' {[}\emph{e.g. if the annotation is
 given on the top level of a package and at no other class in this
 package, then the annotation holds for all classes in this package}{]}.
-Overriding ``\lstinline!access=Access.hide!'' and ``\lstinline!access=Access.packageDuplicate!''
-has no meaningful effect.
+Overriding ``\lstinline!access=Access.hide!'' or ``\lstinline!access=Access.packageDuplicate!''
+has no effect.
 
 {[}\emph{It is currently not standardized which result variables are
 accessible for plotting. It seems natural to not introduce new flags for
