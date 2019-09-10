@@ -4,6 +4,17 @@ pipeline {
     disableConcurrentBuilds()
   }
   stages {
+  stage('checks') {
+    agent {
+      docker {
+        image 'alpine:3.9'
+        label 'linux'
+      }
+    }
+    steps {
+      sh label: "Find files with trailing whitespace", script: '! grep -n "[ \t]$" *.tex chapters/*.tex'
+    }
+  }
   stage('verify grammar') {
     agent {
       docker {
@@ -23,8 +34,9 @@ pipeline {
   stage('build') {
     agent {
       docker {
-        image 'modelicaspec/latexml:20190214'
+        image 'modelicaspec/latexml:20190319'
         label 'linux'
+        alwaysPull true
       }
     }
     steps {
