@@ -1,4 +1,3 @@
-// Define a grammar called Hello
 grammar Modelica;
 
 options {
