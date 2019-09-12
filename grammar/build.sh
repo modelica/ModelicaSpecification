@@ -1,9 +1,10 @@
 #!/bin/sh -x
 
 export CLASSPATH=.:$CLASSPATH
-make all
 # Test as ANTLR3 grammar; checking k<=2
 java org.antlr.Tool -Xconversiontimeout 10000 -report Modelica.g || exit 1
+make clean
+make all
 java -Xmx500M org.antlr.v4.Tool Modelica.g4 || exit 1
 javac -g *.java || exit 1
 # java -Xmx500M org.antlr.v4.gui.TestRig Modelica stored_definition -tokens test.mo || exit 1
