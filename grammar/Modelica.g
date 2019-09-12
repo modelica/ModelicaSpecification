@@ -42,7 +42,7 @@ fragment Q_CHAR
    | '@' | '[' | ']' | '^' | '{' | '}' | '|' | '~' | ' '
    ;
 fragment S_ESCAPE : '\\'
-  ('’' | '\'' | '"' | '?' | '\\' | 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v')
+  ( '\'' | '"' | '?' | '\\' | 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v')
   ;
 
 fragment UNSIGNED_INTEGER : DIGIT+ ;
