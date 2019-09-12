@@ -9,4 +9,4 @@ all: $(ALL_G4)
 	mv $@.tmp $@
 
 clean:
-	rm -rf *Listener*.java ModelicaLexer.java ModelicaParser.java Modelica_*.java *.tokens *.interp *.g4
+	rm -rf *Listener*.java ModelicaLexer.java ModelicaParser.java Modelica_*.java *.tokens *.interp *.g4 *.class

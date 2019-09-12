@@ -1,4 +1,4 @@
-parser grammar Parser_extends;
+parser grammar B23_extends;
 
 // Extends
 

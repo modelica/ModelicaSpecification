@@ -1,4 +1,4 @@
-parser grammar Parser_expressions;
+parser grammar B27_expressions;
 
 // Expressions
 

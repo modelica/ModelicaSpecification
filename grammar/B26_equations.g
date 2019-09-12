@@ -1,4 +1,4 @@
-parser grammar Parser_equations;
+parser grammar B26_equations;
 
 // Equations
 

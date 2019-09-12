@@ -1,4 +1,4 @@
-parser grammar Parser_component_clause;
+parser grammar B24_component_clause;
 
 // Component Clause
 

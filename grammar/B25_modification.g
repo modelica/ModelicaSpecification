@@ -1,4 +1,4 @@
-parser grammar Parser_modification;
+parser grammar B25_modification;
 
 // Modification
 

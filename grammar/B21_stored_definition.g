@@ -1,4 +1,4 @@
-parser grammar Parser_stored_definition;
+parser grammar B21_stored_definition;
 
 // Stored Definition - Within
 

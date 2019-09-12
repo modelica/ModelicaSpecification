@@ -1,4 +1,4 @@
-lexer grammar Lexer;
+lexer grammar B1_lexical_conventions;
 
 // Whitespace and comments
 

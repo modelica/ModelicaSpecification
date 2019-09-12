@@ -1,4 +1,4 @@
-parser grammar Parser_class_definition;
+parser grammar B22_class_definition;
 
 // Class Definition
 
