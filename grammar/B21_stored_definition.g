@@ -5,7 +5,7 @@ parser grammar B21_stored_definition;
 stored_definition  :
   '\uFEFF'? // BOM
   ( 'within' name? ';' )?
-  ( 'final'? class_definition ';' )?
+  ( 'final'? class_definition ';' )*
   EOF
   ;
   
