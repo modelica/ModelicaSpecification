@@ -1,8 +1,10 @@
-# Development process for Modelica Language 2.0.0
+ # Development process for Modelica Language
 
 The following describes the steps in the development process; who is involved and the expected decisions and results. 
 The Modelica Association Project Modelica Language (MAP-Lang) decides on changing this process and in exceptional cases to deviate from it.
-The guiding principles of the development are GuidingPrinciples.MD
+The guiding principles of the development are [guiding principles](GuidingPrinciples.MD).
+
+This document document describes version 2.0.0 of the development process for the Modelica Language.
 
 # Changes of the specification document
 
@@ -47,7 +49,9 @@ What problems can be solved (in a better way) that cannot be solved (as easily) 
 *	A prototype implementation, simple test cases to profoundly illustrate the solution of the problem 
 and to show that the language element scales well. 
 *	At least one description of an industry-relevant example to show that this MCP is able to solve a problem from industry, 
-if relevant for the MCP. When an MCP is not yet part of a released version of the Modelica Language (regardless of the stage), 
+if relevant for the MCP. 
+
+When an MCP is not yet part of a released version of the Modelica Language (regardless of the stage), 
 then it must be clearly marked with something like: "This proposal is waiting for approval of the 'Modelica Association Project Modelica Language' and might not be included in any future Modelica Language release."
 
 ## MCP Process
@@ -69,7 +73,7 @@ The MCP is normally included in the specification as soon as possible,
 but if an MCP is evaluated close to a release of the specification document, the vote can be to include the MCP after that release.
 1. The MCP has been fully incorporated into the specification and the MCP process itself terminated. 
 
-If the MCP is not accepted by the vote or has been inactive for at least one year; it can be inactivated.
+If the MCP is not accepted by the vote or has been inactive for at least one year; it can be put on hold.
 
 # Defining a new Modelica Language Release
 
@@ -127,12 +131,14 @@ Historically in most cases, non-backwards compatibility have been due to new key
 the specified behavior changed to correct flaws.
 
 Maintenance releases (i.e., revised versions like 3.3r1, 3.2r1, 3.2r2) should only be for correcting flaws 
-and clarifying behavior, and should thus not contain MCPs nor introduce other non-backwards compatible changes except bugfixes.
+and clarifying behavior, and should thus neither contain MCPs nor introduce other non-backwards compatible changes except bugfixes.
 
 There are proposals for a stricter numbering of language specification versions giving a semantic meaning 
 to "major", "minor", and "revisions" (and possibly changing the numbering systems and including pre-release versions as well); 
 if accepted such proposals should be followed for future releases. 
 Note that there are also proposals for stricter version numbering of libraries.
+
+### Use of unreleased versions
 
 Pre-release and development versions are not formally released, 
 and should in general not be used even if they follow some released version. 
