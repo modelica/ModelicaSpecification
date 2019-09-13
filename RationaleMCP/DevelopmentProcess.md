@@ -33,6 +33,8 @@ If the change is not straightforward, it should be escalated to the next level.
 *	Larger changes (in terms of impact):
 Require a Modelica Change Proposal (MCP) with voting at various stages, as given below.
 
+![Flow for different possible changes](Workflow2.png)
+
 # MCP
 
 ## What is an MCP?
@@ -72,6 +74,8 @@ If the vote accepts the MCP, the MCP can then be merged into the main document.
 The MCP is normally included in the specification as soon as possible, 
 but if an MCP is evaluated close to a release of the specification document, the vote can be to include the MCP after that release.
 1. The MCP has been fully incorporated into the specification and the MCP process itself terminated. 
+
+![MCP Process](Workflow1.png)
 
 If the MCP is not accepted by the vote or has been inactive for at least one year; it can be put on hold.
 
