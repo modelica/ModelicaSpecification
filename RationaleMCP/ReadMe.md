@@ -1,7 +1,7 @@
 
 # MCP Rationale
 This directory should contain the rationale behind Modelica Change Proposals, MCPs,
-(and possibly rationale behind other decisions as well). The proposals shall adhere to the [guiding principles](GuidingPrinciples.MD).
+(and possibly rationale behind other decisions as well). 
 
 Each MCP should use a separate sub-directory based on the MCP-number.
 
@@ -11,12 +11,7 @@ A template for the rationale of the MCP is found as either [Markdown](MCPTemplat
 
 ## Workflow
 
-The MCPs will be handled as pull request also containing the actual specification changes, but
-before focusing on that it is preferable to explain the reason for the changes, investigation of alternatives,
-and give some indication of the implementation effort.
-
-The workflow before moving to GitHub is captured in this image.
-![StateMachine](MCP-StateMachine-Figure.png)
+The workflow is described as part of the [Development Process](DevelopmentProcess.md), including the stages for MCPs and how to handle other changes.
 
 New MCP should be added to the following list - on the main branch to keep track of them,
 but the rest of the development on a branch/pull-request before being accepted.
