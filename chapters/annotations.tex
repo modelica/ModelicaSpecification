@@ -358,9 +358,10 @@ corner and the right (x2) upper (y2) corner, where the coordinates of
 the first point shall be less than the coordinates of the second point
 {[}\emph{a first quadrant coordinate system}{]}.
 
-The attribute \lstinline!preserveAspectRatio! specifies a constraint on the shape of
-components of the class. If \lstinline!preserveAspectRatio! is true, changing the
-extent of components shall preserve the aspect ratio of the coordinate
+The attribute \lstinline!preserveAspectRatio! specifies a hint for the shape of
+components of the class, but does not actually influence the rendering of the component.
+If \lstinline!preserveAspectRatio! is true, changing the
+extent of components should preserve the current aspect ratio of the coordinate
 system of the class.
 
 The attribute \lstinline!initialScale! specifies the default component size as
@@ -618,9 +619,9 @@ model B
   ...
 end B;
 \end{lstlisting}
-\emph{In this example the diagram of A contain the graphical primitives
+\emph{In this example the diagram of A contains the graphical primitives
 from A and B (but not from C since they were hidden in B) -- the ones
-from B are rescaled, and the icon of A contain the graphical primitives
+from B are rescaled, and the icon of A contains the graphical primitives
 from A (but neither from B nor from C).}
 
 {]}
@@ -666,7 +667,7 @@ and the \lstinline!origin! is relative to the point on the Line.
 
 The textColor attribute defines the color of the text. The text is drawn
 with transparent background and no border around the text (and without
-outline). The contents inherited from FilledShape is deprecated.
+outline). The contents inherited from FilledShape is deprecated, but kept for compatibility reasons.
 The default value for \lstinline!horizontalAlignment! is deprecated.
 Having a zero size for the extent is deprecated and is handled as if upper part is moved up an appropriate amount.
 
@@ -813,7 +814,7 @@ end Text;
 \end{lstlisting}
 The \lstinline!textColor! attribute defines the color of the text. The text is drawn
 with transparent background and no border around the text (and without
-outline). The contents inherited from \lstinline!FilledShape! is deprecated.
+outline). The contents inherited from \lstinline!FilledShape! is deprecated, but kept for compatibility reasons.
 
 There are a number of common macros that can be used in the text, and
 they should be replaced when displaying the text as follows:
@@ -821,22 +822,25 @@ they should be replaced when displaying the text as follows:
 \begin{itemize}
 \item
   \%\emph{par} and \%\{\emph{par\}} replaced by the value of the
-  parameter \emph{par}. The intent is that the text is easily readable,
+  parameter \emph{par}.
+  If the value is numeric, tools shall display the value with displayUnit, formatted according to bipm-specification.
+  E.g., for \lstinline!parameter Real t(unit="s",displayUnit="ms")=0.1! tools shall display \lstinline!100 ms!.
+  The intent is that the text is easily readable,
   thus if par is of an enumeration type, replace \%par by the item name,
   not by the full name.\\
   \emph{{[}Example: if par="Modelica.Blocks.Types.Enumeration.Periodic",
   then \%par should be displayed as "Periodic"{]}} The form
   \%\{\emph{par\}} allows component-references, and can be directly
-  followed by a letter. Thus \emph{\%\{par\}m} gives the value of par
-  directly followed by m -- and \emph{\%parm} gives the value of the
-  parameter parm. If the parameter does not exist it is an error.
+  followed by a letter. Thus \lstinline!%{w}x%{h}! gives the value of w
+  directly followed by x and the value of h -- and \lstinline!%wxh! gives the value of the
+  parameter wxh. If the parameter does not exist it is an error.
 \item
   \%\% replaced by \%
 \item
   \%name replaced by the name of the component (i.e. the identifier for
   it in in the enclosing class).
 \item
-  \%class replaced by the name of the class.
+  \%class replaced by the name of the class (only the last part of the hierarchical name).
 \end{itemize}
 
 The style attribute \lstinline!fontSize! specifies the font size. If the \lstinline!fontSize!
@@ -1056,7 +1060,7 @@ easy for users to create} inner \emph{components matching the} outer
 \end{lstlisting}
 
 When an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner!
-component, the string message may be used as a diagnostic message, see
+component, the literal string message may be used as part of a diagnostic message (together with appropriate context), see
 \autoref{instance-hierarchy-name-lookup-of-inner-declarations}.
 
 {[}\emph{Example}:
@@ -1122,6 +1126,10 @@ A class may have the following annotation:
 
 It indicates that the class ideally should not be used anymore and gives
 a message indicating the recommended action.
+This annotation is not inherited, the assumption is that if a class uses
+an obsolete class (as a base-class or as the class of one of the components)
+that shall be updated - ideally without impacting users of the class.
+If that is not possible the current class can have also have an obsolete-annotation.
 
 A declaration may have the following annotations:
 \begin{lstlisting}[language=modelica]
@@ -1557,14 +1565,20 @@ Behaviour in unusual cases:
   If OldModifer list is empty it is added for all uses of the class
 \item
   If OldModifier\_i is cardinality(a)=0 the conversion will only be
-  applied for a component comp if there is no inside connection to
+  applied for a component comp if there are no inside connections to
   comp.a. This can be combined with other modifiers that are handled in
   the usual way.
 \item
   If OldModifier\_i is cardinality(a)=1 the conversion will only be
-  applied for a component comp if there is are any inside connections to
-  comp.a
+  applied for a component comp if there are any inside connections to
+  comp.a.
 \end{itemize}
+
+The converted modifiers and existing modifiers are merged such that the existing modifiers take precedence over the result of convertModifiers.
+A diagnostics is recommended if this merging removes some modifiers unless those modifiers are identical or it is the special case of an empty OldModifier list.
+\begin{nonnormative}
+This can be used to handle the case where the default value was changed.
+\end{nonnormative}
 
 Converting modifiers with cardinality is used to remove the deprecated
 operator cardinality from model libraries, and replace tests on
@@ -1747,8 +1761,8 @@ In this section annotations are defined for ``Protection'' and
 \subsection{Protection of Classes}\doublelabel{protection-of-classes}
 
 A class may have the following annotations to define what parts of a
-class are visible (if a class is encrypted and no Protection annotation
-is defined, the access annotation has the default value
+class are visible, and only the parts explicitly listed as visible below can be accessed
+(if a class is encrypted and no Protection annotation is defined, the access annotation has the default value
 \lstinline!Access.documentation!):
 
 \begin{lstlisting}[language=modelica]
@@ -1808,8 +1822,8 @@ that are hierarchically on a lower level, unless overriden by a
 Protection annotation with ``\lstinline!access!'' {[}\emph{e.g. if the annotation is
 given on the top level of a package and at no other class in this
 package, then the annotation holds for all classes in this package}{]}.
-Overriding ``\lstinline!access=Access.hide!'' and ``\lstinline!access=Access.packageDuplicate!''
-has no meaningful effect.
+Overriding ``\lstinline!access=Access.hide!'' or ``\lstinline!access=Access.packageDuplicate!''
+has no effect.
 
 {[}\emph{It is currently not standardized which result variables are
 accessible for plotting. It seems natural to not introduce new flags for
