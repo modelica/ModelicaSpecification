@@ -63,12 +63,15 @@ In this stage, an initial idea is described in an informal way to interested pot
 1.	In Development. 
 Entering this stage requires a normal vote by MAP-Lang to assign a number and an initial working group, 
 and the working group then works out the details in a correspondingly named branch of the specification.
+At the end of this process 3 reviewers, who are not part of the working group, and not all from the same organization
+shall go through the entire proposal.
 1.	Under Evaluation. 
-The working group decides when to enter this stage. The MAP-leader will announce the date for the actual vote 
+The working group decides when to enter this stage, and must provide the 3 reviews. 
+The MAP-leader will announce the date for the actual vote 
 when entering this stage and it must start no sooner than 2 weeks after entering this stage, 
 and the voting must last at least 4 weeks. No actual development on the MCP during this stage.
 Typos and similar trivial changes can still be corrected during this stage – other issues can 
-be noted and handled after the MCP is potentially accepted. At least 3 reviewers should go through the entire proposal.
+be noted and handled after the MCP is potentially accepted. 
 1.	Accepted. 
 If the vote accepts the MCP, the MCP can then be merged into the main document. 
 The MCP is normally included in the specification as soon as possible, 
@@ -77,7 +80,7 @@ but if an MCP is evaluated close to a release of the specification document, the
 
 ![MCP Process](Workflow1.png)
 
-If the MCP is not accepted by the vote or has been inactive for at least one year; it can be put on hold.
+If the MCP is not accepted by the vote or has been inactive for at least one year; it can be closed.
 
 # Defining a new Modelica Language Release
 
