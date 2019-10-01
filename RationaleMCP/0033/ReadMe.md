@@ -1,5 +1,5 @@
 # Modelica Change Proposal MCP-0033<br/>Annotations for Predefined Plots
-Henrik Tidefelt, …
+Henrik Tidefelt, Otto Tronarp
 
 **(In Development)**
 
@@ -14,6 +14,7 @@ The declarative style makes it straight-forward to extract the signals that are 
 | Date | Description |
 | --- | --- |
 | 2019-03-27 | Henrik Tidefelt. Filling this document with initial content. |
+| 2019-10-01 | Henrik Tidefelt. Updates after demonstration of prototype. |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
@@ -25,10 +26,12 @@ The structure of the plot annotations is currently being developed in a [separat
 By only specifying new standard annotations, this MCP is fully backwards compatible.
 
 ## Tool Implementation
-This MCP is based on an existing solution in Wolfram SystemModeler, and it is expected to be easy to modify this so that Wolfram SystemModeler also supports the standardized annotation in addition to its vendor-specific annotation.
+This MCP is based on an existing solution using vendor specific annoations in Wolfram SystemModeler, and Wolfram MathCore is maintaining a rich collection of predefined plots for the MSL.
+
+Wolfram MathCore is willing to convert these vendor specific annotations to the form standardized by this MCP, and provide the plots for free to the MSL.
 
 ### Experience with Prototype
-Wolfram MathCore is willing to share a rich collection of predefined plots for the MSL, and it should be straight-forward to convert these to standardized annotations, so that the prototype can be evaluated on a large number of example models.
+See Summary above.  The greatly enhanced user experience was observed even though the existing collection of predefined plots does not make use of captions.  The use of captions have been tested with very nice results on a smaller number of plots.  
 
 ## Required Patents
 To the best of our knowledge, there are no patents that would conflict with the incorporation of this MCP.
