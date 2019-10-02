@@ -30,12 +30,35 @@ The following list compiles minutes of all official events and discussions - lik
 
   - **Rationale why order of `connect` arguments doesn't matter:** Modelica is declarative; it is a general objective of the Modelica language design that order doesn't matter. Also, a base-class refactoring just switching the order of a connection's arguments should not break existing deselections in models selectively extending the base-class.
 
-- **Decision (poll):** Let `a` and `b` be the arguments of a connection deselection _D_ (i.e., _D_ = `break connect(a, b)`). Let _C_ = `connect(c, d)` be a connection defined in the base-class selectively extended by the `extends`-clause _D_ is is a modifier of. _D_ deselects _C_, if, and only if, either, `c` is syntactically equivalent to `a` and `d` is syntactically equivalent to `b` or, vice versa, `c` is syntactically equivalent to `b` and `d` is syntactically equivalent to `a`.
+- **Decision (poll):** Connection deselection is based on syntactic equivalence, i.e., matching of ASTs. Let `a` and `b` be the arguments of a connection deselection _D_ (i.e., _D_ = `break connect(a, b)`). Let _C_ = `connect(c, d)` be a connection defined in the base-class selectively extended by the `extends`-clause _D_ is is a modifier of. _D_ deselects _C_, if, and only if, either, `c` is syntactically equivalent to `a` and `d` is syntactically equivalent to `b` or, vice versa, `c` is syntactically equivalent to `b` and `d` is syntactically equivalent to `a`.
 
   - Two code fragments `a` and `b` are syntactically equivalent, if, and only if, the context-free derivations of `a` and `b` according to the grammar given in Appendix B of the Modelica 3.4 specification are the same.
 
-- **Decision (discussion):** It is prohibited/not possible to deselect connections defined inside `for-equation` and `if-equation`, i.e., connections that are conditionally defined.
+- **Discussion:** Is it permitted or prohibited to deselect connections defined inside `for-equation` and `if-equation`, i.e., connections that are conditionally defined?
 
-  - **Open question (to discuss next meeting):** What have been the reasons for prohibiting deselection of conditionally defined connections? Is it just that such typically have no graphical representation such that deselecting them from within the diagram layer/graphically is typically not possible but we like deselections to be understandable in terms of graphical diagram edits? Or are there general conceptional issues?
+  * Discussion has to be continued at the next _Modelica Design Meeting_, where we should try to achieve a decision.
 
-  - **Open question (not discussed):** What is about conditionally declared components? Are there conceptional or practical problems with deselecting such?
+  - **Open question (discussion to continue at the next meeting):** What have been the reasons for prohibiting deselection of conditionally defined connections? Is it just that such typically have no graphical representation such that deselecting them from within the diagram layer/graphically is typically not possible but we like deselections to be understandable in terms of graphical diagram edits? Or are there general conceptional issues?
+  
+  - **Open question (not discussed so far, but to do so at the next meeting):** What is about conditionally declared components? Are there conceptional or practical problems with deselecting such?
+
+## 100th Modelica Design Meeting
+
+- [**Original minutes**](https://svn.modelica.org/projects/ModelicaDesign/trunk/MeetingMinutesMaterial/min99_2019_Linkoeping/)
+
+- **Decision (poll):** Deselection of conditionally declared components is permitted.
+
+  * Deselections of extending classes have a higher priority than conditional declarations of base-classes; deselecting a conditionally declared component excludes it from inheritance irrespective of whether the component is declared or not (i.e., irrespective if the declaration's condition is satisfied).
+
+- **Decision (poll):** Deselection of connections inside conditional equations is permitted.
+
+  * Again, deselections of extending classes have a higher priority than conditional connections of base-classes; deselecting a conditional connection excludes it from inheritance irrespective of whether the connection is established or not (i.e., irrespective if the connections condition is satisfied).
+
+  * The decision was tight: Yes 4, No 2, Abstain 3
+
+- **Discussion:** Is deselection of connect equations inside a `for-equation` permitted?
+
+  * Such deselections would be based on syntactic matching of ASTs like define at the _99th Modelica Design Meeting_; deselecting an iterated connect equation therefore deselects all its instances, i.e., all connections it establishes. For example, `break connect(b[i].o, b[i + 1].i)` deselects all connections established by `for i in 1:size(b,1)-1 loop connect(b[i + 1].i, b[i].o); end for;`.
+  * Unclear poll: Yes 3, No 3, Abstain 3
+
+- **Decisson (discussion):** Syntactic equivalence as defined at the _99th Modelica Design Meeting_ is the base-paradigm for connection deselections.
