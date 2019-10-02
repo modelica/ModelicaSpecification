@@ -359,7 +359,8 @@ but some operate on arrays in a similar way.
 
 \section{Clock Constructors}\doublelabel{clock-constructors}
 
-The following overloaded constructors are available to generate clocks:
+The following overloaded constructors are available to generate clocks, and
+it is possible to call them with the specified named arguments, or with positional arguments (according to the order below):
 
 \begin{longtable}[]{|p{3cm}|p{12cm}|}
 \hline \endhead
@@ -552,9 +553,12 @@ exclusive associations of clocks are possible in one base partition:
 \end{enumerate}
 
 Clock variables can be used in a restricted form of expressions.
-Generally, every expression containing clock variables must have
+Generally, every expression switching between clock variables must have
 parametric variability {[}\emph{in order that clock analysis can be
-performed when translating a model.}{]}. Otherwise, the following
+performed when translating a model.}{]}.
+Thus subscripts on Clock-variables and conditions of if-then-else switching between Clock-variables must
+be parameter expressions, and there are similar restrictions for sub-clock conversion operators \autoref{sub-clock-conversion-operators}.
+Otherwise, the following
 expressions are allowed:
 
 \begin{itemize}
@@ -608,12 +612,14 @@ clocked-time representation and vice versa:
 
 \begin{longtable}[]{|l|p{12cm}|}
 \hline \endhead
-\textbf{sample}(u, c) &
+\textbf{sample}(u, clock) &
 Input argument u is a continuous-time expression according to
-\autoref{continuous-time-expressions}. The optional input argument c is of type Clock. The operator
-returns a clocked variable that has c as associated clock and has the
-value of the left limit of u when c is active (that is the value of u
-just before the event of c is triggered). If argument c is not provided,
+\autoref{continuous-time-expressions}. The optional input argument clock is of type Clock, and can in a call be given as a named argument (with the name clock),
+or as positional argument.
+The operator
+returns a clocked variable that has clock as associated clock and has the
+value of the left limit of u when clock is active (that is the value of u
+just before the event of c is triggered). If argument clock is not provided,
 it is inferred, see \autoref{sub-clock-inferencing}.
 
 {[}\emph{Since the operator returns the left limit of u, it introduces
@@ -628,7 +634,7 @@ is continuous-time and therefore has always a value. It can also be a
 constant, a parameter or a piecewise constant expression. }
 
 \emph{Note that \textbf{sample}() is an overloaded function: If
-\textbf{sample}(..) has two input arguments and the second argument is
+\textbf{sample}(..) has two positional input arguments and the second argument is
 of type Real, it is the operator from \autoref{event-related-operators-with-function-syntax}. If
 \textbf{sample}(..) has one input argument, or it has two input
 arguments and the second argument if of type Clock, it is the base-clock
@@ -701,15 +707,19 @@ Clock, the operator returns a Clock - except for noClock where it is an error.
 The optional input arguments \lstinline!factor! (default=0, min=0), and \lstinline!resolution!
 (default=1, min=1) are parameter expressions of type Integer.
 
+Calls of the operators can use named arguments for the multi-letter arguments (i.e. not for u) with the given names, or positional arguments.
+\begin{nonnormative}
+Named arguments can make the calls easier to understand.
+\end{nonnormative}
 The input arguments \lstinline!shiftCounter! and \lstinline!backCounter! are parameter
 expressions of type Integer (min=0).}
 \\ \hline
 \textbf{subSample}(u, factor)
 &
-The clock of y = \textbf{subSample}(u,factor) is factor-times slower
-than the clock of u. At every factor ticks of the clock of u, the
+The clock of y = \textbf{subSample}(u,factor) is factor-times slowerthan the clock of u. At every factor ticks of the clock of u, the
 operator returns the value of u.. The first activation of the clock of y
-coincides with the first activation of the clock of u. If argument
+coincides with the first activation of the clock of u, and then every activation of the clock of y
+coincides with the every factor-th activativation of the clock of u. If argument
 factor is not provided or is equal to zero, it is inferred, see
 \autoref{sub-clock-inferencing}.
 \\ \hline
@@ -719,7 +729,12 @@ The clock of y = \textbf{superSample}(u,factor) is factor-times faster
 than the clock of u. At every tick of the clock of y, the operator
 returns the value of u from the last tick of the clock of u. The first
 activation of the clock of y coincides with the first activation of the
-clock of u. If argument factor is not provided or is equal to zero, it
+clock of u, and then the interval between activations of the clock of u is split equidistantly
+into factor activations, such that the activation 1+k*factor of y coincides with the 1+k activation of u.
+\begin{nonnormative}
+Thus \lstinline!subSample(superSample(u, factor), factor)=u!
+\end{nonnormative}
+If argument factor is not provided or is equal to zero, it
 is inferred, see \autoref{sub-clock-inferencing}. If an Event clock is associated to a
 base-clock partition, all its sub-clock partitions must have resulting
 clocks that are sub-sampled with an Integer factor with respect to this
@@ -737,18 +752,14 @@ base clock.
 \textbf{shiftSample}(u,\\
 shiftCounter, resolution)
 \end{tabular}
-& {[}\emph{The first activation of the clock of y =
-\textbf{shiftSample}(..) is shifted in time
-shiftCounter/resolution*interval(u) later than the first activation of
-the clock of u.}{]}.
+& The operator \lstinline!c=shiftSample(u,k,resolution)! splits the interval between
+ticks of \lstinline!u! into \lstinline!resolution! equidistant intervals \lstinline!i!.
+The clock \lstinline!c! then ticks \lstinline!k! intervals \lstinline!i! after each tick of \lstinline!u!.
 
-Conceptually, the operator constructs a clock ``cBase''
+It leads to
 \begin{lstlisting}[language=modelica]
-Clock cBase = subSample(superSample(u,resolution), shiftCounter)
+shiftSample(u,k,resolution)=subSample(shiftSample(superSample(u,resolution),k),resolution)
 \end{lstlisting}
-and the clock of y = \textbf{shiftSample}(..) starts at the second clock
-tick of cBase. At every tick of the clock of y, the operator returns the
-value of u from the last tick of the clock of u.
 
 {[}\emph{Note, due to the restriction of superSample on Event clocks,
 shiftSample can only shift the number of ticks of the Event clock, but
@@ -771,18 +782,13 @@ backCounter, resolution)
 \end{tabular}
 &
 The input argument u is either a Component Expression (see
-\autoref{argument-restrictions-component-expression}) or an expression of type Clock. {[}\emph{The first activation of
-the clock of y = \textbf{backSample}(..) is shifted in time
-backCounter/resolution*\textbf{interval}(u) before the first activation
-of the clock of u}{]}. Conceptually, the operator constructs a clock
-``cBase''
-\begin{lstlisting}[language=modelica]
-Clock cBase = subSample(superSample(u,resolution), backCounter)
-\end{lstlisting}
-and the clock of y = \textbf{shiftSample}(..) is shifted a time duration
-before the clock of u, such that this duration is identical to the
-duration between the first and second clock tick of cBase. It is an
-error, if the clock of y starts before the base clock of u. At every
+\autoref{argument-restrictions-component-expression}) or an expression of type Clock.
+This is an inverse of shiftSample such that \lstinline!Clock y=backSample(u, cnt, res)! implicitly defines
+a clock y such that \lstinline!shiftSample(y, cnt, res)! activates at the same times as u.
+It is an
+error, if the clock of y starts before the base clock of u.
+
+At every
 tick of the clock of y, the operator returns the value of u from the
 last tick of the clock of u. If u is a clocked Component Expression, the
 operator returns the start value of u, see \autoref{initialization-of-clocked-partitions}, before the
