@@ -66,7 +66,7 @@ shall go through the entire proposal.
 The working group decides when to enter this stage, and must provide the 3 reviews. 
 The MAP-leader will announce the date for the actual vote 
 when entering this stage and it must start no sooner than 2 weeks after entering this stage, 
-and the voting must last at least 4 weeks. No actual development on the MCP during this stage.
+and the voting must last at least 4 weeks. No actual development on the MCP takes place during this stage.
 Typos and similar trivial changes can still be corrected during this stage – other issues can 
 be noted and handled after the MCP is potentially accepted. 
 1.	Accepted. 
