@@ -53,9 +53,6 @@ and to show that the language element scales well.
 *	At least one description of an industry-relevant example to show that this MCP is able to solve a problem from industry, 
 if relevant for the MCP. 
 
-When an MCP is not yet part of a released version of the Modelica Language (regardless of the stage), 
-then it must be clearly marked with something like: "This proposal is waiting for approval of the 'Modelica Association Project Modelica Language' and might not be included in any future Modelica Language release."
-
 ## MCP Process
 The stages of the MCP process are:
 1.	In Preparation. 
