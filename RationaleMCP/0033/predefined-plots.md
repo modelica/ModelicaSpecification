@@ -101,4 +101,3 @@ When an axis bound isn't provided, the tool computes one automatically.
 The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis `label` shall not be used to convey this information.
 
 When an axis label isn't provided, the tool produces a default label.  Providing the empty string as axis label means that no label should be shown.
-```
