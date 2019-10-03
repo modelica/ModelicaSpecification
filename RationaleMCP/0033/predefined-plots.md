@@ -1,36 +1,41 @@
 # Structure of annotations
-The purpose of this document is to facilitate discussion around the actual structure and scope of standardized annotations for predefined plots.  The starting point was taken from an email previously send to MAP-Lib, which was based on Wolfram SystemModeler's current vendor-specific annotatios, but removing the `__Wolfram` part and just a tiny bit of cleanup.
+The purpose of this document is to facilitate discussion around the actual structure and scope of standardized annotations for predefined plots.
 
-## Simulation model top level annotation
+## The Figures annotation
 A model's class annotation might look like this:
 
 ```
 annotation(
-  PlotSet(
-    plots = {
-      Plot(title = "Battery Voltage", identifier = "Voltage", preferred = true, subPlots = {SubPlot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, labels = Labels(y = "Voltage [V]"))}),
-      Plot(title = "Battery Limit Controller", identifier = "Limit", caption = "...", subPlots = {SubPlot(title = "Battery Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
-      Plot(title = "Load Current", identifier = "Load", subPlots = {SubPlot(curves = {Curve(x = time, y = load.i, legend = "Load current")})})
+  Figures(
+    figures = {
+      Figure(title = "Battery Voltage", identifier = "voltage", preferred = true, plots = {Plot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, y(label = "Voltage"))}),
+      Figure(title = "Battery Limit Controller", identifier = "limit", caption = "...", plots = {Plot(title = "Battery Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
+      Figure(title = "Load Current", identifier = "load", plots = {Plot(curves = {Curve(x = time, y = load.i, legend = "Load current")})})
     }
   )
 )
 ```
 
-One can argue whether the `plots` need to be named member of `PlotSet`, but it opens up for future additions at the `PlotSet` level.
+One can argue whether the `figures` need to be a named member of `Figures`, but it opens up for future additions at the `Figures` level.  Another alternative would be to merge `Figures` with `Documentation`, so that `figures` would appear inside `Documentation`.
 
-## A plot
-Inserting some line breaks into one of the `Plot` objects, it looks like this:
+Pseudo code definition of `Figures`:
 ```
-Plot(
+record Figures
+  Figure[:] figures "Collection of figures";
+end PlotSet;
+```
+
+## A figure
+Inserting some line breaks into one of the `Figure` objects, it looks like this:
+```
+Figure(
   title = "Battery Limit Controller",
-  caption = "<html>This illustrates the behavior of the <strong>controller</strong>,
-               in particular the small overshoot when changing the input.
-               The controller is implemented as a PI-controller with anti-windup, for details see...
-             </html>"
-  identifier = "Limit", 
-  subPlots = {
-    SubPlot(
-	  title = "Battery Limits",
+  caption = "Overshoot when using a PI-controller with anti-windup."
+  identifier = "limit",
+  plots = {
+    Plot(
+	    title = "Battery Limits",
+      identifier = "battery",
       curves = {
         Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"),
         Curve(x = time, y = battery.LimitController.u, legend = "Limit controller input signal"),
@@ -41,39 +46,59 @@ Plot(
 )
 ```
 
-The optional identifier is intended for programmatic access.
-As is seen in the _Battery Voltage_ plot, this has the `preferred` flag set, meaning that it will be displayed automatically after the model has been simulated.
-
-## Axis labels
-As is also seen in the _Battery Voltage_ plot, one can define axis labels:
+Pseudo code definition of `Figure`:
 ```
-record Labels
-  String x "x axis label";
-  String y "y axis label";
-end Labels;
-```
-
-When an axis label isn't provided, the tool produces a default label (SystemModeler currently uses the special expression `auto` to make this explicit, but it seems safe to assume that not providing a value will be easier to get through an MCP).
-
-## Naming and grouping of plots
-A Plot may also define a `group` which is a `String` similar to the `group` in the `Dialog` annotation.  It is used to organize plots in models with a large `PlotSet`.
-
-SystemModeler has chosen to not make a distinction between the identifier of a `Plot` and its title.  This is something that could be reconsidered when writing an MCP.
-
-## Axis ranges
-A `SubPlot` may, in addition to the `curves` seen above, also define `range`:
-```
-record SubPlotRange
-  Real xmin "Lower bound of the x axis, in the displayUnit of the first curve";
-  Real xmax "Upper bound of the x axis, in the displayUnit of the first curve";
-  Real ymin "Lower bound of the y axis, in the displayUnit of the first curve";
-  Real ymax "Upper bound of the y axis, in the displayUnit of the first curve";
-end SubPlotRange;
+record Figure
+  String title "Title meant for display";
+  String identifier "Identifier meant for programmatic access";
+  String group "Name of plot group";
+  Boolean preferred = false "Automatically display figure after simulation";
+  Plot[:] plots "Plots";
+  String caption "Figure caption";
+end Figure;
 ```
 
-When an axis bound isn't provided, the tool computes one automatically.  Due to the connection to the _`displayUnit` of the first curve_, I guess one should consider the pros and cons of including this part in an MCP.
+Pseudo code definition of `Plot`:
+```
+record Plot
+  String title "Title meant for display";
+  String identifier "Identifier meant for programmatic access";
+  Curve[:] curves "Plot curves";
+  Axis x "X axis properties";
+  Axis y "Y axis properties";
+end Plot;
+```
 
+The `identifier` in `Figure` and `Plot` is optional, and is intended for programmatic access.  As an example for `Figure`, a small extension to the Modelica URI scheme would make it possible to reference the plot from the class documentation.  For `Plot`, this makes it possible to reference the plot in the figure caption, which becomes useful when the `Figure` contains more than one `Plot`.
 
-## Extensions without counterpart in Wolfram SystemModeler
+When a `Figure` defines a non-empty `group`, it is used to organize figures similar to how `group` is used in the `Dialog` annotation.  The `group` is both the key used for grouping, and the name of the group for diaplay purposes.
 
-In addition to the constructs shown above, it should also be possible to specify a HTML `caption` (similar to the documentation annotation), at least at the `Plot` level, but possibly also at the `SubPlot` level.  It can also be argued that it should be possible to provide a `title` also at the `SubPlot` level.
+## Plot curves
+The actual data to plot is specified in the `curves` of a `Plot`:
+```
+record Curve
+  expression x = time "X coordinate values";
+  expression y "Y coordinate values";
+  String legend "Legend";
+end Curve;
+```
+
+The mandatory `x` and `y` expressions are currently restricted to be component references refering to a scalar variable or `time`.
+
+## Axis properties
+Properties may be defined for each `Plot` axis:
+```
+record Axis
+  Real min "Axis lower bound";
+  Real max "Axis upper bound";
+  String unit "Unit of min and max";
+  String label "Axis label";
+end Axis;
+```
+
+When an axis bound isn't provided, the tool computes one automatically.
+
+The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis `label` shall not be used to convey this information.
+
+When an axis label isn't provided, the tool produces a default label.  Providing the empty string as axis label means that no label should be shown.
+```
