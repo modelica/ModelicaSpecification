@@ -84,18 +84,18 @@ functions with several results in assignment statements}.{]}
 The syntax of a for-equation is as follows:
 \begin{lstlisting}[language=grammar]
 for for-indices loop
-   { equation ";" } 
-   end for ";" 
+   { equation ";" }
+   end for ";"
 \end{lstlisting}
 
 For-equations may optionally use several iterators (for-indices), see
 \autoref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
 \begin{lstlisting}[language=grammar]
-for-indices:    
-   for-index {"," for-index} 
- 
-for-index:    
-   IDENT [ in expression ] 
+for-indices:
+   for-index {"," for-index}
+
+for-index:
+   IDENT [ in expression ]
 \end{lstlisting}
 
 The following is one example of a prefix of a for-equation:
@@ -103,22 +103,24 @@ The following is one example of a prefix of a for-equation:
 for IDENT in expression loop
 \end{lstlisting}
 
-The \lstinline!expression! of a for-equation shall be a vector expression. It is
-evaluated once for each for-equation, and is evaluated in the scope
+\subsubsection{Explicit Iteration Ranges of For-Equations}\doublelabel{explicit-iteration-ranges-of-for-equations}
+The \lstinline!expression! of a for-equation shall be a vector expression,
+where more general array expressions are treated as vector of vectors or vector of matrices.
+It is evaluated once for each for-equation, and is evaluated in the scope
 immediately enclosing the for-equation. The expression of a for-equation
 shall be a parameter expression. The iteration range of a for-equation
-can also be specified as Boolean or as an enumeration type, see 
+can also be specified as Boolean or as an enumeration type, see
 \autoref{types-as-iteration-ranges} for more information. The loop-variable (\lstinline!IDENT!) is in scope
-inside the loop-construct and shall not be assigned to. The
-loop-variable has the same type as the type of the elements of the
-vector expression.
+inside the loop-construct and shall not be assigned to.
+For each element of the evaluated vector expression, in the normal order, the loop-variable
+gets the value of that element and that is used to evaluate the body of the for-loop.
 
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
-for i in 1:10 loop             // i takes the values 1,2,3,...,10 
-for r in 1.0 : 1.5 : 5.5 loop  // r takes the values 1.0, 2.5, 4.0, 5.5 
-for i in {1,3,6,7} loop        // i takes the values 1, 3, 6, 7 
-for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two                                
+for i in 1:10 loop             // i takes the values 1,2,3,...,10
+for r in 1.0 : 1.5 : 5.5 loop  // r takes the values 1.0, 2.5, 4.0, 5.5
+for i in {1,3,6,7} loop        // i takes the values 1, 3, 6, 7
+for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two
                                // for TwoEnums = enumeration(one,two)
 \end{lstlisting}
 
@@ -129,12 +131,13 @@ recommended.}
 \begin{lstlisting}[language=modelica]
   constant Integer j=4;
   Real x[j]
-equation   
-  for j in 1:j loop  // The loop-variable j takes the values 1,2,3,4     
-    x[j]=j;          // Uses the loop-variable j   
+equation
+  for j in 1:j loop  // The loop-variable j takes the values 1,2,3,4
+    x[j]=j;          // Uses the loop-variable j
   end for;
 \end{lstlisting}
 {]}
+
 
 \subsubsection{Implicit Iteration Ranges of For-Equations}\doublelabel{implicit-iteration-ranges-of-for-equations}
 
@@ -143,9 +146,9 @@ its use as an array index. See \autoref{implicit-iteration-ranges} for more info
 
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
-  Real x[n],y[n]; 
-for i loop          // Same as:  for i in 1:size(x ,1) loop    
-  x[i] = 2*y[i]; 
+  Real x[n],y[n];
+for i loop          // Same as:  for i in 1:size(x ,1) loop
+  x[i] = 2*y[i];
 end for;
 \end{lstlisting}
 {]}
@@ -172,14 +175,14 @@ to \autoref{equation-operators-for-overconstrained-connection-based-equation-sys
 
 If-equations have the following syntax:
 \begin{lstlisting}[language=grammar]
-if expression then      
-   { equation ";" }    
-{ elseif expression then      
-   { equation ";" }    }    
-[ else      
-   { equation ";" }    
+if expression then
+   { equation ";" }
+{ elseif expression then
+   { equation ";" }    }
+[ else
+   { equation ";" }
 ]
-end if ";" 
+end if ";"
 \end{lstlisting}
 
 The \lstinline!expression! of an if- or elseif-clause must be a scalar Boolean
@@ -207,11 +210,11 @@ same}{]}.
 
 When-equations have the following syntax:
 \begin{lstlisting}[language=grammar]
-when expression then 
-   { equation ";" }   
-{ elsewhen expression then     
-   { equation ";" } }   
-end when ";" 
+when expression then
+   { equation ";" }
+{ elsewhen expression then
+   { equation ";" } }
+end when ";"
 \end{lstlisting}
 
 The \lstinline!expression! of a when-equation shall be a discrete-time Boolean
@@ -225,11 +228,11 @@ vector expression becomes true.
 matter, e.g.}
 
 \begin{lstlisting}[language=modelica]
-equation   
+equation
   when x > 2 then
-    y3 = 2*x +y1+y2; // Order of y1 and y3 equations does not matter     
-    y1 = sin(x);     
-  end when;   
+    y3 = 2*x +y1+y2; // Order of y1 and y3 equations does not matter
+    y1 = sin(x);
+  end when;
   y2 = sin(y1);
 \end{lstlisting}
 
@@ -242,20 +245,20 @@ A when-equation:
 equation
   when x>2 then
     v1 = expr1;
-    v2 = expr2;   
-  end when; 
+    v2 = expr2;
+  end when;
 \end{lstlisting}
 
 is conceptually equivalent to the following equations containing special
 if-expressions
 
 \begin{lstlisting}[language=modelica]
-  // Not correct Modelica    
-  Boolean b(start=x.start>2);   
+  // Not correct Modelica
+  Boolean b(start=x.start>2);
 equation
   b  = x>2;
   v1 = if edge(b) then expr1 else pre(v1);
-  v2 = if edge(b) then expr2 else pre(v2); 
+  v2 = if edge(b) then expr2 else pre(v2);
 \end{lstlisting}
 
 {[}\emph{The equivalence is conceptual since} \lstinline!pre()! \emph{of a non
@@ -263,8 +266,8 @@ discrete-time Real variable or expression can only be used within a
 when-clause. Example:}
 
 \begin{lstlisting}[language=modelica]
-  /* discrete*/ Real x;   
-  input Real u;   
+  /* discrete*/ Real x;
+  input Real u;
   output Real y;
 equation
   when sample() then
@@ -302,7 +305,7 @@ when x > 2 then
   when y1 > 3 then
     y2 = sin(x);
   end when;
-end when; 
+end when;
 \end{lstlisting}
 
 {]}
@@ -348,11 +351,11 @@ not clear which variable to hold constant, either} x \emph{or} y\emph{.
 A corrected version of this example is: }
 
 \begin{lstlisting}[language=modelica]
-  Real x,y; 
-equation   
-  x + y = 5;   
-  when condition then     
-    y = 7 - 2*x;       // fine  
+  Real x,y;
+equation
+  x + y = 5;
+  when condition then
+    y = 7 - 2*x;       // fine
   end when;
 \end{lstlisting}
 2
@@ -377,18 +380,18 @@ model} \lstinline!DoubleWhenConflict! \emph{below, since there are two equations
 conditions would become \lstinline!true! at the same time instant.}
 
 \begin{lstlisting}[language=modelica]
-model DoubleWhenConflict   
-  Boolean close;   // Erroneous model: close defined by two equations! 
-equation   
-  ...   
-  when condition1 then 
+model DoubleWhenConflict
+  Boolean close;   // Erroneous model: close defined by two equations!
+equation
+  ...
+  when condition1 then
     ...
-    close = true;   
-  end when;   
-  when condition2 then     
-    close = false;   
-  end when;   
-  ... 
+    close = true;
+  end when;
+  when condition2 then
+    close = false;
+  end when;
+  ...
 end DoubleWhenConflict;
 \end{lstlisting}
 
@@ -406,17 +409,17 @@ become} \lstinline!true! \emph{at the same time instant since} \lstinline!condit
 associated conditional equations has a higher priority than} \lstinline!condition2!.
 
 \begin{lstlisting}[language=modelica]
-model WhenPriority   
-  Boolean close;   // Correct model: close defined by two equations! 
-algorithm   
-  ...   
+model WhenPriority
+  Boolean close;   // Correct model: close defined by two equations!
+algorithm
+  ...
   when condition1 then
     close = true;
   elsewhen condition2 then
     close = false;
-  end when;   
-  ... 
-end WhenPriority; 
+  end when;
+  ...
+end WhenPriority;
 \end{lstlisting}
 {]}
 \end{itemize}
@@ -429,7 +432,7 @@ has the following syntax:
 reinit(x, expr);
 \end{lstlisting}
 
-The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant. \lstinline!x! is a 
+The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant. \lstinline!x! is a
 \lstinline!Real!
 variable (or an array of \lstinline!Real! variables) that must be selected as a
 state (resp., states) , i.e. reinit on x implies
@@ -459,11 +462,11 @@ reinit operator would be applied on a non-state variable.}
 
 \emph{Bouncing ball}:
 \begin{lstlisting}[language=modelica]
-der(h) = v;  
-der(v) = if flying then -g else 0; 
-flying = not(h<=0 and v<=0); 
+der(h) = v;
+der(v) = if flying then -g else 0;
+flying = not(h<=0 and v<=0);
 when h < 0 then
-  reinit(v, -e*pre(v)); 
+  reinit(v, -e*pre(v));
 end when
 \end{lstlisting}
 
@@ -530,8 +533,8 @@ but the simulation should continue without any further action. The
 corresponding code would be}
 
 \begin{lstlisting}[language=modelica]
-assert(T > 250 and T < 400, "Medium model outside full accuracy range",        AssertionLevel.warning); 
-assert(T > 200 and T < 500, "Medium model outside feasible region"); 
+assert(T > 250 and T < 400, "Medium model outside full accuracy range",        AssertionLevel.warning);
+assert(T > 200 and T < 500, "Medium model outside feasible region");
 \end{lstlisting}
 {]}
 
@@ -551,7 +554,7 @@ success. {[}\emph{The intention is to give more complex stopping
 criteria than a fixed point in time. Example}:
 
 \begin{lstlisting}[language=modelica]
-model ThrowingBall  
+model ThrowingBall
   Real x(start=0);
   Real y(start=1);
 equation
@@ -576,22 +579,21 @@ Modelica is based on the synchronous data flow principle and the single
 assignment rule, which are defined in the following way:
 
 \begin{enumerate}
-\item All variables keep their actual values until these values are
-explicitly changed. Variable values can be accessed at any time instant
-during continuous integration and at event instants.
+\item Discrete variables keep their actual values until these variables are explicitly changed.
+Differentiated variables have \lstinline!der(x)! corresponding to the time-derivative of \lstinline!x!,
+and \lstinline!x! is continuous, except when reinit is triggered - see \autoref{reinit}.
+Variable values can be accessed at any time instant during continuous integration and at event instants.
 
-\item At every time instant, during continuous integration and at event
-instants, the active equations express relations between variables which
-have to be fulfilled concurrently (equations are not active if the
-corresponding if-branch, when-clause or block in which the equation is
-present is not active).
+\item At every time instant, during continuous integration and at event instants,
+the equations express relations between variables which have to be fulfilled concurrently..
 
 \item  Computation and communication at an event instant does not take time.
 {[}\emph{If computation or communication time has to be simulated, this
 property has to be explicitly modeled}{]}.
 
-\item  The total number of equations is identical to the total ``number of
-unknown variables'' (= single assignment rule).
+\item  There must exist a perfect matching of variables to equations after flattening
+(perfect matching rule - previously called single assignment rule);
+see also globally balanced \autoref{balanced-models}.
 \end{enumerate}
 
 \section{Events and Synchronization}\doublelabel{events-and-synchronization}
@@ -651,9 +653,9 @@ propagated.
 
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
-x = if noEvent(u > uMax) then uMax elseif noEvent(u < uMin) then uMin else u; 
-y = noEvent(  if u > uMax then uMax elseif u < uMin then uMin else u); 
-z = smooth(0, if u > uMax then uMax elseif u < uMin then uMin else u); 
+x = if noEvent(u > uMax) then uMax elseif noEvent(u < uMin) then uMin else u;
+y = noEvent(  if u > uMax then uMax elseif u < uMin then uMin else u);
+z = smooth(0, if u > uMax then uMax elseif u < uMin then uMin else u);
 \end{lstlisting}
 
 \emph{In this case x=y=z, but a tool might generate events for z. The
@@ -674,10 +676,10 @@ evaluated during continuous integration.{]}
 
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
-Limit1 = noEvent(x1 > 1);  // Error since Limit1 is a discrete-time variable 
-when noEvent(x1>1) or x2>10 then // error, when-conditions is not a discrete-time expression   
-  Close = true; 
-end when; 
+Limit1 = noEvent(x1 > 1);  // Error since Limit1 is a discrete-time variable
+when noEvent(x1>1) or x2>10 then // error, when-conditions is not a discrete-time expression
+  Close = true;
+end when;
 \end{lstlisting}
 
 {]}
@@ -695,8 +697,8 @@ automatically ``synchronized''. Example}:
 equation // Illegal example
   when condition1 then
     close = true;
-  end when; 
- 
+  end when;
+
   when condition2 then
     close = false;
   end when;
@@ -714,7 +716,7 @@ equation
     close = true;
   elsewhen condition2 then
     close = false;
-  end when; 
+  end when;
 \end{lstlisting}
 
 \emph{Here, it is well-defined if both conditions become true at the
@@ -738,14 +740,14 @@ algorithm
   when fastSample then
     ticks      := if pre(ticks) < 5 then pre(ticks)+1 else 0;
 	slowSample := pre(ticks) == 0;
-  end when; 
+  end when;
 algorithm
-  when fastSample then   // fast sampling     
-    ...   
-  end when; 
-algorithm   
+  when fastSample then   // fast sampling
+    ...
+  end when;
+algorithm
   when slowSample then   // slow sampling (5-times slower)
-    ...   
+    ...
   end when;
 \end{lstlisting}
 
@@ -842,7 +844,7 @@ unknowns during the initialization phase, i.e. there must be additional
 equations for them -- and the start-value can be used as a guess-value
 during initialization.
 
-\emph{{[}In the case a parameter has both a binding equation and} \lstinline!fixed = false! 
+\emph{{[}In the case a parameter has both a binding equation and} \lstinline!fixed = false!
 \emph{a diagnostics is recommended, but the parameter should be solved
 from the binding equation.}
 
@@ -885,10 +887,10 @@ used on these variables, do not have an effect on the simulation.}
 
 \emph{Continuous time controller initialized in steady-state}:
 \begin{lstlisting}[language=modelica]
-  Real y(fixed = false);  // fixed=false is redundant    
-equation   
-  der(y) = a*y + b*u; 
-initial equation   
+  Real y(fixed = false);  // fixed=false is redundant
+equation
+  der(y) = a*y + b*u;
+initial equation
   der(y) = 0;
 \end{lstlisting}
 
@@ -911,7 +913,7 @@ initial equation
     der(y)=0;
   else
     y = y0;
-  end if; 
+  end if;
 \end{lstlisting}
 
 \emph{This can also be written as follows (this form is less clear):}
@@ -920,7 +922,7 @@ initial equation
   Real y    (start=0, fixed=not steadyState);
   Real der_y(start=0, fixed=steadyState) = der(y);
 equation
-  der(y) = a*y + b*u; 
+  der(y) = a*y + b*u;
 \end{lstlisting}
 
 \emph{Discrete time controller initialized in steady-state:}

@@ -56,11 +56,11 @@ together with sample and (zero-order) hold elements}
 \item
   \emph{The \textbf{when}-clause in the controller could also be removed
   and the controller could just be defined by the equations:}
-  
+
 \begin{lstlisting}[language=modelica]
   // discrete controller
   E*xd = A*previous(xd) + B*yd;
-  ud = C*previous(xd) + D*yd; 
+  ud = C*previous(xd) + D*yd;
 \end{lstlisting}
 \item
   \emph{The operator \textbf{previous}(xd) returns the value of xd at
@@ -299,15 +299,15 @@ defining the operators:
 \begin{itemize}
 \item
   \textbf{The input argument is a Component Expression}:
-  
+
   The meaning is that the input argument when calling the operator must
   be a Component Expression.
-  
+
   {[}\emph{The reason for this restriction is that the start value of
   the input argument is returned before the first tick of the clock of
   the input argument and this is not possible for a general
   expression.}
-  
+
   \emph{Examples:}
 \begin{lstlisting}[language=modelica]
   Real u1;
@@ -325,12 +325,12 @@ defining the operators:
 {]}
 \item
   \textbf{The input argument is a parameter expression}:
-  
+
   The meaning is that the input argument when calling the operator must
   have parameter variability, that is the argument must depend directly
-  or indirectly only on parameters, constants or literals, see 
+  or indirectly only on parameters, constants or literals, see
   \autoref{variability-of-expressions}.
-  
+
   {[}\emph{The reason for this restriction is that the value of the
   input argument needs to be evaluated during translation, in order that
   clock analysis can be performed during translation.}
@@ -347,16 +347,20 @@ defining the operators:
 {]}
 \item
   \textbf{The input argument is an expression:}
-  
+
   There is no restriction on the input argument when calling the
   operator. This notation is used to emphasis when a standard function
   call is used (``is an expression''), instead of restricting the input
   (``is a Component Expression'').
 \end{itemize}
 
+Note that the operators defined in this chapter do not automatically vectorize,
+but some operate on arrays in a similar way.
+
 \section{Clock Constructors}\doublelabel{clock-constructors}
 
-The following overloaded constructors are available to generate clocks:
+The following overloaded constructors are available to generate clocks, and
+it is possible to call them with the specified named arguments, or with positional arguments (according to the order below):
 
 \begin{longtable}[]{|p{3cm}|p{12cm}|}
 \hline \endhead
@@ -369,11 +373,11 @@ The operator returns a clock that is inferred.
 
 {[}\emph{Example}:
 \begin{lstlisting}[language=modelica]
-when Clock() then  // equations are on the same clock     
-  x = A*previous(x) + B*u;     
-  Modelica.Utilities.Streams.print          
-    ("clock ticks at = " + String(sample(time)));   
-end when; 
+when Clock() then  // equations are on the same clock
+  x = A*previous(x) + B*u;
+  Modelica.Utilities.Streams.print
+    ("clock ticks at = " + String(sample(time)));
+end when;
 \end{lstlisting}
 \emph{Note, in most cases, the operator is not needed and equations
 could be written without a when-clause (but not in the example above,
@@ -396,7 +400,7 @@ Expression (see \autoref{argument-restrictions-component-expression}) or a param
 \textbf{Integer} with min=0. The optional second argument \lstinline!resolution!
 (default=1) is a parameter expression of type Integer with min=1 and
 unit ``Hz''. If \lstinline!intervalCounter! is a parameter expression with value
-zero, the period of the clock is derived by clock inference, see 
+zero, the period of the clock is derived by clock inference, see
 \autoref{sub-clock-inferencing}. The output argument is of base type Clock that ticks when time
 becomes t\textsubscript{start}, t\textsubscript{start}+interval1,
 t\textsubscript{start}+interval1+interval2, ... The clock starts at the
@@ -416,21 +420,21 @@ returned clock, see \autoref{sub-clock-conversion-operators}.}
 
 \emph{Example:}
 \begin{lstlisting}[language=modelica]
-  // first clock tick: previous(nextInterval)=2    
-  Integer nextInterval(start=2);    
-  Real y1(start=0);    
-  Real y2(start=0); 
-equation   
-  when Clock(2,1000) then      
-    // periodic clock that ticks at 0, 0.002, 0.004, ...      
-    y1 = previous(y1) + 1;   
-  end when; 
- 
-  when Clock(nextInterval, 1000) then      
-    // interval clock that ticks at 0, 0.003, 0.007, 0.012, ...     
-    nextInterval = previous(nextInterval) + 1;     
-    y2 = previous(y2) + 1;   
-  end when; 
+  // first clock tick: previous(nextInterval)=2
+  Integer nextInterval(start=2);
+  Real y1(start=0);
+  Real y2(start=0);
+equation
+  when Clock(2,1000) then
+    // periodic clock that ticks at 0, 0.002, 0.004, ...
+    y1 = previous(y1) + 1;
+  end when;
+
+  when Clock(nextInterval, 1000) then
+    // interval clock that ticks at 0, 0.003, 0.007, 0.012, ...
+    nextInterval = previous(nextInterval) + 1;
+    y2 = previous(y2) + 1;
+  end when;
 \end{lstlisting}
 {]}
 
@@ -444,8 +448,9 @@ previous(intervalCounter)/resolution; // in seconds
 \textbf{Clock with Real Interval}\\
 
 The input argument, \lstinline!interval!, is a clocked Component Expression (see
-\autoref{argument-restrictions-component-expression}) or a parameter expression of type \textbf{Real} with
-min=0.0 and unit ``s''. The output argument is of base type Clock that
+\autoref{argument-restrictions-component-expression}) or a parameter expression.
+The \lstinline!interval! must be strictly positive (\lstinline!interval>0.0!) of type \textbf{Real} unit ``s''.
+The output argument is of base type Clock that
 ticks when time becomes t\textsubscript{start},
 t\textsubscript{start}+interval1,
 t\textsubscript{start}+interval1+interval2, ... The clock starts at the
@@ -470,7 +475,7 @@ this operator can be used, see Clock expressions below.}{]}
 \end{tabular}
 &
 \begin{tabular}{@{}p{119mm}@{}}
-\textbf{Clock with Boolean Condition}\\
+\textbf{Event Clock}\\
 
 The input argument, \lstinline!condition!, is a continuous-time expression of type
 Boolean. The optional \lstinline!startInterval! argument (default = 0.0) is the
@@ -506,13 +511,13 @@ The first input argument ``\lstinline!c!'' is a clock and the operator returns t
 clock. The returned clock is associated with the second input argument
 of type String ``\lstinline!solverMethod!''. The meaning of solverMethod is defined
 in \autoref{solver-methods}. If the second input argument solverMethod is an empty
-String, then no integrator is associated with the returned clock.
+String, then this Clock-construct does not associate an integrator with the returned clock.
 
 {[}\emph{Examples:}
 \begin{lstlisting}[language=modelica]
   Clock c1 = Clock(1,10) // 100 ms, no solver
-  Clock c2 = Clock(c1, "ImplicitTrapezoid"); 
-    // 100 ms, ImplicitTrapezoid solver 
+  Clock c2 = Clock(c1, "ImplicitTrapezoid");
+    // 100 ms, ImplicitTrapezoid solver
   Clock c3 = Clock(c2, ""); // 100 ms, no solver
 \end{lstlisting}
 {]}\strut
@@ -538,19 +543,22 @@ exclusive associations of clocks are possible in one base partition:
   associated multiple times with ``c'' but not multiple times with
   ``Clock(2.5)''}{]}
 \item
-  Exactly one Boolean clock.
+  Exactly one Event clock.
 \item
   A default clock, if neither a Real interval, nor a Rational interval
-  nor a Boolean clock is associated with a base partition. In this case
+  nor an Event clock is associated with a base partition. In this case
   the default clock is associated with the fastest sub-clock partition.
   {[}\emph{Typically, a tool will use Clock(1.0) as a default clock and
   will raise a warning, that it selected a default clock.}{]}
 \end{enumerate}
 
 Clock variables can be used in a restricted form of expressions.
-Generally, every expression containing clock variables must have
+Generally, every expression switching between clock variables must have
 parametric variability {[}\emph{in order that clock analysis can be
-performed when translating a model.}{]}. Otherwise, the following
+performed when translating a model.}{]}.
+Thus subscripts on Clock-variables and conditions of if-then-else switching between Clock-variables must
+be parameter expressions, and there are similar restrictions for sub-clock conversion operators \autoref{sub-clock-conversion-operators}.
+Otherwise, the following
 expressions are allowed:
 
 \begin{itemize}
@@ -604,12 +612,14 @@ clocked-time representation and vice versa:
 
 \begin{longtable}[]{|l|p{12cm}|}
 \hline \endhead
-\textbf{sample}(u, c) &
-Input argument u is a continuous-time expression according to 
-\autoref{continuous-time-expressions}. The optional input argument c is of type Clock. The operator
-returns a clocked variable that has c as associated clock and has the
-value of the left limit of u when c is active (that is the value of u
-just before the event of c is triggered). If argument c is not provided,
+\textbf{sample}(u, clock) &
+Input argument u is a continuous-time expression according to
+\autoref{continuous-time-expressions}. The optional input argument clock is of type Clock, and can in a call be given as a named argument (with the name clock),
+or as positional argument.
+The operator
+returns a clocked variable that has clock as associated clock and has the
+value of the left limit of u when clock is active (that is the value of u
+just before the event of c is triggered). If argument clock is not provided,
 it is inferred, see \autoref{sub-clock-inferencing}.
 
 {[}\emph{Since the operator returns the left limit of u, it introduces
@@ -624,7 +634,7 @@ is continuous-time and therefore has always a value. It can also be a
 constant, a parameter or a piecewise constant expression. }
 
 \emph{Note that \textbf{sample}() is an overloaded function: If
-\textbf{sample}(..) has two input arguments and the second argument is
+\textbf{sample}(..) has two positional input arguments and the second argument is
 of type Real, it is the operator from \autoref{event-related-operators-with-function-syntax}. If
 \textbf{sample}(..) has one input argument, or it has two input
 arguments and the second argument if of type Clock, it is the base-clock
@@ -692,21 +702,25 @@ The input argument u is a clocked expression or an expression of type
 Clock. {[}\emph{The operators can operate on all types of clocks}{]}. If
 u is a clocked expression, the operator returns a clocked variable that
 has the same type as the expression. If u is an expression of type
-Clock, the operator returns a Clock.
+Clock, the operator returns a Clock - except for noClock where it is an error.
 
 The optional input arguments \lstinline!factor! (default=0, min=0), and \lstinline!resolution!
 (default=1, min=1) are parameter expressions of type Integer.
 
+Calls of the operators can use named arguments for the multi-letter arguments (i.e. not for u) with the given names, or positional arguments.
+\begin{nonnormative}
+Named arguments can make the calls easier to understand.
+\end{nonnormative}
 The input arguments \lstinline!shiftCounter! and \lstinline!backCounter! are parameter
 expressions of type Integer (min=0).}
 \\ \hline
 \textbf{subSample}(u, factor)
 &
-The clock of y = \textbf{subSample}(u,factor) is factor-times slower
-than the clock of u. At every factor ticks of the clock of u, the
+The clock of y = \textbf{subSample}(u,factor) is factor-times slowerthan the clock of u. At every factor ticks of the clock of u, the
 operator returns the value of u.. The first activation of the clock of y
-coincides with the first activation of the clock of u. If argument
-factor is not provided or is equal to zero, it is inferred, see 
+coincides with the first activation of the clock of u, and then every activation of the clock of y
+coincides with the every factor-th activativation of the clock of u. If argument
+factor is not provided or is equal to zero, it is inferred, see
 \autoref{sub-clock-inferencing}.
 \\ \hline
 \textbf{superSample}(u, factor)
@@ -715,8 +729,13 @@ The clock of y = \textbf{superSample}(u,factor) is factor-times faster
 than the clock of u. At every tick of the clock of y, the operator
 returns the value of u from the last tick of the clock of u. The first
 activation of the clock of y coincides with the first activation of the
-clock of u. If argument factor is not provided or is equal to zero, it
-is inferred, see \autoref{sub-clock-inferencing}. If a Boolean clock is associated to a
+clock of u, and then the interval between activations of the clock of u is split equidistantly
+into factor activations, such that the activation 1+k*factor of y coincides with the 1+k activation of u.
+\begin{nonnormative}
+Thus \lstinline!subSample(superSample(u, factor), factor)=u!
+\end{nonnormative}
+If argument factor is not provided or is equal to zero, it
+is inferred, see \autoref{sub-clock-inferencing}. If an Event clock is associated to a
 base-clock partition, all its sub-clock partitions must have resulting
 clocks that are sub-sampled with an Integer factor with respect to this
 base clock.
@@ -733,28 +752,24 @@ base clock.
 \textbf{shiftSample}(u,\\
 shiftCounter, resolution)
 \end{tabular}
-& {[}\emph{The first activation of the clock of y =
-\textbf{shiftSample}(..) is shifted in time
-shiftCounter/resolution*interval(u) later than the first activation of
-the clock of u.}{]}.
+& The operator \lstinline!c=shiftSample(u,k,resolution)! splits the interval between
+ticks of \lstinline!u! into \lstinline!resolution! equidistant intervals \lstinline!i!.
+The clock \lstinline!c! then ticks \lstinline!k! intervals \lstinline!i! after each tick of \lstinline!u!.
 
-Conceptually, the operator constructs a clock ``cBase''
+It leads to
 \begin{lstlisting}[language=modelica]
-Clock cBase = subSample(superSample(u,resolution), shiftCounter)
+shiftSample(u,k,resolution)=subSample(shiftSample(superSample(u,resolution),k),resolution)
 \end{lstlisting}
-and the clock of y = \textbf{shiftSample}(..) starts at the second clock
-tick of cBase. At every tick of the clock of y, the operator returns the
-value of u from the last tick of the clock of u.
 
-{[}\emph{Note, due to the restriction of superSample on Boolean clocks,
-shiftSample can only shift the number of ticks of the Boolean clock, but
+{[}\emph{Note, due to the restriction of superSample on Event clocks,
+shiftSample can only shift the number of ticks of the Event clock, but
 cannot introduce new ticks. Example:}
 \begin{lstlisting}[language=modelica]
 // Rational interval clock
 Clock u  = Clock(3, 10); // ticks: 0, 3/10, 6/10, ..
 Clock y1 = shiftSample(u,1,3); // ticks: 1/10, 4/10,
 ...
-// Boolean clock
+// Event clock
 Clock u = Clock(sin(2*pi*time)>0, startInterval=0.0)
 // ticks: 0.0, 1.0, 2.0, 3.0, ...
 Clock y1 = shiftSample(u,2); // ticks: 2.0, 3.0, ...
@@ -766,19 +781,14 @@ Clock y2 = shiftSample(u,2,3);// error (resolution must be 1)
 backCounter, resolution)
 \end{tabular}
 &
-The input argument u is either a Component Expression (see 
-\autoref{argument-restrictions-component-expression}) or an expression of type Clock. {[}\emph{The first activation of
-the clock of y = \textbf{backSample}(..) is shifted in time
-backCounter/resolution*\textbf{interval}(u) before the first activation
-of the clock of u}{]}. Conceptually, the operator constructs a clock
-``cBase''
-\begin{lstlisting}[language=modelica]
-Clock cBase = subSample(superSample(u,resolution), backCounter)
-\end{lstlisting}
-and the clock of y = \textbf{shiftSample}(..) is shifted a time duration
-before the clock of u, such that this duration is identical to the
-duration between the first and second clock tick of cBase. It is an
-error, if the clock of y starts before the base clock of u. At every
+The input argument u is either a Component Expression (see
+\autoref{argument-restrictions-component-expression}) or an expression of type Clock.
+This is an inverse of shiftSample such that \lstinline!Clock y=backSample(u, cnt, res)! implicitly defines
+a clock y such that \lstinline!shiftSample(y, cnt, res)! activates at the same times as u.
+It is an
+error, if the clock of y starts before the base clock of u.
+
+At every
 tick of the clock of y, the operator returns the value of u from the
 last tick of the clock of u. If u is a clocked Component Expression, the
 operator returns the start value of u, see \autoref{initialization-of-clocked-partitions}, before the
@@ -797,7 +807,7 @@ Clock y4 = shiftSample(u,2,3); // ticks: 2/10, 5/10,
 ...
 Clock y5 = backSample(y4,1,3); // ticks: 1/10, 4/10,
 ...
-// Boolean clock
+// Event clock
 Clock u = Clock(sin(2*pi*time) > 0, startInterval=xx)
 // ticks: 0, 1.0, 2.0, 3.0, ....
 Clock y1 = shiftSample(u,3); // ticks: 3.0, 4.0, ...
@@ -853,6 +863,9 @@ end NoClockVsSampleHold;
 current value of x as clk2 ticks, but will show its previous value (left
 limit). However, y will show the current value, since it has no
 infinitesimal delay.{]}}
+
+Note that it is not legal to compute the derivative of the \lstinline!sample!, \lstinline!subSample!, \lstinline!superSample!, \lstinline!backSample!,
+\lstinline!shiftSample!, and \lstinline!noClock! operators.
 
 \section{Clocked When Clause}\doublelabel{clocked-when-clause}
 
@@ -918,7 +931,8 @@ records don't not need to be expanded if they have the same clock.}{]}
 
 Furthermore, each non-trivial expression (non-literal, non-constant,
 non-parameter, non-variable), expr\textsubscript{i}, appearing as first
-argument of any clock conversion operator is recursively replaced by a
+argument of a clock conversion operator (except \lstinline!hold! and \lstinline!backSample!)
+is recursively replaced by a
 unique variable, v\textsubscript{i}, and the equation v\textsubscript{i}
 = expr\textsubscript{i} is added to the equation set.
 
@@ -953,7 +967,7 @@ uses the following incidence definition:
 \multicolumn{4}{p{15cm}}{\textbf{incidence}(e) = the \emph{unknown} variables, as well as
 variables x in \textbf{der}(x), \textbf{pre}(x), and \textbf{previous}(x),}\\
 &\multicolumn{3}{p{14cm}}{which lexically appear in e}\\
-&&\multicolumn{2}{p{13cm}}{except as first argument of base-clock conversion operators: sample() and hold().}
+&&\multicolumn{2}{p{13cm}}{except as first argument of base-clock conversion operators: sample() and hold() and Clock(condition,startInterval).}
 \end{tabular}
 
 The resulting set of connected components, is the partitioning of the
@@ -965,8 +979,8 @@ The base clock partitions are identified as \textbf{clocked} or as
 \textbf{continuous-time partitions} according to the following
 properties:
 
-A variable u in \textbf{sample}(u) and a variable y in y =
-\textbf{hold}(ud) is in a continuous-time partition.
+A variable u in \lstinline!sample(u)!, a variable y in y =
+\lstinline!hold(ud)!, and a variable b in \lstinline!Clock(b, startInterval)! where b is of \lstinline!Boolean! type is in a continuous-time partition.
 
 Correspondingly, variables u and y in y = \textbf{sample}(uc), y =
 \textbf{subSample}(u), y = \textbf{superSample}(u), y =
@@ -1007,13 +1021,13 @@ identified:}
   0 = f1(yd1, ud1, previous(ud1)); // incidence(e) = {yd1,ud1}
   ud2 = superSample (yd1,2); // incidence(e) = {ud2, yd1}
   0 = f2(yd2, ud2); // incidence(e) = {yd2, ud2}
-  
+
   // Base partition 2 // continuous-time partition
   u = hold (yd2); // incidence(e) = {u}
   0 = f3(der(x1), x1, u); // incidence(e) = {x1,u}
   0 = f4(der(x2), x2, x1); // incidence(e) = {x2,x1}
   0 = f6(y, x1, u); // incidence(e) = {y,x1,u}
-  
+
   // Identified as separate partition, but belonging to partition 2
   0 = f5(der(x3), x3); // incidence(e) = {x3}
 \end{lstlisting}
@@ -1021,7 +1035,7 @@ identified:}
 
 \subsection{Sub-clock Partitioning}\doublelabel{sub-clock-partitioning}
 
-For each clocked partition B\textsubscript{i}, identified in 
+For each clocked partition B\textsubscript{i}, identified in
 \autoref{base-clock-partitioning}, the sub-clock partitioning is performed with sub-clock inference
 which uses the following incidence definition:
 
@@ -1032,7 +1046,7 @@ variables x in \textbf{der}(x), \textbf{pre}(x), and
 \textbf{previous}(x),}\\
 &\multicolumn{3}{p{14cm}}{which lexically appear in e}\\
 &&\multicolumn{2}{p{13cm}}{except as first argument of sub-clock conversion operators:}\\
-&&&\multicolumn{1}{p{12cm}}{subSample, superSample, shiftSample, backSample, and noClock.}
+&&&\multicolumn{1}{p{12cm}}{subSample, superSample, shiftSample, backSample, noClock, and Clock with first argument of \lstinline!Boolean! type.}
 \end{tabular}
 The resulting set of connected components, is the partitioning of the
 equations and variables, S\textsubscript{ij} =
@@ -1139,6 +1153,7 @@ operators such as \lstinline!sample!, \lstinline!hold!, \lstinline!subSample! mu
 signals of the discretized continuous-time partition with other
 partitions. Hereby, a discretized continuous-time partition is seen as a
 clocked partition.
+
 
 \subsection{Clocked Discrete-Time and Clocked Discretized Continuous-Time Partition}\doublelabel{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}
 
@@ -1257,12 +1272,12 @@ integrating from clock tick \emph{t}\textsubscript{i-1} to clock tick
 
 \begin{longtable}[]{|p{3.5cm}|p{11cm}|}
 \hline
-\emph{SolverMethod} & 
+\emph{SolverMethod} &
 \emph{Solution method}
 
 (for all methods: $y_i=g(x_i,u_{c,i},u_{d,i},t_i)$)\\ \hline
 \endhead
-\lstinline!ExplicitEuler! & 
+\lstinline!ExplicitEuler! &
 $\begin{aligned}
 x_{i} &:= x_{i-1}+h\cdot\dot{x}_{i-1}\\
 \dot{x}_{i} &:= f(x_i,u_{c,i},u_{d,i},t_i)
@@ -1313,9 +1328,9 @@ implementation:}
   parameter Real x_start = 1;
   Real x(start=x_start); // previous(x) = x_start at first clock tick
   Real der_x(start=0); // previous(der_x) = 0 at first clock tick
-protected 
+protected
   Boolean first(start=true);
-equation 
+equation
   when Clock() then
     first = false;
     if previous(first) then
@@ -1369,52 +1384,48 @@ with this clock, then the partition is integrated with it.
 
 If a solverMethod is not explicitly associated with a partition, it is
 inferred with a similar mechanism as for sub-clock inferencing, see
-\autoref{sub-clock-inferencing}. The inferencing mechanism is defined using the operator
-``solverExplicitlyDefined(c)'' which returns \textbf{true}, if a
-solverMethod is explicitly associated with clock c and returns
-\textbf{false} otherwise.
+\autoref{sub-clock-inferencing}.
 
-For every partitioning operator of \autoref{partitioning-operators}, two clocks c1 and c2
-are defined for the input and the output argument of the operator,
-respectively. Furthermore, for every equality and assignment of clocks,
-c1 = c2 or c1 := c2, two clocks are defined as well. In all these cases,
-the following statements are implicitly introduced:
+For each sub-clock partition we build a set corresponding to this sub-clock partition.
+These sets are then merged as follows: for each set without a specified solverMethod we merge it
+with sets connected to it (these may contain a solverMethod); and this is repeated until it is not possible to merge more sets.
+The sets connected in this way should be part of the same base-clock partition and connected through a sub-clock conversion operator
+(\lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample!, \lstinline!backSample!, or \lstinline!noClock!).
 
-\begin{lstlisting}[language=modelica]
-if solverExplicitlyDefined(c1) and solverExplicitlyDefined(c2) then
-  // o.k. (no action)
-elseif not solverExplicitlyDefined(c1) and not solverExplicitlyDefined(c2) then
-  assert(c1.solverMethod == c2.solverMethod);
-elseif solverExplicitlyDefined(c1) <>solverExplicitlyDefined(c2) then
-  c1.solverMethod = c2.solverMethod
-end if;
-\end{lstlisting}
-
-The introduced set of, potentially underdetermined or overdetermined
-constraints has to be solved. If no solution exists or if a solution is
-contradictory on some clocks that are associated with clocked
-discrete-time partitions, then this is ignored, since no solverMethod is
-needed for such partitions.
+\begin{itemize}
+\item If this set contains multiple different values for \lstinline!solverMethod! it is an error.
+\item If the set contains continuous time-equations:
+\begin{itemize}
+\item If this set contains no \lstinline!solverMethod! it is an error.
+\item Otherwise we use the specified solverMethod.
+\end{itemize}
+\item If the set does not contain continuous time-equations there is no need for a solverMethod.
+\end{itemize}
 
 {[}\emph{Example:}
 
 \begin{lstlisting}[language=modelica]
-model InferenceTest "Specific clocks set on all partitions. Decouple constraint"
-  ...
-equation 
-  // Physical model
-  der(x1) = -100*x1 + hold(z2);
-  // Controller submodels
-  der(z1) = -100*z1 + sample(x2,
-  Clock(Clock(1, 100), solverMethod="ImplicitEuler"));
-  w = 0.9*previous (w) + superSample(z1, 3);
-  when Clock(Clock(1,20),
-    solverMethod="ExplicitEuler") then 
-    ww = superSample (w);
-  end when
-  der(z2) = -z2 + ww;
+model InferenceTest
+  Real x(start=3) "Explicitly using ExplicitEuler";
+  Real y "Explicitly using ImplicitEuler method";
+  Real z "Inferred to use ExplicitEuler";
+equation
+  der(x)=-x+sample(1,Clock(Clock(1,10), solverMethod="ExplicitEuler"));
+  der(y)=subSample(x,2)+sample(1,Clock(Clock(2,10), solverMethod="ImplicitEuler"));
+  der(z)=subSample(x,2)+1;
 end InferenceTest;
+
+model IllegalInference
+  Real x(start=3) "Explicitly using ExplicitEuler";
+  Real y "Explicitly using ImplicitEuler method";
+  Real z;
+equation
+  der(x)=-x+sample(1,Clock(Clock(1,10), solverMethod="ExplicitEuler"));
+  der(y)=subSample(x,2)+sample(1,Clock(Clock(2,10), solverMethod="ImplicitEuler"));
+  der(z)=subSample(x,4)+1+subSample(y);
+end IllegalInference;
 \end{lstlisting}
+Here \lstinline!z! is a continuous-time equation connected directly to both \lstinline!x! and \lstinline!y! partitions that have different \lstinline!solverMethod!.
 {]}
 
 \section{Initialization of Clocked Partitions}\doublelabel{initialization-of-clocked-partitions}
@@ -1451,8 +1462,8 @@ optional argument u is only used for clock inference, see \autoref{clock-partiti
 At the first tick of the clock the following is returned: a) if the
 specified clock interval is parametric, this value is returned; b)
 otherwise the start value of the variable specifying the interval is
-returned; c) for an event clock the additional startInterval argument to
-the event clock constructor is returned. The return value of the
+returned; c) for an Event clock the additional startInterval argument to
+the Event clock constructor is returned. The return value of the
 interval operator is a scalar Real number.
 \\ \hline
 \end{longtable}
@@ -1556,7 +1567,7 @@ model ClockTicksWithModelica32
    Integer second;
    Integer seconds(start = -1);
    Integer milliSeconds(start = -1);
-   Integer minutes(start = -1);  
+   Integer minutes(start = -1);
 
    Boolean BaseClock_1_activated;
    Integer Clock_1_1_ticks(start=59999);
@@ -1564,9 +1575,9 @@ model ClockTicksWithModelica32
    Integer Clock_1_3_ticks(start=999);
    Boolean Clock_1_1_activated;
    Boolean Clock_1_2_activated;
-   Boolean Clock_1_3_activated; 
-equation  
-  // Prepare clock tick   
+   Boolean Clock_1_3_activated;
+equation
+  // Prepare clock tick
   BaseClock_1_activated =  sample(0, 0.001);
   when BaseClock_1_activated then
      Clock_1_1_ticks = if pre(Clock_1_1_ticks) < 60000 then 1+pre(Clock_1_1_ticks) else 1;
@@ -1575,11 +1586,11 @@ equation
   end when;
   Clock_1_1_activated =  BaseClock_1_activated and Clock_1_1_ticks >= 60000;
   Clock_1_2_activated =  BaseClock_1_activated and Clock_1_2_ticks >= 1;
-  Clock_1_3_activated =  BaseClock_1_activated and Clock_1_3_ticks >= 1000; 
- 
-  // ----------------------------------------------------------------------------- 
-  // Sub partition execution   
-  when {Clock_1_3_activated} then     
+  Clock_1_3_activated =  BaseClock_1_activated and Clock_1_3_ticks >= 1000;
+
+  // -----------------------------------------------------------------------------
+  // Sub partition execution
+  when {Clock_1_3_activated} then
      second = 1;
   end when;
   when {Clock_1_1_activated} then
