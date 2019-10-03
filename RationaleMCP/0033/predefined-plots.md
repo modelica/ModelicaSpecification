@@ -1,12 +1,12 @@
 # Structure of annotations
 The purpose of this document is to facilitate discussion around the actual structure and scope of standardized annotations for predefined plots.
 
-## The Figures annotation
-A model's class annotation might look like this:
+## Figures in the class Documentation
+A class' `Documentation` annotation might look like this:
 
 ```
 annotation(
-  Figures(
+  Documentation(
     figures = {
       Figure(title = "Battery Voltage", identifier = "voltage", preferred = true, plots = {Plot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, y(label = "Voltage"))}),
       Figure(title = "Battery Limit Controller", identifier = "limit", caption = "...", plots = {Plot(title = "Battery Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
@@ -16,17 +16,10 @@ annotation(
 )
 ```
 
-One can argue whether the `figures` need to be a named member of `Figures`, but it opens up for future additions at the `Figures` level.  Another alternative would be to merge `Figures` with `Documentation`, so that `figures` would appear inside `Documentation`.
-
-Pseudo code definition of `Figures`:
-```
-record Figures
-  Figure[:] figures "Collection of figures";
-end PlotSet;
-```
+Since the use of HTML is not supported in the predefined plots, introduction of `figure` in `Documentation` means that the suport for the `<HTML>...</HTML>` construct needs to be restricted to `info` and `revisions`.
 
 ## A figure
-Inserting some line breaks into one of the `Figure` objects, it looks like this:
+As seen in the example above, the pseudo code type of `figures` is `Figure[:]`.  Inserting some line breaks into one of the `Figure` objects, it looks like this:
 ```
 Figure(
   title = "Battery Limit Controller",
