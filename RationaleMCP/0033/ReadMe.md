@@ -3,6 +3,8 @@ Henrik Tidefelt, Otto Tronarp
 
 **(In Development)**
 
+![Example generated with the prototype implementation](example-figure.png)
+
 ## Summary
 This is not about defining plotting functions to be used in scripting environments.  This is about declarative descriptions of predefined plots, stored in the simulation model's class annotation.  It makes it completely agnostic to scripting environments, but scripting environments can still take advantage of the predefined plots.  For instance, the Wolfram SystemModeler environment allows users to request a predefined plot with a given title in the scripting environment, where it is then possible to apply further customization that is beyond the scope of what is reasonable to include in an MCP.
 
