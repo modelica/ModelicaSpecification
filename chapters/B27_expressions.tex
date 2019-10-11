@@ -1,0 +1,105 @@
+\begin{lstlisting}[language=grammar]
+expression :
+   simple-expression
+   | if expression then expression { elseif expression then expression }
+   else expression
+
+simple-expression :
+   logical-expression [ ":" logical-expression [ ":" logical-expression ] ]
+
+logical-expression :
+   logical-term { or logical-term }
+
+logical-term :
+   logical-factor { and logical-factor }
+
+logical-factor :
+   [ not ] relation
+
+relation :
+   arithmetic-expression [ relational-operator arithmetic-expression ]
+
+relational-operator :
+   "<" | "<=" | ">" | ">=" | "==" | "<>"
+
+arithmetic-expression :
+   [ add-operator ] term { add-operator term }
+
+add-operator :
+   "+" | "-" | ".+" | ".-"
+
+term :
+   factor { mul-operator factor }
+
+mul-operator :
+   "*" | "/" | ".*" | "./"
+
+factor :
+   primary [ ("^" | ".^") primary ]
+
+primary :
+   UNSIGNED-NUMBER
+   | STRING
+   | false
+   | true
+   | ( component-reference | der | initial | pure ) function-call-args
+   | component-reference
+   | "(" output-expression-list ")"
+   | "[" expression-list { ";" expression-list } "]"
+   | "{" array-arguments "}"
+   | end
+
+type-specifier : ["."] name
+
+name : IDENT { "." IDENT }
+
+component-reference :
+   [ "." ] IDENT [ array-subscripts ] { "." IDENT [ array-subscripts ] }
+
+function-call-args :
+   "(" [ function-arguments ] ")"
+
+function-arguments :
+expression [ "," function-arguments-non-first | for for-indices ]
+   | function name "(" [ named-arguments ] ")" [ "," function-arguments-non-first ]
+   | named-arguments
+
+function-arguments-non-first :
+   function-argument [ "," function-arguments-non-first ]
+   | named-arguments
+
+array-arguments :
+   expression [ "," array-arguments-non-first | for for-indices ]
+
+array-arguments-non-first :
+   expression [ "," array-arguments-non-first ]
+
+named-arguments: named-argument [ "," named-arguments ]
+
+named-argument: IDENT "=" function-argument
+
+function-argument :
+   function name "(" [ named-arguments ] ")" | expression
+
+output-expression-list:
+   [ expression ] { "," [ expression ] }
+
+expression-list :
+   expression { "," expression }
+
+array-subscripts :
+   "[" subscript { "," subscript } "]"
+
+subscript :
+   ":" | expression
+
+comment :
+   string-comment [ annotation-comment ]
+
+string-comment :
+[ STRING { "+" STRING } ]
+
+annotation-comment :
+   annotation class-modification
+\end{lstlisting}
+

@@ -10,12 +10,12 @@ clean:
 	rm *.aux MLS.log MLS.toc MLS.pdf
 	rm MLS.xml *.html
 
-MLS.pdf: *.tex chapters/*.tex syntax
-	pdflatex MLS.tex
+MLS.pdf: *.tex chapters/*.tex # syntax
+	latexmk -pdf MLS.tex
 
-MLS.html: *.tex chapters/*.tex syntax
+MLS.html: *.tex chapters/*.tex # syntax
 	$(LATEXMLPREFIX)latexml MLS.tex --dest MLS.xml
 	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html
 
 syntax: grammar/*.g
-    make -C grammar all
+	make -C grammar all_tex
