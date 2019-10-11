@@ -25,8 +25,8 @@ long_class_specifier :
     'end' IDENT
   ;
 
-short_class_specifier
-  : IDENT '='
+short_class_specifier :
+  IDENT '='
   ( 
     base_prefix type_specifier array_subscripts? class_modification?
   | 'enumeration' '(' ( enum_list? | ':' ) ')'
@@ -35,7 +35,8 @@ short_class_specifier
   ;
 
 der_class_specifier :
-   IDENT '=' 'der' '(' type_specifier ',' IDENT ( ',' IDENT )* ')' comment
+  IDENT '=' 'der' '(' type_specifier ',' IDENT ( ',' IDENT )* ')' comment
+  ;
 
 base_prefix
   : ( 'input' | 'output' )?
