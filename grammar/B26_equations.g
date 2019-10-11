@@ -14,14 +14,11 @@ algorithm_section :
 
 equation :
   (
-  // TODO: Ambiguity
-    simple_expression ( '=' expression )?
+    simple_expression ( '=' expression )? // CHANGE: optional last part to support component_reference function_call_args via simple_expression
   | if_equation
   | for_equation
   | connect_clause
   | when_equation
-  // TODO: Ambiguity
-  // | component_reference function_call_args
   ) comment
   ;
 

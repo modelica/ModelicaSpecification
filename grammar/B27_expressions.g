@@ -59,7 +59,7 @@ primary :
   | STRING
   | 'false'
   | 'true'
-  | ('der' | 'initial' | 'pure' ) function_call_args
+  | ( 'der' | 'initial' | 'pure' ) function_call_args
   | component_reference function_call_args?
   | '(' output_expression_list ')'
   | '[' expression_list ( ';' expression_list )* ']'
@@ -96,11 +96,11 @@ function_arguments_non_first
   ;
 
 array_arguments :
-  expression ( ( ',' expression /* TODO: This changed the grammar */ )* | 'for' for_indices )
+  expression ( ( ',' expression )* | 'for' for_indices ) // CHANGE: repetition instead of a new rule
   ;
 
 named_arguments :
-  named_argument ( ',' named_argument )* /* TODO: Changed to repetition */
+  named_argument ( ',' named_argument )* // CHANGE: repetition
   ;
 
 named_argument :
@@ -112,7 +112,7 @@ function_argument
   | expression
   ;
 
-function_partial_application /* TODO: This is a new rule; refactored out */
+function_partial_application // CHANGE: This is a new rule; refactored out
   : 'function' type_specifier '(' named_arguments? ')'
   ;
 
