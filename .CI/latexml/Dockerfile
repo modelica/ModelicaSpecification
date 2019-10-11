@@ -26,6 +26,6 @@ RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirro
  && tlmgr install latexmk listings xcolor float multirow tocloft parskip etoolbox \
  && cpanm JSON \
  && cpanm --notest https://github.com/HansOlsson/LaTeXML.git@UseLabel \
- && apt-get autoremove -qy make gcc curl wget git cpanminus libxml2-dev libxslt-dev \
+ && apt-get autoremove -qy gcc curl wget git cpanminus libxml2-dev libxslt-dev \
  && latexmk --version \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/ /root/.cpanm/work*
