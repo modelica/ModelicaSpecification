@@ -16,7 +16,7 @@ class_prefixes :
   ;
 
 class_specifier :
-  long_class_specifier | short_class_specifier // TODO: der_class_specifier merged to avoid k=3
+  long_class_specifier | short_class_specifier | der_class_specifier
   ;
 
 long_class_specifier :
@@ -27,12 +27,15 @@ long_class_specifier :
 
 short_class_specifier
   : IDENT '='
-  ( base_prefix type_specifier array_subscripts?
-    class_modification?
+  ( 
+    base_prefix type_specifier array_subscripts? class_modification?
   | 'enumeration' '(' ( enum_list? | ':' ) ')'
-  | 'der' '(' type_specifier ',' IDENT ( ',' IDENT )* ')')
+  )
   comment
   ;
+
+der_class_specifier :
+   IDENT '=' 'der' '(' type_specifier ',' IDENT ( ',' IDENT )* ')' comment
 
 base_prefix
   : ( 'input' | 'output' )?
