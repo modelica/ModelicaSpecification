@@ -5,7 +5,7 @@ ALL_G4 = $(patsubst %.g, %.g4, $(ALL_G))
 all: $(ALL_G4)
 
 %.g4: %.g
-	sed -e 's/{[^}]*HIDDEN[^}]*}/ -> channel(HIDDEN)/' -e 's/(options {greedy=false;} : [.])[*]/.*?/' -e '/k=2/d' $< > $@.tmp
+	sed -e 's/{[^}]*HIDDEN[^}]*}/ -> channel(HIDDEN)/' -e 's/(options {greedy=false;} : [.])[*]/.*?/' -e '/k=3/d' $< > $@.tmp
 	mv $@.tmp $@
 
 clean:

@@ -1,7 +1,7 @@
 grammar Modelica;
 
 options {
-  k=2;
+  k=3;
 }
 
 
