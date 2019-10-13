@@ -24,4 +24,3 @@ condition_attribute :
 declaration :
   IDENT array_subscripts? modification?
   ;
-

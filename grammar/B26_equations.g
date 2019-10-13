@@ -84,8 +84,7 @@ when_equation :
   'when' expression 'then'
     ( equation ';' )*
   ( 'elsewhen' expression 'then'
-    ( equation ';' )*
-  )*
+    ( equation ';' )* )*
   'end' 'when'
   ;
 
@@ -93,8 +92,7 @@ when_statement :
   'when' expression 'then'
     ( statement ';' )*
   ( 'elsewhen' expression 'then'
-    ( statement ';' )*
-  )*
+    ( statement ';' )* )*
   'end' 'when'
   ;
 

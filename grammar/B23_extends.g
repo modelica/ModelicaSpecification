@@ -7,4 +7,3 @@ extends_clause :
 constraining_clause :
   'constrainedby' type_specifier class_modification?
   ;
-

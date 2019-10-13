@@ -63,12 +63,10 @@ primary :
   | 'end'
   ;
 
-type_specifier :
-  '.'? name
+type_specifier : '.'? name
   ;
 
-name :
-  IDENT ( '.' IDENT )*
+name : IDENT ( '.' IDENT )*
   ;
 
 component_reference :
@@ -79,32 +77,29 @@ function_call_args :
   '(' function_arguments? ')'
   ;
 
-function_arguments
-  : expression ( ',' function_arguments_non_first | 'for' for_indices )?
-  | function_partial_application (',' function_arguments_non_first)?
+function_arguments : 
+    expression ( ',' function_arguments_non_first | 'for' for_indices )?
+  | function_partial_application ( ',' function_arguments_non_first )?
   | named_arguments
   ;
 
-function_arguments_non_first
-  : ( function_argument (',' function_arguments_non_first)?
-    | named_arguments
-    )
+function_arguments_non_first : 
+    function_argument ( ',' function_arguments_non_first )?
+  | named_arguments
   ;
 
 array_arguments :
   expression ( ( ',' expression )* | 'for' for_indices ) // CHANGE: repetition instead of a new rule
   ;
 
-named_arguments :
-  named_argument ( ',' named_argument )* // CHANGE: repetition
+named_arguments : named_argument ( ',' named_argument )* // CHANGE: repetition
   ;
 
-named_argument :
-  IDENT '=' function_argument
+named_argument : IDENT '=' function_argument
   ;
 
-function_argument
-  : function_partial_application
+function_argument : 
+    function_partial_application
   | expression
   ;
 
@@ -117,7 +112,7 @@ output_expression_list :
   ;
 
 expression_list :
-  expression ( ',' expression? )*
+  expression ( ',' expression )*
   ;
 
 array_subscripts :

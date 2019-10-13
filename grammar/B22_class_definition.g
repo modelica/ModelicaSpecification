@@ -7,8 +7,8 @@ class_definition :
 
 class_prefixes :
   'partial'?
-  ( 'class' | 'model' | 'operator'? 'record' | 'block' | 'expandable'? 'connector' |
-  'type' | 'package' | ( 'pure' | 'impure' )? 'operator'? 'function' | 'operator' )
+  ( 'class' | 'model' | 'operator'? 'record' | 'block' | 'expandable'? 'connector' | 'type' | 
+    'package' | ( 'pure' | 'impure' )? 'operator'? 'function' | 'operator' )
   ;
 
 class_specifier :
@@ -34,16 +34,14 @@ der_class_specifier :
   IDENT '=' 'der' '(' type_specifier ',' IDENT ( ',' IDENT )* ')' comment
   ;
 
-base_prefix
-  : ( 'input' | 'output' )?
+base_prefix : 
+  ( 'input' | 'output' )?
   ;
 
-enum_list :
-  enumeration_literal ( ',' enumeration_literal )*
+enum_list : enumeration_literal ( ',' enumeration_literal )*
   ;
 
-enumeration_literal :
-  IDENT comment
+enumeration_literal : IDENT comment
   ;
 
 composition :
@@ -53,7 +51,7 @@ composition :
     equation_section |
     algorithm_section
   )*
-  ( 'external' language_specification
+  ( 'external' language_specification?
   external_function_call? annotation_comment? ';' )?
   ( annotation_comment ';' )?
   ;
@@ -77,13 +75,13 @@ element :
   'redeclare'?
   'final'?
   'inner'? 'outer'?
-  ( ( class_definition | component_clause) |
+  ( class_definition | component_clause | 
   'replaceable' ( class_definition | component_clause )
-  (constraining_clause comment)? )
+  ( constraining_clause comment )? )
   ;
 
 import_clause :
-  'import' ( IDENT '=' name | name ('.' ( '*' | '{' import_list '}' ) | '.*')? ) comment
+  'import' ( IDENT '=' name | name ( '.' ( '*' | '{' import_list '}' ) | '.*' )? ) comment
   ;
 
 import_list :
