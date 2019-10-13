@@ -1,9 +1,5 @@
-parser grammar B23_extends;
-
-// Extends
-
+parser grammar B23_extends; // Extends
 start_rule: extends_clause;
-
 extends_clause :
   'extends' type_specifier class_modification? annotation_comment?
   ;

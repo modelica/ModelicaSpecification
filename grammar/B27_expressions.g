@@ -1,9 +1,5 @@
-parser grammar B27_expressions;
-
-// Expressions
-
+parser grammar B27_expressions; // Expressions
 start_rule: expression;
-
 expression :
   simple_expression
   | 'if' expression 'then' expression ( 'elseif' expression 'then' expression )*

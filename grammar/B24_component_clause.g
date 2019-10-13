@@ -1,9 +1,5 @@
-parser grammar B24_component_clause;
-
-// Component Clause
-
+parser grammar B24_component_clause; // Component Clause
 start_rule: component_clause;
-
 component_clause :
   type_prefix type_specifier array_subscripts? component_list
   ;

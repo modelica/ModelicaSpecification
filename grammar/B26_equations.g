@@ -1,9 +1,5 @@
-parser grammar B26_equations;
-
-// Equations
-
+parser grammar B26_equations; // Equations
 start_rule: equation_section;
-
 equation_section :
   'initial'? 'equation' ( equation ';' )*
   ;

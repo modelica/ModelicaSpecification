@@ -12,10 +12,24 @@ all_tex: $(ALL_TEX)
 	mv $@.tmp $@
 
 ../chapters/%.tex: %.g
-	echo '% generated file! DO NOT EDIT! Edit the ../grammar/.g file instead' > $@
-	echo '\begin{lstlisting}[language=grammar]' >> $@
-	sed -e "s/\([^']\)_\([^']\)/\1-\2/g" $< >> $@
-	echo '\end{lstlisting}' >> $@
+	# delete the grammar declaration line
+	sed '/lexer grammar/d' $< > $@.tmp1
+	sed '/parser grammar/d' < $@.tmp1 > $@.tmp2
+	# delete start_rule
+	sed '/start_rule/d' < $@.tmp2 > $@.tmp1
+	# change _ to - in rule names
+	sed -e "s/\([^']\)_\([^']\)/\1-\2/g" < $@.tmp1 > $@.tmp2
+	# remove lines containing only ;
+	sed '/^[[:space:]]*;$$/d' < $@.tmp2 > $@.tmp1
+	# change 'keyword' to keyword
+	sed -e "s/'\([[:alpha:]]\+\)'/\1/g" < $@.tmp1 > $@.tmp2
+	
+	echo '% generated file! DO NOT EDIT! Edit the ../grammar/.g file instead' > $@.tmp
+	echo '\begin{lstlisting}[language=grammar]' >> $@.tmp
+	cat $@.tmp2 >> $@.tmp
+	echo '\end{lstlisting}' >> $@.tmp
+	mv $@.tmp $@
+	rm -f $@.tmp1 $@.tmp2
 
 clean:
 	rm -rf *Listener*.java ModelicaLexer.java ModelicaParser.java Modelica_*.java *.tokens *.interp *.g4 *.class $(ALL_TEX)

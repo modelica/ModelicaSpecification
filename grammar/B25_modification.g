@@ -1,9 +1,5 @@
-parser grammar B25_modification;
-
-// Modification
-
+parser grammar B25_modification; // Modification
 start_rule: modification;
-
 modification :
   class_modification ( '=' expression )?
   | '=' expression

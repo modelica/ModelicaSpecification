@@ -1,9 +1,5 @@
-parser grammar B22_class_definition;
-
-// Class Definition
-
+parser grammar B22_class_definition; // Class Definition
 start_rule: class_definition;
-
 class_definition :
   'encapsulated'? class_prefixes
   class_specifier
