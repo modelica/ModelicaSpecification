@@ -27,13 +27,6 @@ ML_COMMENT → '/*' (options {greedy=false;} : .)* '*/'
 NL → '\r\n' | '\n' | '\r'
 ```
 
-Finally, the `VERSION_HEADER` is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
-```
-VERSION_HEADER →
-^\U+FEFF?//![ ]flat[ ]\d+[.]\d+[r.]\d+$
-```
-Here, the `\U+FEFF?` is an optional byte order mark.
-
 ### Lexical units except for keywords
 
 ```
@@ -92,6 +85,13 @@ flat_modelica →
   VERSION_HEADER
   'model' long-class-specifier ';'
 ```
+
+Here, the `VERSION_HEADER` is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
+```
+VERSION_HEADER →
+^\U+FEFF?//![ ]flat[ ]\d+[.]\d+[r.]\d+$
+```
+The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
 As an example of the `flat_modelica` rule, this is a minimal valid Flat Modelica source:
 ```
