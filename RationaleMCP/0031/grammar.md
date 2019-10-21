@@ -193,7 +193,7 @@ end _F;
 > ~~&emsp; `redeclare` `each`? `final`?~~\
 > ~~&emsp; ( short_class_definition~~\
 > ~~&emsp; | component_clause1~~\
-> ~~&emsp; ~~| element_replaceable~~~~\
+> ~~&emsp; | element_replaceable~~\
 > ~~&emsp; )~~
 
 > ~~element_replaceable →~~\
