@@ -44,7 +44,7 @@ The S_CHAR accepts Unicode other than " and \\:
 
 > EXPONENT → ( `e` | `E` ) ( `+` | `-` )? DIGIT+
 
-> UNSIGNED_NUMBER → DIGIT+ ( `.` (DIGIT)* )? ( EXPONENT )?
+> UNSIGNED_NUMBER → DIGIT+ ( `[.]` (DIGIT)* )? ( EXPONENT )?
 
 
 ## Start rule
@@ -91,11 +91,11 @@ end _F;
 > short_class_specifier →\
 > &emsp; IDENT `=`\
 > &emsp; ( base_prefix? type_specifier array_subscripts? class_modification?\
-> &emsp; | `enumeration` `(` ( enum_list? | `:` ) `)`\
+> &emsp; | `enumeration` `[(]` ( enum_list? | `:` ) `[)]`\
 > &emsp; )\
 > &emsp; comment
 
-> der_class_specifier → IDENT `=` `der` `(` type_specifier `,` IDENT ( `,` IDENT )* `)` comment
+> der_class_specifier → IDENT `=` `der` `[(]` type_specifier `,` IDENT ( `,` IDENT )* `[)]` comment
 
 > base_prefix → `input` | `output`
 
@@ -117,7 +117,7 @@ end _F;
 
 > language_specification → STRING
 
-> external_function_call → ( component_reference `=` )? IDENT `(` expression_list? `)`
+> external_function_call → ( component_reference `=` )? IDENT `[(]` expression_list? `[)]`
 
 > element_list → ( (import_clause | extends_clause | normal_element) `;` )*
 
@@ -133,9 +133,9 @@ end _F;
 > import_clause →\
 > &emsp; `import`\
 > &emsp; ( IDENT `=` name\
-> &emsp; | name ( `.` ( `*` | `{` import_list `}` ) | `.*` )?\
-> &emsp; )\
-> &emsp; comment
+> &emsp; | name ( `[.]` ( `[*]` | `[{]` import_list `[}]` ) | `[.][*]` )?\
+> &emsp;[ ])\
+>[ ]&emsp; comment
 
 > import_list → IDENT ( `,` IDENT )*
 
@@ -172,7 +172,7 @@ end _F;
 > &emsp; | `=` expression\
 > &emsp; | `:=` expression
 
-> class_modification → `(` argument_list? `)`
+> class_modification → `[(]` argument_list? `[)]`
 
 > argument_list → argument ( `,` argument )*
 
@@ -226,7 +226,7 @@ end _F;
 
 > statement →\
 > &emsp; ( component_reference ( `:=` expression | function_call_args )\
-> &emsp; | `(` output_expression_list `)` `:=` component_reference function_call_args\
+> &emsp; | `[(]` output_expression_list `[)]` `:=` component_reference function_call_args\
 > &emsp; | `break`\
 > &emsp; | `return`\
 > &emsp; | if_statement\
@@ -293,7 +293,7 @@ end _F;
 > &emsp; )* \
 > &emsp; `end` `when`
 
-> connect_clause → `connect` `(` component_reference `,` component_reference `)`
+> connect_clause → `connect` `[(]` component_reference `,` component_reference `[)]`
 
 
 ## Expressions
@@ -319,13 +319,13 @@ end _F;
 
 > arithmetic_expression → add_operator? term ( add_operator term )*
 
-> add_operator → `+` | `-` | `.+` | `.-`
+> add_operator → `[+]` | `[-]` | `[.][+]` | `[.][-]`
 
 > term → factor ( mul_operator factor )*
 
-> mul_operator → `*` | `/` | `.*` | `./`
+> mul_operator → `[*]` | `/` | `[.][*]` | `[.]/`
 
-> factor → primary ( (`^` | `.^`) primary )?
+> factor → primary ( (`[^]` | `[.][^]`) primary )?
 
 >primary\
 > &emsp; → UNSIGNED_NUMBER\
@@ -334,18 +334,18 @@ end _F;
 > &emsp; | `true`\
 > &emsp; | ( `der` | `initial` | `pure` ) function_call_args\
 > &emsp; | component_reference function_call_args?\
-> &emsp; | `(` output_expression_list `)`\
-> &emsp; | `[` expression_list ( `;` expression_list )* `]`\
-> &emsp; | `{` array_arguments `}`\
+> &emsp; | `[(]` output_expression_list `[]])`\
+> &emsp; | `[[]` expression_list ( `;` expression_list )* `[]]`\
+> &emsp; | `[{]` array_arguments `[]]}`\
 > &emsp; | `end`
 
-> type_specifier → `.`? name
+> type_specifier → `[.]`? name
 
-> name → IDENT ( `.` IDENT )*
+> name → IDENT ( `[.]` IDENT )*
 
-> component_reference → `.`? IDENT array_subscripts? ( `.` IDENT array_subscripts? )*
+> component_reference → `[.]`? IDENT array_subscripts? ( `[.]` IDENT array_subscripts? )*
 
-> function_call_args → `(` function_arguments? `)`
+> function_call_args → `[(]` function_arguments? `[)]`
 
 > function_arguments\
 > &emsp; → expression ( `,` function_arguments_non_first | `for` for_indices )?\
@@ -366,7 +366,7 @@ end _F;
 > &emsp; → function_partial_application\
 > &emsp; | expression
 
-> function_partial_application → `function` type_specifier `(` named_arguments? `)`
+> function_partial_application → `function` type_specifier `[(]` named_arguments? `[)]`
 
 > output_expression_list → expression? ( `,` expression? )*
 
@@ -378,6 +378,6 @@ end _F;
 
 > comment → string_comment annotation_comment?
 
-> string_comment → ( STRING ( `+` STRING )* )?
+> string_comment → ( STRING ( `[+]` STRING )* )?
 
 > annotation_comment → `annotation` class_modification
