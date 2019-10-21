@@ -51,7 +51,7 @@ DIGIT → '0' .. '9'
 ```
 
 ```
-Q_IDENT : '\'' ( Q_CHAR | S_ESCAPE ) ( Q_CHAR | S_ESCAPE | '"' )* '\''
+Q_IDENT → '\'' ( Q_CHAR | S_ESCAPE ) ( Q_CHAR | S_ESCAPE | '"' )* '\''
 ```
 
 ```
@@ -62,7 +62,8 @@ Q_CHAR
 ```
 
 ```
-S_ESCAPE → '\\'
+S_ESCAPE →
+  '\\'
   ( '\'' | '"' | '?' | '\\' | 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v')
 ```
 
@@ -83,7 +84,7 @@ UNSIGNED_NUMBER → DIGIT+ ( '.' (DIGIT)* )? ( EXPONENT )?
 ```
 flat_modelica →
   VERSION_HEADER
-  'model' long-class-specifier ';'
+  'model' long_class_specifier ';'
 ```
 
 Here, the `VERSION_HEADER` is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
@@ -136,7 +137,7 @@ long_class_specifier
 ```
 short_class_specifier →
   IDENT '='
-  ( base_prefix type_specifier array_subscripts? class_modification?
+  ( base_prefix? type_specifier array_subscripts? class_modification?
   | 'enumeration' '(' ( enum_list? | ':' ) ')'
   )
   comment
@@ -148,8 +149,7 @@ der_class_specifier →
 ```
 
 ```
-base_prefix →
-  ( 'input' | 'output' )?
+base_prefix → 'input' | 'output'
 ```
 
 ```
@@ -194,9 +194,10 @@ element
   | 'redeclare'?
     'final'?
     'inner'? 'outer'?
-    ( class_definition | component_clause | 
-    'replaceable' ( class_definition | component_clause )
-    ( constraining_clause comment )? )
+    ( class_definition
+    | component_clause
+    | 'replaceable' ( class_definition | component_clause ) ( constraining_clause comment )?
+    )
 ```
 
 ```
@@ -216,21 +217,18 @@ import_list → IDENT ( ',' IDENT )*
 ## B23 Extends
 
 ```
-extends_clause →
-  'extends' type_specifier class_modification? annotation_comment?
+extends_clause → 'extends' type_specifier class_modification? annotation_comment?
 ```
 
 ```
-constraining_clause →
-  'constrainedby' type_specifier class_modification?
+constraining_clause → 'constrainedby' type_specifier class_modification?
 ```
 
 
 ## B24 Component clause
 
 ```
-component_clause →
-  type_prefix type_specifier array_subscripts? component_list
+component_clause → type_prefix type_specifier array_subscripts? component_list
  ```
 
 ```
@@ -241,13 +239,11 @@ type_prefix →
 ```
 
 ```
-component_list →
-  component_declaration ( ',' component_declaration )*
+component_list → component_declaration ( ',' component_declaration )*
 ```
 
 ```
-component_declaration →
-  declaration condition_attribute? comment
+component_declaration → declaration condition_attribute? comment
 ```
 
 ```
@@ -314,8 +310,7 @@ element_replaceable →
 ```
 
 ```
-component_clause1 →
-  type_prefix type_specifier component_declaration1
+component_clause1 → type_prefix type_specifier component_declaration1
 ```
 
 ```
@@ -329,13 +324,11 @@ short_class_definition → class_prefixes short_class_specifier
 ## B26 Equations
 
 ```
-equation_section →
-  'initial'? 'equation' ( equation ';' )*
+equation_section → 'initial'? 'equation' ( equation ';' )*
 ```
 
 ```
-algorithm_section →
-  'initial'? 'algorithm' ( statement ';' )*
+algorithm_section → 'initial'? 'algorithm' ( statement ';' )*
 ```
 
 ```
