@@ -54,6 +54,7 @@ The S_CHAR accepts Unicode other than " and \\:
 
 Here, the VERSION_HEADER is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
 > VERSION_HEADER → `^\U+FEFF?//![ ]flat[ ]\d+[.]\d+[r.]\d+$`
+
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
 As an example of the flat_modelica rule, this is a minimal valid Flat Modelica source:
@@ -108,7 +109,7 @@ end _F;
 > &emsp; | `protected` element_list\
 > &emsp; | equation_section\
 > &emsp; | algorithm_section\
-> &emsp; )*\
+> &emsp; )* \
 > &emsp; ( `external` language_specification?\
 > &emsp;&emsp; external_function_call? annotation_comment? `;`\
 > &emsp; )?\
@@ -151,9 +152,9 @@ end _F;
 > component_clause → type_prefix type_specifier array_subscripts? component_list
 
 > type_prefix →\
-> 6emsp; ( `flow` | `stream` )?\
-> 6emsp; ( `discrete` | `parameter` | `constant` )?\
-> 6emsp; ( `input` | `output` )?
+> &emsp; ( `flow` | `stream` )?\
+> &emsp; ( `discrete` | `parameter` | `constant` )?\
+> &emsp; ( `input` | `output` )?
 
 > component_list → component_declaration ( `,` component_declaration )*
 
@@ -173,7 +174,7 @@ end _F;
 
 > class_modification → `(` argument_list? `)`
 
-argument_list → argument ( `,` argument )*
+> argument_list → argument ( `,` argument )*
 
 > argument\
 > &emsp; → element_modification_or_replaceable\
@@ -237,34 +238,34 @@ argument_list → argument ( `,` argument )*
 
 > if_equation →\
 > &emsp; `if` expression `then`\
-> &emsp;&emsp; ( equation `;` )*\
+> &emsp;&emsp; ( equation `;` )* \
 > &emsp; ( `elseif` expression `then`\
-> &emsp;&emsp; ( equation `;` )*\
-> &emsp; )*\
+> &emsp;&emsp; ( equation `;` )* \
+> &emsp; )* \
 > &emsp; ( `else`\
-> &emsp;&emsp; ( equation `;` )*\
+> &emsp;&emsp; ( equation `;` )* \
 > &emsp; )?\
 > &emsp; `end` `if`
 
 > if_statement →\
 > &emsp; `if` expression `then`\
-> &emsp;&emsp; ( statement `;` )*\
+> &emsp;&emsp; ( statement `;` )* \
 > &emsp; ( `elseif` expression `then`\
-> &emsp;&emsp; ( statement `;` )*\
-> &emsp; )*\
+> &emsp;&emsp; ( statement `;` )* \
+> &emsp; )* \
 > &emsp; ( `else`\
-> &emsp;&emsp; ( statement `;` )*\
+> &emsp;&emsp; ( statement `;` )* \
 > &emsp; )?\
 > &emsp; `end` `if`
 
 > for_equation →\
 > &emsp; `for` for_indices `loop`\
-> &emsp;&emsp; ( equation `;` )*\
+> &emsp;&emsp; ( equation `;` )* \
 > &emsp; `end` `for`
 
 > for_statement →\
 > &emsp; `for` for_indices `loop`\
-> &emsp;&emsp; ( statement `;` )*\
+> &emsp;&emsp; ( statement `;` )* \
 > &emsp; `end` `for`
 
 > for_indices → for_index ( `,` for_index )*
@@ -273,23 +274,23 @@ argument_list → argument ( `,` argument )*
 
 > while_statement →\
 > &emsp; `while` expression `loop`\
-> &emsp;&emsp; ( statement `;` )*\
+> &emsp;&emsp; ( statement `;` )* \
 > &emsp; `end` `while`
 
 > when_equation →\
 > &emsp; `when` expression `then`\
-> &emsp;&emsp; ( equation `;` )*\
+> &emsp;&emsp; ( equation `;` )* \
 > &emsp; ( `elsewhen` expression `then`\
-> &emsp;&emsp; ( equation `;` )*\
-> &emsp; )*\
+> &emsp;&emsp; ( equation `;` )* \
+> &emsp; )* \
 > &emsp; `end` `when`
 
 > when_statement →\
 > &emsp; `when` expression `then`\
-> &emsp;&emsp; ( statement `;` )*\
+> &emsp;&emsp; ( statement `;` )* \
 > &emsp; ( `elsewhen` expression `then`\
-> &emsp;&emsp; ( statement `;` )*\
-> &emsp; )*\
+> &emsp;&emsp; ( statement `;` )* \
+> &emsp; )* \
 > &emsp; `end` `when`
 
 > connect_clause → `connect` `(` component_reference `,` component_reference `)`
@@ -301,7 +302,7 @@ argument_list → argument ( `,` argument )*
 
 > if_expression →\
 > &emsp; `if` expression `then` expression\
-> &emsp; ( `elseif` expression `then` expression )*\
+> &emsp; ( `elseif` expression `then` expression )* \
 > &emsp; `else` expression
 
 > simple_expression → logical_expression ( `:` logical_expression ( `:` logical_expression )? )?
