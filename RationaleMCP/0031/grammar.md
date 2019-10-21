@@ -187,17 +187,16 @@ external_function_call →
 element_list → ( element ';' )*
 ```
 
-```
-element
-  → import_clause
-  | extends_clause
-  | 'redeclare'?
-    'final'?
-    'inner'? 'outer'?
-    ( class_definition
-    | component_clause
-    | 'replaceable' ( class_definition | component_clause ) ( constraining_clause comment )?
-    )
+element\
+&emsp;→ import_clause\
+&emsp;| extends_clause\
+&emsp;| `'redeclare'`?\
+&emsp;&nbsp; `'final'`?\
+&emsp;&nbsp; `'inner'`? `'outer'`?\
+&emsp;&nbsp; ( class_definition\
+&emsp;&nbsp; | component_clause\
+&emsp;&nbsp; | `'replaceable'` ( class_definition | component_clause ) ( constraining_clause comment )?\
+&emsp;&nbsp; )
 ```
 
 ```
