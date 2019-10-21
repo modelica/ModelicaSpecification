@@ -3,7 +3,7 @@
 ## Overview
 We propose the use of a language version comment directly following the optional byte order mark at the first line of a Modelica source file.  It is mandatory that the language version is specified for every Modelica source file, but the version information is inherited within a package hierarchy, alleviating the need for a language version comment in every Modelica sourc efile.  The entire line containing the language version comment shall match the follow regular expression where `\U+FEFF` denotes the byte order mark:
 ```
-^\U+FEFF?//![ ] \d+[.]\d+[r.]\d+$
+^\U+FEFF?//![ ]\d+[.]\d+[r.]\d+$
 ```
 
 For example, this is a valid language version comment:
