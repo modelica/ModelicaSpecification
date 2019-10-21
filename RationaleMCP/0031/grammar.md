@@ -440,11 +440,14 @@ connect_clause →
 ## Expressions
 
 ```
-expression
-  → simple_expression
-  | 'if' expression 'then' expression
-    ( 'elseif' expression 'then' expression )*
-    'else' expression
+expression → simple_expression | if_expression
+```
+
+```
+if_expression →
+  'if' expression 'then' expression
+  ( 'elseif' expression 'then' expression )*
+  'else' expression
 ```
 
 ```
@@ -535,12 +538,11 @@ function_arguments_non_first
 ```
 
 ```
-array_arguments →
-  expression ( ( ',' expression )* | 'for' for_indices ) // CHANGE: repetition instead of a new rule
+array_arguments → expression ( ( ',' expression )* | 'for' for_indices )
 ```
 
 ```
-named_arguments → named_argument ( ',' named_argument )* // CHANGE: repetition
+named_arguments → named_argument ( ',' named_argument )*
 ```
 
 ```
