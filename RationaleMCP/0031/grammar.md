@@ -134,82 +134,56 @@ long_class_specifier
   | 'extends' IDENT class_modification? string_comment composition 'end' IDENT
 ```
 
-```
-short_class_specifier →
-  IDENT '='
-  ( base_prefix? type_specifier array_subscripts? class_modification?
-  | 'enumeration' '(' ( enum_list? | ':' ) ')'
-  )
-  comment
-```
+> short_class_specifier →\
+> &emsp; IDENT `=`\
+> &emsp; ( base_prefix? type_specifier array_subscripts? class_modification?\
+> &emsp; | `enumeration` `(` ( enum_list? | `:` ) `)`\
+> &emsp; )\
+> &emsp; comment
 
-```
-der_class_specifier →
-  IDENT '=' 'der' '(' type_specifier ',' IDENT ( ',' IDENT )* ')' comment
-```
+> der_class_specifier → IDENT `=` `der` `(` type_specifier `,` IDENT ( `,` IDENT )* `)` comment
 
-```
-base_prefix → 'input' | 'output'
-```
+> base_prefix → `input` | `output`
 
-```
-enum_list → enumeration_literal ( ',' enumeration_literal )*
-```
+> enum_list → enumeration_literal ( `,` enumeration_literal )*
 
-```
-enumeration_literal → IDENT comment
-```
+> enumeration_literal → IDENT comment
 
-```
-composition →
-  element_list
-  ( 'public' element_list
-  | 'protected' element_list
-  | equation_section
-  | algorithm_section
-  )*
-  ( 'external' language_specification?
-    external_function_call? annotation_comment? ';'
-  )?
-  ( annotation_comment ';' )?
-```
+> composition →\
+> &emsp; element_list\
+> &emsp; ( `public` element_list\
+> &emsp; | `protected` element_list\
+> &emsp; | equation_section\
+> &emsp; | algorithm_section\
+> &emsp; )*\
+> &emsp; ( `external` language_specification?\
+> &emsp;&emsp; external_function_call? annotation_comment? `;`\
+> &emsp; )?\
+> &emsp; ( annotation_comment `;` )?
 
-```
-language_specification → STRING
-```
+> language_specification → STRING
 
-```
-external_function_call →
-  ( component_reference '=' )? IDENT '(' expression_list? ')'
-```
+> external_function_call → ( component_reference `=` )? IDENT `(` expression_list? `)`
 
-```
-element_list → ( element ';' )*
-```
+> element_list → ( (import_clause | extends_clause | normal_element) `';'` )*
 
-> element\
-> &emsp;→ import_clause\
-> &emsp;| extends_clause\
-> &emsp;| `'redeclare'`?\
-> &emsp;&nbsp; `'final'`?\
-> &emsp;&nbsp; `'inner'`? `'outer'`?\
-> &emsp;&nbsp; ( class_definition\
-> &emsp;&nbsp; | component_clause\
-> &emsp;&nbsp; | `'replaceable'` ( > class_definition | component_clause ) ( > constraining_clause comment )?\
-> &emsp;&nbsp; )
+> normal_element →\
+> &emsp; `redeclare`?\
+> &emsp; `final`?\
+> &emsp; `inner`? `outer`?\
+> &emsp; ( class_definition\
+> &emsp; | component_clause\
+> &emsp; | `replaceable` ( class_definition | component_clause ) ( constraining_clause comment )?\
+> &emsp; )
 
-```
-import_clause →
-  'import'
-  ( IDENT '=' name
-  | name ( '.' ( '*' | '{' import_list '}' ) | '.*' )?
-  )
-  comment
-```
+> import_clause →\
+> &emsp; `import`\
+> &emsp; ( IDENT `=` name\
+> &emsp; | name ( `.` ( `*` | `{` import_list `}` ) | `.*` )?\
+> &emsp; )\
+> &emsp; comment
 
-```
-import_list → IDENT ( ',' IDENT )*
-```
+> import_list → IDENT ( `,` IDENT )*
 
 
 ## B23 Extends
