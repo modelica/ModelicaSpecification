@@ -122,12 +122,12 @@ end _F;
 > element_list → ( (import_clause | extends_clause | normal_element) `;` )*
 
 > normal_element →\
-> &emsp; `redeclare`?\
+> &emsp; ~~`redeclare`?~~\
 > &emsp; `final`?\
 > &emsp; `inner`? `outer`?\
 > &emsp; ( class_definition\
 > &emsp; | component_clause\
-> &emsp; | `replaceable` ( class_definition | component_clause ) ( constraining_clause comment )?\
+> &emsp; | ~~`replaceable`~~ ( class_definition | component_clause ) ( constraining_clause comment )?\
 > &emsp; )
 
 > import_clause →\
@@ -178,34 +178,34 @@ end _F;
 
 > argument\
 > &emsp; → element_modification_or_replaceable\
-> &emsp; | element_redeclaration
+> &emsp; ~~| element_redeclaration~~
 
 > element_modification_or_replaceable →\
 > &emsp; `each`?\
 > &emsp; `final`?\
 > &emsp; ( element_modification\
-> &emsp; | element_replaceable\
+> &emsp; ~~| element_replaceable~~\
 > &emsp; )
 
 > element_modification → name modification? string_comment
 
-> element_redeclaration →\
-> &emsp; `redeclare` `each`? `final`?\
-> &emsp; ( short_class_definition\
-> &emsp; | component_clause1\
-> &emsp; | element_replaceable\
-> &emsp; )
+> ~~element_redeclaration →~~\
+> ~~&emsp; `redeclare` `each`? `final`?~~\
+> ~~&emsp; ( short_class_definition~~\
+> ~~&emsp; | component_clause1~~\
+> ~~&emsp; ~~| element_replaceable~~~~\
+> ~~&emsp; )~~
 
-> element_replaceable →\
-> &emsp; `replaceable`\
-> &emsp; ( short_class_definition\
-> &emsp; | component_clause1\
-> &emsp; )\
-> &emsp; constraining_clause?
+> ~~element_replaceable →~~\
+> ~~&emsp; `replaceable`~~\
+> ~~&emsp; ( short_class_definition~~\
+> ~~&emsp; | component_clause1~~\
+> ~~&emsp; )~~\
+> ~~&emsp; constraining_clause?~~
 
-> component_clause1 → type_prefix type_specifier component_declaration1
+> ~~component_clause1 → type_prefix type_specifier component_declaration1~~
 
-> component_declaration1 → declaration comment
+> ~~component_declaration1 → declaration comment~~
 
 > short_class_definition → class_prefixes short_class_specifier
 
