@@ -42,7 +42,7 @@ The S_CHAR accepts Unicode other than " and \\:
 
 > UNSIGNED_INTEGER → DIGIT+
 
-> EXPONENT → ( `e` | `E` ) ( `+` | `-` )? DIGIT+
+> EXPONENT → ( `e` | `E` ) ( `[+]` | `-` )? DIGIT+
 
 > UNSIGNED_NUMBER → DIGIT+ ( `[.]` (DIGIT)* )? ( EXPONENT )?
 
