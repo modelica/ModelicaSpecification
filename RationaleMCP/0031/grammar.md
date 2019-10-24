@@ -9,51 +9,51 @@ The start rule of the Flat Modelica grammar below is [`flat_modelica`](#Start-ru
 
 ## B1 Lexical conventions
 
-Each grammar rule is written as a block quote.  Regular expressions for tokens are written as inline code, while parsing constructs and rule names are written in plain text.
+Each grammar rule is written as a block quote.  Regular expressions for tokens are written as inline code, production rule names are written in italics, while parsing constructs are written in plain text.
 
 ### Whitespace and comments
 
-> WS → ( `[ ]` | `\t` | NL )+
+> _WS_ → ( `[ ]` | `\t` | _NL_ )+
 
-> LINE_COMMENT → `//[^\r\n]*` (NL | EOF)
+> _LINE-COMMENT_ → `//[^\r\n]*` (_NL_ | EOF)
 
-> ML_COMMENT → `/[*]([^*]|([*][^/]))*[*]/`
+> _ML-COMMENT_ → `/[*]([^*]|([*][^/]))*[*]/`
 
-> NL → `\r\n` | `\n` | `\r`
+> _NL_ → `\r\n` | `\n` | `\r`
 
 ### Lexical units except for keywords
 
-> IDENT → NONDIGIT ( DIGIT | NONDIGIT )* | Q_IDENT
+> _IDENT_ → _NONDIGIT_ ( _DIGIT_ | _NONDIGIT_ )* | _Q-IDENT_
 
-> NONDIGIT → `_` | `[a-z]` | `[A-Z]`
+> _NONDIGIT_ → `_` | `[a-z]` | `[A-Z]`
 
-> STRING → `"` ( S_CHAR | S_ESCAPE )* `"`
+> _STRING_ → `"` ( _S-CHAR_ | _S-ESCAPE_ )* `"`
 
-The S_CHAR accepts Unicode other than " and \\:
-> S_CHAR → NL | `[^\r\n\\"]`
+The _S-CHAR_ accepts Unicode other than " and \\:
+> _S-CHAR_ → _NL_ | `[^\r\n\\"]`
 
-> DIGIT → `[0-9]`
+> _DIGIT_ → `[0-9]`
 
-> Q_IDENT → `'` ( Q_CHAR | S_ESCAPE ) ( Q_CHAR | S_ESCAPE | `"` )* `'`
+> _Q-IDENT_ → `'` ( _Q-CHAR_ | _S-ESCAPE_ ) ( _Q-CHAR_ | _S-ESCAPE_ | `"` )* `'`
 
-> Q_CHAR → NONDIGIT | DIGIT | `[-!#$%&()*>+,./:;<>=?>@[]{}|~ ^]`
+> _Q-CHAR_ → _NONDIGIT_ | _DIGIT_ | `[-!#$%&()*>+,./:;<>=?>@[]{}|~ ^]`
 
-> S_ESCAPE → `\\['"?\\abfnrtv]`
+> _S-ESCAPE_ → `\\['"?\\abfnrtv]`
 
-> UNSIGNED_INTEGER → DIGIT+
+> _UNSIGNED-INTEGER_ → _DIGIT_+
 
-> EXPONENT → ( `e` | `E` ) ( `[+]` | `-` )? DIGIT+
+> _EXPONENT_ → ( `e` | `E` ) ( `[+]` | `-` )? _DIGIT_+
 
-> UNSIGNED_NUMBER → DIGIT+ ( `[.]` (DIGIT)* )? ( EXPONENT )?
+> _UNSIGNED-NUMBER_ → _DIGIT_+ ( `[.]` (_DIGIT_)* )? ( _EXPONENT_ )?
 
 
 ## Start rule
 > flat_modelica →\
-> &emsp; VERSION_HEADER\
-> &emsp; `model` long_class_specifier `;`
+> &emsp; _VERSION-HEADER_\
+> &emsp; `model` _long-class-specifier_ `;`
 
-Here, the VERSION_HEADER is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
-> VERSION_HEADER → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
+Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
+> _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
 
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
@@ -67,9 +67,9 @@ end _F;
 
 ## B22 Class definition
 
-> class_definition → `encapsulated`? class_prefixes class_specifier
+> _class-definition_ → `encapsulated`? _class-prefixes_ _class-specifier_
 
-> class_prefixes →\
+> _class-prefixes_ →\
 > &emsp; `partial`?\
 > &emsp; ( `class`\
 > &emsp; | `model`\
@@ -82,298 +82,298 @@ end _F;
 > &emsp; | `operator`\
 > &emsp; )
 
-> class_specifier → long_class_specifier | short_class_specifier | der_class_specifier
+> _class-specifier_ → _long-class-specifier_ | _short-class-specifier_ | _der-class-specifier_
 
-> long_class_specifier\
-> &emsp; → IDENT string_comment composition `end` IDENT\
-> &emsp; | `extends` IDENT class_modification? string_comment composition `end` IDENT
+> _long-class-specifier_\
+> &emsp; → _IDENT_ _string-comment_ _composition_ `end` _IDENT_\
+> &emsp; | `extends` _IDENT_ _class-modification_? _string-comment_ _composition_ `end` _IDENT_
 
-> short_class_specifier →\
-> &emsp; IDENT `=`\
-> &emsp; ( base_prefix? type_specifier array_subscripts? class_modification?\
-> &emsp; | `enumeration` `[(]` ( enum_list? | `:` ) `[)]`\
+> _short-class-specifier_ →\
+> &emsp; _IDENT_ `=`\
+> &emsp; ( _base-prefix_? _type-specifier_ _array-subscripts_? _class-modification_?\
+> &emsp; | `enumeration` `[(]` ( _enum-list_? | `:` ) `[)]`\
 > &emsp; )\
-> &emsp; comment
+> &emsp; _comment_
 
-> der_class_specifier → IDENT `=` `der` `[(]` type_specifier `,` IDENT ( `,` IDENT )* `[)]` comment
+> _der-class-specifier_ → _IDENT_ `=` `der` `[(]` _type-specifier_ `,` _IDENT_ ( `,` _IDENT_ )* `[)]` _comment_
 
-> base_prefix → `input` | `output`
+> _base-prefix_ → `input` | `output`
 
-> enum_list → enumeration_literal ( `,` enumeration_literal )*
+> _enum-list_ → _enumeration-literal_ ( `,` _enumeration-literal_ )*
 
-> enumeration_literal → IDENT comment
+> _enumeration-literal_ → _IDENT_ _comment_
 
-> composition →\
-> &emsp; (generic_element `;`)* \
-> &emsp; ( `public` (generic_element `;`)* \
-> &emsp; | `protected` (generic_element `;`)* \
-> &emsp; | `initial`? `equation` ( equation `;` )* \
-> &emsp; | `initial`? `algorithm` ( statement `;` )* \
+> _composition_ →\
+> &emsp; (_generic-element_ `;`)* \
+> &emsp; ( `public` (_generic-element_ `;`)* \
+> &emsp; | `protected` (_generic-element_ `;`)* \
+> &emsp; | `initial`? `equation` ( _equation_ `;` )* \
+> &emsp; | `initial`? `algorithm` ( _statement_ `;` )* \
 > &emsp; )* \
-> &emsp; ( `external` language_specification?\
-> &emsp;&emsp; external_function_call? annotation_comment? `;`\
+> &emsp; ( `external` _language-specification_?\
+> &emsp;&emsp; _external-function-call_? _annotation-comment_? `;`\
 > &emsp; )?\
-> &emsp; ( annotation_comment `;` )?
+> &emsp; ( _annotation-comment_ `;` )?
 
-> language_specification → STRING
+> _language-specification_ → _STRING_
 
-> external_function_call → ( component_reference `=` )? IDENT `[(]` expression_list? `[)]`
+> _external-function-call_ → ( _component-reference_ `=` )? _IDENT_ `[(]` _expression-list_? `[)]`
 
-> generic_element → import_clause | extends_clause | normal_element
+> _generic-element_ → _import-clause_ | _extends-clause_ | _normal-element_
 
-> normal_element →\
+> _normal-element_ →\
 > &emsp; ~~`redeclare`?~~\
 > &emsp; `final`?\
 > &emsp; `inner`? `outer`?\
-> &emsp; ( class_definition\
-> &emsp; | component_clause\
-> &emsp; | ~~`replaceable`~~ ( class_definition | component_clause ) ( constraining_clause comment )?\
+> &emsp; ( _class-definition_\
+> &emsp; | _component-clause_\
+> &emsp; | ~~`replaceable`~~ ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?\
 > &emsp; )
 
-> import_clause →\
-> &emsp; `import`\
-> &emsp; ( IDENT `=` name\
-> &emsp; | name ( `[.]` ( `[*]` | `[{]` import_list `[}]` ) | `[.][*]` )?\
+> _import-clause_ →\
+> &emsp; **import**\
+> &emsp; ( _IDENT_ `=` _name_\
+> &emsp; | _name_ ( `[.]` ( `[*]` | `[{]` _import-list_ `[}]` ) | `[.][*]` )?\
 > &emsp; )\
-> &emsp; comment
+> &emsp; _comment_
 
-> import_list → IDENT ( `,` IDENT )*
+> _import-list_ → _IDENT_ ( `,` _IDENT_ )*
 
 
 ## B23 Extends
 
-> extends_clause → `extends` type_specifier class_modification? annotation_comment?
+> _extends-clause_ → `extends` _type-specifier_ _class-modification_? _annotation-comment_?
 
-> constraining_clause → `constrainedby` type_specifier class_modification?
+> _constraining-clause_ → `constrainedby` _type-specifier_ _class-modification_?
 
 
 ## B24 Component clause
 
-> component_clause → type_prefix type_specifier array_subscripts? component_list
+> _component-clause_ → _type-prefix_ _type-specifier_ _array-subscripts_? _component-list_
 
-> type_prefix →\
+> _type-prefix_ →\
 > &emsp; ( `flow` | `stream` )?\
 > &emsp; ( `discrete` | `parameter` | `constant` )?\
 > &emsp; ( `input` | `output` )?
 
-> component_list → component_declaration ( `,` component_declaration )*
+> _component-list_ → _component-declaration_ ( `,` _component-declaration_ )*
 
-> component_declaration → declaration condition_attribute? comment
+> _component-declaration_ → _declaration_ _condition-attribute_? _comment_
 
-> condition_attribute → `if` expression
+> _condition-attribute_ → `if` _expression_
 
-> declaration → IDENT array_subscripts? modification?
+> _declaration_ → _IDENT_ _array-subscripts_? _modification_?
 
 
 ## B25 Modification
 
-> modification\
-> &emsp; → class_modification ( `=` expression )?\
-> &emsp; | `=` expression\
-> &emsp; | `:=` expression
+> _modification_\
+> &emsp; → _class-modification_ ( `=` _expression_ )?\
+> &emsp; | `=` _expression_\
+> &emsp; | `:=` _expression_
 
-> class_modification → `[(]` argument_list? `[)]`
+> _class-modification_ → `[(]` _argument-list_? `[)]`
 
-> argument_list → argument ( `,` argument )*
+> _argument-list_ → _argument_ ( `,` _argument_ )*
 
-> argument\
-> &emsp; → element_modification_or_replaceable\
-> &emsp; ~~| element_redeclaration~~
+> _argument_\
+> &emsp; → _element-modification-or-replaceable_\
+> &emsp; ~~| _element-redeclaration_~~
 
-> element_modification_or_replaceable →\
+> _element-modification-or-replaceable_ →\
 > &emsp; `each`?\
 > &emsp; `final`?\
-> &emsp; ( element_modification\
-> &emsp; ~~| element_replaceable~~\
+> &emsp; ( _element-modification_\
+> &emsp; ~~| _element-replaceable_~~\
 > &emsp; )
 
-> element_modification → name modification? string_comment
+> _element-modification_ → _name_ _modification_? _string-comment_
 
-> ~~element_redeclaration →~~\
+> ~~_element-redeclaration_ →~~\
 > ~~&emsp; `redeclare` `each`? `final`?~~\
-> ~~&emsp; ( short_class_definition~~\
-> ~~&emsp; | component_clause1~~\
-> ~~&emsp; | element_replaceable~~\
+> ~~&emsp; ( _short-class-definition_~~\
+> ~~&emsp; | _component-clause1_~~\
+> ~~&emsp; | _element-replaceable_~~\
 > ~~&emsp; )~~
 
-> ~~element_replaceable →~~\
+> ~~_element-replaceable_ →~~\
 > ~~&emsp; `replaceable`~~\
-> ~~&emsp; ( short_class_definition~~\
-> ~~&emsp; | component_clause1~~\
+> ~~&emsp; ( _short-class-definition_~~\
+> ~~&emsp; | _component-clause1_~~\
 > ~~&emsp; )~~\
-> ~~&emsp; constraining_clause?~~
+> ~~&emsp; _constraining-clause_?~~
 
-> ~~component_clause1 → type_prefix type_specifier component_declaration1~~
+> ~~_component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
 
-> ~~component_declaration1 → declaration comment~~
+> ~~_component-declaration1_ → _declaration_ _comment_~~
 
-> short_class_definition → class_prefixes short_class_specifier
+> _short-class-definition_ → _class-prefixes_ _short-class-specifier_
 
 ## B26 Equations
 
-> equation →\
-> &emsp; ( simple_expression ( `=` expression )?\
-> &emsp; | if_equation\
-> &emsp; | for_equation\
-> &emsp; | connect_clause\
-> &emsp; | when_equation\
+> _equation_ →\
+> &emsp; ( _simple-expression_ ( `=` _expression_ )?\
+> &emsp; | _if-equation_\
+> &emsp; | _for-equation_\
+> &emsp; | _connect-clause_\
+> &emsp; | _when-equation_\
 > &emsp; )\
-> &emsp; comment
+> &emsp; _comment_
 
-> statement →\
-> &emsp; ( component_reference ( `:=` expression | function_call_args )\
-> &emsp; | `[(]` output_expression_list `[)]` `:=` component_reference function_call_args\
+> _statement_ →\
+> &emsp; ( _component-reference_ ( `:=` _expression_ | _function-call-args_ )\
+> &emsp; | `[(]` _output-expression-list_ `[)]` `:=` _component-reference_ _function-call-args_\
 > &emsp; | `break`\
 > &emsp; | `return`\
-> &emsp; | if_statement\
-> &emsp; | for_statement\
-> &emsp; | while_statement\
-> &emsp; | when_statement\
+> &emsp; | _if-statement_\
+> &emsp; | _for-statement_\
+> &emsp; | _while-statement_\
+> &emsp; | _when-statement_\
 > &emsp; )\
-> &emsp; comment
+> &emsp; _comment_
 
-> if_equation →\
-> &emsp; `if` expression `then`\
-> &emsp;&emsp; ( equation `;` )* \
-> &emsp; ( `elseif` expression `then`\
-> &emsp;&emsp; ( equation `;` )* \
+> _if-equation_ →\
+> &emsp; `if` _expression_ `then`\
+> &emsp;&emsp; ( _equation_ `;` )* \
+> &emsp; ( `elseif` _expression_ `then`\
+> &emsp;&emsp; ( _equation_ `;` )* \
 > &emsp; )* \
 > &emsp; ( `else`\
-> &emsp;&emsp; ( equation `;` )* \
+> &emsp;&emsp; ( _equation_ `;` )* \
 > &emsp; )?\
 > &emsp; `end` `if`
 
-> if_statement →\
-> &emsp; `if` expression `then`\
-> &emsp;&emsp; ( statement `;` )* \
-> &emsp; ( `elseif` expression `then`\
-> &emsp;&emsp; ( statement `;` )* \
+> _if-statement_ →\
+> &emsp; `if` _expression_ `then`\
+> &emsp;&emsp; ( _statement_ `;` )* \
+> &emsp; ( `elseif` _expression_ `then`\
+> &emsp;&emsp; ( _statement_ `;` )* \
 > &emsp; )* \
 > &emsp; ( `else`\
-> &emsp;&emsp; ( statement `;` )* \
+> &emsp;&emsp; ( _statement_ `;` )* \
 > &emsp; )?\
 > &emsp; `end` `if`
 
-> for_equation →\
-> &emsp; `for` for_indices `loop`\
-> &emsp;&emsp; ( equation `;` )* \
+> _for-equation_ →\
+> &emsp; `for` _for-indices_ `loop`\
+> &emsp;&emsp; ( _equation_ `;` )* \
 > &emsp; `end` `for`
 
-> for_statement →\
-> &emsp; `for` for_indices `loop`\
-> &emsp;&emsp; ( statement `;` )* \
+> _for-statement_ →\
+> &emsp; `for` _for-indices_ `loop`\
+> &emsp;&emsp; ( _statement_ `;` )* \
 > &emsp; `end` `for`
 
-> for_indices → for_index ( `,` for_index )*
+> _for-indices_ → _for-index_ ( `,` _for-index_ )*
 
-> for_index → IDENT ( `in` expression )?
+> _for-index_ → _IDENT_ ( `in` _expression_ )?
 
-> while_statement →\
-> &emsp; `while` expression `loop`\
-> &emsp;&emsp; ( statement `;` )* \
+> _while-statement_ →\
+> &emsp; `while` _expression_ `loop`\
+> &emsp;&emsp; ( _statement_ `;` )* \
 > &emsp; `end` `while`
 
-> when_equation →\
-> &emsp; `when` expression `then`\
-> &emsp;&emsp; ( equation `;` )* \
-> &emsp; ( `elsewhen` expression `then`\
-> &emsp;&emsp; ( equation `;` )* \
+> _when-equation_ →\
+> &emsp; `when` _expression_ `then`\
+> &emsp;&emsp; ( _equation_ `;` )* \
+> &emsp; ( `elsewhen` _expression_ `then`\
+> &emsp;&emsp; ( _equation_ `;` )* \
 > &emsp; )* \
 > &emsp; `end` `when`
 
-> when_statement →\
-> &emsp; `when` expression `then`\
-> &emsp;&emsp; ( statement `;` )* \
-> &emsp; ( `elsewhen` expression `then`\
-> &emsp;&emsp; ( statement `;` )* \
+> _when-statement_ →\
+> &emsp; `when` _expression_ `then`\
+> &emsp;&emsp; ( _statement_ `;` )* \
+> &emsp; ( `elsewhen` _expression_ `then`\
+> &emsp;&emsp; ( _statement_ `;` )* \
 > &emsp; )* \
 > &emsp; `end` `when`
 
-> connect_clause → `connect` `[(]` component_reference `,` component_reference `[)]`
+> _connect-clause_ → `connect` `[(]` _component-reference_ `,` _component-reference_ `[)]`
 
 
 ## Expressions
 
-> expression → simple_expression | if_expression
+> _expression_ → _simple-expression_ | _if-expression_
 
-> if_expression →\
-> &emsp; `if` expression `then` expression\
-> &emsp; ( `elseif` expression `then` expression )* \
-> &emsp; `else` expression
+> _if-expression_ →\
+> &emsp; `if` _expression_ `then` _expression_\
+> &emsp; ( `elseif` _expression_ `then` _expression_ )* \
+> &emsp; `else` _expression_
 
-> simple_expression → logical_expression ( `:` logical_expression ( `:` logical_expression )? )?
+> _simple-expression_ → _logical-expression_ ( `:` _logical-expression_ ( `:` _logical-expression_ )? )?
 
-> logical_expression → logical_term ( `or` logical_term )*
+> _logical-expression_ → _logical-term_ ( `or` _logical-term_ )*
 
-> logical_term → logical_factor ( `and` logical_factor )*
+> _logical-term_ → _logical-factor_ ( `and` _logical-factor_ )*
 
-> logical_factor → `not`? relation
+> _logical-factor_ → `not`? _relation_
 
-> relation → arithmetic_expression ( relational_operator arithmetic_expression )?
+> _relation_ → _arithmetic-expression_ ( _relational-operator_ _arithmetic-expression_ )?
 
-> relational_operator → `<` | `<=` | `>` | `>=` | `==` | `<>`
+> _relational-operator_ → `<` | `<=` | `>` | `>=` | `==` | `<>`
 
-> arithmetic_expression → add_operator? term ( add_operator term )*
+> _arithmetic-expression_ → _add-operator_? _term_ ( _add-operator_ _term_ )*
 
-> add_operator → `[+]` | `[-]` | `[.][+]` | `[.][-]`
+> _add-operator_ → `[+]` | `[-]` | `[.][+]` | `[.][-]`
 
-> term → factor ( mul_operator factor )*
+> _term_ → _factor_ ( _mul-operator_ _factor_ )*
 
-> mul_operator → `[*]` | `/` | `[.][*]` | `[.]/`
+> _mul-operator_ → `[*]` | `/` | `[.][*]` | `[.]/`
 
-> factor → primary ( (`[^]` | `[.][^]`) primary )?
+> _factor_ → _primary_ ( (`[^]` | `[.][^]`) _primary_ )?
 
->primary\
-> &emsp; → UNSIGNED_NUMBER\
-> &emsp; | STRING\
+>_primary_\
+> &emsp; → _UNSIGNED-NUMBER_\
+> &emsp; | _STRING_\
 > &emsp; | `false`\
 > &emsp; | `true`\
-> &emsp; | ( `der` | `initial` | `pure` ) function_call_args\
-> &emsp; | component_reference function_call_args?\
-> &emsp; | `[(]` output_expression_list `[]])`\
-> &emsp; | `[[]` expression_list ( `;` expression_list )* `[]]`\
-> &emsp; | `[{]` array_arguments `[]]}`\
+> &emsp; | ( `der` | `initial` | `pure` ) _function-call-args_\
+> &emsp; | _component-reference_ _function-call-args_?\
+> &emsp; | `[(]` _output-expression-list_ `[]])`\
+> &emsp; | `[[]` _expression-list_ ( `;` _expression-list_ )* `[]]`\
+> &emsp; | `[{]` _array-arguments_ `[]]}`\
 > &emsp; | `end`
 
-> type_specifier → `[.]`? name
+> _type-specifier_ → `[.]`? _name_
 
-> name → IDENT ( `[.]` IDENT )*
+> _name_ → _IDENT_ ( `[.]` _IDENT_ )*
 
-> component_reference → `[.]`? IDENT array_subscripts? ( `[.]` IDENT array_subscripts? )*
+> _component-reference_ → `[.]`? _IDENT_ _array-subscripts_? ( `[.]` _IDENT_ _array-subscripts_? )*
 
-> function_call_args → `[(]` function_arguments? `[)]`
+> _function-call-args_ → `[(]` _function-arguments_? `[)]`
 
-> function_arguments\
-> &emsp; → expression ( `,` function_arguments_non_first | `for` for_indices )?\
-> &emsp; | function_partial_application ( `,` function_arguments_non_first )?\
-> &emsp; | named_arguments
+> _function-arguments_\
+> &emsp; → _expression_ ( `,` _function-arguments-non-first_ | `for` _for-indices_ )?\
+> &emsp; | _function-partial-application_ ( `,` _function-arguments-non-first_ )?\
+> &emsp; | _named-arguments_
 
-> function_arguments_non_first\
-> &emsp; → function_argument ( `,` function_arguments_non_first )?\
-> &emsp; | named_arguments
+> _function-arguments-non-first_\
+> &emsp; → _function-argument_ ( `,` _function-arguments-non-first_ )?\
+> &emsp; | _named-arguments_
 
-> array_arguments → expression ( ( `,` expression )* | `for` for_indices )
+> _array-arguments_ → _expression_ ( ( `,` _expression_ )* | `for` _for-indices_ )
 
-> named_arguments → named_argument ( `,` named_argument )*
+> _named-arguments_ → _named-argument_ ( `,` _named-argument_ )*
 
-> named_argument → IDENT `=` function_argument
+> _named-argument_ → _IDENT_ `=` _function-argument_
 
-> function_argument\
-> &emsp; → function_partial_application\
-> &emsp; | expression
+> _function-argument_\
+> &emsp; → _function-partial-application_\
+> &emsp; | _expression_
 
-> function_partial_application → `function` type_specifier `[(]` named_arguments? `[)]`
+> _function-partial-application_ → `function` _type-specifier_ `[(]` _named-arguments_? `[)]`
 
-> output_expression_list → expression? ( `,` expression? )*
+> _output-expression-list_ → _expression_? ( `,` _expression_? )*
 
-> expression_list → expression ( `,` expression )*
+> _expression-list_ → _expression_ ( `,` _expression_ )*
 
-> array_subscripts → `[` subscript ( `,` subscript )* `]`
+> _array-subscripts_ → `[` _subscript_ ( `,` _subscript_ )* `]`
 
-> subscript → `:` | expression
+> _subscript_ → `:` | _expression_
 
-> comment → string_comment annotation_comment?
+> _comment_ → _string-comment_ _annotation-comment_?
 
-> string_comment → ( STRING ( `[+]` STRING )* )?
+> _string-comment_ → ( _STRING_ ( `[+]` _STRING_ )* )?
 
-> annotation_comment → `annotation` class_modification
+> _annotation-comment_ → `annotation` _class-modification_
