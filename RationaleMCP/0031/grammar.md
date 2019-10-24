@@ -135,7 +135,7 @@ end _F;
 > _import-clause_ →\
 > &emsp; **import**\
 > &emsp; ( _IDENT_ **=** _name_\
-> &emsp; | _name_ ( **.** ( ***** | **{** _import-list_ **}** ) | **.*** )?\
+> &emsp; | _name_ ( `[.]` ( `[*]` | **{** _import-list_ **}** ) | `[.][*]` )?\
 > &emsp; )\
 > &emsp; _comment_
 
