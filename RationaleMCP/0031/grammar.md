@@ -17,7 +17,7 @@ Each grammar rule is written as a block quote.  Regular expressions for tokens a
 
 > LINE_COMMENT → `//[^\r\n]*` (NL | EOF)
 
-> ML_COMMENT → `/[*]` (options {greedy=false;} : .)* `[*]/`
+> ML_COMMENT → `/[*]([^*]|([*][^/]))*[*]/`
 
 > NL → `\r\n` | `\n` | `\r`
 
