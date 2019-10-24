@@ -134,8 +134,8 @@ end _F;
 > &emsp; `import`\
 > &emsp; ( IDENT `=` name\
 > &emsp; | name ( `[.]` ( `[*]` | `[{]` import_list `[}]` ) | `[.][*]` )?\
-> &emsp;[ ])\
->[ ]&emsp; comment
+> &emsp; )\
+> &emsp; comment
 
 > import_list → IDENT ( `,` IDENT )*
 
