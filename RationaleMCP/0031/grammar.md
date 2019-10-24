@@ -104,11 +104,11 @@ end _F;
 > enumeration_literal → IDENT comment
 
 > composition →\
-> &emsp; element_list\
-> &emsp; ( `public` element_list\
-> &emsp; | `protected` element_list\
-> &emsp; | equation_section\
-> &emsp; | algorithm_section\
+> &emsp; (generic_element `;`)* \
+> &emsp; ( `public` (generic_element `;`)* \
+> &emsp; | `protected` (generic_element `;`)* \
+> &emsp; | `initial`? `equation` ( equation `;` )* \
+> &emsp; | `initial`? `algorithm` ( statement `;` )* \
 > &emsp; )* \
 > &emsp; ( `external` language_specification?\
 > &emsp;&emsp; external_function_call? annotation_comment? `;`\
@@ -119,7 +119,7 @@ end _F;
 
 > external_function_call → ( component_reference `=` )? IDENT `[(]` expression_list? `[)]`
 
-> element_list → ( (import_clause | extends_clause | normal_element) `;` )*
+> generic_element → import_clause | extends_clause | normal_element
 
 > normal_element →\
 > &emsp; ~~`redeclare`?~~\
@@ -210,10 +210,6 @@ end _F;
 > short_class_definition → class_prefixes short_class_specifier
 
 ## B26 Equations
-
-> equation_section → `initial`? `equation` ( equation `;` )*
-
-> algorithm_section → `initial`? `algorithm` ( statement `;` )*
 
 > equation →\
 > &emsp; ( simple_expression ( `=` expression )?\
