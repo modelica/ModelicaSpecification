@@ -10,6 +10,20 @@ Other important reasons for having a specification of Flat Modelica include maki
 
 A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
 
+## Subtopics
+Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
+
+- [x] Flat Modelica identifier naming scheme.
+- [ ] Get rid of the obviously irrelevant parts of the grammar.
+- [ ] Handling of parameters treated as constants.
+- [ ] Restricted rules for use of `start` attribute for parameter initialization.
+- [ ] Investigate need for `final`.
+- [ ] Get rid of conditional components and unbalanced `if`-equations.
+- [ ] Get rid of arrays with non-constant dimensions.
+- [ ] Soruce locations pointing back to the original Modelica code.
+- [ ] Origin of modifications (for start value prioritization).
+
+
 ## Revisions
 | Date | Description |
 | --- | --- |
