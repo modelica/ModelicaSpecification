@@ -8,7 +8,7 @@ A class' `Documentation` annotation might look like this:
 annotation(
   Documentation(
     figures = {
-      Figure(title = "Battery Voltage", identifier = "voltage", preferred = true, plots = {Plot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, y(label = "Voltage"))}),
+      Figure(title = "Battery Voltage", identifier = "voltage", preferred = true, plots = {Plot(curves = {Curve(x = time, y = battery.p.v, legend = "Battery voltage")}, y=Axis(label = "Voltage"))}),
       Figure(title = "Battery Limit Controller", identifier = "limit", caption = "...", plots = {Plot(title = "Battery Limits", curves = {Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"), Curve(x = time, y = battery.LimitController.u, legend = "Limit  controller input signal"), Curve(x = time, y = battery.LimitController.y, legend = "Limit controller output signal")})}),
       Figure(title = "Load Current", identifier = "load", plots = {Plot(curves = {Curve(x = time, y = load.i, legend = "Load current")})})
     }
