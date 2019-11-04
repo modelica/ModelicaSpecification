@@ -27,7 +27,7 @@ Figure(
   identifier = "limit",
   plots = {
     Plot(
-	    title = "Battery Limits",
+      title = "Battery Limits",
       identifier = "battery",
       curves = {
         Curve(x = time, y = battery.LimitController.threshold, legend = "Threshold for terminating simulation"),
