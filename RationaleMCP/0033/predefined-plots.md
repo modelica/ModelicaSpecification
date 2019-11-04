@@ -78,6 +78,8 @@ end Curve;
 
 The mandatory `x` and `y` expressions are currently restricted to be component references refering to a scalar variable or `time`.
 
+When `legend` isn't provided, the tool produces a default based on `x` and/or `y`.  Providing the empty string as `legend` means that the curve shall be omitted from the plot legend.
+
 ## Axis properties
 Properties may be defined for each `Plot` axis:
 ```
