@@ -62,7 +62,11 @@ record Plot
 end Plot;
 ```
 
+The `title` of a `Figure` shall be non-empty and is mandatory, as every figure needs a title for presentation in contexts such as a list of figures, and as it is generally hard for tools to automatically generate a meaningful title.  On the other hand, when the `title` of a `Plot` isn't provided, the tool produces a default, but the default is allowed to be empty.  Providing the empty string as `title` of a `Plot` means that no title should be shown.  The plot title is not to be confused with the plot _label_ which is never empty, see below.
+
 The `identifier` in `Figure` and `Plot` is optional, and is intended for programmatic access.  An `identifier` must be unique within the class containing the `figures` annotation, without considering whether it belongs to `Figure` or `Plot`.  As an example for `Figure`, a small extension to the Modelica URI scheme would make it possible to reference the plot from the class documentation.  For `Plot`, this makes it possible to reference the plot in the figure caption, which becomes useful when the `Figure` contains more than one `Plot`.
+
+Every `Plot` has an automatically generated _label_ which is required to be shown as soon as at least one `Plot` in the `Figure` has an `identifier`.  A tool is free to choose both labeling scheme (such as _a_, _b_, …, or _i_, _ii_, …) placement in the plot, and styling in the plot itself as well as in other contexts.
 
 When a `Figure` defines a non-empty `group`, it is used to organize figures similar to how `group` is used in the `Dialog` annotation.  However, leaving `group` at the default of an empty string does not mean that a group will be created automatically, but that the figure resides outside of any group.  The `group` is both the key used for grouping, and the name of the group for diaplay purposes.
 
