@@ -44,7 +44,7 @@ Pseudo code definition of `Figure`:
 record Figure
   String title "Title meant for display";
   String identifier "Identifier meant for programmatic access";
-  String group "Name of plot group";
+  String group = "" "Name of plot group";
   Boolean preferred = false "Automatically display figure after simulation";
   Plot[:] plots "Plots";
   String caption "Figure caption";
@@ -64,7 +64,7 @@ end Plot;
 
 The `identifier` in `Figure` and `Plot` is optional, and is intended for programmatic access.  As an example for `Figure`, a small extension to the Modelica URI scheme would make it possible to reference the plot from the class documentation.  For `Plot`, this makes it possible to reference the plot in the figure caption, which becomes useful when the `Figure` contains more than one `Plot`.
 
-When a `Figure` defines a non-empty `group`, it is used to organize figures similar to how `group` is used in the `Dialog` annotation.  The `group` is both the key used for grouping, and the name of the group for diaplay purposes.
+When a `Figure` defines a non-empty `group`, it is used to organize figures similar to how `group` is used in the `Dialog` annotation.  However, leaving `group` at the default of an empty string does not mean that a group will be created automatically, but that the figure resides outside of any group.  The `group` is both the key used for grouping, and the name of the group for diaplay purposes.
 
 ## Plot curves
 The actual data to plot is specified in the `curves` of a `Plot`:
