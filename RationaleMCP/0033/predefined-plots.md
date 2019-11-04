@@ -94,3 +94,28 @@ When an axis bound isn't provided, the tool computes one automatically.
 The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis `label` shall not be used to convey this information.
 
 When an axis label isn't provided, the tool produces a default label.  Providing the empty string as axis label means that no label should be shown.
+
+## Variable replacements
+In most places where text is displayed (`title`, `caption`, `legend`, `label`), the final value of a result variable can be embedded by refering to the variable as `%{inertia1.w}`.  This is similar to the `Text` graphical in 18.6.5.5 _Text_,.
+
+Note that expansion to the final value means that expansion is not restricted to parameters and constants, so that values to be shown in a caption can be determined during simulation.
+
+The percent character is encoded `%%`.  Neither `%class` nor `%name` is supported in this context, as this information is expected to already be easily accessible (when applicable) in tool-specific ways.  (Titles making use of `%class` or `%name` would then only lead to ugly duplication of this information.)
+
+## Text markup in captions
+In addition to variable replacements, a very restricted form of text markup is used for the `caption`.
+
+### Links
+Links take the form `%[<text>](<link>)`, where the `[<text>]` part is optional.  The `<link>` can be in either of the following forms:
+- A URI, such as `https://github.com/modelica/ModelicaSpecification` or `modelica:///Modelica.Blocks`.
+- A `variable:<id>`, where `<id>` is a component reference such as `inertia1.w`.
+- A `plot:<id>`, where `<id>` is the identifier of a `Plot` in the current `Figure`.
+
+When `[<text>]` is omitted, a Modelica tool is free to derive a default based on the `<link>`.
+
+The styling of the link text and the link action is left for each Modelica tool to decide.
+
+For example, `%(inertia1.w)` could be displayed as the text `inertia1.w` formatted with upright monospaced font, and have a pop-up menu attached with menu items for plotting the variable, setting its start value, or investigating the equation system from which it is solved.  On the other hand, `%[angular velocity](inertia1.w)` could be formatted in the same style as the surrounding text, except some non-intrusive visual clue about it being linked.
+
+### Paragraph break
+A sequence of one or more newlines (encoded either literally or using the `\n` escape sequence) means a paragraph break.  (A line break within a paragraph is not supported.)
