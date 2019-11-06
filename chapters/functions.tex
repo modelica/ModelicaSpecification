@@ -1773,9 +1773,9 @@ An exception is made when the argument is of the form \lstinline!size!(\ldots{},
 
 Strings are NUL-terminated (i.e., terminated by '\lstinline!\0!') to
 facilitate calling of C functions. When returning a non-literal string,
-the memory for this string must be allocated with function
-\lstinline!ModelicaAllocateString! (see \autoref{utility-functions}) {[}\emph{It is not suitable
-to use} \lstinline!malloc!\emph{, because a Modelica simulation environment may have
+the memory for this string must be allocated with one of the functions in
+\autoref{utility-functions-for-allocating-strings}, e.g., \lstinline!ModelicaAllocateString!.
+{[}\emph{It is not suitable to use} \lstinline!malloc!\emph{, because a Modelica simulation environment may have
 its own allocation scheme, e.g., a special stack for local variables of
 a function}{]}. After return of the external function, the Modelica
 environment is responsible for the memory allocated with
@@ -2401,6 +2401,7 @@ The following utility functions can be called in external Modelica
 functions written in C. These functions are defined in file
 \lstinline!ModelicaUtilities.h!:
 
+\subsubsection{Utility Functions for Reporting Errors}\doublelabel{utility-functions-for-reporting-errors}
 The following functions produce a message in different ways. The
 Message-functions only produce the message, but the Warning- and
 Error-functions combine this with error handling as follows.
@@ -2435,9 +2436,10 @@ same format control as the C-function \lstinline!vprintf!.}}\\ \hline
 
 \end{longtable}
 
+\subsubsection{Utility Functions for Allocating Strings}\doublelabel{utility-functions-for-allocating-strings}
 And then the string handling functions:
 
-\begin{longtable}[]{|p{6.5cm}|p{8.5cm}|}
+\begin{longtable}[]{|p{7cm}|p{8.2cm}|}
 \hline \endhead
 \lstinline!ModelicaAllocateString! &
 \begin{tabular}{@{}p{8.cm}@{}}
@@ -2457,13 +2459,30 @@ other open resources in case of error. After cleaning up resources use
 \lstinline!ModelicaError! or \lstinline!ModelicaFormatError! to signal the
 error.
 \end{tabular}\\ \hline
+\lstinline!ModelicaDuplicateString! &
+\begin{tabular}{@{}p{8.cm}@{}}
+\emph{char* ModelicaDuplicateString(const char*str)} \\
+Returns a writeable duplicate of the NUL-terminated string \lstinline!str!. 
+If an error occurs, this function does
+not return, but calls "\lstinline!ModelicaError!".
+\end{tabular}\\ \hline
+\lstinline!ModelicaDuplicateStringWithErrorReturn! &
+\begin{tabular}{@{}p{8.cm}@{}}
+\emph{char*\newline ModelicaDuplicateStringWithErrorReturn(const char*str)}\\
+Same as
+\lstinline!ModelicaDuplicateString!, except that in case of error, the function
+returns 0. This allows the external function to close files and free
+other open resources in case of error. After cleaning up resources use
+\lstinline!ModelicaError! or \lstinline!ModelicaFormatError! to signal the
+error.
+\end{tabular}\\ \hline
 \end{longtable}
 
 The valid return values for an external function returning a \lstinline!String! are:
 \begin{itemize}
 \item A literal \lstinline!String!.
 \item A string given as \lstinline!String! input to the external function
-\item A string pointer returned by \lstinline!ModelicaAllocateString! or \lstinline!ModelicaAllocateStringWithErrorReturn!.
+\item A string pointer returned by one the functions in the table above.
 \end{itemize}
 
 \subsection{External Objects}\doublelabel{external-objects}
