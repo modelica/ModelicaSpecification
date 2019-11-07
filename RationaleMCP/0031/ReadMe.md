@@ -4,29 +4,69 @@ Henrik Tidefelt, Peter Harman, …
 **(In Development)**
 
 ## Summary
-This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Flat Modelica_.  There are several reasons for specifying such a format, but the driving reason this time is the need to separate Modelica front end matters (the high level constructs of the Modelica language) from back end matters (simulation semantics).  Generally speaking, the two different matters will attract attention from people with quite different interests and areas of expertise (compuer science and numerical mathematics, respectively), and a separation will facilitate more efficient work and rapid development of the two aspects of the Modelica language.  The simulation semantics could then get some well deserved attention after many years of almost no attention at all, which would be a necessary step towards true portability of models and libraries between tools.
+This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Flat Modelica_.
 
-Other important reasons for having a specification of Flat Modelica include making it easier to organize the development work of a Modelica tool, helping users understand the mysterious ways of the Modelica language by showing them the flattened models, and making it possible to compare different Modelica back ends with the same flattened model.
+### In a sentence (or two)
+Flat Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.  It is an integral part of the Modelica specification, not a new separate standard. 
 
-A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
+### Use cases
+Use cases to have in mind in the design of Flat Modelica, also indicating the usefullness of the Flat Modelica endeavor:
+* Serve as intermediate stage in the Modelica specification, separating front end matters (the high level constructs of the Modelica language) from back end matters (simulation semantics).
+  - Generally speaking, the two different matters will attract attention from people with quite different interests and areas of expertise (compuer science and numerical mathematics, respectively).
+  - Separation will facilitate more efficient work and rapid development of the two aspects of the Modelica language.
+  - Simulation semantics could then get some well deserved attention after many years of almost no attention at all, which would be a necessary step towards true portability of models and libraries between tools.
+  - Making it easier to organize the development work of a Modelica tool.
+  - A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
+* Basis for the _Equation Code_ of eFMI, [see below](Relation to eFMI).
+* Help users understand the mysterious ways of the Modelica language by showing them the flattened models.
+* Comparison of different Modelica back ends with the same flattened model.
+* Plant model descriptions for use in control design.
+* Equation analysis for fault detection and isolation.
+* Integration with third party tools for equation analysis.  _(Could we be more specific about what this migh be?)_
+* Platform for academic research on dynamic systems.  For example, numeric methods.
+* Target language for new high level modeling languages.
 
-## Subtopics
+### Relation to eFMI
+One of the key use cases driving the development of Flat Modelica is its use as basis for the _Equation Code_ of [eFMI](https://itea3.org/index.php/project/emphysis.html).  The requirements for eFMI are much smaller in terms of language features compared to the needs for serving as intermediate representation in the Modelica standard.  To accommodate both use cases, the Equation Code of eFMI will be defined as a restricted variant of Flat Modelica.
+
+### Requirements
+From the use cases above, some implicit requirements follow:
+* Simple enough to be attractive for applications that essentially just want a simple description of variables and equations, meaning that many of the complicated high level constructs of Modelica are removed.
+* Expressive enough to allow the high level constructs of Modelica to be reduced to Flat Modelica without loss of semantics.
+* When Flat Modelica serves as an intermediate representation of the translation of a higher level language (such as Modelica), errors detected in Flat Modelica code shall be traceable to the original code.
+* Human readable and writeable, since not all use cases assume Flat Modelica being produced from a higher level language by a tool.
+
+## Roadmap
 Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
 
-- [ ] State main objectives for introducing Flat Modelca:
-  - Use cases.
-  - Relation to eFMI.
-  - Long term roadmap, including great ideas for future versions of Flat Modelica.
+### Flat Modelica 1.0 (this MCP)
+These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
 - [x] Flat Modelica identifier naming scheme.
+- [ ] Principles for use of language constructs vs annotations.
 - [ ] Get rid of the obviously irrelevant parts of the grammar.
 - [ ] Handling of parameters treated as constants.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Investigate need for `final`.
 - [ ] Get rid of conditional components and unbalanced `if`-equations.
 - [ ] Get rid of arrays with non-constant dimensions.
+- [ ] Get rid of stream operators: `actualStream(...)`, `inStream(...)`
+- [ ] Get rid of higher order functions.
+- [ ] Decide on just one way to specify array dimensions.
+- [ ] Define allowed forms of type aliases.
+- [ ] Figure out what to do with synchronous features.
 - [ ] Soruce locations pointing back to the original Modelica code.
 - [ ] Origin of modifications (for start value prioritization).
 
+### Flat Modelica 1.1+ (future MCPs)
+In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
+- [ ] Primitive operations for triggering of events, to which the current event generating functions can be reduced.
+- [ ] Get rid of function calls with named arguments.
+- [ ] Get rid of function argument defaults.
+- [ ] Get rid of record constructors.
+
+### Flat Modelica 2.0 (future MCPs)
+Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
+- [ ] Allowing some simple form of `model` that makes it possible to preserve structure of the equations that will allow more efficient symbolic processing and production of executables of much smaller size.
 
 ## Revisions
 | Date | Description |
