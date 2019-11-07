@@ -1,5 +1,5 @@
 # Modelica Change Proposal MCP-0031<br/>Flat Modelica and MLS modularization
-Henrik Tidefelt, Peter Harman, …
+Peter Harman, Werther Kai, Gerd Kurzbach, Oliver Lenord, Hans Olsson, Michael Schellenberger, Martin Sjölund, Henrik Tidefelt
 
 **(In Development)**
 
