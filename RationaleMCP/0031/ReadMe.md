@@ -13,6 +13,10 @@ A working gorup with focus on the equation model and simulation semantics would 
 ## Subtopics
 Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
 
+- [ ] State main objectives for introducing Flat Modelca:
+  - Use cases.
+  - Relation to eFMI.
+  - Long term roadmap, including great ideas for future versions of Flat Modelica.
 - [x] Flat Modelica identifier naming scheme.
 - [ ] Get rid of the obviously irrelevant parts of the grammar.
 - [ ] Handling of parameters treated as constants.
