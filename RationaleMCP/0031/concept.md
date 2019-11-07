@@ -1,8 +1,21 @@
 # Concept of Flat Modelica
 
-Flat Modelica is designed to be a standardized, intermediate file format which can be produced in the middle of the transformation process from a Modelica model to an executable model. 
-It might be used to support debugging but also by external tools to exploit the equations system further. 
-Therefore the core structure is a model containing all information to build up a mathematical equation system symbolically. All other information is moved to annotations. A tool can ignore them but might be still able to solve the equations. 
+Flat Modelica is a language to describe hybrid (continous and discrete) systems with emphasis on defining the dynamic behavior. 
+It is an integral part of the Modelica specification, not a new separate standard. 
+
+Use cases are:
+* serves as intermediate stage in the Modelica specification
+* describe equations occuring in intermediate stages during the transformation process from a Modelica model to an executable model
+* separation of front end matters (the high level constructs of the Modelica language) from back end matters (simulation semantics) in the Modelica specification
+   * to define structural transformations of Modelica (front end)
+   * to define equation transformations (back end)
+* support of compiler debugging
+* external tools may use it to exploit the equations system further. 
+* creation of models by humans 
+* support of research on dynamic systems
+* speedup the development process of new features of Modelica
+
+In a first step we only concentate on structural transformations and keeping all information from that.
 
 ## Design Rules 
 
