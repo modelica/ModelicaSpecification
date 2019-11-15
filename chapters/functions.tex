@@ -38,7 +38,7 @@ end !\emph{functionname}!;
 {]}
 
 Optional explicit default values can be associated with any input or
-output formal parameter through declaration assignments. {[}\emph{Such
+output formal parameter through binding equations. {[}\emph{Such
 defaults are shown for the third input parameter and the second output
 parameter in our example.}{]} Comment strings and annotations can be
 given for any formal parameter declaration, as usual in Modelica
@@ -160,7 +160,7 @@ Modelica \lstinline!class!:
 \item
   For a function to be called in a simulation model, the function may
   not be partial, and the output variables must be assigned inside the
-  function either in declaration assignments or in an algorithm section,
+  function either in binding equations or in an algorithm section,
   or have an external function interface as its body, or be defined as a
   function partial derivative. The output variables of a function should
   be computed. {[}\emph{It is a quality of implementation how much
@@ -179,9 +179,9 @@ Modelica \lstinline!class!:
   or array local variable {[}\emph{i.e., a non-input components}{]} of a
   function must be either given by the input formal parameters, or given
   by constant or parameter expressions, or by expressions containing
-  combinations of those (\autoref{initialization-and-declaration-assignments-of-components-in-functions}).
+  combinations of those (\autoref{initialization-and-binding-equations-of-components-in-functions}).
 \item
-  For initialization of local variables of a function see \autoref{initialization-and-declaration-assignments-of-components-in-functions}).
+  For initialization of local variables of a function see \autoref{initialization-and-binding-equations-of-components-in-functions}).
 \item
   Components of a function will inside the function behave as though
   they had discrete-time variability.
@@ -209,7 +209,7 @@ Modelica \lstinline!class!:
 \item
   A formal parameter or local variable may be initialized through a
   \emph{binding} (=) of a default value in its declaration,
-  see \autoref{initialization-and-declaration-assignments-of-components-in-functions}.
+  see \autoref{initialization-and-binding-equations-of-components-in-functions}.
   Using assignment (:=) is deprecated. If a non-input component in the
   function uses a record class that contain one or more binding
   equations they are viewed as initialization of those component of the
@@ -465,8 +465,8 @@ convert a Real number to a String:}
 \begin{lstlisting}[language=modelica]
 function RealToString
   input Real number;
-  input Real precision := 6 "number of significantdigits";
-  input Real length := 0 "minimum length of field";
+  input Real precision = 6 "number of significantdigits";
+  input Real length = 0 "minimum length of field";
   output String string "number as string";
   ...
 end RealToString;
@@ -502,7 +502,7 @@ value.
   input Real x2;
   input Integrand integrand; // Integrand is a partial function,
   see below
-  // With default: input Integrand integrand :=
+  // With default: input Integrand integrand =
   Modelica.Math.sin;
   output Real integral;
 algorithm
@@ -749,7 +749,9 @@ a function.
 \end{lstlisting}
 {]}
 
-\subsection{Initialization and Declaration Assignments of Components in Functions}\doublelabel{initialization-and-declaration-assignments-of-components-in-functions}
+\subsection{Initialization and Binding Equations of Components in Functions}
+\doublelabel{initialization-and-binding-equations-of-components-in-functions}
+\doublelabel{initialization-and-declaration-assignments-of-components-in-functions}
 
 Components in a function can be divided into three groups:
 
@@ -764,23 +766,26 @@ Components in a function can be divided into three groups:
 \end{itemize}
 
 When a function is called components of a function do not have
-start-attributes. However, a declaration assignment (\lstinline!:= expression!) with
+start-attributes. However, a binding equation (\lstinline!= expression!) with
 an expression may be present for a component.
+\begin{nonnormative}
+Declaration assignments of the form \lstinline!:= expression! are deprecated, but otherwise identical to binding equations.
+\end{nonnormative}
 
-A declaration assignment for a non-input component initializes the
+A binding equation for a non-input component initializes the
 component to this \lstinline!expression! at the start of every function invocation
 (before executing the algorithm section or calling the external
 function). These bindings must be executed in an order where a variable
-is not used before its declaration assignment has been executed; it is
+is not used before its binding equations has been executed; it is
 an error if no such order exists (i.e. the binding must be acyclic).
 
-Declaration assignments can only be used for components of a function.
-If no declaration assignment is given for a non-input component the
+Binding equations can only be used for components of a function.
+If no binding equation is given for a non-input component the
 variable is uninitialized (except for record components where modifiers
 may also initialize that component). It is an error to use (or return)
 an uninitialized variable in a function. {[}\emph{It is recommended to
 check this statically - if this is not possible a warning is recommended
-combined with a run-time check}.{]} Declaration assignments for input
+combined with a run-time check}.{]} Binding equations for input
 formal parameters are interpreted as default arguments, as described in
 \autoref{positional-or-named-input-arguments-of-functions}.
 
@@ -810,7 +815,7 @@ end joinThreeVectors;
 \begin{itemize}
 \item
   A non-input array component declared in a function with a dimension
-  size specified by colon(:) and no declaration assignment, can change
+  size specified by colon(:) and no binding equation, can change
   size according to these special rules:Prior to execution of the
   function algorithm the dimension size is zero.
 \item
@@ -1091,19 +1096,19 @@ should be chosen to not cause any conflict)}
 \begin{lstlisting}[language=modelica,escapechar=!]
 package Demo;
   function Record1
-    input Real r0 := 0;
+    input Real r0 = 0;
     output Record1 !\emph{result}!(r0 = r0);
   end Record1;
 
   function Record2
-    input Real r0 := 0;
+    input Real r0 = 0;
     input Real c2;
-    input Integer n1 := 5;
+    input Integer n1 = 5;
     input Integer n2;
     input Real r1 "comment"; // the comment also copied from record
-    input Real r2 := Modelica.Math.sin(c1);
+    input Real r2 = Modelica.Math.sin(c1);
     input Real r4;
-    input Real r5 := 5.0;
+    input Real r5 = 5.0;
     input Real r6[n1];
     input Real r7[n2];
     output Record2 !\emph{result}!(r0=r0,c2=c2,n1=n1,n2=n2,r1=r1,r2=r2,r4=r4,r5=r5,r6=r6,r7=r7);
@@ -1587,7 +1592,7 @@ function $f_1$
   ...
   input $T_1$ $u_k$;
   ...
-  input $A_m$ $u_m$ := $a_m$;
+  input $A_m$ $u_m$ = $a_m$;
   ...
   input $A_n$ $u_n$;
   output $T_2$ y;
@@ -1667,8 +1672,8 @@ call interface provides the following:
   sizes are passed as explicit integer parameters.
 \item
   Handling of external function parameters which are used both for input
-  and output, by passing an output that has a declaration assignment to
-  the external function. {[}\emph{Declaration assignments are executed
+  and output, by passing an output that has a binding equation to
+  the external function. {[}\emph{Binding equations are executed
   prior to calling the external function.}{]}
 \end{itemize}
 
@@ -2044,7 +2049,7 @@ of the function).
 function foo
   input Real x;
   input Real y;
-  output Real z:=x;
+  output Real z=x;
   external "FORTRAN 77" myfoo(x,y,z);
 end foo;
 \end{lstlisting}
@@ -2087,7 +2092,7 @@ would have to change the interface function ``}\lstinline!foo!\emph{'' to:}
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
-  protected Real xtemp:=x; // Temporary used because myfoo changes its input
+  protected Real xtemp=x; // Temporary used because myfoo changes its input
   public input Real y;
   output Real z;
   external "FORTRAN 77" myfoo(xtemp,y,z);
@@ -2565,8 +2570,8 @@ memory for the last used table interval):}
 class MyTable
   extends ExternalObject;
   function constructor
-    input String fileName := "";
-    input String tableName := "";
+    input String fileName = "";
+    input String tableName = "";
     output MyTable table;
     external "C" table = initMyTable(fileName, tableName);
   end constructor;
