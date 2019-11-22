@@ -41,6 +41,7 @@ Due to the large size of this MCP, it has been necessary to break it down into s
 
 ### Flat Modelica 1.0 (this MCP)
 These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
+- [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
 - [x] Flat Modelica identifier naming scheme.
 - [ ] Principles for use of language constructs vs annotations.
 - [ ] Get rid of the obviously irrelevant parts of the grammar.
@@ -50,6 +51,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Get rid of conditional components and unbalanced `if`-equations.
 - [ ] Get rid of arrays with non-constant dimensions.
 - [ ] Get rid of stream operators: `actualStream(...)`, `inStream(...)`
+- [ ] Get `connect` equations.
 - [ ] Get rid of higher order functions.
 - [ ] Decide on just one way to specify array dimensions.
 - [ ] Define allowed forms of type aliases.
