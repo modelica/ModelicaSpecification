@@ -41,7 +41,6 @@ Due to the large size of this MCP, it has been necessary to break it down into s
 
 ### Flat Modelica 1.0 (this MCP)
 These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
-- [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
 - [x] Flat Modelica identifier naming scheme.
 - [ ] Principles for use of language constructs vs annotations.
 - [ ] Get rid of the obviously irrelevant parts of the grammar.
@@ -58,6 +57,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Figure out what to do with synchronous features.
 - [ ] Soruce locations pointing back to the original Modelica code.
 - [ ] Origin of modifications (for start value prioritization).
+- [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
 
 ### Flat Modelica 1.1+ (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
