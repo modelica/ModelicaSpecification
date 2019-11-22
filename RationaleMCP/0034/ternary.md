@@ -26,6 +26,10 @@ The two known ternary truth values can be constructed by explicit conversion fro
 A `Boolean` expression can be used wherever a `Ternary` is expected, via implicit conversion.  For example `true and unknown` is a valid expression of type `Ternary`, since the operator `and` requires both operands to be `Ternary` as soons as one of them is.
 
 
+## Total order of values
+There is a total order of the possible `Ternary` values given by `Ternary(false)` < `unknown` < `Ternary(true)`.  This allows `Ternary` to be used as array dimension, and gives meaning to the [relational operators](#Boolean-valued-relations).
+
+
 ## Expressions with Ternary
 
 ### Unary operators
@@ -37,7 +41,7 @@ Unary operators on `Ternary`, where `x` is an expression of type `Ternary`:
 
 Truth table for `not x`:
 
-| `x`              | Result           |
+| `x`              | `not x`          |
 | ---------------- | ---------------- |
 | `Ternary(false)` | `Ternary(true)`  |
 | `unknown`        | `unknown`        |
@@ -54,48 +58,40 @@ Binary operators on `Ternary`, where `x` and `y` are an expressions of type `Ter
 
 Truth table for `x and y`:
 
-| `x`              | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
-| ---------------- | -------------------- | ---------------- | ------------------- |
-| `Ternary(false)` | `Ternary(false)`     | `Ternary(false)` | `Ternary(false)`    |
-| `unknown`        | `Ternary(false)`     | `unknown`        | `unknown`           |
-| `Ternary(true)`  | `Ternary(false)`     | `unknown`        | `Ternary(true)`     |
+| `x and y`            | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
+| -------------------- | -------------------- | ---------------- | ------------------- |
+| `x = Ternary(false)` | `Ternary(false)`     | `Ternary(false)` | `Ternary(false)`    |
+| `x = unknown`        | `Ternary(false)`     | `unknown`        | `unknown`           |
+| `x = Ternary(true)`  | `Ternary(false)`     | `unknown`        | `Ternary(true)`     |
 
 Truth table for `x or y`:
 
-| `x`              | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
-| ---------------- | -------------------- | ---------------- | ------------------- |
-| `Ternary(false)` | `Ternary(false)`     | `unknown`        | `Ternary(true)`     |
-| `unknown`        | `unknown`            | `unknown`        | `Ternary(true)`     |
-| `Ternary(true)`  | `Ternary(true)`      | `Ternary(true)`  | `Ternary(true)`     |
+| `x or y`             | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
+| -------------------- | -------------------- | ---------------- | ------------------- |
+| `x = Ternary(false)` | `Ternary(false)`     | `unknown`        | `Ternary(true)`     |
+| `x = unknown`        | `unknown`            | `unknown`        | `Ternary(true)`     |
+| `x = Ternary(true)`  | `Ternary(true)`      | `Ternary(true)`  | `Ternary(true)`     |
 
 
 ### Boolean-valued relations
-Relational operators for `Ternary`, where `x` and `y` are an expressions of type `Ternary`:
+Relational operators for `Ternary` are defined according to the total order.  Here, `x` and `y` are an expressions of type `Ternary`:
 
-| Expression    | Result type   | Equivalent to  |
-| ------------- | ------------- | -------------- |
-| `x == y`      | `Boolean`     |                |
-| `x != y`      | `Boolean`     | `not (x == y)` |
-| `x < y`       | `Boolean`     |                |
-| `x <= y`      | `Boolean`     | `not (y > x)`  |
-| `x > y`       | `Boolean`     | `y < x`        |
-| `x >= y`      | `Boolean`     | `not (x < y)`  |
+| Expression    | Result type   | Equivalent to    |
+| ------------- | ------------- | ---------------- |
+| `x < y`       | `Boolean`     |                  |
+| `x <= y`      | `Boolean`     | `not (y > x)`    |
+| `x > y`       | `Boolean`     | `y < x`          |
+| `x >= y`      | `Boolean`     | `not (x < y)`    |
+| `x != y`      | `Boolean`     | `x < y or y < x` |
+| `x == y`      | `Boolean`     | `not (x != y)`   |
 
-Truth table for `x == y`:
+The truth tables follow directly from the total order, so there is no point in listing them all.  Here is an example which is just another way of saying `Ternary(false)` < `unknown` < `Ternary(true)`:
 
-| `x`              | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
-| ---------------- | -------------------- | ---------------- | ------------------- |
-| `Ternary(false)` | `true`               | `false`          | `false`             |
-| `unknown`        | `false`              | `true`           | `false`             |
-| `Ternary(true)`  | `false`              | `false`          | `true`              |
-
-Truth table for `x < y`:
-
-| `x`              | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
-| ---------------- | -------------------- | ---------------- | ------------------- |
-| `Ternary(false)` | `false`              | `true`           | `true`              |
-| `unknown`        | `false`              | `false`          | `true`              |
-| `Ternary(true)`  | `false`              | `false`          | `false`             |
+| `x < y`              | `y = Ternary(false)` | `y = unknown`    | `y = Ternary(true)` |
+| -------------------- | -------------------- | ---------------- | ------------------- |
+| `x = Ternary(false)` | `false`              | `true`           | `true`              |
+| `x = unknown`        | `false`              | `false`          | `true`              |
+| `x = Ternary(true)`  | `false`              | `false`          | `false`             |
 
 
 ## Ternary equations
