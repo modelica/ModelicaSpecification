@@ -4,7 +4,14 @@ This document just presents the design part of the MCP.  There is also a [ration
 
 ## The `Ternary` type
 The new build-in type `Ternary` is similar to `Boolean`:
-
+```
+type Ternary // Note: Defined with Modelica syntax although predefined
+  TernaryType value; // Accessed without dot-notation
+  parameter StringType quantity = "";
+  parameter BooleanType start = unknown;
+  parameter BooleanType fixed = true;
+end Ternary;
+```
 
 ## New keyword `unknown`
 The keyword `unknown` is introduced to refer to the _unknown_ truth value.
