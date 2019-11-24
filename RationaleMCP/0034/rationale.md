@@ -51,3 +51,26 @@ To not have implicit conversion from `Ternary` to `Boolean` (such as defining th
 This MCP does not include any new built-in functions, although there are several that would be natural to have.  For an example of a useful function the `consensus(t1, t2, …, tn)` would mean the common ternary value if all arguments are equal, otherwise `unknown`.
 
 The reason for not introducing such functions is to minimize backwards incompatibility.  If the lack of such functions turns out to be too much of a limitation, they can be introduced with a future MCP.
+
+# The option type alternative
+Before deciding to go with the design where `Ternary` is introduced, we must also mention the following important alternative approach.  Reasons will be given why this isn't the design proposed by this MCP.
+
+A completely different way of introducing ternary logic would be to introduce a `Boolean` _option_ type.  Instead of writing
+```
+Ternary t = unknown;
+```
+one would then write something like
+```
+Boolean? t = none;
+```
+where the `?` plays a similar role as an array dimension; it constructs a new type based on the type to the left.  In this case, an option type, meaning that the value of `t` is either a `Boolean` value, or a value representing the absence of a `Boolean` value.  To explicitly a known ternary value, one could have a construct like `some(true)` instead of `Ternary(true)`.
+
+Even though the use of option types could be restricted to `Boolean` to start with, it would open up for supporting more types in the future.  Given the use case of allowing an expression of a built-in attribute to refer to the default value, it seems as if this could be useful for other types as well.  For example, pretend that the `group` of `Dialog` didn't have `"Parameters"` as fixed start value, allowing tools to organize dialogs as they see fit.  Then one could imagine giving an expression for `group` that only shall determine the group under certain circumstances, and otherwise leave it to the tool to decide.  Then the use of a `String` option would be an elegant way of making this possible.
+
+However, these are some reasons for sticking with `Ternary` instead of `Boolean?`:
+- Introducing the literal `none` to refer to the absence of a value for an option type leads to a significant change of the Modelica type system, as `none` can have any option type.  Explicitly writting out the type as in `none(Boolean)` would be too inconvenient compared to just saying `unknown`.
+- Implicit conversion from `Boolean` really simplifies use of ternary logic, but implicit conversion to `Boolean?` doesn't generalize to option types in general.  (However, it works for non-option types, which might be good enough to justify it.)
+- Attributes of other type than `Boolean` typically have a default behavior that can be expressed with a default value (like the empty string in case of `String`), removing the need for an option type to express the absence of a value.
+- The `Boolean?` type might end up being the only special case of an option type with meanings given to the built-in operators.
+- Defining external language interface for option types is a pretty big change compared to just introducing one new scalar type (it would need to be defined generically, not just with `Boolean?` in mind).
+- It is probably a bad idea to just introduce option types in Modelica without considering the more general concepts that would give option types as a special case.  Such more general constructs inspired by MetaModelica have been discussed at many design meetings without getting much traction.
