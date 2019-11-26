@@ -45,6 +45,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
 - [ ] Get rid of the obviously irrelevant parts of the grammar.
 - [ ] Handling of parameters treated as constants.
+- [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Investigate need for `final`.
 - [ ] Get rid of conditional components and unbalanced `if`-equations.
