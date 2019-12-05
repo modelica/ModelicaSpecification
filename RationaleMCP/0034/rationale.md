@@ -55,6 +55,7 @@ The reason for not introducing such functions is to minimize backwards incompati
 # The option type alternative
 Before deciding to go with the design where `Ternary` is introduced, we must also mention the following important alternative approach.  Reasons will be given why this isn't the design proposed by this MCP.
 
+## Using `none` to represent _unknown_
 A completely different way of introducing ternary logic would be to introduce a `Boolean` _option_ type.  Instead of writing
 ```
 Ternary t = unknown;
@@ -68,9 +69,21 @@ where the `?` plays a similar role as an array dimension; it constructs a new ty
 Even though the use of option types could be restricted to `Boolean` to start with, it would open up for supporting more types in the future.  Given the use case of allowing an expression of a built-in attribute to refer to the default value, it seems as if this could be useful for other types as well.  For example, pretend that the `group` of `Dialog` didn't have `"Parameters"` as fixed start value, allowing tools to organize dialogs as they see fit.  Then one could imagine giving an expression for `group` that only shall determine the group under certain circumstances, and otherwise leave it to the tool to decide.  Then the use of a `String` option would be an elegant way of making this possible.
 
 However, these are some reasons for sticking with `Ternary` instead of `Boolean?`:
+- If the usual ternary logic is what we want — which is the assumption of this MCP — the use of `Boolean?` for would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
 - Introducing the literal `none` to refer to the absence of a value for an option type leads to a significant change of the Modelica type system, as `none` can have any option type.  Explicitly writting out the type as in `none(Boolean)` would be too inconvenient compared to just saying `unknown`.
 - Implicit conversion from `Boolean` really simplifies use of ternary logic, but implicit conversion to `Boolean?` doesn't generalize to option types in general.  (However, it works for non-option types, which might be good enough to justify it.)
 - Attributes of other type than `Boolean` typically have a default behavior that can be expressed with a default value (like the empty string in case of `String`), removing the need for an option type to express the absence of a value.
 - The `Boolean?` type might end up being the only special case of an option type with meanings given to the built-in operators.
 - Defining external language interface for option types is a pretty big change compared to just introducing one new scalar type (it would need to be defined generically, not just with `Boolean?` in mind).
 - It is probably a bad idea to just introduce option types in Modelica without considering the more general concepts that would give option types as a special case.  Such more general constructs inspired by MetaModelica have been discussed at many design meetings without getting much traction.
+
+## Using `none` to represent _undefined_
+While possible to interpret `none` as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary`, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
+
+For example, one could define that concatenation with an _undefined_ `String?`, would be a no-op, and the same for addition or multiplication with an _undefined_ `Real?`.  For `Boolean?` it would then be natural to define both disjunction and conjunction with _undefined_ to be no-ops, leading to things such as `none and none = some(true)`.
+
+Combined with `Ternary` to get `Ternary?`, one could define four-valued logic, having its own applications beyond both `Ternary` and `Boolean?`.
+
+For the numeric types `Real` and `Integer`, a better analog to `unknown` would be `NaN` (not-a-number), having very different arithmetic behavior compared to the no-ops of _undefined_.  For example, this gives the expected behavior of adding _unknown_ to any number resulting in _unknown_.
+
+To summarize, while option types have many interesting applications — including modeling of built-in attributes with non-trivial defaults — it would be a mistake to use `Boolean?` for the usual ternary logic with _unknown_ as the third truth value.  This also shows that `Ternary` is not going to become redundant if option types are added to Modelica in the future.
