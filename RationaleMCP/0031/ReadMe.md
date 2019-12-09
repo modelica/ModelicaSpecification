@@ -43,7 +43,7 @@ Due to the large size of this MCP, it has been necessary to break it down into s
 These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
 - [x] Flat Modelica identifier naming scheme.
 - [ ] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
-- [ ] Get rid of the obviously irrelevant parts of the grammar.
+- [ ] Get rid of the obviously irrelevant parts of the grammar.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Birrelevant-grammar/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
 - [ ] Handling of parameters treated as constants.
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
