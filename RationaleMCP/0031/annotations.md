@@ -3,26 +3,58 @@
 ## Use of annotations vs attributes
 This section describes the design question of when to use an annotation and when to use a first class attribute in the language.
 
-### Design alternatives
-With the flexible structure of annoations, it is possible to use annotations for anything that could also have been a first class attribute in the language.  In Modelica, the principle for when one may use an annotation has been roughly to use an annotation whenever it doesn't have an impact on the simulation result.  The question is what principle to use in Flat Modelica.
+### Design guidelines
+The following guidelines tell when to use or not to use annotations in Flat Modelica:
+- Whenever possible, primitive language constructs such as built-in attributes should be used for anything that shall have or may have an impact on symbolic processing or numeric solving of the equations.
+- Annotations should be used for things that have no impact on symbolic processing or numeric solving of the equations.  (In Modelica, `displayUnit` doesn't follow this rule, so it isn't obvious that the rule should be followed strictly in Flat Modelica either.)
+- For now, annotations are acceptable for attaching any sort of information at the class level, such as the inlining hints of a `function` class.  However, alternatives could be considered ([see below](#class-properties)), as it would simplify understanding of Flat Modelica if one could safely say that annotations can always be disregarded for purposes of symbolic processing or numeric solving.
 
-Possible alternatives being discussed are:
-- Only use annotations for information that has no impact on the simulation result (possibly applying this rule more strictly than for Modelica).
-- Use annoations for anything that isn't necessary to convey the very basic structure of equations and variables.
+### Class properties
+Regarding the use of annotations a the class level, it should be noted that Flat Modelica can be more easily extended without breaking backwards compatibility, compared to full Modelica.  The reason is that the identifier naming scheme can be designed so that keywords can easily be introduced without conflict with name spaces for user variables etc.
 
-Main arguments for and against the difference approaches:
-- Users with non-Modelica background may be put off by large amount of attributes that they don't have an ituition for.
-- For a Modelica user, it is unexpected to find things that impact the simulation result hidden away in annotations.
-- The (overly) flexible structure of annoatations makes it harder to detect mistakes.
+As an example, instead of using a class annotation for the `GenerateEvents` and `derivative` of a `function` class, other possible designs that don't make abuse of annotations include:
+```
+function f
+  (
+    GenerateEvents = true,
+    derivative(zeroDerivative = k) = f_der,
+    derivative = f_general_der
+  )
+  input Real x;
+  input Real k;
+  output Real y;
+algorithm
+  …
+end f;
+```
+and
+```
+function f
+  input Real x;
+  input Real k;
+  output Real y;
+algorithm
+  …
+attribute
+  GenerateEvents = true;
+derivative
+  f_der(zeroDerivative = k);
+  f_general_der;
+end f;
+```
 
-### Chosen design
-To be discussed…
+Note that the examples above are just examples to illustrate that there are alternatives to using class annotations when designing Flat Modelica.  The actual design of what to do with `function` properties is outside the scope of this document.
 
+### Rationale
+With the flexible structure of annoations, it is possible to use annotations for anything that could also have been a first class attribute in the language.  These are the main arguments for and against the proposed guidelines versus more extensive use of annotations:
+- (+) For a Modelica user, it is unexpected to find things that impact the simulation result hidden away in annotations.
+- (+) The (overly) flexible structure of annoatations makes it harder to detect mistakes, whereas the exact syntax of primitive language constructs can be expressed in the language grammar.
+- (-) Users with non-Modelica background may be put off by large amount of attributes that they don't have an intuition for.
+- (-) Some Modelica users would be suprised to find out if something like `GenerateEvents = true` (which is an annotation in Modelica) wasn't an annotation in Flat Modelica.
 
 ## Summary of Flat Modelica annotations
 These are all the non-vendor specific annotations:
 - `Constified = true` — For a Flat Modelica `constant` that was declared with a different variability in the original Modelica code.  (This item is just an example at this point, the details of how to express this hasn't been discussed yet.)
-
 
 ## Vendor annotations
 Flat Modelica allows for vendor-specific annoations in the same way as in full Modelica.
