@@ -11,6 +11,17 @@ The start rule of the Flat Modelica grammar below is [`flat_modelica`](#Start-ru
 
 Each grammar rule is written as a block quote.  Regular expressions for tokens are written as `inline code`, literal tokens are written in **upright boldface** (this is useful for avoiding the use of regular expressions when doing so would require protection of active characters), production rule names are written in _italics_, while parsing constructs are written in plain text.
 
+Parsing constructs:
+- _x_ | _y_ — alternatives; either _x_ or _y_
+- _x_ _y_ — sequencing; _x_ followed by _y_
+- _x_* — zero or more repetitions
+- _x_+ — one or more repetitions
+- _x_? — zero or one repetitions
+- EOF — end of file
+- (…) — parentheses for grouping
+
+Repetition posfix operators have higher precedence than sequencing, which in turn has higher precedence than alternatives.
+
 To avoid risk of confusion with the parentheses parsing construct ( _a_ | _b_ ), literal parentheses are written in regular expression form, `[(]` _a_ | _b_ `[)]`, rather than in upright boldface, **(** _a_ | _b_ **)**.
 
 ### Whitespace and comments
