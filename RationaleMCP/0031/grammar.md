@@ -83,30 +83,31 @@ end _F;
 > _class-definition_ → **encapsulated**? _class-prefixes_ _class-specifier_
 
 > _class-prefixes_ →\
-> &emsp; **partial**?\
-> &emsp; ( **class**\
-> &emsp; | **model**\
+> &emsp; ~~**partial**?~~\
+> &emsp; ( ~~**class**~~\
+> &emsp; | ~~**model**~~\
+> &emsp; | **flat_model**\
 > &emsp; | **operator**? **record**\
-> &emsp; | **block**\
-> &emsp; | **expandable**? **connector**\
+> &emsp; | ~~**block**~~\
+> &emsp; | ~~**expandable**? **connector**~~\
 > &emsp; | **type**\
-> &emsp; | **package**\
+> &emsp; | ~~**package**~~\
 > &emsp; | ( **pure** | **impure** )? **operator**? **function**\
 > &emsp; | **operator**\
 > &emsp; )
 
-> _class-specifier_ → _long-class-specifier_ | _short-class-specifier_ | _der-class-specifier_
+> _class-specifier_ → _long-class-specifier_ ~~| _short-class-specifier_~~ | _der-class-specifier_
 
 > _long-class-specifier_\
 > &emsp; → _IDENT_ _string-comment_ _composition_ **end** _IDENT_\
-> &emsp; | **extends** _IDENT_ _class-modification_? _string-comment_ _composition_ **end** _IDENT_
+> &emsp; ~~| **extends** _IDENT_ _class-modification_? _string-comment_ _composition_ **end** _IDENT_~~
 
-> _short-class-specifier_ →\
+~~> _short-class-specifier_ →\
 > &emsp; _IDENT_ **=**\
 > &emsp; ( _base-prefix_? _type-specifier_ _array-subscripts_? _class-modification_?\
 > &emsp; | **enumeration** `[(]` ( _enum-list_? | **:** ) `[)]`\
 > &emsp; )\
-> &emsp; _comment_
+> &emsp; _comment_~~
 
 > _der-class-specifier_ → _IDENT_ **=** **der** `[(]` _type-specifier_ **,** _IDENT_ ( **,** _IDENT_ )* `[)]` _comment_
 
@@ -132,32 +133,32 @@ end _F;
 
 > _external-function-call_ → ( _component-reference_ **=** )? _IDENT_ `[(]` _expression-list_? `[)]`
 
-> _generic-element_ → _import-clause_ | _extends-clause_ | _normal-element_
+> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_
 
 > _normal-element_ →\
 > &emsp; ~~**redeclare**?~~\
 > &emsp; **final**?\
-> &emsp; **inner**? **outer**?\
-> &emsp; ( _class-definition_\
+> &emsp; ~~**inner**? **outer**?~~\
+> &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
-> &emsp; | ~~**replaceable**~~ ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?\
+> &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ ~~)?\
 > &emsp; )
 
-> _import-clause_ →\
+> ~~_import-clause_ →\
 > &emsp; **import**\
 > &emsp; ( _IDENT_ **=** _name_\
 > &emsp; | _name_ ( `[.]` ( `[*]` | **{** _import-list_ **}** ) | `[.][*]` )?\
 > &emsp; )\
 > &emsp; _comment_
 
-> _import-list_ → _IDENT_ ( **,** _IDENT_ )*
+> ~~_import-list_ → _IDENT_ ( **,** _IDENT_ )*
 
 
 ## B23 Extends
 
-> _extends-clause_ → **extends** _type-specifier_ _class-modification_? _annotation-comment_?
+> ~~_extends-clause_ → **extends** _type-specifier_ _class-modification_? _annotation-comment_?
 
-> _constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?
+> ~~_constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?
 
 
 ## B24 Component**clause**
@@ -179,27 +180,27 @@ end _F;
 
 ## B25 Modification
 
-> _modification_\
+> ~~_modification_\
 > &emsp; → _class-modification_ ( **=** _expression_ )?\
 > &emsp; | **=** _expression_\
 > &emsp; | **:=** _expression_
 
-> _class-modification_ → `[(]` _argument-list_? `[)]`
+> ~~_class-modification_ → `[(]` _argument-list_? `[)]`
 
-> _argument-list_ → _argument_ ( **,** _argument_ )*
+> ~~_argument-list_ → _argument_ ( **,** _argument_ )*
 
-> _argument_\
+> ~~_argument_\
 > &emsp; → _element-modification-or-replaceable_\
-> &emsp; ~~| _element-redeclaration_~~
+> &emsp; | _element-redeclaration_~~
 
-> _element-modification-or-replaceable_ →\
+> ~~_element-modification-or-replaceable_ →\
 > &emsp; **each**?\
 > &emsp; **final**?\
 > &emsp; ( _element-modification_\
-> &emsp; ~~| _element-replaceable_~~\
+> &emsp; | _element-replaceable_~~\
 > &emsp; )
 
-> _element-modification_ → _name_ _modification_? _string-comment_
+> ~~_element-modification_ → _name_ _modification_? _string-comment_
 
 > ~~_element-redeclaration_ →~~\
 > ~~&emsp; **redeclare** **each**? **final**?~~\
@@ -219,7 +220,7 @@ end _F;
 
 > ~~_component-declaration1_ → _declaration_ _comment_~~
 
-> _short-class-definition_ → _class-prefixes_ _short-class-specifier_
+> ~~_short-class-definition_ → _class-prefixes_ _short-class-specifier_
 
 ## B26 Equations
 
@@ -227,7 +228,7 @@ end _F;
 > &emsp; ( _simple-expression_ ( **=** _expression_ )?\
 > &emsp; | _if-equation_\
 > &emsp; | _for-equation_\
-> &emsp; | _connect-clause_\
+> ~~&emsp; | _connect-clause_~~\
 > &emsp; | _when-equation_\
 > &emsp; )\
 > &emsp; _comment_
@@ -301,7 +302,7 @@ end _F;
 > &emsp; )* \
 > &emsp; **end** **when**
 
-> _connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`
+> ~~_connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`
 
 
 ## Expressions
