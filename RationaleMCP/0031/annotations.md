@@ -53,8 +53,20 @@ With the flexible structure of annoations, it is possible to use annotations for
 - (-) Some Modelica users would be suprised to find out if something like `GenerateEvents = true` (which is an annotation in Modelica) wasn't an annotation in Flat Modelica.
 
 ## Summary of Flat Modelica annotations
-These are all the non-vendor specific annotations:
-- `Constified = true` — For a Flat Modelica `constant` that was declared with a different variability in the original Modelica code.  (This item is just an example at this point, the details of how to express this hasn't been discussed yet.)
+These are all the non-vendor specific annotations that may influence the code generation process
+- `Evaluate` — Applied to a parameter, indicates that the parameter should be constant-evaluated
+- `Inline` — Applied to a function, indicates it should be inlined
+- `LateInline` — Applied to a function, indicates it should be inlined after symbolic transformations have been performed
+- `InlineAfterIndexReduction` — Applied to a function, indicates it should be inlined after differentiation for index reduction and before other symbolic transformations are applied
+- `GenerateEvents` — Applied to a function, indicates that zero crossing functions inside the function algorithm should generate events (e.g. by inlining the function)
+- `smoothOrder` — Applied to a function, indicates the function is N times continuously differentiable, allowing it to be symbolically differentiated
+- `derivative` — Applied to a function, points to the total derivative function
+- `inverse` — Applied to a function, points to the inverse function
+
+These are all the non-vendor specific annotations that are relevant for parameter input and simulation output
+- `hideResult` — Applied to a parameter or variable, implies the variable should not be included in the simulation output
+- `choices` — Applied to a parameter or variable, can be used to enumerate and tag different values for parameter input
+
 
 ## Vendor annotations
 Flat Modelica allows for vendor-specific annoations in the same way as in full Modelica.
