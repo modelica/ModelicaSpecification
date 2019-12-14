@@ -4,53 +4,18 @@
 This section describes the design question of when to use an annotation and when to use a first class attribute in the language.
 
 ### Design guidelines
-The following guidelines tell when to use or not to use annotations in Flat Modelica:
-- Whenever possible, primitive language constructs such as built-in attributes should be used for anything that shall have or may have an impact on symbolic processing or numeric solving of the equations.
-- Annotations should be used for things that have no impact on symbolic processing or numeric solving of the equations.  (In Modelica, `displayUnit` doesn't follow this rule, so it isn't obvious that the rule should be followed strictly in Flat Modelica either.)
-- For now, annotations are acceptable for attaching any sort of information at the class level, such as the inlining hints of a `function` class.  However, alternatives could be considered ([see below](#class-properties)), as it would simplify understanding of Flat Modelica if one could safely say that annotations can always be disregarded for purposes of symbolic processing or numeric solving.
+The following guideline shall be applied when determining whether to use an annotation to convey information in Flat Modelica:
+- Information kept in annotations in Modelica shall remain annotations in Flat Modelica.
 
-### Class properties
-Regarding the use of annotations a the class level, it should be noted that Flat Modelica can be more easily extended without breaking backwards compatibility, compared to full Modelica.  The reason is that the identifier naming scheme can be designed so that keywords can easily be introduced without conflict with name spaces for user variables etc.
-
-As an example, instead of using a class annotation for the `GenerateEvents` and `derivative` of a `function` class, other possible designs that don't make abuse of annotations include:
-```
-function f
-  (
-    GenerateEvents = true,
-    derivative(zeroDerivative = k) = f_der,
-    derivative = f_general_der
-  )
-  input Real x;
-  input Real k;
-  output Real y;
-algorithm
-  …
-end f;
-```
-and
-```
-function f
-  input Real x;
-  input Real k;
-  output Real y;
-algorithm
-  …
-attribute
-  GenerateEvents = true;
-derivative
-  f_der(zeroDerivative = k);
-  f_general_der;
-end f;
-```
-
-Note that the examples above are just examples to illustrate that there are alternatives to using class annotations when designing Flat Modelica.  The actual design of what to do with `function` properties is outside the scope of this document.
+There are no design guidelines for how to convey information needed for Flat Modelica when there is no counterpart in Modelica.  Design decisions will be have to be made case by case.
 
 ### Rationale
-With the flexible structure of annoations, it is possible to use annotations for anything that could also have been a first class attribute in the language.  These are the main arguments for and against the proposed guidelines versus more extensive use of annotations:
-- (+) For a Modelica user, it is unexpected to find things that impact the simulation result hidden away in annotations.
-- (+) The (overly) flexible structure of annoatations makes it harder to detect mistakes, whereas the exact syntax of primitive language constructs can be expressed in the language grammar.
-- (-) Users with non-Modelica background may be put off by large amount of attributes that they don't have an intuition for.
-- (-) Some Modelica users would be suprised to find out if something like `GenerateEvents = true` (which is an annotation in Modelica) wasn't an annotation in Flat Modelica.
+With the flexible structure of annoations, it is possible to use annotations for anything that could also have been a first class attribute in the language.  These are the main arguments for and against the proposed guidelines versus a restriction not not use annotations for anything that may impact symbolic or numeric processing:
+- (+) Some Modelica users would be suprised to find out if something like `GenerateEvents = true` (which is an annotation in Modelica) wasn't an annotation in Flat Modelica.
+- (+) Disregarding annotations allows users non-Modelica background to not be put off by things such as `LateInline` that they don't have an intuition for.
+- (-) Seeing the annotations that impact the simulation result among all other information stored in annotations will require tool support beyond simply collapsing all annotations.
+- (-) The (overly) flexible structure of annoatations makes it harder to detect mistakes, whereas the exact syntax of primitive language constructs could have been expressed in the language grammar.
+
 
 ## Summary of Flat Modelica annotations
 These are all the non-vendor specific annotations that may influence the code generation process
