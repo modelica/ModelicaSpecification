@@ -19,7 +19,6 @@ With the flexible structure of annoations, it is possible to use annotations for
 
 ## Summary of Flat Modelica annotations
 These are all the non-vendor specific annotations that may influence the code generation process
-- `Evaluate` — Applied to a parameter, indicates that the parameter should be constant-evaluated
 - `Inline` — Applied to a function, indicates it should be inlined
 - `LateInline` — Applied to a function, indicates it should be inlined after symbolic transformations have been performed
 - `InlineAfterIndexReduction` — Applied to a function, indicates it should be inlined after differentiation for index reduction and before other symbolic transformations are applied
