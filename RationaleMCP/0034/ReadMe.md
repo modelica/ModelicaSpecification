@@ -4,7 +4,7 @@ Henrik Tidefelt
 **(In Development)**
 
 ## Summary
-It was concluded in #2211 that an MCP for _Ternary_ (3-valued logic) in Modelica should be created, and here it is.
+It was concluded in https://github.com/modelica/ModelicaSpecification/issues/2211 that an MCP for _Ternary_ (3-valued logic) in Modelica should be created, and here it is.
 
 The proposal is based on the following principles:
 - A new built-in type, `Ternary`.
