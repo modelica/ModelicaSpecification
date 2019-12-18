@@ -44,14 +44,15 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Flat Modelica identifier naming scheme.
 - [ ] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
 - [ ] Get rid of the obviously irrelevant parts of the grammar.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Birrelevant-grammar/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
+- [ ] Get rid of `connect` equations.
+- [ ] Settle the top level structure.
 - [ ] Handling of parameters treated as constants.
+- [ ] Investigate need for `final`.
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
-- [ ] Investigate need for `final`.
 - [ ] Get rid of conditional components and unbalanced `if`-equations.
 - [ ] Get rid of arrays with non-constant dimensions.
 - [ ] Get rid of stream operators: `actualStream(...)`, `inStream(...)`
-- [ ] Get `connect` equations.
 - [ ] Get rid of higher order functions.
 - [ ] Decide on just one way to specify array dimensions.
 - [ ] Define allowed forms of type aliases.
