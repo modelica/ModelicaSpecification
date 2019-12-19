@@ -96,18 +96,18 @@ end _F;
 > &emsp; | **operator**\
 > &emsp; )
 
-> _class-specifier_ → _long-class-specifier_ ~~| _short-class-specifier_~~ | _der-class-specifier_
+> _class-specifier_ → _long-class-specifier_ | _short-class-specifier_ | _der-class-specifier_
 
 > _long-class-specifier_\
 > &emsp; → _IDENT_ _string-comment_ _composition_ **end** _IDENT_\
 > &emsp; ~~| **extends** _IDENT_ _class-modification_? _string-comment_ _composition_ **end** _IDENT_~~
 
-~~> _short-class-specifier_ →\
+> _short-class-specifier_ →\
 > &emsp; _IDENT_ **=**\
 > &emsp; ( _base-prefix_? _type-specifier_ _array-subscripts_? _class-modification_?\
 > &emsp; | **enumeration** `[(]` ( _enum-list_? | **:** ) `[)]`\
 > &emsp; )\
-> &emsp; _comment_~~
+> &emsp; _comment_
 
 > _der-class-specifier_ → _IDENT_ **=** **der** `[(]` _type-specifier_ **,** _IDENT_ ( **,** _IDENT_ )* `[)]` _comment_
 
@@ -180,27 +180,27 @@ end _F;
 
 ## B25 Modification
 
-> ~~_modification_\
+> _modification_\
 > &emsp; → _class-modification_ ( **=** _expression_ )?\
 > &emsp; | **=** _expression_\
 > &emsp; | **:=** _expression_
 
-> ~~_class-modification_ → `[(]` _argument-list_? `[)]`
+> _class-modification_ → `[(]` _argument-list_? `[)]`
 
-> ~~_argument-list_ → _argument_ ( **,** _argument_ )*
+> _argument-list_ → _argument_ ( **,** _argument_ )*
 
-> ~~_argument_\
+> _argument_\
 > &emsp; → _element-modification-or-replaceable_\
 > &emsp; | _element-redeclaration_~~
 
-> ~~_element-modification-or-replaceable_ →\
+> _element-modification-or-replaceable_ →\
 > &emsp; **each**?\
 > &emsp; **final**?\
 > &emsp; ( _element-modification_\
-> &emsp; | _element-replaceable_~~\
+> &emsp; | _element-replaceable_\
 > &emsp; )
 
-> ~~_element-modification_ → _name_ _modification_? _string-comment_
+> _element-modification_ → _name_ _modification_? _string-comment_
 
 > ~~_element-redeclaration_ →~~\
 > ~~&emsp; **redeclare** **each**? **final**?~~\
@@ -216,11 +216,11 @@ end _F;
 > ~~&emsp; )~~\
 > ~~&emsp; _constraining-clause_?~~
 
-> ~~_component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
+> _component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
 
-> ~~_component-declaration1_ → _declaration_ _comment_~~
+> _component-declaration1_ → _declaration_ _comment_~~
 
-> ~~_short-class-definition_ → _class-prefixes_ _short-class-specifier_
+> _short-class-definition_ → _class-prefixes_ _short-class-specifier_
 
 ## B26 Equations
 
