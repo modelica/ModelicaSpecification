@@ -50,15 +50,14 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] List of supported built-in operators and functions --> create full list with reference to the Modelica Specification as new .md file --> Francesco
 - [ ] Get rid of unbalanced `if`-equations. --> Document in differences.md file --> Hans
 - [ ] Handle array dimensions with parameter variability. --> Add as pull request to differences.md --> Gerd
-- [ ] Decide on just one way to specify array dimensions. --> Add as pull request to grammar.md --> Henrik
-
+- [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
 - [ ] Define allowed forms of type aliases.
 - [ ] Handling of parameters treated as constants.
 - [ ] Investigate need for `final`.
 - [ ] Origin of modifications (for start value prioritization).
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
-- [ ] Simplify modifications
+- [ ] Simplify modifications.
 - [ ] Marking of top level inputs and outputs
 - [ ] Get rid of higher order functions.
 - [ ] Figure out what to do with synchronous features.
@@ -71,7 +70,7 @@ In future minor versions of Flat Modelica 1, we could improve the language by in
 - [ ] Get rid of function calls with named arguments.
 - [ ] Get rid of function argument defaults.
 - [ ] Get rid of record constructors.
-- [ ] Allow to identify connector variables
+- [ ] Allow to identify connector variables.
 
 ### Flat Modelica 2.0 (future MCPs)
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
