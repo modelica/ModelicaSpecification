@@ -220,7 +220,7 @@ end _F;
 
 > _component-declaration1_ → _declaration_ _comment_~~
 
-> _short-class-definition_ → _class-prefixes_ _short-class-specifier_
+> ~~_short-class-definition_ → _class-prefixes_ _short-class-specifier_~~
 
 ## B26 Equations
 
