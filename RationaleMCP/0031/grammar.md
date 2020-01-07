@@ -63,7 +63,8 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 ## Start rule
 > _flat-modelica_ →\
 > &emsp; _VERSION-HEADER_\
-> &emsp; `model` _long-class-specifier_ **;**
+> &emsp; _class-definition_*\
+> &emsp; **model** _long-class-specifier_ **;**
 
 Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
 > _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
@@ -138,7 +139,7 @@ end _F;
 > &emsp; ~~**redeclare**?~~\
 > &emsp; **final**?\
 > &emsp; ~~**inner**? **outer**?~~\
-> &emsp; ( _class-definition_\
+> &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
