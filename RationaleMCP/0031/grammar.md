@@ -175,7 +175,7 @@ end _F;
 
 > _condition-attribute_ → **if** _expression_
 
-> _declaration_ → _IDENT_ _array-subscripts_? _modification_?
+> _declaration_ → _IDENT_ ~~_array-subscripts_?~~ _modification_?
 
 
 ## B25 Modification
