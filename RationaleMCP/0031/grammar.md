@@ -139,7 +139,7 @@ end _F;
 > &emsp; ~~**redeclare**?~~\
 > &emsp; **final**?\
 > &emsp; ~~**inner**? **outer**?~~\
-> &emsp; ( ~~_class-definition_~~\
+> &emsp; ( _class-definition_\
 > &emsp; | _component-clause_\
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
