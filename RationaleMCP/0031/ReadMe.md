@@ -46,7 +46,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of the obviously irrelevant parts of the grammar.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Birrelevant-grammar/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
 - [x] Get rid of `connect` equations.
 - [x] Get rid of conditional components.
-- [ ] Settle the top level structure (Decide on flat model vs. model). --> Henrik
+- [ ] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
 - [ ] List of supported built-in operators and functions --> create full list with reference to the Modelica Specification as new .md file --> Francesco
 - [ ] Get rid of unbalanced `if`-equations. --> Document in differences.md file --> Hans
 - [ ] Handle array dimensions with parameter variability. --> Add as pull request to differences.md --> Gerd
