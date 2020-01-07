@@ -86,13 +86,13 @@ end _F;
 > &emsp; ~~**partial**?~~\
 > &emsp; ( ~~**class**~~\
 > &emsp; | ~~**model**~~\
-> &emsp; | **operator**? **record**\
+> &emsp; | ~~**operator**?~~ **record**\
 > &emsp; | ~~**block**~~\
 > &emsp; | ~~**expandable**? **connector**~~\
 > &emsp; | **type**\
 > &emsp; | ~~**package**~~\
-> &emsp; | ( **pure** | **impure** )? **operator**? **function**\
-> &emsp; | **operator**\
+> &emsp; | ( **pure** | **impure** )? ~~**operator**?~~ **function**\
+> &emsp; ~~| **operator**~~\
 > &emsp; )
 
 > _class-specifier_ → _long-class-specifier_ | _short-class-specifier_ | _der-class-specifier_
