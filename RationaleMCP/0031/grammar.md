@@ -161,7 +161,7 @@ end _F;
 > ~~_constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?~~
 
 
-## B24 Component**clause**
+## B24 Component clause
 > _component-clause_ → _type-prefix_ _type-specifier_ _array-subscripts_? _component-list_
 
 > _type-prefix_ →\
