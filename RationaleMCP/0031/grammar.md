@@ -191,13 +191,13 @@ end _F;
 
 > _argument_\
 > &emsp; → _element-modification-or-replaceable_\
-> &emsp; | _element-redeclaration_~~
+> &emsp; ~~| _element-redeclaration_~~
 
 > _element-modification-or-replaceable_ →\
 > &emsp; **each**?\
 > &emsp; **final**?\
 > &emsp; ( _element-modification_\
-> &emsp; | _element-replaceable_\
+> &emsp; ~~| _element-replaceable_~~\
 > &emsp; )
 
 > _element-modification_ → _name_ _modification_? _string-comment_
