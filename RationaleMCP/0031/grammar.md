@@ -80,7 +80,7 @@ end _F;
 
 ## B22 Class definition
 
-> _class-definition_ → **encapsulated**? _class-prefixes_ _class-specifier_
+> _class-definition_ → ~~**encapsulated**?~~ _class-prefixes_ _class-specifier_
 
 > _class-prefixes_ →\
 > &emsp; ~~**partial**?~~\
