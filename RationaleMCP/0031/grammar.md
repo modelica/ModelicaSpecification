@@ -141,7 +141,7 @@ end _F;
 > &emsp; ~~**inner**? **outer**?~~\
 > &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
-> &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ ~~)?\
+> &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
 
 > ~~_import-clause_ →\
@@ -149,16 +149,16 @@ end _F;
 > &emsp; ( _IDENT_ **=** _name_\
 > &emsp; | _name_ ( `[.]` ( `[*]` | **{** _import-list_ **}** ) | `[.][*]` )?\
 > &emsp; )\
-> &emsp; _comment_
+> &emsp; _comment_~~
 
-> ~~_import-list_ → _IDENT_ ( **,** _IDENT_ )*
+> ~~_import-list_ → _IDENT_ ( **,** _IDENT_ )*~~
 
 
 ## B23 Extends
 
-> ~~_extends-clause_ → **extends** _type-specifier_ _class-modification_? _annotation-comment_?
+> ~~_extends-clause_ → **extends** _type-specifier_ _class-modification_? _annotation-comment_?~~
 
-> ~~_constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?
+> ~~_constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?~~
 
 
 ## B24 Component**clause**
@@ -202,19 +202,19 @@ end _F;
 
 > _element-modification_ → _name_ _modification_? _string-comment_
 
-> ~~_element-redeclaration_ →~~\
-> ~~&emsp; **redeclare** **each**? **final**?~~\
-> ~~&emsp; ( _short-class-definition_~~\
-> ~~&emsp; | _component-clause1_~~\
-> ~~&emsp; | _element-replaceable_~~\
-> ~~&emsp; )~~
+> ~~_element-redeclaration_ →\
+> &emsp; **redeclare** **each**? **final**?\
+> &emsp; ( _short-class-definition_\
+> &emsp; | _component-clause1_\
+> &emsp; | _element-replaceable_\
+> &emsp; )~~
 
-> ~~_element-replaceable_ →~~\
-> ~~&emsp; **replaceable**~~\
-> ~~&emsp; ( _short-class-definition_~~\
-> ~~&emsp; | _component-clause1_~~\
-> ~~&emsp; )~~\
-> ~~&emsp; _constraining-clause_?~~
+> ~~_element-replaceable_ →\
+> &emsp; **replaceable**\
+> &emsp; ( _short-class-definition_\
+> &emsp; | _component-clause1_\
+> &emsp; )\
+> &emsp; _constraining-clause_?~~
 
 > _component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
 
@@ -228,7 +228,7 @@ end _F;
 > &emsp; ( _simple-expression_ ( **=** _expression_ )?\
 > &emsp; | _if-equation_\
 > &emsp; | _for-equation_\
-> ~~&emsp; | _connect-clause_~~\
+> &emsp; ~~| _connect-clause_~~\
 > &emsp; | _when-equation_\
 > &emsp; )\
 > &emsp; _comment_
@@ -302,7 +302,7 @@ end _F;
 > &emsp; )* \
 > &emsp; **end** **when**
 
-> ~~_connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`
+> ~~_connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`~~
 
 
 ## Expressions
