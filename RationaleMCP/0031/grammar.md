@@ -216,9 +216,9 @@ end _F;
 > &emsp; )\
 > &emsp; _constraining-clause_?~~
 
-> _component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
+> ~~_component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
 
-> _component-declaration1_ → _declaration_ _comment_~~
+> ~~_component-declaration1_ → _declaration_ _comment_~~
 
 > ~~_short-class-definition_ → _class-prefixes_ _short-class-specifier_~~
 
