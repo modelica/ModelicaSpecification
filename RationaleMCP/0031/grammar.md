@@ -104,7 +104,7 @@ end _F;
 
 > _short-class-specifier_ →\
 > &emsp; _IDENT_ **=**\
-> &emsp; ( _base-prefix_? _type-specifier_ _array-subscripts_? _class-modification_?\
+> &emsp; ( _base-prefix_? _array-subscripts_? _type-specifier_ _class-modification_?\
 > &emsp; | **enumeration** `[(]` ( _enum-list_? | **:** ) `[)]`\
 > &emsp; )\
 > &emsp; _comment_
@@ -162,7 +162,7 @@ end _F;
 
 
 ## B24 Component**clause**
-> _component-clause_ → _type-prefix_ _type-specifier_ _array-subscripts_? _component-list_
+> _component-clause_ → _type-prefix_ _array-subscripts_? _type-specifier_ _component-list_
 
 > _type-prefix_ →\
 > &emsp; ( **flow** | **stream** )?\
