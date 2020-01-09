@@ -24,6 +24,8 @@ Repetition posfix operators have higher precedence than sequencing, which in tur
 
 To avoid risk of confusion with the parentheses parsing construct ( _a_ | _b_ ), literal parentheses are written in regular expression form, `[(]` _a_ | _b_ `[)]`, rather than in upright boldface, **(** _a_ | _b_ **)**.
 
+There are no empty productions.  Hence, where there is no risk of ambiguity, the left side of an alternative is allowed to be ommitted, meaning the same as just having the right side alternative.  For example, ( | _a_ | _b_ ) is the same as ( _a_ | _b_ ).
+
 ### Whitespace and comments
 
 > _WS_ → ( `[ ]` | `\t` | _NL_ )+
@@ -85,7 +87,8 @@ end _F;
 
 > _class-prefixes_ →\
 > &emsp; ~~**partial**?~~\
-> &emsp; ( ~~**class**~~\
+> &emsp; (\
+> &emsp; | ~~**class**~~\
 > &emsp; | ~~**model**~~\
 > &emsp; | ~~**operator**?~~ **record**\
 > &emsp; | ~~**block**~~\
