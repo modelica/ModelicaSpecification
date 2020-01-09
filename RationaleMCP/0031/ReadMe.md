@@ -58,15 +58,14 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Simplify modifications.
-- [ ] Handling of `each`
-- [ ] Investigate need for `for equations`
-- [ ] Marking of top level inputs and outputs
+- [ ] Handling of `each`.
+- [ ] Investigate need for `for`-equations.
+- [ ] Marking of top level inputs and outputs.
 - [ ] Get rid of higher order functions.
 - [ ] Figure out what to do with synchronous features.
 - [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
 - [ ] Event handling semantics is preserved as in Modelica.
-
 
 ### Flat Modelica 1.1+ (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
