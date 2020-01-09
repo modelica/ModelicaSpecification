@@ -86,7 +86,6 @@ end _F;
 > &emsp; ~~**partial**?~~\
 > &emsp; ( ~~**class**~~\
 > &emsp; | ~~**model**~~\
-> &emsp; | **flat_model**\
 > &emsp; | **operator**? **record**\
 > &emsp; | ~~**block**~~\
 > &emsp; | ~~**expandable**? **connector**~~\
