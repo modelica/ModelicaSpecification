@@ -88,14 +88,14 @@ end _F;
 > _class-prefixes_ →\
 > &emsp; ~~**partial**?~~\
 > &emsp; (\
-> &emsp; | ~~**class**~~\
-> &emsp; | ~~**model**~~\
-> &emsp; | ~~**operator**?~~ **record**\
-> &emsp; | ~~**block**~~\
-> &emsp; | ~~**expandable**? **connector**~~\
 > &emsp; | **type**\
-> &emsp; | ~~**package**~~\
+> &emsp; | ~~**operator**?~~ **record**\
 > &emsp; | ( **pure** | **impure** )? ~~**operator**?~~ **function**\
+> &emsp; ~~| **class**~~\
+> &emsp; ~~| **model**~~\
+> &emsp; ~~| **block**~~\
+> &emsp; ~~| **expandable**? **connector**~~\
+> &emsp; ~~| **package**~~\
 > &emsp; ~~| **operator**~~\
 > &emsp; )
 
