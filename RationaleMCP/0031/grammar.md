@@ -24,6 +24,8 @@ Repetition posfix operators have higher precedence than sequencing, which in tur
 
 To avoid risk of confusion with the parentheses parsing construct ( _a_ | _b_ ), literal parentheses are written in regular expression form, `[(]` _a_ | _b_ `[)]`, rather than in upright boldface, **(** _a_ | _b_ **)**.
 
+There are no empty productions.  Hence, where there is no risk of ambiguity, the left side of an alternative is allowed to be ommitted, meaning the same as just having the right side alternative.  For example, ( | _a_ | _b_ ) is the same as ( _a_ | _b_ ).
+
 ### Whitespace and comments
 
 > _WS_ → ( `[ ]` | `\t` | _NL_ )+
@@ -63,7 +65,8 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 ## Start rule
 > _flat-modelica_ →\
 > &emsp; _VERSION-HEADER_\
-> &emsp; `model` _long-class-specifier_ **;**
+> &emsp; _class-definition_*\
+> &emsp; **model** _long-class-specifier_ **;**
 
 Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
 > _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
@@ -84,15 +87,16 @@ end _F;
 
 > _class-prefixes_ →\
 > &emsp; ~~**partial**?~~\
-> &emsp; ( ~~**class**~~\
-> &emsp; | ~~**model**~~\
-> &emsp; | **operator**? **record**\
-> &emsp; | ~~**block**~~\
-> &emsp; | ~~**expandable**? **connector**~~\
+> &emsp; (\
 > &emsp; | **type**\
-> &emsp; | ~~**package**~~\
-> &emsp; | ( **pure** | **impure** )? **operator**? **function**\
-> &emsp; | **operator**\
+> &emsp; | ~~**operator**?~~ **record**\
+> &emsp; | ( **pure** | **impure** )? ~~**operator**?~~ **function**\
+> &emsp; ~~| **class**~~\
+> &emsp; ~~| **model**~~\
+> &emsp; ~~| **block**~~\
+> &emsp; ~~| **expandable**? **connector**~~\
+> &emsp; ~~| **package**~~\
+> &emsp; ~~| **operator**~~\
 > &emsp; )
 
 > _class-specifier_ → _long-class-specifier_ | _short-class-specifier_ | _der-class-specifier_
@@ -138,7 +142,7 @@ end _F;
 > &emsp; ~~**redeclare**?~~\
 > &emsp; **final**?\
 > &emsp; ~~**inner**? **outer**?~~\
-> &emsp; ( _class-definition_\
+> &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
