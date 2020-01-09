@@ -4,7 +4,7 @@ The starting point for this Flat Modelica grammar is the ANTLR grammar for Model
 
 The intention is to develop the Flat Modelica grammar as a modification (mainly consisting of restrictions) of the full Modelica grammar, and to make the differences clearly visible in this document.  Hence, rather than just erasing the parts of the Modelica grammar that shouldn't be brought to Flat Modelica, these parts will be marked with a strikeout.
 
-The start rule of the Flat Modelica grammar below is [`flat_modelica`](#Start-rule).
+The start rule of the Flat Modelica grammar below is [_flat-modelica_](#Start-rule).
 
 
 ## B1 Lexical conventions
@@ -61,7 +61,7 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 
 
 ## Start rule
-> flat_modelica →\
+> _flat-modelica_ →\
 > &emsp; _VERSION-HEADER_\
 > &emsp; `model` _long-class-specifier_ **;**
 
