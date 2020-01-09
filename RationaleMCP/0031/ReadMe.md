@@ -46,7 +46,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of the obviously irrelevant parts of the grammar.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Birrelevant-grammar/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
 - [x] Get rid of `connect` equations.
 - [x] Get rid of conditional components.
-- [ ] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
+- [x] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
 - [ ] List of supported built-in operators and functions --> create full list with reference to the Modelica Specification as new .md file --> Francesco
 - [ ] Get rid of unbalanced `if`-equations. --> Document in differences.md file --> Hans
 - [ ] Handle array dimensions with parameter variability. --> Add as pull request to differences.md --> Gerd
@@ -58,11 +58,15 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Simplify modifications.
+- [ ] Handling of `each`
+- [ ] Investigate need for `for equations`
 - [ ] Marking of top level inputs and outputs
 - [ ] Get rid of higher order functions.
 - [ ] Figure out what to do with synchronous features.
 - [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
+- [ ] Event handling semantics is preserved as in Modelica.
+
 
 ### Flat Modelica 1.1+ (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
@@ -71,6 +75,7 @@ In future minor versions of Flat Modelica 1, we could improve the language by in
 - [ ] Get rid of function argument defaults.
 - [ ] Get rid of record constructors.
 - [ ] Allow to identify connector variables.
+- [ ] Handle equations and algorithms derived from arrays of components efficiently.
 
 ### Flat Modelica 2.0 (future MCPs)
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
