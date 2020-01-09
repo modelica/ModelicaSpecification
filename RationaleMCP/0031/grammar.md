@@ -70,7 +70,7 @@ Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardize
 
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
-As an example of the flat_modelica rule, this is a minimal valid Flat Modelica source:
+As an example of the _flat-modelica_ rule, this is a minimal valid Flat Modelica source:
 ```
 //! flat 3.5.0
 model _F
