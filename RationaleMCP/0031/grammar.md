@@ -11,6 +11,17 @@ The start rule of the Flat Modelica grammar below is [`flat_modelica`](#Start-ru
 
 Each grammar rule is written as a block quote.  Regular expressions for tokens are written as `inline code`, literal tokens are written in **upright boldface** (this is useful for avoiding the use of regular expressions when doing so would require protection of active characters), production rule names are written in _italics_, while parsing constructs are written in plain text.
 
+Parsing constructs:
+- _x_ | _y_ — alternatives; either _x_ or _y_
+- _x_ _y_ — sequencing; _x_ followed by _y_
+- _x_* — zero or more repetitions
+- _x_+ — one or more repetitions
+- _x_? — zero or one repetitions
+- EOF — end of file
+- (…) — parentheses for grouping
+
+Repetition posfix operators have higher precedence than sequencing, which in turn has higher precedence than alternatives.
+
 To avoid risk of confusion with the parentheses parsing construct ( _a_ | _b_ ), literal parentheses are written in regular expression form, `[(]` _a_ | _b_ `[)]`, rather than in upright boldface, **(** _a_ | _b_ **)**.
 
 ### Whitespace and comments
@@ -69,17 +80,18 @@ end _F;
 
 ## B22 Class definition
 
-> _class-definition_ → **encapsulated**? _class-prefixes_ _class-specifier_
+> _class-definition_ → ~~**encapsulated**?~~ _class-prefixes_ _class-specifier_
 
 > _class-prefixes_ →\
-> &emsp; **partial**?\
-> &emsp; ( **class**\
-> &emsp; | **model**\
+> &emsp; ~~**partial**?~~\
+> &emsp; ( ~~**class**~~\
+> &emsp; | ~~**model**~~\
+> &emsp; | **flat_model**\
 > &emsp; | **operator**? **record**\
-> &emsp; | **block**\
-> &emsp; | **expandable**? **connector**\
+> &emsp; | ~~**block**~~\
+> &emsp; | ~~**expandable**? **connector**~~\
 > &emsp; | **type**\
-> &emsp; | **package**\
+> &emsp; | ~~**package**~~\
 > &emsp; | ( **pure** | **impure** )? **operator**? **function**\
 > &emsp; | **operator**\
 > &emsp; )
@@ -88,7 +100,7 @@ end _F;
 
 > _long-class-specifier_\
 > &emsp; → _IDENT_ _string-comment_ _composition_ **end** _IDENT_\
-> &emsp; | **extends** _IDENT_ _class-modification_? _string-comment_ _composition_ **end** _IDENT_
+> &emsp; ~~| **extends** _IDENT_ _class-modification_? _string-comment_ _composition_ **end** _IDENT_~~
 
 > _short-class-specifier_ →\
 > &emsp; _IDENT_ **=**\
@@ -121,35 +133,35 @@ end _F;
 
 > _external-function-call_ → ( _component-reference_ **=** )? _IDENT_ `[(]` _expression-list_? `[)]`
 
-> _generic-element_ → _import-clause_ | _extends-clause_ | _normal-element_
+> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_
 
 > _normal-element_ →\
 > &emsp; ~~**redeclare**?~~\
 > &emsp; **final**?\
-> &emsp; **inner**? **outer**?\
+> &emsp; ~~**inner**? **outer**?~~\
 > &emsp; ( _class-definition_\
 > &emsp; | _component-clause_\
-> &emsp; | ~~**replaceable**~~ ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?\
+> &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
 
-> _import-clause_ →\
+> ~~_import-clause_ →\
 > &emsp; **import**\
 > &emsp; ( _IDENT_ **=** _name_\
 > &emsp; | _name_ ( `[.]` ( `[*]` | **{** _import-list_ **}** ) | `[.][*]` )?\
 > &emsp; )\
-> &emsp; _comment_
+> &emsp; _comment_~~
 
-> _import-list_ → _IDENT_ ( **,** _IDENT_ )*
+> ~~_import-list_ → _IDENT_ ( **,** _IDENT_ )*~~
 
 
 ## B23 Extends
 
-> _extends-clause_ → **extends** _type-specifier_ _class-modification_? _annotation-comment_?
+> ~~_extends-clause_ → **extends** _type-specifier_ _class-modification_? _annotation-comment_?~~
 
-> _constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?
+> ~~_constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?~~
 
 
-## B24 Component**clause**
+## B24 Component clause
 > _component-clause_ → _type-prefix_ _type-specifier_ _array-subscripts_? _component-list_
 
 > _type-prefix_ →\
@@ -190,25 +202,25 @@ end _F;
 
 > _element-modification_ → _name_ _modification_? _string-comment_
 
-> ~~_element-redeclaration_ →~~\
-> ~~&emsp; **redeclare** **each**? **final**?~~\
-> ~~&emsp; ( _short-class-definition_~~\
-> ~~&emsp; | _component-clause1_~~\
-> ~~&emsp; | _element-replaceable_~~\
-> ~~&emsp; )~~
+> ~~_element-redeclaration_ →\
+> &emsp; **redeclare** **each**? **final**?\
+> &emsp; ( _short-class-definition_\
+> &emsp; | _component-clause1_\
+> &emsp; | _element-replaceable_\
+> &emsp; )~~
 
-> ~~_element-replaceable_ →~~\
-> ~~&emsp; **replaceable**~~\
-> ~~&emsp; ( _short-class-definition_~~\
-> ~~&emsp; | _component-clause1_~~\
-> ~~&emsp; )~~\
-> ~~&emsp; _constraining-clause_?~~
+> ~~_element-replaceable_ →\
+> &emsp; **replaceable**\
+> &emsp; ( _short-class-definition_\
+> &emsp; | _component-clause1_\
+> &emsp; )\
+> &emsp; _constraining-clause_?~~
 
 > ~~_component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
 
 > ~~_component-declaration1_ → _declaration_ _comment_~~
 
-> _short-class-definition_ → _class-prefixes_ _short-class-specifier_
+> ~~_short-class-definition_ → _class-prefixes_ _short-class-specifier_~~
 
 ## B26 Equations
 
@@ -216,7 +228,7 @@ end _F;
 > &emsp; ( _simple-expression_ ( **=** _expression_ )?\
 > &emsp; | _if-equation_\
 > &emsp; | _for-equation_\
-> &emsp; | _connect-clause_\
+> &emsp; ~~| _connect-clause_~~\
 > &emsp; | _when-equation_\
 > &emsp; )\
 > &emsp; _comment_
@@ -290,7 +302,7 @@ end _F;
 > &emsp; )* \
 > &emsp; **end** **when**
 
-> _connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`
+> ~~_connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`~~
 
 
 ## Expressions
