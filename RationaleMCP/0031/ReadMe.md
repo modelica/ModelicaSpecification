@@ -51,6 +51,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of unbalanced `if`-equations. --> Document in [differences.md](differences.md) file --> Hans
 - [ ] Handle array dimensions with parameter variability. --> Add as pull request to [differences.md](differences.md) --> Gerd
 - [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
+- [ ] Allowing array subscripting on general expressions.
 - [ ] Define allowed forms of type aliases.
 - [ ] Handling of parameters treated as constants.
 - [ ] Investigate need for `final`.
