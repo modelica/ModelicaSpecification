@@ -2,16 +2,19 @@
 This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
 
 ## Unbalanced if-equations
-In Flat Modelica, all branches of an `if`-equation must have the same number of scalarized equations,
-and if there is no `else` all branches must have zero scalarized equations.
+In Flat Modelica, all branches of an `if`-equation must have the same equation size.
+Absence of an else branch is equivalent to having an empty else branch with equation size 0.
 
 An `if`-equation without `else` is useful for a conditional `assert` and similar checks.
 
+Note: _The "equation size" count the number of equations as if the equations were expanded into scalar equations, 
+but does not require that the equations can be expanded in this way._
+
 ### Change and reason for the change
 In Modelica this restriction only applies for `if`-equations with non-parameter conditions.
-For `if`-equations with parameter condition it does not hold, and if the number of scalarized equations 
+For `if`-equations with parameter condition it does not hold, and if the equation sizes
 differ those parameters have to be evaluated. In practice it can be complicated to separate those cases, 
-and some tools attempt to evaluate the parameters even if the branches have the same number of scalarized equations.
+and some tools attempt to evaluate the parameters even if the branches have the same equation size.
 
 Flat Modelica is designed to avoid such implicit evaluation of parameters, and thus this restriction is necessary.
 
