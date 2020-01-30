@@ -39,7 +39,7 @@ From the use cases above, some implicit requirements follow:
 ## Roadmap
 Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
 
-### Flat Modelica 1.0 (this MCP)
+### Flat Modelica 0.1 (this MCP)
 These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
 - [x] Flat Modelica identifier naming scheme.
 - [x] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
@@ -68,7 +68,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
 - [ ] Event handling semantics is preserved as in Modelica.
 
-### Flat Modelica 1.1+ (future MCPs)
+### Flat Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
 - [ ] Primitive operations for triggering of events, to which the current event generating functions can be reduced.
 - [ ] Get rid of function calls with named arguments.
