@@ -49,6 +49,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
 - [ ] List of supported built-in operators and functions --> create full list with reference to the Modelica Specification as new .md file --> Francesco
 - [x] Get rid of unbalanced `if`-equations. --> Document in [differences.md](differences.md) file --> Hans
+- [ ] Restrict constant expressions for translation time evaluation. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bconstant-expression/RationaleMCP/0031/differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
 - [ ] Handle array dimensions with parameter variability. --> Add as pull request to [differences.md](differences.md) --> Gerd
 - [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
 - [ ] Allowing array subscripting on general expressions.
