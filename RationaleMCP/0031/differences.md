@@ -66,6 +66,7 @@ By excluding `external` functions, translation time evaluation of constant expre
 Forbidding translation time evaluation of function calls in non-constant expressions generalizes the current Modelica rule for `impure` functions and makes it clear that this is not allowed regardless whether this is seen as an optimization or not.  (The current Modelica specification only has a non-normative paragraph saying that performing optimizations is not allowd.)
 
 The shifts in variability of function calls could be summarized as _the variability of a function call expression is the highest variability among the argument expressions and the variability of the called function itself_, where the _variability of a function_ is defined by the following table:
+
 | Function classification | Function variability |
 | --- | --- |
 | pure constant | constant |
