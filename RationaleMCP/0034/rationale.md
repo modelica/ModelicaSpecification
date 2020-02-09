@@ -87,15 +87,15 @@ However, these are some reasons for sticking with `Ternary` instead of `Boolean?
 - It is probably a bad idea to just introduce option types in Modelica without considering the more general concepts that would give option types as a special case.  Such more general constructs inspired by MetaModelica have been discussed at many design meetings without getting much traction.
 
 ## Using `none` to represent _undefined_
-While possible to interpret `none` as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary` to get a Kleene logic, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
+While possible to interpret `Boolean?()` (hereafter referred to as `none` for brevity) as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary` to get a Kleene logic, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
 
 For example, one could define that concatenation with an _undefined_ `String?`, would be a no-op, and the same for addition or multiplication with an _undefined_ `Real?`.  For `Boolean?` it would then be natural to define both disjunction and conjunction with _undefined_ to be no-ops, leading to things such as `none and true = some(true)`.
 
-Combined with `Ternary` to get `Ternary?`, one could define four-valued logic, having its own applications beyond both `Ternary` and `Boolean?`.  In detail, by identifying `true` both with `Ternary(true)` and `Boolean?(true)`, and similarly for `false`, the truth tables for `Ternary` could be reordered and extended so that they define consistent tables for all of `Boolean`, `Ternary`, `Boolean?` and `Ternary?`.  For instance, consider conjunction and let `neither` refer to `Boolean?()` for brevity:
+Combined with `Ternary` to get `Ternary?`, one could define four-valued logic, having its own applications beyond both `Ternary` and `Boolean?`.  In detail, by identifying `true` both with `Ternary(true)` and `Boolean?(true)`, and similarly for `false`, the truth tables for `Ternary` could be reordered and extended so that they define consistent tables for all of `Boolean`, `Ternary`, `Boolean?` and `Ternary?`.  For instance, consider conjunction and let `none` refer to `Boolean?()` for brevity:
 
-| `x and y`     | `y = neither` | `y = false` | `y = true`    | `y = unknown` |
+| `x and y`     | `y = none`    | `y = false` | `y = true`    | `y = unknown` |
 | ------------- | ------------- | ----------- | ------------- | ------------- |
-| `x = neither` | `neither`     | `false`     | `true`        | `unknown`     |
+| `x = none`    | `none`        | `false`     | `true`        | `unknown`     |
 | `x = false`   | `false`       | `false`     | `false`       | `false`       |
 | `x = true`    | `true`        | `false`     | `true`        | `unknown`     |
 | `x = unknown` | `unknown`     | `false`     | `unknown`     | `unknown`     |
