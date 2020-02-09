@@ -60,30 +60,48 @@ A completely different way of introducing ternary logic would be to introduce a 
 ```
 Ternary t = unknown;
 ```
-one would then write something like
+one would then write something like one of the alternatives
 ```
-Boolean? t = none;
+Boolean? t = Boolean?(); /* Explicit construction of the 'none' of a particular option type. */
 ```
-where the `?` plays a similar role as an array dimension; it constructs a new type based on the type to the left.  In this case, an option type, meaning that the value of `t` is either a `Boolean` value, or a value representing the absence of a `Boolean` value.  To explicitly a known ternary value, one could have a construct like `some(true)` instead of `Ternary(true)`.
+or
+```
+Boolean? t = none; /* Using type inference to infer the particular option type. */
+```
+where the `?` plays a similar role as an array dimension; it constructs a new type based on the type to the left.  In this case, an option type, meaning that the value of `t` is either a `Boolean` value, or a value representing the absence of a `Boolean` value.
+
+While the type inference alternative with `none` looks more elegant on first glance, it doesn't really fit well with current Modelica, and there is also a problem with type inference and implicit conversion that speaks to the advantage of explicitly giving the type of a _none_-value.  For the rest of this section, only the `Boolean?()` alternative for constructing the _none_-value is considered.  Explicit construction of a non-_none_ value of `Boolean?` would take the form `Boolean?(e)` where `e` is an expression of type `Boolean`.  There is thus an obvious way to define implicit conversion from any type `T` to `T?` simply by the mapping `t` → `T?(t)`, thus making the use of `Boolean?` almost as convenient as the use of `Ternary` (the difference being the keyword `unknown` vs the more cumbersome `Boolean?()`).  (To see why implicit conversion doesn't work nicely with type inference, note that the implicit conversion from `none` to `Boolean??` is ambiguous; should it be `Boolean??()` or `Boolean??(Boolean?())`.)
 
 Even though the use of option types could be restricted to `Boolean` to start with, it would open up for supporting more types in the future.  Given the use case of allowing an expression of a built-in attribute to refer to the default value, it seems as if this could be useful for other types as well.  For example, pretend that the `group` of `Dialog` didn't have `"Parameters"` as fixed start value, allowing tools to organize dialogs as they see fit.  Then one could imagine giving an expression for `group` that only shall determine the group under certain circumstances, and otherwise leave it to the tool to decide.  Then the use of a `String` option would be an elegant way of making this possible.
 
+Another advantage of introducing option types instead of `Ternary` would be that it would probably be acceptable to say that no option type can be used for indexing into arrays.  This would simplify parts of the implementation compared to `Ternary`.
+
 However, these are some reasons for sticking with `Ternary` instead of `Boolean?`:
-- If the usual ternary logic is what we want — which is the assumption of this MCP — the use of `Boolean?` for would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
-- Introducing the literal `none` to refer to the absence of a value for an option type leads to a significant change of the Modelica type system, as `none` can have any option type.  Explicitly writting out the type as in `none(Boolean)` would be too inconvenient compared to just saying `unknown`.
-- Implicit conversion from `Boolean` really simplifies use of ternary logic, but implicit conversion to `Boolean?` doesn't generalize to option types in general.  (However, it works for non-option types, which might be good enough to justify it.)
+- If the usual ternary logic according to Kleene is what we want — which is the assumption of this MCP — the use of `Boolean?` for would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
+- Introducing the literal `none` to refer to the absence of a value for an option type leads to a significant change of the Modelica type system, as `none` can have any option type.  Even if type inference would be implemented, there would be problems when it comes to implicit conversions (see above).
+- Explicitly writting out the type of a _none_ as in `Boolean?()` would be inconvenient compared to just saying `unknown`.  (However, it would then be natural to define implicit conversion to any option type.)
 - Attributes of other type than `Boolean` typically have a default behavior that can be expressed with a default value (like the empty string in case of `String`), removing the need for an option type to express the absence of a value.
-- The `Boolean?` type might end up being the only special case of an option type with meanings given to the built-in operators.
+- The `Boolean?` type might end up being the only special case of an option type with meanings given to the built-in logical operators.  (Possibilities to define meanings for other option types exist.  For example, one could imagine the `Real?()` and `Integer?()` both being at the same time additive zeros and multiplicative ones.  The question is whether there would ever be a need to introduce such definitions in the language.)
+- Relational operators would need to be defined generically, most likely giving the order `Boolean()?` < `Boolean(false)?` < `Boolean(true)?`, which doesn't correspond to the understanding of `Boolean?()` as some kind of middle ground between false and true.
 - Defining external language interface for option types is a pretty big change compared to just introducing one new scalar type (it would need to be defined generically, not just with `Boolean?` in mind).
 - It is probably a bad idea to just introduce option types in Modelica without considering the more general concepts that would give option types as a special case.  Such more general constructs inspired by MetaModelica have been discussed at many design meetings without getting much traction.
 
 ## Using `none` to represent _undefined_
-While possible to interpret `none` as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary`, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
+While possible to interpret `none` as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary` to get a Kleene logic, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
 
-For example, one could define that concatenation with an _undefined_ `String?`, would be a no-op, and the same for addition or multiplication with an _undefined_ `Real?`.  For `Boolean?` it would then be natural to define both disjunction and conjunction with _undefined_ to be no-ops, leading to things such as `none and none = some(true)`.
+For example, one could define that concatenation with an _undefined_ `String?`, would be a no-op, and the same for addition or multiplication with an _undefined_ `Real?`.  For `Boolean?` it would then be natural to define both disjunction and conjunction with _undefined_ to be no-ops, leading to things such as `none and true = some(true)`.
 
-Combined with `Ternary` to get `Ternary?`, one could define four-valued logic, having its own applications beyond both `Ternary` and `Boolean?`.
+Combined with `Ternary` to get `Ternary?`, one could define four-valued logic, having its own applications beyond both `Ternary` and `Boolean?`.  In detail, by identifying `true` both with `Ternary(true)` and `Boolean?(true)`, and similarly for `false`, the truth tables for `Ternary` could be reordered and extended so that they define consistent tables for all of `Boolean`, `Ternary`, `Boolean?` and `Ternary?`.  For instance, consider conjunction and let `neither` refer to `Boolean?()` for brevity:
+
+| `x and y`     | `y = neither` | `y = false` | `y = true`    | `y = unknown` |
+| ------------- | ------------- | ----------- | ------------- | ------------- |
+| `x = neither` | `neither`     | `false`     | `true`        | `unknown`     |
+| `x = false`   | `false`       | `false`     | `false`       | `false`       |
+| `x = true`    | `true`        | `false`     | `true`        | `unknown`     |
+| `x = unknown` | `unknown`     | `false`     | `unknown`     | `unknown`     |
+
+Please note that this logical table does not correspond to the often cited four-valued logic by Belnap, hinting at the potential problems of reaching agreement on how to define logic on `Boolean?` and `Ternary?` in Modelica.
 
 For the numeric types `Real` and `Integer`, a better analog to `unknown` would be `NaN` (not-a-number), having very different arithmetic behavior compared to the no-ops of _undefined_.  For example, this gives the expected behavior of adding _unknown_ to any number resulting in _unknown_.
 
-To summarize, while option types have many interesting applications — including modeling of built-in attributes with non-trivial defaults — it would be a mistake to use `Boolean?` for the usual ternary logic with _unknown_ as the third truth value.  This also shows that `Ternary` is not going to become redundant if option types are added to Modelica in the future.
+To summarize, while option types have many interesting applications — including modeling of built-in attributes with non-trivial defaults — it would be a mistake to use `Boolean?` for the usual ternary logic according to Kleene with _unknown_ as the third truth value.  This also shows that `Ternary` is not going to become redundant if option types are added to Modelica in the future.
