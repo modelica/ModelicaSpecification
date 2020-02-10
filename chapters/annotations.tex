@@ -43,14 +43,19 @@ vendor-specific annotations.
 
 \begin{lstlisting}[language=grammar]
 documentation-annotation:
-   annotation "(" Documentation "(" "info" "=" STRING ["," "revisions" "=" STRING ] ")" ")"
+   annotation "(" Documentation "(" [ "info" "=" STRING ]
+      [ "," "revisions" "=" STRING ]
+      [ "," "figures" "=" figure-annotations ] ")" ")"
 \end{lstlisting}
 The ``\lstinline!Documentation!'' annotation can contain the ``\lstinline!info!'' annotation
 giving a textual description, the ``\lstinline!revisions!'' annotation giving a list
 of revisions and other annotations defined by a tool {[}\emph{The
-``revisions'' documentation may be omitted in printed documentation}{]}.
+``revisions'' documentation may be omitted in printed documentation}{]}, and the
+``\lstinline!figures!'' annotation giving a list of \lstinline!Figure! annotations as
+ described in \autoref{annotations-for-figures}.
+
 How the tool interprets the information in ``\lstinline!Documentation!'' is
-unspecified. Within a string of the ``\lstinline!Documentation!'' annotation, the
+unspecified. Within the ``\lstinline!info!'' and `\lstinline!revisions!'' strings of the ``\lstinline!Documentation!'' annotation, the
 tags \lstinline!<HTML>! and \lstinline!</HTML>! or
 \lstinline!<html>! and \lstinline!</html>! define
 optionally begin and end of content that is HTML encoded. For external
@@ -69,6 +74,151 @@ layers. Example:
 <a href="Modelica://MultiBody.Joints.Revolute#info">Revolute</a>
 \end{lstlisting}
 
+\subsection{Annotations for Figures\doublelabel{annotations-for-figures}}
+The \lstinline!figure-annotations! is list of \lstinline!Figure! annotations given by:
+\begin{lstlisting}[language=modelica]
+record Figure
+  String title "Title meant for display";
+  String identifier "Identifier meant for programmatic access";
+  String group = "" "Name of plot group";
+  Boolean preferred = false "Automatically display figure after simulation";
+  Plot[:] plots "Plots";
+  String caption "Figure caption";
+end Figure;
+\end{lstlisting}
+
+A \lstinline!Figure! is a graphical container that can contain several
+\lstinline!plots! described by \lstinline!Plot! annotations:
+\begin{lstlisting}[language=modelica]
+record Plot
+  String title "Title meant for display";
+  String identifier "Identifier meant for programmatic access";
+  Curve[:] curves "Plot curves";
+  Axis x "X axis properties";
+  Axis y "Y axis properties";
+end Plot;
+\end{lstlisting}
+
+A \lstinline!Plot! can contain several \lstinline!curves!, see
+\autoref{plot-curves}, that all share a common x and y axis with properties
+described in \autoref{axis-properties}.
+
+
+The \lstinline!title! of a \lstinline!Figure! shall be non-empty and is
+mandatory, as every figure needs a title for presentation in contexts such as a
+list of figures, and as it is generally hard for tools to automatically generate
+a meaningful title.  On the other hand, when the \lstinline!title! of a
+\lstinline!Plot! isn't provided, the tool produces a default, but the default is
+allowed to be empty.  Providing the empty string as \lstinline!title! of a
+\lstinline!Plot! means that no title should be shown.  The plot title is not to
+be confused with the plot \emph{label} which is never empty, see below.
+
+The \lstinline!identifier! in \lstinline!Figure! and \lstinline!Plot! is
+optional, and is intended for programmatic access.  An \lstinline!identifier!
+must be unique within the class containing the \lstinline!figures! annotation,
+without considering whether it belongs to \lstinline!Figure! or
+\lstinline!Plot!.  {[}\emph{For \lstinline!Figure!, this makes it possible to
+reference the plot from a tool-specific scripting environment. For \lstinline!Plot!, this makes it possible to reference
+the plot in the figure caption, which becomes useful when the \lstinline!Figure!
+contains more than one \lstinline!Plot!.}{]}
+
+Every \lstinline!Plot! has an automatically generated \emph{label} which is
+required to be shown as soon as at least one \lstinline!Plot! in the
+\lstinline!Figure! has an \lstinline!identifier!.  A tool is free to choose both
+labeling scheme (such as \emph{a}, \emph{b}, \dots, or \emph{i}, \emph{ii}, \dots) placement in the plot,
+and styling in the plot itself as well as in other contexts.
+
+When a \lstinline!Figure! defines a non-empty \lstinline!group!, it is used to
+organize figures similar to how \lstinline!group! is used in the
+\lstinline!Dialog! annotation (see \autoref{annotations-for-the-graphical-user-interface}).  However, leaving \lstinline!group! at
+the default of an empty string does not mean that a group will be created
+automatically, but that the figure resides outside of any group. The
+\lstinline!group! is both the key used for grouping, and the name of the group
+for diaplay purposes.
+
+\subsubsection{Plot Curves}\doublelabel{plot-curves}
+The actual data to plot is specified in the \lstinline!curves! of a \lstinline!Plot!:
+\begin{lstlisting}[language=modelica]
+record Curve
+  expression x = time "X coordinate values";
+  expression y "Y coordinate values";
+  String legend "Legend";
+end Curve;
+\end{lstlisting}
+
+
+The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be
+component references refering to a scalar variable or \lstinline!time!.
+
+When \lstinline!legend! isn't provided, the tool produces a default based on
+\lstinline!x! and/or \lstinline!y!.  Providing the empty string as
+\lstinline!legend! means that the curve shall be omitted from the plot legend.
+
+\subsubsection{Axis Properties}\doublelabel{axis-properties}
+Properties may be defined for each \lstinline!Plot! axis:
+\begin{lstlisting}[language=modelica]
+record Axis
+  Real min "Axis lower bound";
+  Real max "Axis upper bound";
+  String unit "Unit of min and max";
+  String label "Axis label";
+end Axis;
+\end{lstlisting}
+
+When an axis bound isn't provided, the tool computes one automatically.
+
+The Modelica tool is responsible for showing the unit used for values at the
+axis tick marks, so the axis \lstinline!label! shall not be used to convey this
+information.
+
+When an axis label isn't provided, the tool produces a default label. Providing
+the empty string as axis label means that no label should be shown.
+
+\subsubsection{Variable Replacements}
+In most places where text is displayed (\lstinline!title!, \lstinline!caption!, \lstinline!legend!, \lstinline!label!),
+the final value of a result variable can be embedded by refering to the variable
+as \lstinline!%{inertia1.w}!.  This is similar to the \lstinline!Text! graphical in \autoref{text}.
+
+Note that expansion to the final value means that expansion is not restricted to
+parameters and constants, so that values to be shown in a caption can be
+determined during simulation.
+
+The percent character is encoded \lstinline!%%!.  Neither \lstinline!%class! nor
+\lstinline!%name! is supported in this context, as this information is expected
+to already be easily accessible (when applicable) in tool-specific ways. (Titles
+making use of \lstinline!%class! or \lstinline!%name! would then only lead to
+ugly duplication of this information.)
+
+\subsubsection{Text Markup in Captions}
+In addition to variable replacements, a very restricted form of text markup is
+used for the \lstinline!caption!.
+
+Links take the form \lstinline!%[<text>](<link>)!, where the
+\lstinline![<text>]! part is optional. The \lstinline!<link>! can be in either
+of the following forms: - A URI, such as
+\lstinline!https://github.com/modelica/ModelicaSpecification! or
+\lstinline!modelica:///Modelica.Blocks!. - A \lstinline!variable:<id>!, where
+\lstinline!<id>! is a component reference such as \lstinline!inertia1.w!. - A
+\lstinline!plot:<id>!, where \lstinline!<id>! is the identifier of a
+\lstinline!Plot! in the current \lstinline!Figure!.
+
+When \lstinline![<text>]! is omitted, a Modelica tool is free to derive a default based on
+the \lstinline!<link>!.
+
+The styling of the link text and the link action is left for each Modelica tool
+to decide.
+
+{[}\emph{For example,} \lstinline!%(inertia1.w)! \emph{could be displayed as the text
+\lstinline!inertia1.w! formatted with upright monospaced font, and have a pop-up
+menu attached with menu items for plotting the variable, setting its start
+value, or investigating the equation system from which it is solved.  On the
+other hand,} \lstinline!%[angular velocity](inertia1.w)! \emph{could be formatted in
+the same style as the surrounding text, except some non-intrusive visual clue
+about it being linked.}{]}
+
+A sequence of one or more newlines (encoded either literally or using the \lstinline!\n!
+escape sequence) means a paragraph break.  (A line break within a paragraph is
+not supported.)
 
 \section{Annotations for Code Generation}\doublelabel{annotations-for-code-generation}
 \begin{lstlisting}[language=grammar]
