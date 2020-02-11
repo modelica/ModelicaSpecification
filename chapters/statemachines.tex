@@ -89,7 +89,7 @@ initial state and state variables are reset to their start values. If
 synchronize=true, any transition is disabled until all state machines of
 the from-state have reached final states, i.e. states without outgoing
 transitions. For the precise details about firing a transition, see
-\ref{state-machine-semantics}.\\ \hline
+\autoref{state-machine-semantics}.\\ \hline
 \textbf{initialState}(state) & Argument ``state'' is the block instance
 that is defined to be the initial state of a state machine. At the first
 clock tick of the state machine, this state becomes
@@ -112,21 +112,36 @@ state is active at the actual clock tick. If it is not active, the
 operator returns \textbf{false}.
 
 It is an error if the instance is not a state of a state machine.\\ \hline
-\textbf{ticksInState()} & Returns the number of ticks of the clock of
-the state machine since a transition was made to the currently active
-state. This function can only be used in transition conditions of state
-machines not present in states of hierarchical state machines.
-{[}\emph{For example if there is a transition with immediate=false from
-state A1 to A2 and the condition is ticksInState() $\ge 5$, and A1 became
-active at 10ms, and the clock period is 1ms, then A1 will be active at
-10ms, 11ms, 12ms, 13ms, 14ms, and will be not active at 15 ms.}{]}\\ \hline
+\textbf{ticksInState()} & Returns the number of ticks of the clock of the state machine
+for which the currently active state has maintained its active state without interruption,
+i.e. without local or hierarchical transitions from this state.
+In the case of a self-transition to the currently active state or to an active enclosing state,
+the number is reset to one.
+This function can only be used in state machines.\\ \hline
 \textbf{timeInState()} & Returns the time duration as Real in {[}s{]}
-since a transition was made to the currently active state. This function
-can only be used in transition conditions of state machines not present
-in states of hierarchical state machines.\\ \hline
+for which the currently active state has maintained its active state without interruption,
+i.e. without local or hierarchical transitions from this state.
+In the case of a self-transition to the currently active state or to an active enclosing state,
+the time is reset to zero.
+This function can only be used in state machines.\\ \hline
 
 \end{longtable}
-
+\begin{example}
+If there is a transition with immediate=false from
+state A1 to A2 and the condition is ticksInState() $\ge 5$, and A1 became
+active at 10ms, and the clock period is 1ms, then A1 will be active at
+10ms, 11ms, 12ms, 13ms, 14ms, and will be not active at 15 ms.
+\begin{lstlisting}[language=modelica]
+  block State end State;
+  State A0;
+  State A1; // Becomes active at 10ms
+  State A2;
+equation
+  initialState(A0);
+  transition(A0, A1, sample(time,Clock(1,1000)) > 0.0095);
+  transition(A1, A2, ticksInState() >= 5, immediate=false);
+\end{lstlisting}
+\end{example}
 \section{State Machine Graphics}\doublelabel{state-machine-graphics}
 
 {[} \emph{The recommended layout of state machines is shown below for a
@@ -144,8 +159,8 @@ lines.} {]}
 
 The annotation for graphics of \textbf{transition}() has the following
 structure: \textbf{annotation}(Line(\ldots{}), Text(\ldots{})); and for
-\textbf{initialState}(): \textbf{annotation}(Line(\ldots{})); with Line
-and Text annotations defined in \ref{annotations}.6.5.
+\textbf{initialState}(): \textbf{graphical-primitives}(Line(\ldots{})); with Line
+and Text annotations defined in \autoref{annotations}.
 
 {[} \emph{Example:}
 \begin{lstlisting}[language=modelica]
@@ -241,7 +256,13 @@ delayed transition. The max function returns the index of the transition
 with highest priority or 0.
 
 \begin{lstlisting}[language=modelica]
-  Integer fired = max(if (if t[i].from == selectedState then (if t[i].immediate then c[i] else previous(c[i])) else false) then i else 0 for i in 1:size(t,1));
+  Integer fired = max(if
+    (if t[i].from == selectedState
+	   then (if t[i].immediate then c[i] else previous(c[i]))
+	   else false)
+	 then i
+	 else 0
+   for i in 1:size(t,1));
 \end{lstlisting}
 The start value of c is false. This definition would require that the
 previous value is recorded for all transitions conditions. Below is
@@ -254,7 +275,13 @@ from-state and the condition is true. The max function returns the index
 of the transition with true condition and highest priority or 0.
 
 \begin{lstlisting}[language=modelica]
-  Integer immediate = max(if (if t[i].immediate and  t[i].from == selectedState then c[i] else false) then i else 0 for i in 1:size(t,1));
+  Integer immediate = max(if
+     (if t[i].immediate and  t[i].from == selectedState
+        then c[i]
+		else false)
+	  then i
+	  else 0
+	for i in 1:size(t,1));
 \end{lstlisting}
 In a similar way, the Integer delayed is calculated as the index for a
 potentially delayed transition, i.e. a transition taking place at the
@@ -262,7 +289,13 @@ next clock tick. In this case the from-state needs to be equal to
 nextState:
 
 \begin{lstlisting}[language=modelica]
-  Integer delayed =  max(if  (if not t[i].immediate and t[i].from == nextState then c[i] else false) then i else 0 for i in 1:size(t,1));
+  Integer delayed =  max(if
+    (if not t[i].immediate and t[i].from == nextState
+	   then c[i]
+	   else false)
+	 then i
+	 else 0
+  for i in 1:size(t,1));
 \end{lstlisting}
 The transition to be fired is determined as follows, taking into account
 that a delayed transition might have higher priority than an immediate:
@@ -273,7 +306,11 @@ that a delayed transition might have higher priority than an immediate:
 nextState is set to the found transitions to-state:
 
 \begin{lstlisting}[language=modelica]
-  Integer nextState = if active then (if fired > 0 then t[fired].to else selectedState) else previous(nextState);
+  Integer nextState = if active then
+                        (if fired > 0
+						   then t[fired].to
+						   else selectedState)
+					  else previous(nextState);
 \end{lstlisting}
 In order to define synchronize transitions, each state machine must
 determine which are the final states, i.e. states without
@@ -281,7 +318,9 @@ from-transitions and to determine if the state machine is in a final
 state currently:
 
 \begin{lstlisting}[language=modelica]
-  Boolean finalStates[nStates] = {max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1)) == 0 for i in 1:nStates};
+  Boolean finalStates[nStates] = {
+       max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1)) == 0
+	for i in 1:nStates};
   Boolean stateMachineInFinalState = finalStates[activeState];
 \end{lstlisting}
 To enable a synchronize transition, all the stateMachineInFinalState
@@ -316,6 +355,7 @@ condition is set to false:
 
 \begin{lstlisting}[language=modelica]
   Boolean nextResetStates[nStates] = if  active then {if activeState == i then false else activeResetStates[i] for i in 1:nStates}
+   else previous(nextResetStates)
 \end{lstlisting}
 The second reset mechanism is implemented with the selectedReset~and
 nextReset~variables. If no reset transition is fired, the nextReset is
@@ -325,9 +365,9 @@ set to false for the next cycle.
 
 The execution of a sub-state machine has to be suspended when its
 enclosing state is not active. This activation flag is given as a
-Boolean input active. When this flag is true, the sub-state machine
+Boolean input \lstinline!active!. When this flag is true, the sub-state machine
 maintains its previous state, by guarding the equations of the state
-variables nextState, nextReset~and nextResetStates.
+variables \lstinline!nextState!, \lstinline!nextReset! and \lstinline!nextResetStates!.
 
 \subsection{Semantics Summary}\doublelabel{semantics-summary}
 
@@ -359,7 +399,7 @@ machine should be reset";
   // Delayed resetting of individual states
   output Boolean activeResetStates[nStates] = {if reset then true else
     previous(nextResetStates[i]) for i in 1:nStates};
-  Boolean nextResetStates[nStates] = if active then {if selectedState == i then false
+  Boolean nextResetStates[nStates] = if active then {if activeState == i then false
     else activeResetStates[i] for i in 1:nStates} else previous(nextResetStates);
   Boolean finalStates[nStates] = {max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1))== 0 for i in 1:nStates};
   Boolean stateMachineInFinalState = finalStates[activeState];
@@ -414,7 +454,7 @@ u!\textsubscript{2}! = v
 ...
 \end{lstlisting}
 
-The merge of the definitions of v is then made according to \ref{merging-variable-definitions}:
+The merge of the definitions of v is then made according to \autoref{merging-variable-definitions}:
 Merging Variable Definitions. The result is after
 simplification:
 \begin{lstlisting}[language=modelica,escapechar=!]
@@ -545,7 +585,7 @@ end HierarchicalAndParallelStateMachine;
 \end{lstlisting}
 
 \emph{The behavior of the state machine can be seen in the plots of v:}
-\begin{figure}
+\begin{figure}[H]
 \includegraphics[width=4.16667in,height=2.91667in]{statemachineplot}
 \end{figure}
 \emph{The transition from state1 to state2 could have been done with a
