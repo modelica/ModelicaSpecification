@@ -60,21 +60,12 @@ In Flat Modelica, a _parameter expression_ is more restricted than in full Model
 
 As a consequence, the full Modelica syntactic sugar of using an impure function in the binding equation of a parameter is not allowed in Flat Modelica.  Such initialization has to be expressed explicitly using an initial equation.  Hence, the rules of variability hold without exception also in the case of components declared as parameter.
 
-### Discrete-time expressions
-
-In Flat Modelica, a _discrete expression_ is more restricted than in full Modelica, by adding the following requirement (with emphasis on the difference compared to full Modelica):
-- Function calls where all input arguments of the function are discrete-time expressions _are discrete-time provided that the callee is pure_.
-
-The rule about when-clause bodies, initial equations, and initial algorithms still holds without exception, so purity of functions doesn't matter there.
-
-### Continuous-time expressions
-
-Note that a function call expression where the callee is impure is a non-discrete-time expression, regardless of the variability of the argument expressions.
-
 ### Reason for change
 By excluding `external` functions, translation time evaluation of constant expressions is greatly simplified.  By excluding `impure` functions and `pure(…)` expressions, it is ensured that it doesn't matter whether evaluation happens at translation time or at simulation (initialization) time.
 
 Forbidding translation time evaluation of function calls in non-constant expressions generalizes the current Modelica rule for `impure` functions and makes it clear that this is not allowed regardless whether this is seen as an optimization or not.  (The current Modelica specification only has a non-normative paragraph saying that performing optimizations is not allowd.)
+
+The change regarding parameter expressions could be extended to discrete-time expressions as well without loss of expressiveness due to the existing restrictions on where an impure function may be called.  This could also be expressed more generally by saying that a function call expression where the callee is impure is a non-discrete-time expression.  However, it was decided to not include this in the formal description of differences between Modelica and Flat Modelica in order to avoid describing changes that only clarify things without actually making a difference to semantics.
 
 The shifts in variability of function calls could be summarized as _the variability of a function call expression is the highest variability among the argument expressions and the variability of the called function itself_, where the _variability of a function_ is defined by the following table:
 
@@ -83,6 +74,8 @@ The shifts in variability of function calls could be summarized as _the variabil
 | pure constant | constant |
 | pure, otherwise | parameter |
 | impure | continuous-time |
+
+Seen this way, the rules about which functions may be called in the body of a function definition ends up being another case of variability enforcement.
 
 This covers what one can currently express in full Modelica.  In the future, one might also introduce _pure discrete_ functions that don't have side effects, but that must be re-evaluated at events, even if the arguments are constant.
 
