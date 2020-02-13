@@ -21,26 +21,37 @@ Flat Modelica is designed to avoid such implicit evaluation of parameters, and t
 In Modelica a separate issue is that `if`-equations may contain connect and similar primitives 
 that cannot easily be counted; but they are gone in Flat Modelica.
 
+# Pure Modelica functions
+
+In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
+- Only the output values of a function call influence the simulation result (considered free of side effects for purposes of program analysis).
+- The function itself only contributes with `constant` variability to expressions where it is called.  That is, when the function is called with constant arguments, the result is assumed to be the same when evaluated at translation time and when evaluated at any point during simulation.
+- It is straight-forward to evaluate a call to a `pure constant` function at translation time.
+
+The built-in functions are `pure constant`, and a user-defined pure `function` or `operator function` can be declared as `pure constant` by adding `constant` in the class prefix right after `pure`.  For example:
+```
+pure constant function add1
+```
+
+The implementation of a `pure constant` functions is more restricted than that of pure functions in general:
+- It may not have `external` implementation.
+- It may not contain any `pure(…)` expression.
+- All called functions must be `pure constant`.
+
+The rule for `pure(impureFunctionCall(...))` needs to be rephrased to not say _allows calling impure functions in any pure context_, since the body of a `pure constant` function is also a pure context.  Perhaps something like this instead:
+> meaning that the present occurrence of `impureFunctionCall` should be considered pure (not `pure constant`) for purposes of purity analysis.
+
+### Reason for change
+
+This change was made to support the [changed definitions of _constant expression_](#Constant-expressions).
+
 ## Variability of expressions
 
 ### Constant expressions
 In Flat Modelica, a _constant expression_ is more restricted than in full Modelica, by adding the following requirement:
-- Functions called in a constant expression must be _pure constant_, defined below.
+- Functions called in a constant expression must be `pure constant`.
 
-A _pure constant_ function is informally characterized by the following properties:
-- Only the output values of a function call influence the simulation result (considered free of side effects for purposes of program analysis).
-- The function itself only contributes with `constant` variability to expressions where it is called.  That is, when the function is called with constant arguments, the result is assumed to be the same when evaluated at translation time and when evaluated at any point during simulation.
-- It is straight-forward to evaluate a call to a _pure constant_ function at translation time.
-
-By requiring functions called in a constant expression to be _pure constant_, it is ensured that a constant expression can always be evaluated to a value at translation time.  A function call that is not a constant expression must not be evaluated before simulation starts.
-
-It is currently not possible to declare a function as _pure constant_.  For now, there is just the following implicit formalization (in agreement with the informal characterization above):
-- The built-in functions are _pure constant_.
-- A `pure` function is _pure constant_ unless:
-  * It has `external` implementation.
-  * It contains a `pure(…)` expression.
-  * It calls another function that isn't _pure constant_.
-- An `impure` function is not _pure constant_.
+By requiring functions called in a constant expression to be `pure constant`, it is ensured that a constant expression can always be evaluated to a value at translation time.  A function call that is not a constant expression must not be evaluated before simulation starts.
 
 ### Parameter expressions
 
