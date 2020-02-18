@@ -598,7 +598,7 @@ array "(" expression for iterators ")"
 
 is an array constructor with iterators. The expressions inside the
 iterators of an array constructor shall be vector expressions. They are
-evaluated once for each array constructor, and are evaluated in the
+evaluated once for each array constructor, and 1are evaluated in the
 scope immediately enclosing the array constructor.
 
 For an iterator:
@@ -615,6 +615,106 @@ loop - i.e. for an array\_expression \{1,3.2\} the iterator will have
 the type of the type-compatible expression (Real) for all iterations.
 For deduction of ranges, see \autoref{implicit-iteration-ranges}; and for using types as
 range see \autoref{types-as-iteration-ranges}.
+
+For an iterator:
+\begin{lstlisting}[language=modelica]
+IDENT in class NAME
+\end{lstlisting}
+the \lstinline!NAME! must be (using normal lexical lookup) the
+name of a \lstinline!model!, \lstinline!block!, \lstinline!connector!, \lstinline!record!,
+or \lstinline!operator record!, \lstinline!type! specialized class.
+The loop-variable, \lstinline!IDENT!, is resolved to every instance of class \lstinline!NAME!
+that is on the same or a lower level as the parent of the component containing the iterator expression.
+\begin{nonnormative}
+For example if the iterator expression is in a model A and the simulation contains a component
+of A with component path top.x.a or top.x.a[:] only components in top.x are considered;
+and if the component-path is top.x[n].a only components in top.x[1] are considered for
+top.x[1].a and only top.x[2] for top.x[2].a. If the component path for the model A is a
+all components are considered. The reason for this is to allow graphical composition
+where one sub-component use this and other sub-components are considered.
+\end{nonnormative}
+If no instance of class \lstinline!NAME! is present, the constructed array has zero dimension.
+The full path name of the actual instance can be inquired with the built-in function
+\lstinline!IDENT.getInstanceName()!.
+
+{[}\emph{Example}:
+\begin{lstlisting}[language=modelica]
+record Observation "Data that shall be observed"
+  constant String name;
+  parameter Real m;
+  parameter Real v2[3];
+  Real           r2;
+end Observation;
+
+model ObservedModel "Model that produces the data"
+  parameter Real p=2;
+  parameter Real v[3] = {-1,2.5,6};
+  Real    r;
+  Real    w[3];
+  Boolean b;
+  Integer i;
+  ...
+end ObservedModel;
+
+model Submodel
+  ObservedModel c1(p=3, v={1,-4,8});
+  ObservedModel c2;
+end Submodel;
+
+model MyObs
+  Integer i2[:]      = {c.i+3 for c in class ObservedModel};
+  Observation obs[:] = {Observation(m=c.p, v2=c.v, r2=c.r, name=c.getInstanceName())  
+                                    for c in class ObservedModel};
+  Integer i3[:]      = {c.i for c in class ClassNotUsedInMyModel};
+end MyObs;
+
+model MyModel1
+  Submodel s1;  
+  Submodel s2;
+  
+  MyObs observer;
+  
+end MyModel1;
+
+model MyModel2
+  MyModel1 myModel1;
+  Submodel s3;
+end MyModel2;
+\end{lstlisting}
+
+\emph{In every iteration of the for loop, the iterator variable c is a reference to an instance
+of class ObservedModel present in MyModel1. Therefore, the above model is equivalent to
+the following expanded form:}
+
+\begin{lstlisting}[language=modelica]
+model MyObs_Expanded
+  Integer i2[:];
+  Observation obs[:];
+  Integer i3[:]
+end MyObs_Expanded;
+model MyModel1_Expanded
+  Submodel s1;
+  Submodel s2;
+
+  MyObs_Expanded observer(
+       i2= {s1.c1.i+3, s1.c2.i+3,  s2.c1.i+3, s2.c2.i+3},
+       obs={Observation(m=s1.c1.p,  v2=s1.c1.v,  r2=s1.c1.r, 
+                          name="MyModel2_Expanded.myModel1.s1.c1"),
+            Observation(m=s1.c2.p,  v2=s1.c2.v,  r2=s1.c2.r,
+                          name=" MyModel2_Expanded.myModel1..s1.c2"),
+            Observation(m=s2.c1.p,  v2=s2.c1.v,  r2=s2.c1.r,
+                          name=" MyModel2_Expanded.myModel1.s2.c1"),
+            Observation(m=s2.c2.p,  v2=s2.c2.v,  r2=s2.c2.r,
+                          name=" MyModel2_Expanded.myModel1.s2.c2")}),
+        i3=zeros(0));
+end MyModel1_Expanded;
+
+model MyModel2_Expanded
+  MyModel1_Expanded myModel1;
+  Submodel          s3;
+end MyModel2_Expanded;
+\end{lstlisting}
+{]}
 
 \subsubsection{Array Constructor with One Iterator}\doublelabel{array-constructor-with-one-iterator}
 
