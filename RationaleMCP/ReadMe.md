@@ -30,7 +30,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 - ~~MCP0024~~ Initialization of Clocked States (added in Modelica 3.4) ([#2007](https://github.com/modelica/ModelicaSpecification/issues/2007))
 - ~~MCP0023~~ Model to Record (added in Modelica 3.4) ([#1953](https://github.com/modelica/ModelicaSpecification/issues/1953))
 - ~~MCP0022~~ Integer to Enumeration (added in Modelica 3.4) ([#1842](https://github.com/modelica/ModelicaSpecification/issues/1842))
-- MCP0021 Component iterators (active)
+- MCP0021 Component iterators ([MCP/0021](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0021))
 - ~~MCP0020~~ Model as Arguments to Functions (added in Modelica 3.4)
 - ~~MCP0019~~ Improvement of Flattening Description (added in Modelica 3.4) ([#1829](https://github.com/modelica/ModelicaSpecification/issues/1829))
 - ~~MCP0018~~ Change specification format (done post Modelica 3.4)
