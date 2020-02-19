@@ -6,7 +6,7 @@ Henrik Tidefelt, Otto Tronarp
 ![Example generated with the prototype implementation](example-figure.png)
 
 ## Summary
-This is not about defining plotting functions to be used in scripting environments.  This is about declarative descriptions of predefined plots, stored in the simulation model's class annotation.  It makes it completely agnostic to scripting environments, but scripting environments can still take advantage of the predefined plots.  For instance, the Wolfram SystemModeler environment allows users to request a predefined plot with a given title in the scripting environment, where it is then possible to apply further customization that is beyond the scope of what is reasonable to include in an MCP.
+This is not about defining plotting functions to be used in scripting environments.  This is about declarative descriptions of predefined plots, stored in the model's class annotation.  It makes it completely agnostic to scripting environments, but scripting environments can still take advantage of the predefined plots.  For instance, the Wolfram SystemModeler environment allows users to request a predefined plot with a given title in the scripting environment, where it is then possible to apply further customization that is beyond the scope of what is reasonable to include in an MCP.
 
 The use of predefined plots has been proven to greatly enhance the value of example models for users of a library, since they don't need to read documentation of the examples in one place, and then find the relevant things to plot in another place.  To be given a preferred plot immediately after simulation is generally a much faster way of getting an idea of what the example is all about, compared to reading the example's documentation.
 
