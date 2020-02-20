@@ -224,6 +224,9 @@ said to define a declaration equation associated with the declared
 component. For declarations of vectors and matrices, declaration
 equations are associated with each element.
 
+Only components of the restricted classes type, record, operator record, and connector, or components of classes inheriting from ExternalObject
+may have declaration equations. See also the corresponding rule for algorithms, \autoref{restrictions-on-assigned-variables}.
+
 \subsubsection{Prefix Rules}\doublelabel{prefix-rules}
 
 Variables declared with the \lstinline!flow! or the \lstinline!stream! type prefix shall be a
@@ -383,10 +386,13 @@ of initial value problem of the hybrid DAE):
   A variable \lstinline!vc! declared with the parameter or constant prefixes remains
   constant during transient analysis.
 \item
-  A \emph{discrete-time} variable vd has a vanishing time derivative
-  (informally \lstinline!der(vd)=0!, but it is not legal to apply the \lstinline!der()! operator
-  to discrete-time variables) and can change its values only at event
-  instants during transient analysis (see \autoref{events-and-synchronization}).
+  A \emph{discrete-time} variable \lstinline!vd! has a vanishing time derivative between events.
+  Note that this is not the same as saying that \lstinline!der(vd)=0! almost everywhere,
+  as the derivative is not even defined at the events, and it is not legal
+  to apply the \lstinline!der()! operator
+  to discrete-time variables as they are not continuous. During transient analysis the variable
+  can only change its value at event
+  instants (see \autoref{events-and-synchronization}).
 \item
   A \emph{continuous-time} variable \lstinline!vn! may have a non-vanishing time
   derivative (\lstinline!der(vn)<>0! possible) and may also
@@ -595,8 +601,8 @@ class-specifier :
   long-class-specifier | short-class-specifier | der-class-specifier
 
 long-class-specifier :
-  IDENT string-comment composition end IDENT
-  | extends IDENT [ class-modification ] string-comment composition
+  IDENT description-string composition end IDENT
+  | extends IDENT [ class-modification ] description-string composition
   end IDENT
 
 short-class-specifier :
@@ -811,11 +817,9 @@ initial algorithm and protected sections are not allowed). The elements
 of a record may not have prefixes \lstinline!input!, \lstinline!output!,
 \lstinline!inner!, \lstinline!outer!, \lstinline!stream,!
 or \lstinline!flow!. Enhanced with implicitly available record constructor function,
-see \autoref{record-constructor-functions}. Additionally, record components can be used as
-component references in expressions and in the left hand side of
-assignments, subject to normal type compatibility rules. The components
+see \autoref{record-constructor-functions}. The components
 directly declared in a record may only be of specialized class record
-and type.\\ \hline
+or type.\\ \hline
 \lstinline!type! & May only be predefined types, enumerations, array of
 type, or classes extending from type.\\ \hline
 \lstinline!model! & Identical to \lstinline!class!, the basic class concept, i.e., no
@@ -871,6 +875,12 @@ end foo1; end foo;
 \end{lstlisting}
 {]}\\ \hline
 \end{longtable}
+Additionally only components which are of specialized classes \lstinline!record!, \lstinline!type!, \lstinline!operator record!, and
+connector classes based on any of those can be used as component references in normal expressions and in the left hand
+side of assignments, subject to normal type compatibility rules.
+Additionally components of connectors may be arguments of connect-statements,
+and any component can be used as argument to the \lstinline!ndims! and \lstinline!size!-functions, or for accessing
+elements of that component (possibly in combination with array indexing).
 
 {[}\emph{Example for ''operator'': }
 \begin{lstlisting}[language=modelica]
@@ -1219,7 +1229,7 @@ globally non-singular model.}{]}
 
 \emph{Example 3:}
 \begin{lstlisting}[language=modelica]
-import SI = Modelica.SIunits;
+import Modelica.Units.SI;
 
 partial model BaseProperties
   "Interface of medium model for all type of media"
@@ -1304,7 +1314,7 @@ is:}
 volume or a fixed boundary condition:}
 
 \begin{lstlisting}[language=modelica]
-import SI = Modelica.SIunits;
+import Modelica.Units.SI;
 
 connector FluidPort
   replaceable model Medium = BaseProperties;

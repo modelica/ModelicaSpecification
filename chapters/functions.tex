@@ -20,10 +20,10 @@ the following schematic function example:}
 function  !\emph{functionname}!
   input  TypeI1 in1;
   input  TypeI2 in2;
-  input  TypeI3 in3 := !\emph{default\_expr1}! "Comment" annotation(...);
+  input  TypeI3 in3 = !\emph{default\_expr1}! "Comment" annotation(...);
   ...
   output TypeO1 out1;
-  output TypeO2 out2 :=  !\emph{default\_expr2}!;
+  output TypeO2 out2 =  !\emph{default\_expr2}!;
   ...
 protected
   !\emph{\textless{}local variables\textgreater{}}!
@@ -38,7 +38,7 @@ end !\emph{functionname}!;
 {]}
 
 Optional explicit default values can be associated with any input or
-output formal parameter through declaration assignments. {[}\emph{Such
+output formal parameter through binding equations. {[}\emph{Such
 defaults are shown for the third input parameter and the second output
 parameter in our example.}{]} Comment strings and annotations can be
 given for any formal parameter declaration, as usual in Modelica
@@ -160,7 +160,7 @@ Modelica \lstinline!class!:
 \item
   For a function to be called in a simulation model, the function may
   not be partial, and the output variables must be assigned inside the
-  function either in declaration assignments or in an algorithm section,
+  function either in binding equations or in an algorithm section,
   or have an external function interface as its body, or be defined as a
   function partial derivative. The output variables of a function should
   be computed. {[}\emph{It is a quality of implementation how much
@@ -179,9 +179,9 @@ Modelica \lstinline!class!:
   or array local variable {[}\emph{i.e., a non-input components}{]} of a
   function must be either given by the input formal parameters, or given
   by constant or parameter expressions, or by expressions containing
-  combinations of those (\autoref{initialization-and-declaration-assignments-of-components-in-functions}).
+  combinations of those (\autoref{initialization-and-binding-equations-of-components-in-functions}).
 \item
-  For initialization of local variables of a function see \autoref{initialization-and-declaration-assignments-of-components-in-functions}).
+  For initialization of local variables of a function see \autoref{initialization-and-binding-equations-of-components-in-functions}).
 \item
   Components of a function will inside the function behave as though
   they had discrete-time variability.
@@ -209,7 +209,7 @@ Modelica \lstinline!class!:
 \item
   A formal parameter or local variable may be initialized through a
   \emph{binding} (=) of a default value in its declaration,
-  see \autoref{initialization-and-declaration-assignments-of-components-in-functions}.
+  see \autoref{initialization-and-binding-equations-of-components-in-functions}.
   Using assignment (:=) is deprecated. If a non-input component in the
   function uses a record class that contain one or more binding
   equations they are viewed as initialization of those component of the
@@ -319,11 +319,14 @@ from within:
 \item
   in initial equations and initial algorithms,
 \item
-  in bindings for variables declared as parameter -- which is seen as
-  syntactic sugar for having a parameter with fixed=false and the
-  binding as an initial equation \emph{{[}thus there is no guarantee
-  that parameter is equal to the impure function call after
-  initialization{]}} -- and in constructing external objects.
+  in binding equations for components declared as parameter -- which is seen as
+  syntactic sugar for having a parameter with \lstinline!fixed=false! and the
+  binding as an initial equation \emph{{[}thus, evaluation of the same function
+  call at a later time during simulation is not guaranteed to result in the same
+  value as when the parameter was initialized, seemingly breaking the declaration
+  equation{]}}
+\item
+  in binding equations for external objects.
 \end{itemize}
 
 For initial equations, initial algorithms, and bindings it is an error
@@ -426,7 +429,7 @@ named-arguments: named-argument [ "," named-arguments ]
 
 named-argument: IDENT "=" function-argument
 
-function-argument : function  name "(" [ named-arguments ] ")" | expression
+function-argument : function type-specifier "(" [ named-arguments ] ")" | expression
 \end{lstlisting}
 
 The interpretation of a function call is as follows: First, a list of
@@ -453,7 +456,7 @@ specification may not be called with named arguments, unless otherwise
 noted.
 
 The type of each argument must agree with the type of the corresponding
-parameter, except where the standard type coercions can be used to make
+parameter, except where the standard type coercion, \autoref{standard-type-coercion}, can be used to make
 the types agree. (See also \autoref{scalar-functions-applied-to-array-arguments} on applying scalar functions
 to arrays.)
 
@@ -465,8 +468,8 @@ convert a Real number to a String:}
 \begin{lstlisting}[language=modelica]
 function RealToString
   input Real number;
-  input Real precision := 6 "number of significantdigits";
-  input Real length := 0 "minimum length of field";
+  input Real precision = 6 "number of significantdigits";
+  input Real length = 0 "minimum length of field";
   output String string "number as string";
   ...
 end RealToString;
@@ -502,7 +505,7 @@ value.
   input Real x2;
   input Integrand integrand; // Integrand is a partial function,
   see below
-  // With default: input Integrand integrand :=
+  // With default: input Integrand integrand =
   Modelica.Math.sin;
   output Real integral;
 algorithm
@@ -523,7 +526,7 @@ call:
 \begin{enumerate}
 \def\labelenumi{\alph{enumi})}
 \item
-  as a function name {[}\lstinline!Parabola! \emph{example below}{]},
+  as a function type-specifier {[}\lstinline!Parabola! \emph{example below}{]},
 \item
   as a function partial application (\autoref{function-partial-application} below),
 \item
@@ -749,7 +752,9 @@ a function.
 \end{lstlisting}
 {]}
 
-\subsection{Initialization and Declaration Assignments of Components in Functions}\doublelabel{initialization-and-declaration-assignments-of-components-in-functions}
+\subsection{Initialization and Binding Equations of Components in Functions}
+\doublelabel{initialization-and-binding-equations-of-components-in-functions}
+\doublelabel{initialization-and-declaration-assignments-of-components-in-functions}
 
 Components in a function can be divided into three groups:
 
@@ -764,23 +769,26 @@ Components in a function can be divided into three groups:
 \end{itemize}
 
 When a function is called components of a function do not have
-start-attributes. However, a declaration assignment (\lstinline!:= expression!) with
+start-attributes. However, a binding equation (\lstinline!= expression!) with
 an expression may be present for a component.
+\begin{nonnormative}
+Declaration assignments of the form \lstinline!:= expression! are deprecated, but otherwise identical to binding equations.
+\end{nonnormative}
 
-A declaration assignment for a non-input component initializes the
+A binding equation for a non-input component initializes the
 component to this \lstinline!expression! at the start of every function invocation
 (before executing the algorithm section or calling the external
 function). These bindings must be executed in an order where a variable
-is not used before its declaration assignment has been executed; it is
+is not used before its binding equations has been executed; it is
 an error if no such order exists (i.e. the binding must be acyclic).
 
-Declaration assignments can only be used for components of a function.
-If no declaration assignment is given for a non-input component the
+Binding equations can only be used for components of a function.
+If no binding equation is given for a non-input component the
 variable is uninitialized (except for record components where modifiers
 may also initialize that component). It is an error to use (or return)
 an uninitialized variable in a function. {[}\emph{It is recommended to
 check this statically - if this is not possible a warning is recommended
-combined with a run-time check}.{]} Declaration assignments for input
+combined with a run-time check}.{]} Binding equations for input
 formal parameters are interpreted as default arguments, as described in
 \autoref{positional-or-named-input-arguments-of-functions}.
 
@@ -810,7 +818,7 @@ end joinThreeVectors;
 \begin{itemize}
 \item
   A non-input array component declared in a function with a dimension
-  size specified by colon(:) and no declaration assignment, can change
+  size specified by colon(:) and no binding equation, can change
   size according to these special rules:Prior to execution of the
   function algorithm the dimension size is zero.
 \item
@@ -980,7 +988,7 @@ exceptions:
 \begin{itemize}
 \item
   Component declarations which do not allow a modification {[}\emph{such
-  as} \lstinline!constant Real c=1! \emph{or} \lstinline!final parameter Real!{]} are declared
+  as} \lstinline!final parameter Real!{]} are declared
   as protected components in the record constructor function.
 \item
   Prefixes (constant, parameter, final, discrete,...) of the remaining
@@ -1070,7 +1078,7 @@ package Demo;
   record Record2
     import Modelica.Math.*;
     extends Record1;
-    constant Real c1 = 2.0;
+    final constant Real c1 = 2.0;
     constant Real c2;
     parameter Integer n1 = 5;
     parameter Integer n2;
@@ -1091,24 +1099,24 @@ should be chosen to not cause any conflict)}
 \begin{lstlisting}[language=modelica,escapechar=!]
 package Demo;
   function Record1
-    input Real r0 := 0;
+    input Real r0 = 0;
     output Record1 !\emph{result}!(r0 = r0);
   end Record1;
 
   function Record2
-    input Real r0 := 0;
+    input Real r0 = 0;
     input Real c2;
-    input Integer n1 := 5;
+    input Integer n1 = 5;
     input Integer n2;
     input Real r1 "comment"; // the comment also copied from record
-    input Real r2 := Modelica.Math.sin(c1);
+    input Real r2 = Modelica.Math.sin(c1);
     input Real r4;
-    input Real r5 := 5.0;
+    input Real r5 = 5.0;
     input Real r6[n1];
     input Real r7[n2];
     output Record2 !\emph{result}!(r0=r0,c2=c2,n1=n1,n2=n2,r1=r1,r2=r2,r4=r4,r5=r5,r6=r6,r7=r7);
   protected
-    constant Real c1 = 2.0; // referenced from r2
+    final constant Real c1 = 2.0; // referenced from r2
     final parameter Real r3 = Modelica.Math.cos(r2);
   end Record2;
 end Demo;
@@ -1587,7 +1595,7 @@ function $f_1$
   ...
   input $T_1$ $u_k$;
   ...
-  input $A_m$ $u_m$ := $a_m$;
+  input $A_m$ $u_m$ = $a_m$;
   ...
   input $A_n$ $u_n$;
   output $T_2$ y;
@@ -1667,15 +1675,15 @@ call interface provides the following:
   sizes are passed as explicit integer parameters.
 \item
   Handling of external function parameters which are used both for input
-  and output, by passing an output that has a declaration assignment to
-  the external function. {[}\emph{Declaration assignments are executed
+  and output, by passing an output that has a binding equation to
+  the external function. {[}\emph{Binding equations are executed
   prior to calling the external function.}{]}
 \end{itemize}
 
 The format of an external function declaration is as follows.
 
 \begin{lstlisting}[language=grammar]
-function IDENT string-comment
+function IDENT description-string
   { component-clause ";" }
   [ protected { component-clause ";" } ]
   external [ language-specification ] [
@@ -1773,19 +1781,7 @@ An exception is made when the argument is of the form \lstinline!size!(\ldots{},
 
 Strings are NUL-terminated (i.e., terminated by '\lstinline!\0!') to
 facilitate calling of C functions. When returning a non-literal string,
-the memory for this string must be allocated with function
-\lstinline!ModelicaAllocateString! (see \autoref{utility-functions}) {[}\emph{It is not suitable
-to use} \lstinline!malloc!\emph{, because a Modelica simulation environment may have
-its own allocation scheme, e.g., a special stack for local variables of
-a function}{]}. After return of the external function, the Modelica
-environment is responsible for the memory allocated with
-ModelicaAllocateString (e.g., to free this memory, when appropriate). It
-is not allowed to access memory that was allocated with
-\lstinline!ModelicaAllocateString! in a previous call of this external function.
-{[}\emph{Memory that is not passed to the Modelica simulation
-environment, such as memory that is freed before leaving the function,
-or in an ExternalObject, see \autoref{external-objects}, should be allocated
-with the standard C-mechanisms, like calloc(..)}{]}.
+see \autoref{utility-functions-for-allocating-strings} for details on memory allocation.
 
 Boolean values are mapped to C such that false in Modelica is 0 in C and
 true in Modelica is 1 in C. \emph{{[}However, the C-function should
@@ -2056,7 +2052,7 @@ of the function).
 function foo
   input Real x;
   input Real y;
-  output Real z:=x;
+  output Real z=x;
   external "FORTRAN 77" myfoo(x,y,z);
 end foo;
 \end{lstlisting}
@@ -2099,7 +2095,7 @@ would have to change the interface function ``}\lstinline!foo!\emph{'' to:}
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
-  protected Real xtemp:=x; // Temporary used because myfoo changes its input
+  protected Real xtemp=x; // Temporary used because myfoo changes its input
   public input Real y;
   output Real z;
   external "FORTRAN 77" myfoo(xtemp,y,z);
@@ -2401,6 +2397,7 @@ The following utility functions can be called in external Modelica
 functions written in C. These functions are defined in file
 \lstinline!ModelicaUtilities.h!:
 
+\subsubsection{Utility Functions for Reporting Errors}\doublelabel{utility-functions-for-reporting-errors}
 The following functions produce a message in different ways. The
 Message-functions only produce the message, but the Warning- and
 Error-functions combine this with error handling as follows.
@@ -2435,14 +2432,16 @@ same format control as the C-function \lstinline!vprintf!.}}\\ \hline
 
 \end{longtable}
 
+\subsubsection{Utility Functions for Allocating Strings}\doublelabel{utility-functions-for-allocating-strings}
 And then the string handling functions:
 
-\begin{longtable}[]{|p{6.5cm}|p{8.5cm}|}
+\begin{longtable}[]{|p{7cm}|p{8.2cm}|}
 \hline \endhead
 \lstinline!ModelicaAllocateString! &
 \begin{tabular}{@{}p{8.cm}@{}}
 \emph{char* ModelicaAllocateString(size\_t len)} \\
-Allocate memory for a non-literal string which is used as a return argument of an external Modelica function.
+Allocate memory for a writeable non-literal string which is used as a return argument of an external Modelica function.
+It allocates \lstinline!len+1! characters and the last one is set to NUL.
 If an error occurs, this function does
 not return, but calls "\lstinline!ModelicaError!".
 \end{tabular}\\ \hline
@@ -2456,14 +2455,45 @@ other open resources in case of error. After cleaning up resources use
 \lstinline!ModelicaError! or \lstinline!ModelicaFormatError! to signal the
 error.
 \end{tabular}\\ \hline
+\lstinline!ModelicaDuplicateString! &
+\begin{tabular}{@{}p{8.cm}@{}}
+\emph{char* ModelicaDuplicateString(const char*str)} \\
+Returns a writeable duplicate of the NUL-terminated string \lstinline!str!.
+If an error occurs, this function does
+not return, but calls "\lstinline!ModelicaError!".
+\end{tabular}\\ \hline
+\lstinline!ModelicaDuplicateStringWithErrorReturn! &
+\begin{tabular}{@{}p{8.cm}@{}}
+\emph{char*\newline ModelicaDuplicateStringWithErrorReturn(const char*str)}\\
+Same as
+\lstinline!ModelicaDuplicateString!, except that in case of error, the function
+returns 0. This allows the external function to close files and free
+other open resources in case of error. After cleaning up resources use
+\lstinline!ModelicaError! or \lstinline!ModelicaFormatError! to signal the
+error.
+\end{tabular}\\ \hline
 \end{longtable}
 
 The valid return values for an external function returning a \lstinline!String! are:
 \begin{itemize}
 \item A literal \lstinline!String!.
 \item A string given as \lstinline!String! input to the external function
-\item A string pointer returned by \lstinline!ModelicaAllocateString! or \lstinline!ModelicaAllocateStringWithErrorReturn!.
+\item A string pointer returned by one the functions in the table above.
 \end{itemize}
+
+Thus if an external wants to create a non-literal string it must be allocated with one of the functions in
+this section, e.g., \lstinline!ModelicaAllocateString!.
+{[}\emph{It is not suitable to use} \lstinline!malloc!\emph{, because a Modelica simulation environment may have
+its own allocation scheme, e.g., a special stack for local variables of
+a function}{]}. After return of the external function, the Modelica
+environment is responsible for the memory allocated with
+ModelicaAllocateString (e.g., to free this memory, when appropriate). It
+is not allowed to access memory that was allocated with
+\lstinline!ModelicaAllocateString! in a previous call of this external function.
+{[}\emph{Memory that is not passed to the Modelica simulation
+environment, such as memory that is freed before leaving the function,
+or in an ExternalObject, see \autoref{external-objects}, should be allocated
+with the standard C-mechanisms, like calloc(..)}{]}.
 
 \subsection{External Objects}\doublelabel{external-objects}
 
@@ -2543,8 +2573,8 @@ memory for the last used table interval):}
 class MyTable
   extends ExternalObject;
   function constructor
-    input String fileName := "";
-    input String tableName := "";
+    input String fileName = "";
+    input String tableName = "";
     output MyTable table;
     external "C" table = initMyTable(fileName, tableName);
   end constructor;
