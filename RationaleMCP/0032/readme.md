@@ -15,7 +15,7 @@ The minutes of _Modelica Design Meetings_ discussing this MCP are summarized in 
 ## Summary
 This MCP defines language extensions for structural non-monotonic model variation. The proposed language features enable selective model extension: the well-defined refinement of models by deselecting components and connections not of interest or inappropriate for a new design. Deselection is modeled in terms of non-exhaustive inheritance; to that end `extends`-clause modifiers now support exclusion of base-class elements from inheritance. Deselected elements are treated in extending models as if they never have been defined in their base-class. In case of deselected components, also all their connections are deselected.
 
-The main contribution of selective model extension is to enable unforeseen structural variability without requiring deliberately prepared base-models. Such non-monotonic variations are for example required to incorporate clocking - i.e., use Modelica Synchronous - in existing continuous models, where the problem is that synchronous adaptations cannot be anticipated when continuous models are designed but require crosscutting structural changes that are often contradicting between different synchronous designs. Other application areas are, for example, the extraction of FMUs from whole system models by replacing components providing test inputs with actual input connectors; or fault-behavior-testing where deselection can be used to intercept connections for introducing noise or exchanging components with faulty ones without base-model preparations for such tests.
+The main contribution of selective model extension is to enable unforeseen structural variability without requiring deliberately prepared base-models. Such non-monotonic variations are for example required to incorporate clocking -- i.e., use Modelica Synchronous -- in existing continuous models, where the problem is that synchronous adaptations cannot be anticipated when continuous models are designed but require crosscutting structural changes that are often contradicting between different synchronous designs. Other application areas are, for example, the extraction of FMUs from whole system models by replacing components providing test inputs with actual input connectors; or fault-behavior-testing where deselection can be used to intercept connections for introducing noise or exchanging components with faulty ones without base-model preparations for such tests.
 
 ## Prerequisites
 
@@ -102,9 +102,9 @@ The _Dymola 2020_ prototype is not feature complete. Besides realizing deselecti
 
 Implementing the _Dymola 2020_ prototype took very little effort; less than 50 lines of code have been required.
 
-### _Dymola 2021_ prototype
+### _Dymola 2021x_ prototype
 
-A next prototype implementation supporting proper syntax for deselections instead of tool-vendor specific annotations is planned. It is scheduled to be part of _Dymola 2021_.
+A next prototype implementation supporting proper syntax for deselections instead of tool-vendor specific annotations is planned. It is scheduled to be part of _Dymola 2021x_.
 
 ### Examples library
 
@@ -115,14 +115,17 @@ The available versions are:
 1. **Version 0.1.0** for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1 and using tool-vendor specific annotations for deselection.
 2. **Version 0.2.0** for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 and using tool-vendor specific annotations for deselection (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as in version 0.1.0).
 3. **Version 0.3.0** for _Dymola 2021_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0. This version uses the correct syntax instead of vendor specific annotations and serves as a reference test case (besides syntax changes, the provided examples are still the ones of versions 0.1.0 and 0.2.0).
+4. **TODO: Version 0.4.0** for _Dymola 2021x_ and based on `Modelica` 4.0.0 only (`Modelica_Synchronous` dependencies are now replaced by `Modelica.Clocked`). This version adds a unit-test suite providing synthetic correct and incorrect examples of advanced and corner case selective model extensions.
 
 ## Revisions
 
-| Date            | Description                                                  |
-| --------------- | ------------------------------------------------------------ |
-| 2019-October-01 | Christoff Bürger. Added final reference test cases (`SelectiveExtension_13th_Modelica_Conference` version 0.3.0) |
-| 2019-May-20     | Christoff Bürger. Updated minutes with the results of the _99th Modelica Design Meeting_. Updated syntax. |
-| 2019-May-10     | Christoff Bürger. Initial version based on the discussion at the _98th Modelica Design Meeting_. Includes summary, syntax proposal, examples, prototype and minutes. |
+| Date             | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| 2020-May-22      | **TODO:** Christoff Bürger. Updated examples library to `Modelica` 4.0.0 and adding unit-tests (`SelectiveExtension_13th_Modelica_Conference` version 0.4.0). |
+| 2020-February-20 | Christoff Bürger. Updated minutes with the results of the _101th Modelica Design Meeting_. |
+| 2019-October-01  | Christoff Bürger. Updated examples library adopting final syntax (`SelectiveExtension_13th_Modelica_Conference` version 0.3.0). |
+| 2019-May-20      | Christoff Bürger. Updated minutes with the results of the _99th Modelica Design Meeting_. Updated syntax. Updated examples library to `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 (`SelectiveExtension_13th_Modelica_Conference` version 0.2.0). |
+| 2019-May-10      | Christoff Bürger. Initial version based on the discussion at the _98th Modelica Design Meeting_. Includes summary, syntax proposal, examples (`SelectiveExtension_13th_Modelica_Conference` version 0.1.0), prototype and minutes. |
 
 ## Contributor License Agreement
 
