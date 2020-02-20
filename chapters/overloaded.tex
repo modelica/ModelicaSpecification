@@ -57,8 +57,10 @@ defined in its base class, for subtyping see \autoref{interface-or-type-relation
 The precedence and associativity of the overloaded operators is
 identical to the one defined in Table 3.1 in \autoref{operator-precedence-and-associativity}.
 
-{[}\emph{Note, the operator overloading as defined in this section is
-only a short hand notation for function calls.}{]}
+\begin{nonnormative}
+Note, the operator overloading as defined in this section is
+only a short hand notation for function calls.
+\end{nonnormative}
 
 \section{Matching Function}\doublelabel{matching-function}
 
@@ -98,12 +100,14 @@ same type)
   i $\le$ n\}.
 \end{itemize}
 
-{[}\emph{This corresponds to the normal treatment of function calls with
+\begin{nonnormative}
+This corresponds to the normal treatment of function calls with
 named arguments, requiring that all inputs have some value given by a
 positional argument, named argument, or a default value (and that
 positional and named arguments do not overlap). Note, that this only
 defines a valid call, but does not explicitly define the set of
-domains.}{]}
+domains.
+\end{nonnormative}
 
 \section{Overloaded Constructors}\doublelabel{overloaded-constructors}
 
@@ -148,17 +152,19 @@ Restrictions:
   be removed}{]}\emph{.}
 \end{itemize}
 
-{[}\emph{By the last restriction the following problem for binary
-operators is avoided: }
+\begin{nonnormative}
+By the last restriction the following problem for binary
+operators is avoided:
 
-\emph{Assume there are two operator record classes C and D that both
+Assume there are two operator record classes C and D that both
 have a constructor from Real. If we want to extend c+c and d+d to
 support mixed operations, one variant would be to define c+d and d+c;
 but then c+2 becomes ambiguous (since it is not clear which instance
 should be converted to). Without mixed operations expressions such as
 c+d are only ambiguous if both conversion from C to D and back from D to
 C are both available, and this possibility is not allowed by the
-restriction above.}{]}
+restriction above.
+\end{nonnormative}
 
 Additionally there is an operator `0' defining the zero-value which can
 also be used to construct an element. The operator `0' for an operator
@@ -240,19 +246,20 @@ class \emph{B}.
   gives the unique match. If the sum of the sizes is larger than one it
   is an error.
 
-  {[}\emph{Informally, this means: If there is no direct match of \lstinline!a op b!, then it is tried to find a direct match by automatic type casts
+\begin{nonnormative}
+  Informally, this means: If there is no direct match of \lstinline!a op b!, then it is tried to find a direct match by automatic type casts
   of \lstinline!a! or \lstinline!b!, by converting either \lstinline!a! or \lstinline!b! to the needed
   type using an appropriate constructor function from one of the
   operator record classes used as arguments of the overloaded \lstinline!op!
-  functions. Example using the Complex-definition below:}
-
+  functions. Example using the Complex-definition below:
 \begin{lstlisting}[language=modelica]
    Real a;
   Complex b;
   Complex c = a*b; // interpreted as:
   // Complex.'*'.multiply(Complex.'constructor'.fromReal(a),b);
 \end{lstlisting}
-{]}
+\end{nonnormative}
+
 \item
   Otherwise, if a or b is an \underline{array expression}, then the expression is
   conceptually evaluated according to the rules of \autoref{scalar-vector-matrix-and-array-operator-functions} with the
@@ -275,9 +282,13 @@ class \emph{B}.
     type. If the operator \lstinline!'0'! is not defined for that class it is an
     error if the inner dimension is zero.
   \end{enumerate}
-{[}\emph{For array multiplication it is assumed that the scalar elements
+
+\begin{nonnormative}
+For array multiplication it is assumed that the scalar elements
 form a non-commutative ring that does not necessarily have a
-multiplicative identity.}{]}
+multiplicative identity.
+\end{nonnormative}
+
 \item
   Otherwise the expression is erroneous.
 \end{enumerate}
@@ -342,9 +353,9 @@ Restrictions:
 
 \section{Example of Overloading for Complex Numbers}\doublelabel{example-of-overloading-for-complex-numbers}
 
-{[}\emph{The rules in the previous subsections are demonstrated at hand
-of a record class to work conveniently with complex numbers:}
-
+\begin{example}
+The rules in the previous subsections are demonstrated at hand
+of a record class to work conveniently with complex numbers:
 \begin{lstlisting}[language=modelica,escapechar=!]
 operator record Complex "Record defining a Complex number"
   Real re "Real part of complex number";
@@ -478,28 +489,28 @@ algorithm
   // results in output:
   // c4 = {2.5 + 1.93649j, 2.5 - 1.93649j}
 \end{lstlisting}
-\emph{How overloaded operators can be symbolically processed. Example:}
 
+How overloaded operators can be symbolically processed. Example:
 \begin{lstlisting}[language=modelica]
   Real a;
   Complex b;
   Complex c = a + b;
 \end{lstlisting}
-\emph{Due to inlining of functions, the equation for \lstinline!c! is
-transformed to:}
+Due to inlining of functions, the equation for \lstinline!c! is
+transformed to:
 \begin{lstlisting}[language=modelica]
 c = Complex.'+'.add(Complex.'constructor'.fromReal(a), b);
   = Complex.'+'.add(Complex(re=a,im=0), b)
   = Complex(re=a+b.re, im=b.im);
 \end{lstlisting}
-\emph{or}
+or
 \begin{lstlisting}[language=modelica]
   c.re = a + b.re;
   c.im = b.im;
 \end{lstlisting}
-\emph{These equations can be symbolically processed as other equations.}
+These equations can be symbolically processed as other equations.
 
-\emph{Complex can be used in a connector:}
+Complex can be used in a connector:
 \begin{lstlisting}[language=modelica]
   operator record ComplexVoltage = Complex(re(unit="V"),im(unit="V"));
   operator record ComplexCurrent = Complex(re(unit="A"),im(unit="A"));
@@ -514,20 +525,19 @@ equation
   connect(p1,p2);
   connect(p1,p3);
 \end{lstlisting}
-\emph{The two connect equations result in the following connection
-equations:}
+The two connect equations result in the following connection
+equations:
 \begin{lstlisting}[language=modelica]
   p1.v = p2.v;
   p1.v = p3.v;
   p1.i + p2.i + p3.i = Complex.'0'();
   // Complex.'+'(p1.i, Complex.'+'(p2.i, p3.i)) = Complex.'0'();
 \end{lstlisting}
-\emph{The restrictions on extends are intended to avoid combining two
+The restrictions on extends are intended to avoid combining two
 variants inheriting from the same operator record, but with possibly
 different operations; thus ComplexVoltage and ComplexCurrent still use
 the operations from Complex. The restriction that it is not legal to
-extend from any of its enclosing scopes implies that:}
-
+extend from any of its enclosing scopes implies that:
 \begin{lstlisting}[language=modelica]
 package A
   extends Icon; //Ok.
@@ -539,4 +549,4 @@ package A
   end A2;
   package A3=A(...); // Not legal
 \end{lstlisting}
-{]}
+\end{example}

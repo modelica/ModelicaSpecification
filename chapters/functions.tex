@@ -13,9 +13,9 @@ whereas results are denoted using the \lstinline!output! keyword. This makes the
 syntax of function definitions quite close to Modelica class
 definitions, but using the keyword \lstinline!function! instead of \lstinline!class!.
 
-{[}\emph{The structure of a typical function declaration is sketched by
-the following schematic function example:}
-
+\begin{nonnormative}
+The structure of a typical function declaration is sketched by
+the following schematic function example:
 \begin{lstlisting}[language=modelica,escapechar=!]
 function  !\emph{functionname}!
   input  TypeI1 in1;
@@ -34,8 +34,7 @@ algorithm
   ...
 end !\emph{functionname}!;
 \end{lstlisting}
-
-{]}
+\end{nonnormative}
 
 Optional explicit default values can be associated with any input or
 output formal parameter through binding equations. {[}\emph{Such
@@ -44,14 +43,13 @@ parameter in our example.}{]} Comment strings and annotations can be
 given for any formal parameter declaration, as usual in Modelica
 declarations.
 
-{[}\emph{All internal parts of a function are optional; i.e., the
-following is also a legal functio}n:
-
+\begin{nonnormative}
+All internal parts of a function are optional; i.e., the following is also a legal function:
 \begin{lstlisting}[language=modelica,escapechar=!]
 function  !\emph{functionname}!
 end !\emph{functionname}!;
 \end{lstlisting}
-{]}
+\end{nonnormative}
 
 \subsection{Ordering of Formal Parameters}\doublelabel{ordering-of-formal-parameters}
 
@@ -66,8 +64,7 @@ these internal orderings are preserved. {[}\emph{Mixing declarations in
 this way is not recommended, however, since it makes the code hard to
 read.}{]}
 
-{[}\emph{Example:}
-
+\begin{example}
 \begin{lstlisting}[language=modelica,escapechar=!]
 function  !\emph{\textless{}functionname\textgreater{}}!
   output TypeO1 out1; // Intermixed declarations of inputs and outputs
@@ -79,8 +76,7 @@ function  !\emph{\textless{}functionname\textgreater{}}!
   ...
 end  !\emph{\textless{}functionname\textgreater{}}!;
 \end{lstlisting}
-
-{]}
+\end{example}
 
 \subsection{Function return-statements}\doublelabel{function-return-statements}
 
@@ -91,8 +87,8 @@ the following form:
 return;
 \end{lstlisting}
 
-{[}\emph{Example (note this could alternatively use break)}:
-
+\begin{example}
+(Note that this could alternatively use break:)
 \begin{lstlisting}[language=modelica]
 function findValue "Returns position of val or 0 if not found"
   input Integer x[:];
@@ -109,7 +105,7 @@ algorithm
   return;
 end findValue;
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsection{Inheritance of Functions}\doublelabel{inheritance-of-functions}
 
@@ -285,7 +281,8 @@ side, need not be called if the output from the function call do not
 mathematically influence the simulation result, even if errors would be
 generated if it were called.{]}}
 
-{[}\emph{Comment 1: This property enables writing declarative
+\begin{nonnormative}
+Comment 1: This property enables writing declarative
 specifications using Modelica. It also makes it possible for Modelica
 compilers to freely perform algebraic manipulation of expressions
 containing function calls while still preserving their semantics. For
@@ -293,14 +290,17 @@ example, a tool may use common subexpression elimination to call a pure
 function just once, if it is called several times with identical input
 arguments. However, since functions may fail we can e.g. only move a
 common function call from inside a loop to outside the loop if the loop
-is run at least once.}{]}
+is run at least once.
+\end{nonnormative}
 
-{[}\emph{Comment 2: The Modelica translator is responsible for
+\begin{nonnormative}
+Comment 2: The Modelica translator is responsible for
 maintaining this property for pure non-external functions. Regarding
 external functions, the external function implementor is responsible.
 Note that external functions can have side-effects as long as they do
 not influence the internal Modelica simulation state, e.g. caching
-variables for performance or printing trace output to a log file.}{]}
+variables for performance or printing trace output to a log file.
+\end{nonnormative}
 
 With the prefix keyword \lstinline!impure! it is stated that a Modelica
 function is \emph{impure} and it is only allowed to call such a function
@@ -333,21 +333,24 @@ For initial equations, initial algorithms, and bindings it is an error
 if the function calls are part of systems of equations and thus have to
 be called multiple times.
 
-{[}\emph{A tool is not allowed to perform any optimizations on function
+\begin{nonnormative}
+A tool is not allowed to perform any optimizations on function
 calls to an impure function, e.g., reordering calls from different
 statements in an algorithm or common subexpression elimination is not
-allowed.}{]}
+allowed.
+\end{nonnormative}
 
 It is possible to mark a function formal parameter as \lstinline!impure!. Only if
 the function formal parameter is marked \lstinline!impure!, it is allowed to pass an
 \lstinline!impure! function to it. A function having a formal function parameter
 marked \lstinline!impure! must be marked \lstinline!pure! or \lstinline!impure!.
 
-{[}\emph{Comment: The semantics are undefined if the function call of an
-impure function is part of an algebraic loop.}{]}
+\begin{nonnormative}
+Comment: The semantics are undefined if the function call of an
+impure function is part of an algebraic loop.
+\end{nonnormative}
 
-{[}\emph{Examples:}
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 function evaluateLinear // pure function
   input Real a0;
@@ -364,8 +367,7 @@ impure function receiveRealSignal // impure function
   external "C" y = receiveSignal(id);
 end receiveRealSignal;
 \end{lstlisting}
-\emph{Examples of allowed optimizations of pure functions:}
-
+Examples of allowed optimizations of pure functions:
 \begin{lstlisting}[language=modelica]
 model M // Assume sin, cos, asin are pure functions with normal derivatives.
   input Real x[2];
@@ -375,13 +377,12 @@ model M // Assume sin, cos, asin are pure functions with normal derivatives.
   Real a=0*asin(w);
 end M;
 \end{lstlisting}
-\emph{A tool only needs to generate one call of the pure function cos(w)
-in the model M -- to handle the two elements of the matrix above, and
+A tool only needs to generate one call of the pure function \lstinline!cos(w)!
+in the model \lstinline!M! -- to handle the two elements of the matrix above, and
 for the derivative of that matrix. A tool may also skip the possible
-error for asin(w) and assume that a is zero.}
+error for \lstinline!asin(w)! and assume that \lstinline!a! is zero.
 
-\emph{Examples of restrictions on optimizing pure functions:}
-
+Examples of restrictions on optimizing pure functions:
 \begin{lstlisting}[language=modelica]
   Real x=if noEvent(abs(x))<1 then asin(x)  else 0; // May not move asin(x) out of then
 algorithm
@@ -396,7 +397,7 @@ algorithm
   // The reason is that asin(x) may fail and someOtherFunction may hang,
   // and it might be possible to recover from this error.
 \end{lstlisting}
-{]}
+\end{example}
 
 \section{Function Call}\doublelabel{function-call}
 
@@ -460,11 +461,9 @@ parameter, except where the standard type coercion, \autoref{standard-type-coerc
 the types agree. (See also \autoref{scalar-functions-applied-to-array-arguments} on applying scalar functions
 to arrays.)
 
-{[}\emph{Example}.
-
-\emph{Assume a function} \lstinline!RealToString! \emph{is defined as follows to
-convert a Real number to a String:}
-
+\begin{example}
+Assume a function \lstinline!RealToString! is defined as follows to
+convert a \lstinline!Real! number to a \lstinline!String!:
 \begin{lstlisting}[language=modelica]
 function RealToString
   input Real number;
@@ -474,8 +473,7 @@ function RealToString
   ...
 end RealToString;
 \end{lstlisting}
-\emph{Then the following applications are equivalent:}
-
+Then the following applications are equivalent:
 \begin{lstlisting}[language=modelica]
   RealToString(2.0);
   RealToString(2.0, 6, 0);
@@ -484,7 +482,7 @@ end RealToString;
   RealToString(2.0, length=0);
   RealToString(2.0, 6, precision=6); // error: slot is used twice
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsection{Functional Input Arguments to Functions}\doublelabel{functional-input-arguments-to-functions}
 
@@ -497,8 +495,7 @@ conversions are not allowed in this context.}{]} Such an input formal
 parameter of function type can also have an optional functional default
 value.
 
-{[}\emph{Example:}
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
   function quadrature "Integrate function y=integrand(x) from x1 to x2"
   input Real x1;
@@ -517,7 +514,7 @@ partial function Integrand
   output Real y;
 end Integrand;
 \end{lstlisting}
-{]}
+\end{example}
 
 A functional argument can be provided in one of the following forms to
 be passed to a scalar formal parameter of function type in a function
@@ -539,10 +536,8 @@ call:
 In all cases the provided function must be \firstuse{function type compatible}
 (\autoref{function-compatibility-or-function-subtyping-for-functions}) to the corresponding formal parameter of function type.
 
-{[}\emph{Example:}
-
-\emph{A function as a positional input argument according to case (a)}
-
+\begin{example}
+A function as a positional input argument according to case (a):
 \begin{lstlisting}[language=modelica]
 function Parabola
   extends Integrand;
@@ -553,7 +548,6 @@ area = quadrature(0, 1, Parabola);
 \end{lstlisting}
 The \lstinline!quadrature2! example below uses a function \lstinline!integrand! that is a
 component as input argument according to case (c):
-
 \begin{lstlisting}[language=modelica]
   function quadrature2 "Integrate function y=integrand(x) from x1 to x2"
   input Real x1;
@@ -564,6 +558,8 @@ algorithm
   integral := quadrature(x1, (x1+x2)/2, integrand)+  quadrature((x1+x2)/2, x2, integrand);
 end quadrature2;
 \end{lstlisting}
+\end{example}
+
 \subsubsection{Function Partial Application}\doublelabel{function-partial-application}
 
 A function partial application is similar to a function call with
@@ -580,10 +576,13 @@ be bound, e.g.:
 \begin{lstlisting}[language=modelica]
   function func_name(..., formal_parameter_name = expr, ...)
 \end{lstlisting}
-{[}\emph{Note that the keyword} \lstinline!function! \emph{in a function partial
-application} \emph{differentiates the syntax from a normal function call
+
+\begin{nonnormative}
+Note that the keyword \lstinline!function! in a function partial
+application differentiates the syntax from a normal function call
 where some parameters have been left out, and instead supplied via
-default values}.{]}
+default values.
+\end{nonnormative}
 
 The function created by the function partial application acts as the
 original function but with the bound formal input parameters(s) removed,
@@ -594,9 +593,8 @@ same function where all bound arguments are removed {[}\emph{thus, for
 checking function type compatibility, bound formal parameters are
 ignored}{]}.
 
-{[}\emph{Example of function partial application as argument, positional
-argument passing, according to case (b) above:}
-
+\begin{example}
+Function partial application as argument, positional argument passing, according to case (b) above:
 \begin{lstlisting}[language=modelica]
 model Test
   parameter Integer N;
@@ -616,16 +614,15 @@ algorithm
   y:=A*Modelica.Math.sin(w*x);
 end Sine;
 \end{lstlisting}
-\emph{Call with function partial application as named input argument:}
+Call with function partial application as named input argument:
 \begin{lstlisting}[language=modelica]
 area := area + quadrature(0, 1, integrand = function Sine(A=2, w=i*time));
 \end{lstlisting}
-{]}
+\end{example}
 
-{[}\emph{Example showing that function types are matching after removing
-the bound arguments} \lstinline!A! \emph{and} \lstinline!w! \emph{in a function partial
-application:}
-
+\begin{example}
+Function types are matching after removing the bound arguments \lstinline!A! and \lstinline!w! in a function partial
+application:
 \begin{lstlisting}[language=modelica]
   function Sine2 "y = Sine2(A,w,x)"
   input Real A;
@@ -637,14 +634,12 @@ algorithm
 end Sine2;
 area = quadrature(0, 1, integrand = function  Sine2(A=2, w=3));
 \end{lstlisting}
-\emph{The partially evaluated} \lstinline!Sine2! \emph{has only one argument: x --
-and is thus type compatible with} \lstinline!Integrand!\emph{.}
+The partially evaluated \lstinline!Sine2! has only one argument: \lstinline!x! ---
+and is thus type compatible with \lstinline!Integrand!.
+\end{example}
 
-{]}
-
-{[}\emph{Example of a function partial application of a function that is
-a component, according to case (d) above}:
-
+\begin{example}
+Function partial application of a function that is a component, according to case (d) above:
 \begin{lstlisting}[language=modelica]
 partial function SurfaceIntegrand
   input Real x;
@@ -676,7 +671,7 @@ algorithm
   // Case (b) and (c)
 end surfaceQuadrature;
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsection{Output Formal Parameters of Functions}\doublelabel{output-formal-parameters-of-functions}
 
@@ -705,14 +700,14 @@ It is possible to omit left hand side component references and/or
 truncate the left hand side list in order to discard outputs from a
 function call.
 
-{[}\emph{Optimizations to avoid computation of unused output results can
-be automatically deduced by an optimizing compiler}{]}.
+\begin{nonnormative}
+Optimizations to avoid computation of unused output results can
+be automatically deduced by an optimizing compiler.
+\end{nonnormative}
 
-{[}\emph{Example}:
-
-\emph{Function} \lstinline!eigen! \emph{to compute eigenvalues and optionally
-eigenvectors may be called in the following ways:}
-
+\begin{example}
+Function \lstinline!eigen! to compute eigenvalues and optionally
+eigenvectors may be called in the following ways:
 \begin{lstlisting}[language=modelica]
   ev = eigen(A); // calculate eigenvalues
   x = isStable(eigen(A)); // used in an expression
@@ -720,8 +715,7 @@ eigenvectors may be called in the following ways:}
   (ev,vr,vl) = eigen(A) // and also left eigenvectors
   (ev,,vl) = eigen(A) // no right eigenvectors
 \end{lstlisting}
-\emph{The function may be defined as:}
-
+The function may be defined as:
 \begin{lstlisting}[language=modelica]
 function eigen "calculate eigenvalues and optionally eigenvectors"
   input Real A[:, size(A,1)];
@@ -737,20 +731,20 @@ algorithm
   //   compute left eigenvectors using the computed eigenvalues
 end eigen;
 \end{lstlisting}
-{]}
+\end{example}
 
 The only permissible use of an expression in the form of a list of
 expressions in parentheses, is when it is used as the left hand side of
 an equation or assignment where the right hand side is an application of
 a function.
 
-{[}\emph{Example}. \emph{The following are illegal}:
-
+\begin{example}
+The following are illegal:
 \begin{lstlisting}[language=modelica]
   (x+1, 3.0, z/y) = f(1.0, 2.0); // Not a list of component references.
   (x, y, z) + (u, v, w) // Not LHS of suitable eqn/assignment.
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsection{Initialization and Binding Equations of Components in Functions}
 \doublelabel{initialization-and-binding-equations-of-components-in-functions}
@@ -792,19 +786,22 @@ combined with a run-time check}.{]} Binding equations for input
 formal parameters are interpreted as default arguments, as described in
 \autoref{positional-or-named-input-arguments-of-functions}.
 
-{[}\emph{The properties of components in functions described in this
-section are also briefly described in \autoref{function-as-a-specialized-class}.}{]}
+\begin{nonnormative}
+The properties of components in functions described in this
+section are also briefly described in \autoref{function-as-a-specialized-class}.
+\end{nonnormative}
 
 \subsection{Flexible Array Sizes and Resizing of Arrays in Functions}\doublelabel{flexible-array-sizes-and-resizing-of-arrays-in-functions}
 
-{[}\emph{Flexible setting of array dimension sizes of arrays in
-functions is also briefly described in \autoref{function-as-a-specialized-class}.}{]}
+\begin{nonnormative}
+Flexible setting of array dimension sizes of arrays in
+functions is also briefly described in \autoref{function-as-a-specialized-class}.
+\end{nonnormative}
 
 A dimension size not specified with colon(\lstinline!:!) for a non-input array
 component of a function must be given by the inputs or be constant.
 
-{[}\emph{Example}:
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 function joinThreeVectors
   input Real v1[:],v2[:],v3[:];
@@ -813,7 +810,7 @@ algorithm
   vres := cat (1,v1,v2,v3);
 end joinThreeVectors;
 \end{lstlisting}
-{]}
+\end{example}
 
 \begin{itemize}
 \item
@@ -830,9 +827,8 @@ end joinThreeVectors;
 These rules also apply if the array component is an element of a record
 component in a function.
 
-{[}\emph{Example: A function to collect the positive elements in a
-vector:}
-
+\begin{example}
+A function to collect the positive elements in a vector:
 \begin{lstlisting}[language=modelica]
 function collectPositive
   input Real x[:];
@@ -845,7 +841,7 @@ algorithm
   end for;
 end collectPositive;
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsection{Scalar Functions Applied to Array Arguments}\doublelabel{scalar-functions-applied-to-array-arguments}
 
@@ -896,20 +892,18 @@ the type of the corresponding formal parameter of the function.
 If more than one argument is an array, all of them have to be the same
 size, and they are traversed in parallel.
 
-{[}\emph{Examples}:
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
   sin({a, b, c}) = {sin(a), sin(b), sin(c)} // argument is a vector
   sin([a,b,c]) = [sin(a),sin(b),sin(c)] // argument may be a matrix
   atan({a,b,c},{d,e,f}) = {atan(a,d), atan(b,e), atan(c,f)}
 \end{lstlisting}
-\emph{This works even if the function is declared to take an array as
-one of its arguments. If} pval \emph{is defined as a function that takes
-one argument that is a vector of Reals and returns a Real, then it can
+This works even if the function is declared to take an array as
+one of its arguments. If \lstinline!pval! is defined as a function that takes
+one argument that is a \lstinline!Real! vector and returns a \lstinline!Real!, then it can
 be used with an actual argument which is a two-dimensional array (a
 vector of vectors). The result type in this case will be a vector of
-Real. }
-
+\lstinline!Real!.
 \begin{lstlisting}[language=modelica]
   pval([1,2;3,4]) = [pval([1,2]); pval([3,4])]
   sin([1,2;3,4]) = [sin({1,2}); sin({3,4})]
@@ -923,10 +917,11 @@ Real. }
     sum1 := e1 + e2;
   end Add;
 \end{lstlisting}
-\lstinline!Add(1, [1,2,3])! \emph{adds one to each of the elements of the second
-argument giving the result} \lstinline![2,3,4]!. \emph{However, it is illegal to
-write} \lstinline!1 + [1,2,3]!, \emph{because the rules for the built-in
-operators are more restrictive.}{]}
+\lstinline!Add(1, [1,2,3])! adds one to each of the elements of the second
+argument giving the result \lstinline![2,3,4]!. However, it is illegal to
+write \lstinline!1 + [1,2,3]!, because the rules for the built-in
+operators are more restrictive.
+\end{example}
 
 \subsection{Empty Function Calls}\doublelabel{empty-function-calls}
 
@@ -1006,10 +1001,11 @@ record variables.
 A record constructor can only be called if the referenced record class
 is found in the global scope, and thus cannot be modified.
 
-{[}\emph{This allows to construct an instance of a record, with an
+\begin{nonnormative}
+This allows to construct an instance of a record, with an
 optional modification, at all places where a function call is allowed.
-Examples}:
 
+Examples:
 \begin{lstlisting}[language=modelica]
   record Complex "Complex number"
     Real re "real part";
@@ -1025,9 +1021,9 @@ Examples}:
 equation
   c2 = add(c1, Complex(sin(time), cos(time));
 \end{lstlisting}
-\emph{In the following example, a convenient data sheet library of
-components is built up:}
 
+In the following example, a convenient data sheet library of
+components is built up:
 \begin{lstlisting}[language=modelica]
 package Motors
   record MotorData "Data sheet of a motor"
@@ -1065,10 +1061,10 @@ model Robot
   ...
 end Robot;
 \end{lstlisting}
-\emph{Example showing most of the situations, which may occur for the
-implicit record constructor function creation. With the following record
-definitions}
 
+Example showing most of the situations, which may occur for the
+implicit record constructor function creation. With the following record
+definitions:
 \begin{lstlisting}[language=modelica]
 package Demo;
   record Record1;
@@ -1092,10 +1088,10 @@ package Demo;
   end Record2;
 end Demo;
 \end{lstlisting}
-\emph{the following record constructor functions are implicitly defined
-(the name of the output, given in italic below, is not defined; it
-should be chosen to not cause any conflict)}
 
+The following record constructor functions are implicitly defined
+(the name of the output, given in italic below, is not defined; it
+should be chosen to not cause any conflict):
 \begin{lstlisting}[language=modelica,escapechar=!]
 package Demo;
   function Record1
@@ -1121,18 +1117,17 @@ package Demo;
   end Record2;
 end Demo;
 \end{lstlisting}
-\emph{and can be applied in the following way}
+and can be applied in the following way
 \begin{lstlisting}[language=modelica]
   Demo.Record2 r1 = Demo.Record2(r0=1, c2=2, n1=2, n2=3, r1=1, r2=2,r4=5, r5=5, r6={1,2}, r7={1,2,3});
   Demo.Record2 r2 = Demo.Record2(1,2,2,3,1,2,5,5,{1,2},{1,2,3});
   parameter Demo.Record2 r3 = Demo.Record2(c2=2, n2=1, r1=1,r4=4, r6=1:5, r7={1});
 \end{lstlisting}
 
-\emph{The above example is only used to show the different variants
+The above example is only used to show the different variants
 appearing with prefixes, but it is not very meaningful, because it is
-simpler to just use a direct modifier.}
-
-{]}
+simpler to just use a direct modifier.
+\end{nonnormative}
 
 \subsection{Casting to Record}\doublelabel{casting-to-record}
 
@@ -1156,8 +1151,7 @@ uniquely distinguished from a record constructor call, because an
 argument of the record constructor cannot be a model, block or connector
 instance.}{]}
 
-{[}\emph{Example:}
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 connector Flange
   Real phi;
@@ -1219,7 +1213,7 @@ model ModelExpanded
   ...
 end ModelExpanded;
 \end{lstlisting}
-{]}
+\end{example}
 
 \section{Declaring Derivatives of Functions}\doublelabel{declaring-derivatives-of-functions}
 
@@ -1251,8 +1245,7 @@ first one that can be used (i.e. satisfying the restrictions) will be
 used for each call. {[}\emph{This means that the most restrictive
 derivatives should be written first.}{]}
 
-{[}\emph{Example}:
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
   function foo0 annotation(derivative=foo1);
   end foo0;
@@ -1262,7 +1255,7 @@ derivatives should be written first.}{]}
 
   function foo2 end foo2;
 \end{lstlisting}
-{]}
+\end{example}
 
 The inputs to the derivative function of \lstinline!order! 1 are constructed as
 follows:
@@ -1297,14 +1290,16 @@ constructed as follows:
   and its derivative.
 \end{itemize}
 
-{[}\emph{The restriction that only the result of differentiation can use
-higher-order derivatives ensures that the derivatives x, der\_x,
+\begin{nonnormative}
+The restriction that only the result of differentiation can use
+higher-order derivatives ensures that the derivatives \lstinline!x!, \lstinline!der_x!,
 \ldots{} are in fact derivatives of each other. Without that restriction
-we would have both der(x) and x\_der as inputs (or perform advanced
-tests to verify that they are the same).}{]}
+we would have both \lstinline!der(x)! and \lstinline!x_der! as inputs (or perform advanced
+tests to verify that they are the same).
+\end{nonnormative}
 
-{[}\emph{Example: Given the declarations}
-
+\begin{example}
+Given the declarations
 \begin{lstlisting}[language=modelica]
 function foo0
   ...
@@ -1341,17 +1336,17 @@ function foo2
   ...
 \end{lstlisting}
 the equation
-
-(...,y(t),...)=foo0(...,x(t),b,...);
-
+\begin{lstlisting}[language=modelica]
+(..., y(t), ...) = foo0(..., x(t), b,...);
+\end{lstlisting}
 implies that:
-
-(...,d y(t)/dt,...)=foo1(...,x(t),b,..., ...,d x(t)/dt,...);
-
-(...,d\^{}2 y(t)/dt\^{}2,...)=foo2(...,x(t),b,...,d x(t)/dt,...,
-...,d\^{}2 x(t)/dt\^{}2,...);
-
-{]}
+\begin{lstlisting}[language=modelica]
+(..., d y(t)/dt, ...)
+  = foo1(..., x(t), b, ..., ..., d x(t)/dt, ...);
+(..., d^2 y(t)/dt^2, ...)
+  = foo2(..., x(t), b, ..., d x(t)/dt, ..., ..., d^2 x(t)/dt^2,...);
+\end{lstlisting}
+\end{example}
 
 An input or output to the function may be any simple type (Real,
 Boolean, Integer, String and enumeration types) or a record. For a
@@ -1362,9 +1357,9 @@ using smoothOrder, then the derivative record is automatically
 constructed. The function must have at least one input containing reals.
 The output list of the derivative function may not be empty.
 
-\emph{{[}Here is one example use case with records mixing Reals and
-non-Reals as inputs and outputs}
-
+\begin{example}
+Here is one example use case with records mixing \lstinline!Real! and
+non-\lstinline!Real! as inputs and outputs:
 \begin{lstlisting}[language=modelica]
 record ThermodynamicState "Thermodynamic state"
   SpecificEnthalpy h "Specific enthalpy";
@@ -1421,7 +1416,7 @@ DensityDerivative d_rho1=der (rho1);
 Density rho2=density(setState_ph(p=..., h=..., phase=...));
 DensityDerivative d_rho2=der (rho2);
 \end{lstlisting}
-\emph{{]}}
+\end{example}
 
 \begin{itemize}
 \item
@@ -1436,14 +1431,15 @@ argument list of the derivative-function. If the derivative-function
 also specifies a derivative the common variables should have consistent
 \lstinline!zeroDerivative!.
 
-{[}\emph{Assume that function} \lstinline!f! \emph{takes a matrix and a scalar.
+\begin{nonnormative}
+Assume that function \lstinline!f! takes a matrix and a scalar.
 Since the matrix argument is usually a parameter expression it is then
-useful to define the function as follows (the additional derivative =}
-\lstinline!f_general_der! \emph{is optional and can be used when the derivative of
-the matrix or offset is non-zero)}. \emph{Note that \lstinline!f_der! must have
+useful to define the function as follows (the additional derivative =
+\lstinline!f_general_der! is optional and can be used when the derivative of
+the matrix or offset is non-zero). Note that \lstinline!f_der! must have
 \lstinline!zeroDerivative! for both \lstinline!y! and \lstinline!offset!, but \lstinline!f_general_der! may not have
 \lstinline!zeroDerivative! for either of them (it may \lstinline!zeroDerivative! for \lstinline!x_der!,
-\lstinline!y_der!, or \lstinline!offset_der!).}
+\lstinline!y_der!, or \lstinline!offset_der!).
 
 \begin{lstlisting}[language=modelica]
 function f "Simple table lookup"
@@ -1493,7 +1489,7 @@ algorithm
   //annotation(derivative(order=2) = f_general_der2);
 end f_general_der;
 \end{lstlisting}
-{]}
+\end{nonnormative}
 
 \begin{itemize}
 \item
@@ -1510,10 +1506,10 @@ assumptions.
 The inputs excluded using zeroDerivative or noDerivative may be of any
 type (including types not containing reals).
 
-{[}\emph{Assume that function fg is defined as a composition f(x, g(x)).
-When differentiating f it is useful to give the derivative under the
-assumption that the second argument is defined in this way}:
-
+\begin{nonnormative}
+Assume that function \lstinline!fg! is defined as a composition \lstinline!f(x, g(x))!.
+When differentiating \lstinline!f! it is useful to give the derivative under the
+assumption that the second argument is defined in this way:
 \begin{lstlisting}[language=modelica]
 function fg
   input Real x;
@@ -1540,8 +1536,9 @@ algorithm
   ...
 end f_der;
 \end{lstlisting}
-\emph{This is useful if} \lstinline!g! \emph{represents the major computational
-effort of} \lstinline!fg!\emph{.}{]}
+This is useful if \lstinline!g! represents the major computational
+effort of \lstinline!fg!.
+\end{nonnormative}
 
 \subsection{Partial Derivatives of Functions}\doublelabel{partial-derivatives-of-functions}
 
@@ -1564,9 +1561,8 @@ function.
 The comment allows a user to comment the function (in the info-layer and
 as one-line description, and as icon).
 
-{[}\emph{Example}: \emph{The specific enthalpy can be computed from a
-Gibbs-function as follows:}
-
+\begin{example}
+The specific enthalpy can be computed from a Gibbs-function as follows:
 \begin{lstlisting}[language=modelica]
 function Gibbs
   input Real p,T;
@@ -1582,7 +1578,7 @@ algorithm
   h:=Gibbs(p,T)-T*Gibbs_T(p,T);
 end specificEnthalpy;
 \end{lstlisting}
-{]}
+\end{example}
 
 \section{Declaring Inverses of Functions}\doublelabel{declaring-inverses-of-functions}
 
@@ -1626,8 +1622,7 @@ parameters as $f_1$ (with the same defaults, if a formal
 parameter $u_m$ has a default), but the order of the formal
 parameters may be permuted.
 
-{[}\emph{Example:}
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 function h_pTX
   input Real p "pressure";
@@ -1648,7 +1643,7 @@ algorithm
   ...
 end T_phX;
 \end{lstlisting}
-{]}
+\end{example}
 
 \section{External Function Interface}\doublelabel{external-function-interface}
 
@@ -1712,8 +1707,7 @@ functions from the standard C-library, the prototype of the function is
 provided but no library annotation. Currently, there are no other
 builtin functions defined in Modelica.}{]}
 
-{[}\emph{Example}:
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 package Modelica
   package Math
@@ -1729,7 +1723,7 @@ model UserModel
   parameter Real p=Modelica.Math.sin(2);
 end UserModel;
 \end{lstlisting}
-{]}
+\end{example}
 
 The external-function-call specification allows functions whose
 prototypes do not match the default assumptions as defined below to be
@@ -1879,8 +1873,9 @@ $\textit{dim}_{n}$\\ \hline
 
 \end{longtable}
 
-{[}\emph{The following two examples illustrate the default mapping of
-array arguments to external C and FORTRAN 77 functions}.
+\begin{example}
+The following two examples illustrate the default mapping of
+array arguments to external C and FORTRAN 77 functions.
 
 \begin{lstlisting}[language=modelica]
 function foo
@@ -1889,13 +1884,12 @@ function foo
   external;
 end foo;
 \end{lstlisting}
-\emph{The corresponding C prototype is as follows:}
+The corresponding C prototype is as follows:
 \begin{lstlisting}[language=C]
 double foo(double *, size_t, size_t, size_t);
 \end{lstlisting}
 
-\emph{If the external function is written in FORTRAN 77, i.e.:}
-
+If the external function is written in FORTRAN 77, i.e.:
 \begin{lstlisting}[language=modelica]
 function foo
   input Real a[:,:,:];
@@ -1903,8 +1897,8 @@ function foo
   external "FORTRAN 77";
 end foo;
 \end{lstlisting}
-\emph{the default assumptions correspond to a FORTRAN 77 function
-defined as follows:}
+the default assumptions correspond to a FORTRAN 77 function
+defined as follows:
 \begin{lstlisting}[language=fortran77]
 FUNCTION foo(a, d1, d2, d3)
   DOUBLE PRECISION(d1,d2,d3) a
@@ -1915,14 +1909,15 @@ FUNCTION foo(a, d1, d2, d3)
   ...
 END
 \end{lstlisting}
-{]}
+\end{example}
 
 When an explicit call to the external function is present, the array and
 the sizes of its dimensions must be passed explicitly.
 
-{[}\emph{This example shows how arrays can be passed explicitly to an
+\begin{example}
+This example shows how arrays can be passed explicitly to an
 external FORTRAN 77 function when the default assumptions are
-unsuitable}.
+unsuitable.
 
 \begin{lstlisting}[language=modelica]
 function foo
@@ -1934,8 +1929,7 @@ function foo
   external "FORTRAN 77" myfoo(x, y, size(x,1), size(y,2), u1, i, u2);
 end foo;
 \end{lstlisting}
-\emph{The corresponding FORTRAN 77 subroutine would be declared as
-follows: }
+The corresponding FORTRAN 77 subroutine would be declared as follows:
 \begin{lstlisting}[language=fortran77]
 SUBROUTINE myfoo(x, y, n, m, u1, i, u2)
   DOUBLE PRECISION(n) x
@@ -1949,8 +1943,7 @@ SUBROUTINE myfoo(x, y, n, m, u1, i, u2)
 END
 \end{lstlisting}
 
-\emph{This example shows how to pass an array in column major order to a
-C function.}
+This example shows how to pass an array in column major order to a C function.
 
 \begin{lstlisting}[language=modelica]
 function fie
@@ -1960,11 +1953,11 @@ function fie
   annotation(arrayLayout = "columnMajor");
 end fie;
 \end{lstlisting}
-\emph{This corresponds to the following C-prototype:}
-
+This corresponds to the following C-prototype:
+\begin{lstlisting}[language=C]
 double fie(double *, size\_t, size\_t);
-
-{]}
+\end{lstlisting}
+\end{example}
 
 \subsubsection{Records}\doublelabel{records}
 
@@ -1987,8 +1980,7 @@ that contains simple types, other record elements, is mapped as follows:
 Records are passed by reference (i.e. a pointer to the record is being
 passed).
 
-{[}\emph{For example}:
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 record R
   Real x;
@@ -2002,8 +1994,7 @@ struct R {
   double z;
 };
 \end{lstlisting}
-
-{]}
+\end{example}
 
 \subsection{Return Type Mapping}\doublelabel{return-type-mapping}
 
@@ -2046,8 +2037,7 @@ the tool and not the user. An external function is not allowed to
 internally change the inputs (even if they are restored before the end
 of the function).
 
-{[}\emph{Example}:
-
+\begin{example}
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
@@ -2056,8 +2046,7 @@ function foo
   external "FORTRAN 77" myfoo(x,y,z);
 end foo;
 \end{lstlisting}
-\emph{The following Modelica function:}
-
+The following Modelica function:
 \begin{lstlisting}[language=modelica]
 function f
   input Real a;
@@ -2067,7 +2056,7 @@ algorithm
   b:=foo(b,2*b);
 end f;
 \end{lstlisting}
-\emph{can on most systems be transformed into the following C function:}
+can on most systems be transformed into the following C function:
 \begin{lstlisting}[language=C]
 double f(double a) {
   extern void myfoo_(double*,double*,double*);
@@ -2082,15 +2071,15 @@ double f(double a) {
 }
 \end{lstlisting}
 
-\emph{The reason for not allowing the external function to change the
+The reason for not allowing the external function to change the
 inputs is to ensure that inputs can be stored in static memory and to
 avoid superfluous copying (especially of matrices). If the routine does
 not satisfy the requirements the interface must copy the input argument
-to a temporary. This is rare but occurs e.g. in} \lstinline!dormlq! \emph{in some
+to a temporary. This is rare but occurs e.g. in \lstinline!dormlq! in some
 Lapack implementations. In those special cases the writer of the
 external interface have to copy the input to a temporary. If the first
 input was changed internally in myfoo the designer of the interface
-would have to change the interface function} \lstinline!foo! \emph{to:}
+would have to change the interface function \lstinline!foo! to:
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
@@ -2101,21 +2090,19 @@ function foo
 end foo;
 \end{lstlisting}
 
-\emph{Note that we discuss input arguments for Fortran-routines even
+Note that we discuss input arguments for Fortran-routines even
 though FORTRAN 77 does not formally have input arguments and forbid
 aliasing between any pair of arguments to a function (Section 15.9.3.6
 of X3J3/90.4). For the few (if any) FORTRAN 77 compilers that strictly
 follow the standard and are unable to handle aliasing between input
-variables the tool must transform the first call of} \lstinline!foo! \emph{into}
+variables the tool must transform the first call of \lstinline!foo! into:
 \begin{lstlisting}[language=C]
 temp1=a; /* Temporary to avoid aliasing */
 myfoo_(&a,&temp1,&b);
 \end{lstlisting}
 
-\emph{The use of the function} \lstinline!foo! \emph{in Modelica is uninfluenced by
-these considerations.}
-
-{]}
+The use of the function \lstinline!foo! in Modelica is uninfluenced by these considerations.
+\end{example}
 
 \subsection{Annotations for External Libraries and Include Files}\doublelabel{annotations-for-external-libraries-and-include-files}
 
@@ -2191,9 +2178,8 @@ The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory! and \l
 indicates the top-level class where the annotation is found in the
 Modelica source code.
 
-{[}\emph{Example: to show the use of external functions and of object
-libraries}:
-
+\begin{example}
+Use of external functions and of object libraries:
 \begin{lstlisting}[language=modelica]
 package ExternalFunctions
   model Example
@@ -2233,8 +2219,7 @@ package MyExternalFunctions
   extends ExternalFunctions;
 end MyExternalFunctions;
 \end{lstlisting}
-\emph{Directory structure:}
-
+Directory structure:
 \begin{lstlisting}[language=modelica]
 ExternalFunctions
   package.mo  // contains the Modelica code from above
@@ -2255,17 +2240,16 @@ ExternalFunctions
 MyExternalFunctions
    package.mo
 \end{lstlisting}
-\emph{Note that calling MyExternalFunctions.ExternalFunc1 will use
-header and library files from ExternalFunction, the ExternalFunctions.Example will not use ExternalFunc3.c,
-and one library file may contain multiple functions.}
+Note that calling \lstinline!MyExternalFunctions.ExternalFunc1! will use
+header and library files from \lstinline!ExternalFunction!, the \lstinline!ExternalFunctions.Example! will not use \filename{ExternalFunc3.c},
+and one library file may contain multiple functions.
 
-\emph{Header file for the function in the dynamic link / shared library
-ExternalLib2 so that the desired functions are defined to be exported
+Header file for the function in the dynamic link / shared library
+\filename{ExternalLib2} so that the desired functions are defined to be exported
 for Microsoft VisualStudio and for GNU C-compiler (note, for Linux it is
 recommended to use the compiler option \lstinline!-fPIC! to build shared
 libraries or object libraries that are later transformed to a shared
-library):}
-
+library):
 \begin{lstlisting}[language=C]
 // File ExternalFunc2.h
 #ifdef __cplusplus
@@ -2291,7 +2275,7 @@ EXTLIB2_EXPORT void ExternalFunc2(<function arguments>);
 }
 #endif
 \end{lstlisting}
-{]}
+\end{example}
 
 The Library name and the LibraryDirectory name in the function
 annotation are mapped to a linkage directive in a compiler-dependent way
@@ -2302,10 +2286,10 @@ platform.
 
 \subsubsection{Input Parameters, Function Value}\doublelabel{input-parameters-function-value}
 
-{[}\emph{Here all parameters to the external function are input
+\begin{example}
+Here all parameters to the external function are input
 parameters. One function value is returned. If the external language is
-not specified, the default is} \lstinline!"C"!\emph{, as below}.
-
+not specified, the default is \lstinline!"C"!, as below.
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
@@ -2314,27 +2298,27 @@ function foo
   external;
 end foo;
 \end{lstlisting}
-\emph{This corresponds to the following C-prototype:}
+This corresponds to the following C-prototype:
 \begin{lstlisting}[language=C]
 double foo(double, int);
 \end{lstlisting}
 
-\emph{Example call in Modelica: }
+Example call in Modelica:
 \begin{lstlisting}[language=modelica]
 z = foo(2.4, 3);
 \end{lstlisting}
-\emph{Translated call in C: }
+Translated call in C:
 \begin{lstlisting}[language=C]
 z = foo(2.4, 3);
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsubsection{Arbitrary Placement of Output Parameters, No External Function Value}\doublelabel{arbitrary-placement-of-output-parameters-no-external-function-value}
 
-{[}\emph{In the following example, the external function call is given
+\begin{example}
+In the following example, the external function call is given
 explicitly which allows passing the arguments in a different order than
-in the Modelica version.}
-
+in the Modelica version.
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
@@ -2344,26 +2328,26 @@ function foo
   external "C" myfoo(x, u1, y, u2);
 end foo;
 \end{lstlisting}
-\emph{This corresponds to the following C-prototype:}
+This corresponds to the following C-prototype:
 \begin{lstlisting}[language=C]
 void myfoo(double, double *, int, int *);
 \end{lstlisting}
-\emph{Example call in Modelica: }
+Example call in Modelica:
 \begin{lstlisting}[language=modelica]
 (z1,i2) = foo(2.4, 3);
 \end{lstlisting}
-\emph{Translated call in C: }
+Translated call in C:
 \begin{lstlisting}[language=C]
 myfoo(2.4, \&z1, 3, \&i2);
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsubsection{External Function with Both Function Value and Output Variable}\doublelabel{external-function-with-both-function-value-and-output-variable}
 
-{[}\emph{The following external function returns two results: one
+\begin{example}
+The following external function returns two results: one
 function value and one output parameter value. Both are mapped to
-Modelica output parameters.}
-
+Modelica output parameters.
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
@@ -2373,19 +2357,19 @@ function foo
   external "C" funcvalue = myfoo(x, y, out1);
 end foo;
 \end{lstlisting}
-\emph{This corresponds to the following C-prototype:}
+This corresponds to the following C-prototype:
 \begin{lstlisting}[language=C]
 double myfoo(double, int, int *);
 \end{lstlisting}
-\emph{Example call in Modelica: }
+Example call in Modelica:
 \begin{lstlisting}[language=modelica]
 (z1,i2) = foo(2.4, 3);
 \end{lstlisting}
-\emph{Translated call in C:}
+Translated call in C:
 \begin{lstlisting}[language=C]
 z1 = myfoo(2.4, 3, \&i2);
 \end{lstlisting}
-{]}
+\end{example}
 
 \subsection{Utility Functions}\doublelabel{utility-functions}
 
@@ -2557,14 +2541,9 @@ predefined class \lstinline!ExternalObject! according to the following rules:
   \lstinline!void*!.
 \end{itemize}
 
-{[}\emph{Example}:
-
-\emph{A user-defined table may be defined in the following way as an}
-\lstinline!ExternalObject!
-
-\emph{(the table is read in a user-defined format from file and has
-memory for the last used table interval):}
-
+\begin{example}
+A user-defined table may be defined in the following way as an \lstinline!ExternalObject!
+(the table is read in a user-defined format from file and has memory for the last used table interval):
 \begin{lstlisting}[language=modelica]
 class MyTable
   extends ExternalObject;
@@ -2581,8 +2560,7 @@ class MyTable
   end destructor;
 end MyTable;
 \end{lstlisting}
-\emph{and used in the following way:}
-
+and used in the following way:
 \begin{lstlisting}[language=modelica]
 model test "Define a new table and interpolate in it"
   MyTable table=MyTable(fileName ="testTables.txt",
@@ -2592,8 +2570,8 @@ equation
   y = interpolateMyTable(table, time);
 end test;
 \end{lstlisting}
-\emph{This requires to provide the following Modelica function:}
 
+This requires to provide the following Modelica function:
 \begin{lstlisting}[language=modelica]
 function interpolateMyTable "Interpolate in table"
   input MyTable table;
@@ -2633,4 +2611,4 @@ double interpolateMyTable(void* object, double u) {
   return y;
 };
 \end{lstlisting}
-{]}
+\end{example}
