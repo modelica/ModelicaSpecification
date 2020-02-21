@@ -259,9 +259,8 @@ fulfill the following requirements:
   \textbar{}c\textsubscript{M}.m\_flow\textbar{} \textgreater{} eps}).
 \end{enumerate}
 
-{[}\emph{Based on the above requirements, the following implementation
-is recommended:}
-
+\begin{nonnormative}
+Based on the above requirements, the following implementation is recommended:
 \begin{itemize}
 % This shouldn't be an itemized list, but a list of definitions
 % faking that by using raggedright
@@ -323,30 +322,28 @@ for q in 1:M loop
 end for;
 \end{lstlisting}
 \end{itemize}
-\emph{The operator}
-\texttt{positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})}
-\emph{should be such that:}
 
+The operator
+\texttt{positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})}
+should be such that:
 \begin{itemize}
 \item
-  \emph{positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}) =
+  positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}) =
   -m\textsubscript{j}.c\_m\_flow if
   -m\textsubscript{j}.c.m\_flow\textgreater{}eps1\textsubscript{j}\textgreater{}=0,
   where eps1\textsubscript{j} are small flows, compared to typical
-  problem-specific value,}
+  problem-specific value,
 \item
-  \emph{all denominators should be \textgreater{} eps2 \textgreater{} 0,
+  all denominators should be \textgreater{} eps2 \textgreater{} 0,
   where eps2 is also a small flow, compared to typical problem-specific
-  values.}
+  values.
 \end{itemize}
 
-\emph{Trivial implementation of positiveMax guarantees continuity of}
-\lstinline!inStream()!\emph{:}
+Trivial implementation of positiveMax guarantees continuity of \lstinline!inStream()!:
 \begin{lstlisting}[language=modelica,mathescape=true]
 postiveMax(-$m_j$.c.m_flow, $s_i$)= max(-m_j.c.m_flow, eps1); // so $s_i$ is not needed
 \end{lstlisting}
-\emph{More sophisticated implementation, with smooth approximation,
-applied only when {all} flows are small:}
+More sophisticated implementation, with smooth approximation, applied only when {all} flows are small:
 \begin{lstlisting}[language=modelica,escapechar=!,mathescape=true]
 // Define a "small number" eps (!\textbf{nominal}!(v) is the nominal value of v !--! see !\autoref{attributes-start-fixed-nominal-and-unbounded}!)
   eps := relativeTolerance*min(nominal($m_j$.c.m_flow));
@@ -360,60 +357,57 @@ applied only when {all} flows are small:}
   positiveMax((-$m_j$.c.m_flow,s_i)  := alpha*max(-$m_j$.c.m_flow,0) +  (1-alpha)*eps;
 \end{lstlisting}
 
-\emph{The derivation of this implementation is discussed in}
-\emph{\autoref{derivation-of-stream-equations}. Note that in the cases N = 1, M =0 (unconnected port,
+The derivation of this implementation is discussed in
+\autoref{derivation-of-stream-equations}. Note that in the cases N = 1, M =0 (unconnected port,
 physically corresponding to a plugged-up flange), and N = 2, M=0
 (one-to-one connection), the result of \lstinline!inStream()! is trivial
 and no non-linear equations are left in the model, despite the fact that
-the original definition equations are nonlinear.}
+the original definition equations are nonlinear.
 
-\emph{The following properties hold for this implementation:}
-
+The following properties hold for this implementation:
 \begin{itemize}
 \item
-  \lstinline!inStream(..)! \emph{is continuous (and differentiable),
-  provided that} \texttt{m\textsubscript{j}.c.h\_outflow,
+  \lstinline!inStream(..)! is continuous (and differentiable),
+  provided that \texttt{m\textsubscript{j}.c.h\_outflow,
   m\textsubscript{j}.c.m\_flow,
-  c\textsubscript{k}.h\_outflow}\emph{, and}
-  \texttt{c\textsubscript{k}.m\_flow} \emph{are continuous and differentiable.}
+  c\textsubscript{k}.h\_outflow}, and
+  \texttt{c\textsubscript{k}.m\_flow} are continuous and differentiable.
 \end{itemize}
 
 \begin{itemize}
 \item
-  \emph{A division by zero can no longer occur (since} \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}))\textgreater{}=eps2
-  \textgreater{} 0)}\emph{, so the result is always well-defined.}
+  A division by zero can no longer occur (since \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}))\textgreater{}=eps2}
+  \textgreater{} 0), so the result is always well-defined.
 \item
-  \emph{The balance equations are exactly fulfilled if the denominator
+  The balance equations are exactly fulfilled if the denominator
   is not close to zero\\
-  (since the exact formula is used, if}
-  \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})
-  ) \textgreater{} eps).}
+  (since the exact formula is used, if
+  \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})) \textgreater{} eps}).
 \item
-  \emph{If all flows are zero,}
+  If all flows are zero,
   \texttt{inStream(m\textsubscript{i}.c.h\_outflow) =
   sum(m\textsubscript{j}.c.h\_outflow for
   j\textless{}\textgreater{}i and m\textsubscript{j}.c.m\_flow.min \textless{}
-  0)/Np}\emph{, i.e., it is the mean value of all the} \lstinline!Np! \emph{variables}
-  \texttt{m\textsubscript{j}.c.h\_outflow}\emph{, such that} \texttt{
-  j\textless{}\textgreater{}i} \emph{and}
-  \texttt{m\textsubscript{j}.c.m\_flow.min \textless{} 0}\emph{. This is a
+  0)/Np}, i.e., it is the mean value of all the \lstinline!Np! variables
+  \texttt{m\textsubscript{j}.c.h\_outflow}, such that \texttt{
+  j\textless{}\textgreater{}i} and
+  \texttt{m\textsubscript{j}.c.m\_flow.min \textless{} 0}. This is a
   meaningful approximation, considering the physical diffusion effects
   that are relevant at small flow rates in a small connection volume
-  (thermal conduction for enthalpy, mass diffusion for mass fractions).}
+  (thermal conduction for enthalpy, mass diffusion for mass fractions).
 \end{itemize}
 
-\emph{The value of relativeTolerance should be larger than the relative
+The value of relativeTolerance should be larger than the relative
 tolerance of the nonlinear solver used to solve the implicit algebraic
-equations.}
+equations.
 
-\emph{As a final remark, further symbolic simplifications could be
+As a final remark, further symbolic simplifications could be
 carried out by taking into account equations that affect the flows in
 the connection set (i.e., equivalent to m\textsubscript{j}.c.m\_flow =
 0, which then implies m\textsubscript{j}.c.m\_flow.min \textgreater{}=
 0). This is interesting, e.g., in the case of a valve when the stem
-position is set identically to closed by its controller.}
-
-{]}
+position is set identically to closed by its controller.
+\end{nonnormative}
 
 \section{Stream Operator actualStream}\doublelabel{stream-operator-actualstream}
 
@@ -430,22 +424,23 @@ variable \lstinline!m_flow! in the same connector \lstinline!c!:
 actualStream(c.h_outflow) = if c.m_flow > 0 then inStream(c.h_outflow) else c.h_outflow;
 \end{lstlisting}
 
-{[}\emph{The \textbf{actualStream}(v) operator is typically used in two
-contexts:}
+\begin{nonnormative}
+The \textbf{actualStream}(v) operator is typically used in two
+contexts:
 \begin{lstlisting}[language=modelica]
   der(U) = c.m_flow*actualStream(c.h_outflow);  // (1)energy balance equation
   h_c = actualStream(c.h);                      // (2)monitoring the enthalpy at port c
 \end{lstlisting}
-\emph{In the case of equation (1), although the actualStream() operator
+In the case of equation (1), although the actualStream() operator
 is discontinuous, the product with the flow variable is not, because
 actualStream() is discontinuous when the flow is zero by construction.
 Therefore, a tool might infer that the expression is smooth(0, ...)
 automatically, and decide whether or not to generate an event. If a user
 wants to avoid events entirely, he/she may enclose the right-hand side
-of (1) with the noEvent() operator. }
+of (1) with the noEvent() operator.
 
-\emph{Equations like (2) might be used for monitoring purposes (e.g.
-plots), in order to inspect what the `actual' enthalpy of the fluid
+Equations like (2) might be used for monitoring purposes (e.g.
+plots), in order to inspect what the actual enthalpy of the fluid
 flowing through a port is. In this case, the user will probably want to
 see the change due to flow reversal at the exact instant, so an event
 should be generated. If the user doesn't bother, then he/she should
@@ -455,6 +450,5 @@ model physical behaviour (e.g., to compute densities used in momentum
 balances) - inStream() should be used for this purpose. The operator
 actualStream() should be used to model physical behaviour only when
 multiplied by the corresponding flow variable (like in the above energy
-balance equation), because this removes the discontinuity.}
-
-{]}
+balance equation), because this removes the discontinuity.
+\end{nonnormative}
