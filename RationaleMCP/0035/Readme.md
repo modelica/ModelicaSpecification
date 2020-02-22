@@ -1,0 +1,5 @@
+Modelica currently supports only one language for description texts. This is usually English. In order to better support users from other language areas and to make Modelica libraries more attractive and easier to understand for them, it should be possible to provide translations of the texts in any language in a standardized form, so that tools can find, read and display them to the user in his or her preferred language.
+The definition of the interface to the translated texts is the subject of the MCP.
+
+In the discussion in #302 it was decided to provide the translation externally  the Modelica files using the [GNU gettext](https://www.gnu.org/software/gettext/) format. The exact use of this format in the Modelica context is described in the MCP.
+
