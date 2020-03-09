@@ -1518,6 +1518,15 @@ Match longer path first, so if converting both A to C and A.B to D then
 A.F is converted to C.F and A.B.E to D.E. This is considered before
 convertMessage for the same \lstinline!OldClass!.
 
+\begin{example}
+Consider the following as part of a conversion script:
+\begin{lstlisting}[language=modelica]
+convertClass("Modelica.SIunits", "Modelica.Units.SI")
+convertClass("Modelica.SIunits.Icons", "Modelica.Units.Icons")
+\end{lstlisting}
+This ensures that for example \lstinline!Modelica.SIunits.Length! is converted to \lstinline!Modelica.Units.SI.Length!
+and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.SIunits.Icons!.
+\end{example}
 \paragraph*{convertClassIf("OldClass", "oldElement", "whenValue","NewClass")}\doublelabel{convertclassifoldclass-oldelement-whenvalue-newclass}
 
 Convert class \lstinline!OldClass! to \lstinline!NewClass! if the literal modifier for
@@ -1541,6 +1550,25 @@ is placed outside of the package.
 \begin{nonnormative}
 The latter case indicate a problem with overuse of class-parameters in the previous design of the libray.
 \end{nonnormative}
+
+\begin{example}
+Consider the following as part of a conversion script:
+\begin{lstlisting}[language=modelica]
+convertElement({"Modelica.Mechanics.MultiBody.World",
+                "Modelica.Mechanics.MultiBody.World.gravityAcceleration"},
+                "mue", "mu")
+\end{lstlisting}
+This implies that
+\begin{lstlisting}[language=modelica]
+  Modelica.Mechanics.MultiBody.World world(mue=2);
+  function f=Modelica.Mechanics.MultiBody.World.gravityAcceleration(mue=4);
+\end{lstlisting}
+is converted to:
+\begin{lstlisting}[language=modelica]
+  Modelica.Mechanics.MultiBody.World world(mu=2);
+  function f=Modelica.Mechanics.MultiBody.World.gravityAcceleration(mu=4);
+\end{lstlisting}
+\end{example}
 
 \paragraph*{convertModifiers}\doublelabel{convertmodifiers}
 
@@ -1603,6 +1631,38 @@ a, and there is convertModifiers involving the cardinality of a is not
 handled. {[}\emph{In case a parameter is simply renamed it is preferable
 to use convertElement, since that also handles e.g. binding equations
 using the parameter.}{]}
+
+\begin{example}
+The conversion
+\begin{lstlisting}[language=modelica]
+convertClass("Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe",
+              "Modelica.Thermal.FluidHeatFlow.Components.Pipe")
+convertModifiers({"Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe"},
+                 fill("",0), {"useHeatPort=false"})
+
+convertClass("Modelica.StateGraph.Temporary.NumericValue",
+              "Modelica.Blocks.Interaction.Show.RealValue")
+convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
+                  {"Value"}, {"number=%Value%"})
+convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
+                  {"hideConnector"}, {"use_numberPort=not %hideConnector%"})
+                  
+convertModifiers("Modelica.Blocks.Math.LinearDependency",
+                 {"y0=0", "k1=0", "k2=0"}, {"y0=%y0%", "k1=%y0%*%k1%", "k2=%y0%*%k2%"}, true)
+\end{lstlisting}
+converts
+\begin{lstlisting}[language=modelica]
+Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe pipe1;
+Modelica.StateGraph.Temporary.NumericValue tempValue(Value=10, hideConnector=true);
+Modelica.Blocks.Math.LinearDependency linearDep(y0=2, k2=1);
+\end{lstlisting}
+to
+\begin{lstlisting}[language=modelica]
+Modelica.Thermal.FluidHeatFlow.Components.Pipe pipe1(useHeatPort=false);
+Modelica.Blocks.Interaction.Show.RealValue(number=10, use_numberPort=not true);
+Modelica.Blocks.Math.LinearDependency linearDep(y0=2, k1=0, k2=2);
+\end{lstlisting}
+\end{example}
 
 \paragraph*{convertMessage("OldClass", "Failed Message");}\doublelabel{convertmessageoldclass-failed-message}
 
