@@ -1496,6 +1496,13 @@ matter, instead the longer paths (in terms number of hierarchical names)
 are used first as indicated below, and it is an error if there are any
 ambiguities.
 
+The conversion should generate correct Modelica models using the new version of the library
+corresponding to the old version.
+
+\begin{nonnormative}
+Whenever possible tools should preserve the original style of the model, e.g. use of imports.
+\end{nonnormative}
+
 These functions can be called with literal strings or array of strings
 and vectorize according to \autoref{scalar-functions-applied-to-array-arguments}.
 
@@ -1518,6 +1525,15 @@ Match longer path first, so if converting both A to C and A.B to D then
 A.F is converted to C.F and A.B.E to D.E. This is considered before
 convertMessage for the same \lstinline!OldClass!.
 
+\begin{example}
+Consider the following as part of a conversion script:
+\begin{lstlisting}[language=modelica]
+convertClass("Modelica.SIunits", "Modelica.Units.SI")
+convertClass("Modelica.SIunits.Icons", "Modelica.Units.Icons")
+\end{lstlisting}
+This ensures that for example \lstinline!Modelica.SIunits.Length! is converted to \lstinline!Modelica.Units.SI.Length!
+and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.SIunits.Icons!.
+\end{example}
 \paragraph*{convertClassIf("OldClass", "oldElement", "whenValue","NewClass")}\doublelabel{convertclassifoldclass-oldelement-whenvalue-newclass}
 
 Convert class \lstinline!OldClass! to \lstinline!NewClass! if the literal modifier for
@@ -1535,17 +1551,47 @@ normally refer to components -- but they may also refer to
 class-parameters, or hierarchical names. For hierarchical names the
 longest match is used first.
 
+For replaceable classes in packages (and replaceable classes in other classes) \lstinline!convertElement! shall
+be used if the class is renamed within the package (or class), whereas \lstinline!convertClass! shall only be used if the class
+is placed outside of the package (or class).
+\begin{nonnormative}
+The latter case indicates a problem with overuse of replaceable classes in the previous design of the library.
+\end{nonnormative}
+
+\begin{example}
+Consider the following as part of a conversion script:
+\begin{lstlisting}[language=modelica]
+convertElement({"Modelica.Mechanics.MultiBody.World",
+                "Modelica.Mechanics.MultiBody.World.gravityAcceleration"},
+                "mue", "mu")
+\end{lstlisting}
+This implies that
+\begin{lstlisting}[language=modelica]
+  Modelica.Mechanics.MultiBody.World world(mue=2);
+  function f=Modelica.Mechanics.MultiBody.World.gravityAcceleration(mue=4);
+\end{lstlisting}
+is converted to:
+\begin{lstlisting}[language=modelica]
+  Modelica.Mechanics.MultiBody.World world(mu=2);
+  function f=Modelica.Mechanics.MultiBody.World.gravityAcceleration(mu=4);
+\end{lstlisting}
+\end{example}
+
 \paragraph*{convertModifiers}\doublelabel{convertmodifiers}
 
 \begin{lstlisting}[language=modelica]
 convertModifiers("OldClass",
 {"OldModifier1=default1", "OldModifier2=default2", ...},
-{"NewModifier1=...%OldModifier1\%"} [, simplify=true] )
+{"NewModifier1=...%OldModifier2%...", "NewModifier2=...", ...} [, simplify=true] )
 \end{lstlisting}
 
 Normal case; if any modifier among \lstinline!OldModifier! exist then replace all of
-them with the \lstinline!NewModifiers!. The defaults (if present) are used if there
+them with the list of \lstinline!NewModifiers!. The \lstinline!...%OldModifier2%...! indicate an expression that may
+involve the values of the old modifiers (tools are responsible for adding parenthesis if needed).
+The lists of old and new modifiers can have different lengths.
+The defaults (if present) are used if there
 are multiple \lstinline!OldModifier! and not all are set in the component instance.
+The defaults are optional if there is at most one \lstinline!OldModifier! element, and should otherwise be provided.
 
 If \lstinline!simplify! is specified and true then perform obvious simplifications
 to clean up the new modifier; otherwise leave as is.
@@ -1593,6 +1639,61 @@ a, and there is convertModifiers involving the cardinality of a is not
 handled. {[}\emph{In case a parameter is simply renamed it is preferable
 to use convertElement, since that also handles e.g. binding equations
 using the parameter.}{]}
+
+\begin{example}
+The conversion
+\begin{lstlisting}[language=modelica]
+convertClass("Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe",
+              "Modelica.Thermal.FluidHeatFlow.Components.Pipe")
+convertModifiers({"Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe"},
+                 fill("",0), {"useHeatPort=false"})
+
+convertClass("Modelica.StateGraph.Temporary.NumericValue",
+              "Modelica.Blocks.Interaction.Show.RealValue")
+convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
+                  {"Value"}, {"number=%Value%"})
+convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
+                  {"hideConnector"}, {"use_numberPort=not %hideConnector%"})
+
+convertModifiers("Modelica.Blocks.Math.LinearDependency",
+                 {"y0=0", "k1=0", "k2=0"}, {"y0=%y0%", "k1=%y0%*%k1%", "k2=%y0%*%k2%"}, true)
+convertClass("Modelica.Electrical.Machines.BasicMachines.QuasiStationaryDCMachines",
+              "Modelica.Electrical.Machines.BasicMachines.QuasiStaticDCMachines")
+convertElement({"Modelica.Electrical.Machines.Interfaces.PartialBasicDCMachine"},
+                "quasiStationary", "quasiStatic")
+convertElement("Modelica.Electrical.Machines.BasicMachines.QuasiStationaryDCMachines.DC_ElectricalExcited",
+                "quasiStationary", "quasiStatic")
+\end{lstlisting}
+converts
+\begin{lstlisting}[language=modelica]
+Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe pipe1;
+Modelica.StateGraph.Temporary.NumericValue tempValue(Value=10, hideConnector=true);
+Modelica.Blocks.Math.LinearDependency linearDep(y0=2, k2=1);
+model A
+  extends Modelica.Electrical.Machines.BasicMachines.QuasiStationaryDCMachines.DC_ElectricalExcited;
+end A;
+model B
+  extends A;
+  Boolean b=quasiStationary;
+end B;
+\end{lstlisting}
+to
+\begin{lstlisting}[language=modelica]
+Modelica.Thermal.FluidHeatFlow.Components.Pipe pipe1(useHeatPort=false);
+Modelica.Blocks.Interaction.Show.RealValue(number=10, use_numberPort=not true);
+Modelica.Blocks.Math.LinearDependency linearDep(y0=2, k1=0, k2=2);
+model A
+  extends Modelica.Electrical.Machines.BasicMachines.QuasiStaticDCMachines.DC_ElectricalExcited;
+end A;
+model B
+  extends A;
+  Boolean b=a.quasiStatic;
+end B;
+\end{lstlisting}
+The \lstinline!convertElement! call for \lstinline!DC_ElectricalExcited! is needed to avoid relying on base-classes
+in the original library where \lstinline!DC_ElectricalExcited! inherits from \lstinline!PartialBasicDCMachine!.
+However, the inheritance among the models to convert (in this case \lstinline!B! inherits from \lstinline!A!) should be handled.
+\end{example}
 
 \paragraph*{convertMessage("OldClass", "Failed Message");}\doublelabel{convertmessageoldclass-failed-message}
 
