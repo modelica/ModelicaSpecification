@@ -90,7 +90,7 @@ end _F;
 > &emsp; (\
 > &emsp; | **type**\
 > &emsp; | ~~**operator**?~~ **record**\
-> &emsp; | ( **pure** | **impure** )? ~~**operator**?~~ **function**\
+> &emsp; | ( ( **pure** **constant**? ) | **impure** )? ~~**operator**?~~ **function**\
 > &emsp; ~~| **class**~~\
 > &emsp; ~~| **model**~~\
 > &emsp; ~~| **block**~~\
