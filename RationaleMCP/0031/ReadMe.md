@@ -47,7 +47,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of `connect` equations.
 - [x] Get rid of conditional components.
 - [x] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
-- [ ] List of supported built-in operators and functions --> create full list with reference to the Modelica Specification as new .md file --> Francesco
+- [ ] List of supported built-in operators and functions [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfunctions/RationaleMCP/0031/functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
 - [x] Get rid of unbalanced `if`-equations. --> Document in [differences.md](differences.md) file --> Hans
 - [x] Restrict constant expressions for translation time evaluation. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bconstant-expression/RationaleMCP/0031/differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
 - [ ] Handle array dimensions with parameter variability. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bunknown-dimension/RationaleMCP/0031/differences.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
