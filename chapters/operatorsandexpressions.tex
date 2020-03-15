@@ -1372,25 +1372,34 @@ restriction is necessary in order to guarantee that there all equations
 for discrete variable are discrete-time expressions, and to ensure that
 crossing functions do not become active between events.}{]}\\
 
-{[}\emph{Example}:
+\begin{example}
+The (underdetermined) model \lstinline!Test! below illustrates two kinds of consequences due to variability constraints.
+First, it contains variability errors for declaration equations and assignments.
+Second, it illustrates the impact of variability on the matching of equations to variables, which can
+lead to violation of the perfect matching rule.
 \begin{lstlisting}[language=modelica]
 model Constants
   parameter Real p1 = 1;
-  constant Real c1 = p1 + 2; // error, no constant expression
+  constant Real c1 = p1 + 2; // error, not a constant expression
   parameter Real p2 = p1 + 2; // fine
 end Constants;
 model Test
   Constants c1(p1=3); // fine
   Constants c2(p2=7); // fine, declaration equation can be modified
-  Boolean b;
   Real x;
+  Boolean b1 = noEvent(x > 1); // error, since b1 is a discrete-time variable
+                               // and noEvent(x > 1) is not discrete-time.
+  Boolean b2;
+  Integer i1;
+  Integer i2;
+algorithm
+  i1 := x; // error, assignment to variable of lesser variability.
 equation
-  b = noEvent(x > 1) // error, since b is a discrete-time expr. and
-                     // noEvent(x > 1) is not a discrete-time expr.
+  b2 = noEvent(x > 1); // no variability error, but equation cannot be matched.
+  i2 = x;              // no variability error, and can be matched to x.
 end Test;
 \end{lstlisting}
-
-{]}
+\end{example}
 
 \subsection{Continuous-Time Expressions}\doublelabel{continuous-time-expressions}
 
