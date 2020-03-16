@@ -2,7 +2,7 @@
 
 ## In Flat Modelica
 
-### No discussion needed
+### No (further) discussion needed
 
 * abs
 * sign
@@ -28,6 +28,13 @@
 * log10
 * initial
 * terminal
+* semiLinear
+* identity
+* diagonal
+* zeros
+* ones
+* fill
+* linspace
 
 ### Probably should be in Flat Modelica as is
 
@@ -64,13 +71,6 @@ Generated function names might need to be changed for different types, etc.
 
 * EnumType(i) (indexed constant array, etc)
 * Integer(enum) (easy to implement even if it could be a Flat Modelica function)
-* semiLinear
-* identity
-* diagonal
-* zeros
-* ones
-* fill
-* linspace
 * transpose
 * outerProduct
 * symmetric
