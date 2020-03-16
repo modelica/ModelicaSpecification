@@ -1221,10 +1221,17 @@ expressions, starting from the least variable:
   continuous-time variability
 \end{itemize}
 
-For an assignment \lstinline!v:=expr! or binding equation \lstinline!v=expr!, \lstinline!v! must be declared
-to be at least as variable as \lstinline!expr!.
-
+While many invalid models can be rejected based on the declared variabilities of variables alone (without the concept of expression
+variability), the following rules both help enforcing compliance of computed solutions to declared variability, and impose additional
+restrictions that simplify reasoning and reporting of errors:
 \begin{itemize}
+\item
+  For an assignment \lstinline!v:=expr! or binding equation \lstinline!v=expr!, \lstinline!v! must be declared
+  to be at least as variable as \lstinline!expr!.
+\item
+  When determining whether an equation can contribute to solving for a variable \lstinline!v! (for instance,
+  when applying the perfect matching rule, see \autoref{synchronous-data-flow-principle-and-single-assignment-rule}),
+  the equation can only be considered contributing if the resulting solution would be at most as variable as \lstinline!v!.
 \item
   The right-hand side expression in a binding equation {[}\emph{that is,}
   \lstinline!expr!{]} of a parameter component and of the base type attributes
@@ -1351,20 +1358,30 @@ for discrete variable are discrete-time expressions, and to ensure that
 crossing functions do not become active between events.}{]}\\
 
 \begin{example}
+The (underdetermined) model \lstinline!Test! below illustrates two kinds of consequences due to variability constraints.
+First, it contains variability errors for declaration equations and assignments.
+Second, it illustrates the impact of variability on the matching of equations to variables, which can
+lead to violation of the perfect matching rule.
 \begin{lstlisting}[language=modelica]
 model Constants
   parameter Real p1 = 1;
-  constant Real c1 = p1 + 2; // error, no constant expression
+  constant Real c1 = p1 + 2; // error, not a constant expression
   parameter Real p2 = p1 + 2; // fine
 end Constants;
 model Test
   Constants c1(p1=3); // fine
   Constants c2(p2=7); // fine, declaration equation can be modified
-  Boolean b;
   Real x;
+  Boolean b1 = noEvent(x > 1); // error, since b1 is a discrete-time variable
+                               // and noEvent(x > 1) is not discrete-time.
+  Boolean b2;
+  Integer i1;
+  Integer i2;
+algorithm
+  i1 := x; // error, assignment to variable of lesser variability.
 equation
-  b = noEvent(x > 1) // error, since b is a discrete-time expr. and
-                     // noEvent(x > 1) is not a discrete-time expr.
+  b2 = noEvent(x > 1); // no variability error, but equation cannot be matched.
+  i2 = x;              // no variability error, and can be matched to x.
 end Test;
 \end{lstlisting}
 \end{example}
