@@ -1,7 +1,7 @@
 #  Proposed Changes in Specification
 
 ## Overview
-We propose the use of a language version comment directly following the optional byte order mark at the first line of a Modelica source file.  The language version is the same throughout any class or package, is required to be declared in the file of the top level class, and must not appear in any other file of the same class or package.  That is, the one and only place where the language version shall be specified is either a top level _A.mo_ or a top level _A/package.mo_ file.  The entire line containing the language version comment shall match the follow regular expression where `\U+FEFF` denotes the byte order mark:
+Each top level package or class uses a single version of the Modelica language throughout itself and all its child classes.  For file-based storage, this information is specified in the form of a mandatory _language version comment_ directly following the optional byte order mark at the first line of the top level Modelica source file (that is, the _A/package.mo_ or _A.mo_ of the top level class `A`).  The entire line containing the language version comment shall match the following regular expression where `\U+FEFF` denotes the byte order mark:
 ```
 ^\U+FEFF?//![ ]\d+[.]\d+[r.]\d+$
 ```
@@ -10,6 +10,8 @@ For example, this is a valid language version comment:
 ```
 //! 3.4r1
 ```
+
+A comment in the form of a language version comment appearing anywhere else (not at the beginning of the top level Modelica source file) has no special meaning and is discouraged to avoid confusion.
 
 A tool shall assume that any valid language version comment correctly describes the language version being used in a file, regardless whether the meaning of a language version comment is defined for the specified language version.
 
