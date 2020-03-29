@@ -23,37 +23,96 @@ that cannot easily be counted; but they are gone in Flat Modelica.
 
 ## Array size
 
+### Array types
+In Flat Modelica, array size is part of an array type.  Each dimension has a size that is either _constant_ or _flexible_.  A constant size is one that is an `Integer` number (of constant variability).  It follows that array dimensions index by `Boolean` or enumeration types have constant size (TODO: figure out correct terminology).  A flexible size is an `Integer` of non-constant variability, that is, it corresponds to an array dimension indexed by `Integer` and where the upper bound is a number unknown to the type system.
+
+When determining expression types, every array dimension must be unambiguously typed as either constant or flexible.  Where there are constraints on array sizes, for instance when adding two arrays, a flexible array size is only compatible with another flexible array size.  It is a runtime error if the two flexible array sizes are found to be incompatible at runtime (a tool can optimize runtime checks away if it can prove that the sizes will be compatible).
+
+In an array equation, the array type must have constant sizes.
+
+When determining the type of a function call, the sizes of output array variables are determined based on the input expressions and the function's declarations of input and output components.  An output array size is constant (for the function call at hand) if it can be determined based on the types of input expressions and the constant variability values of input expressions.  When an array size cannot be determined based on this information (including the trivial case of a function output component declared with `:` size), the size is flexible.
+
+Example:
+```
+model M
+  function f
+    input Integer n;
+    input Real[:] x;
+    output Real[n + size(x, 1)] y;
+    ...
+  end f;
+  parameter Integer p = 2;
+  constant Integer c = 3;
+  Real[2] a = fill(1.0, p); /* Error: expression has flexible size. */
+  Real[5] b = f(c, a); /* OK. */
+end M;
+```
+
+#### Change and reason for the change
+This draws a clear line between the constant and flexible array sizes.  This is important for portability (lack of clear separation opens up for different interpretations, where what is considered valid code in one tool is considered a type error in another).  The clear separation also means that flexible array size becomes an isolated Flat Modelica language feature that can be easily defined as an unsupported feature in eFMI.
+
+To only consider a flexible size compatible with another flexible size is a restriction that may be removed in the future, allowing different forms of inference on the array sizes.  For now, however, such inference is not considered necessary for a first version of Flat Modelica, and defining such inference would also involve too much work at this stage of Flat Modelica development.
+
+It is believed that the clear separation of constant and flexible array sizes is also a necessary starting point for a future extension to allow components with flexible array size outside functions.
+
+### The `constsize` expression
+A new `constsize` expression is introduced for making assertions on array sizes.
+
+The expression comes in different forms.  In the first form, the `s1`, `s2`, …, `sn` are constant variability `Integer` expressions:
+```
+constsize(arrExp, s1, s2, ..., sn)
+```
+Here, `arrExp` has array type with at least _n_ dimensions.
+
+In the second form, a constant variability array of `Integer` sizes is given instead:
+```
+constsize(arrExp, {s1, s2, ..., sn})
+```
+
+It is a type error if a constant array size of `arrExp` does not match the corresponding size of the `constsize` expression.  A flexible size of `arrExp` is asserted to be equal to the corresponding size of the `constsize` expression, and any error is typically not detected until runtime.
+
+The `constsize` expression has the same type as `arrExp`, except that the flexible array dimensions are replaced by the specified constant sizes.
+
+Example:
+```
+model M
+  function f
+    output Real[2, :] y;
+    ...
+  end f;
+  function g
+    output Real[2, :, 4] y;
+    ...
+  end f;
+  Real[2, 3] a = constsize(f(), 2, 3); /* OK. */
+  Real[2, 3] b = constsize(f(), size(b)); /* OK. */
+  Real[2, 3, 4] c = constsize(f(), 2, 3); /* OK. */
+end M;
+```
+
+Note: The `constsize` definition also applies to array dimensions with non-`Integer` upper bounds.  For example, any `Boolean` array dimension in `arrExp` must be matched by 2 in the `constsize` expression.
+
+Note: The current forms of `constsize` does not allow leaving some leading sizes flexible, while making other sizes constant.  To support this, one could also add a third form where two constant variability `Integer` arrays of equal size are given, where the first array specifies dimensions, and the second array specifies the corresponding sizes:
+```
+constsize(arrExp, {d1, d2, ..., dn}, {sd1, sd2, ..., sdn})
+```
+
+Alternative design: Use some variant of type conversion syntax, for instance:
+```
+  Real[2, 3] a = Real[2, 3](f());
+```
+
 ### Variability of size-expressions
 The variability of an `ndims` expression is constant, as it only depends on the type of the argument and is unaffected by flexible array sizes.
 
 The variability of a `size` expression depends on the presence of flexible array sizes in the argument.  If the result depends on a flexible array size, the variability of the array argument is preserved, otherwise, the variability of the `size` expression is constant.
 
 #### Change and reason for the change
-In Modelica, size-expressions are described as function calls, meaning that they cannot be seen as acting on the type of the argument.  This had to be changed in order to give size-expressions constant variability for non-flexible array sizes.
+In Modelica, size-expressions are described as function calls, meaning that they cannot be seen as acting on the type of the argument.  This is changed in order to capture important cases of specifying array dimensions that would otherwise be typed as flexible sizes for no good reason.
 
-### Array sizes with parameter variability
-In Flat Modelica, component declarations outside functions may only specify non-flexible array sizes with `constant` variability.
-
-**Is there a need to also restruct array constructor functions when used outside functions?**  Being built-in functions, the array constructor functions such as `fill` don't automatically play by the same rules as user functions (see below), meaning that the following would currently be allowed:
-```
-model FlexibleIntermediateResult
-  parameter Integer n;
-  Real x = sum(fill(1.0, n));
-end FlexibleIntermediateResult;
-```
+### Component declaration with non-constant array size
+In Flat Modelica, component declarations outside functions may only specify constant array sizes.
 
 #### Change and reason for the change
 In Modelica, array sizes with parameter variability outside of functions are somehow allowed, at least not forbidden, but the semantics are not defined.
 So it is easier to forbid this feature for now. If introduced in Modelica, it is still possible to introduce them here with the same semantics. It would be impossible the other way around.
-
-### Flexible array sizes and function signatures
-In Flat Modelica, an input component may be declared with a variability prefix to constrain the allowed variability of expressions given for this argument.  Inside the function the input component has the declared variability declared except that it cannot exceed discrete-time.  (It follows that it is only useful to specify the `constant` or `parameter` prefix.)
-
-In Flat Modelica, the only component declarations that may specify a flexible array size (specified with `:`) are the inputs or protected components of a function.
-
-Array dimensions index by `Integer` in output components of a function must be given by expressions that turn into constant expressions if all flexible array sizes in the input components are replaced by `Integer` values.
-
-#### Change and reason for the change
-In Modelica, a function output may be declared to have flexible array size, as demonstrated by the dreaded `collectPositive` example in the specification.  With the change, it is ensured that a function cannot be the origin of flexible array size, and that the function signature obtained by just considering the function input and output component declarations is sufficient to derive the result type of any function call.  The result type of a function call may contain flexible array sizes, but only when flexible array sizes are present in the types of the argument expressions.  Further, when flexible array sizes are present in the function call argument expressions, it will be possible to determine the concrete sizes of all array dimensions of the result at runtime, allowing output arrays to be allocated by the caller.
-
-Combined with additional restrictions on the variability of sizing arguments to built-in array constructor functions such as `fill`, it can be ensured that types with flexible array sizes can only appear inside functions.
