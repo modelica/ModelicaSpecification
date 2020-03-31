@@ -17,7 +17,7 @@ Version | Link                                                              | Pu
 3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
 3.2rev2 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision2.pdf) | 2013    |
 3.2rev1 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision1.pdf) | 2012    |
-3.3     | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2012    |
+3.3     | [PDF](https://modelica.org/documents/ModelicaSpec33.pdf)          | 2012    |
 3.2     | [PDF](https://modelica.org/documents/ModelicaSpec32.pdf)          | 2010    |
 3.1     | [PDF](https://modelica.org/documents/ModelicaSpec31.pdf)          | 2009    |
 3.0     | [PDF](https://modelica.org/documents/ModelicaSpec30.pdf)          | 2007    |
