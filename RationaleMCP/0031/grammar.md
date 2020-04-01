@@ -4,7 +4,7 @@ The starting point for this Flat Modelica grammar is the ANTLR grammar for Model
 
 The intention is to develop the Flat Modelica grammar as a modification (mainly consisting of restrictions) of the full Modelica grammar, and to make the differences clearly visible in this document.  Hence, rather than just erasing the parts of the Modelica grammar that shouldn't be brought to Flat Modelica, these parts will be marked with a strikeout.
 
-The start rule of the Flat Modelica grammar below is [`flat_modelica`](#Start-rule).
+The start rule of the Flat Modelica grammar below is [_flat-modelica_](#Start-rule).
 
 
 ## B1 Lexical conventions
@@ -23,6 +23,8 @@ Parsing constructs:
 Repetition posfix operators have higher precedence than sequencing, which in turn has higher precedence than alternatives.
 
 To avoid risk of confusion with the parentheses parsing construct ( _a_ | _b_ ), literal parentheses are written in regular expression form, `[(]` _a_ | _b_ `[)]`, rather than in upright boldface, **(** _a_ | _b_ **)**.
+
+There are no empty productions.  Hence, where there is no risk of ambiguity, the left side of an alternative is allowed to be ommitted, meaning the same as just having the right side alternative.  For example, ( | _a_ | _b_ ) is the same as ( _a_ | _b_ ).
 
 ### Whitespace and comments
 
@@ -61,16 +63,17 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 
 
 ## Start rule
-> flat_modelica →\
+> _flat-modelica_ →\
 > &emsp; _VERSION-HEADER_\
-> &emsp; `model` _long-class-specifier_ **;**
+> &emsp; _class-definition_*\
+> &emsp; **model** _long-class-specifier_ **;**
 
 Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
 > _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
 
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
-As an example of the flat_modelica rule, this is a minimal valid Flat Modelica source:
+As an example of the _flat-modelica_ rule, this is a minimal valid Flat Modelica source:
 ```
 //! flat 3.5.0
 model _F
@@ -84,16 +87,16 @@ end _F;
 
 > _class-prefixes_ →\
 > &emsp; ~~**partial**?~~\
-> &emsp; ( ~~**class**~~\
-> &emsp; | ~~**model**~~\
-> &emsp; | **flat_model**\
-> &emsp; | **operator**? **record**\
-> &emsp; | ~~**block**~~\
-> &emsp; | ~~**expandable**? **connector**~~\
+> &emsp; (\
 > &emsp; | **type**\
-> &emsp; | ~~**package**~~\
-> &emsp; | ( **pure** | **impure** )? **operator**? **function**\
-> &emsp; | **operator**\
+> &emsp; | ~~**operator**?~~ **record**\
+> &emsp; | ( ( **pure** **constant**? ) | **impure** )? ~~**operator**?~~ **function**\
+> &emsp; ~~| **class**~~\
+> &emsp; ~~| **model**~~\
+> &emsp; ~~| **block**~~\
+> &emsp; ~~| **expandable**? **connector**~~\
+> &emsp; ~~| **package**~~\
+> &emsp; ~~| **operator**~~\
 > &emsp; )
 
 > _class-specifier_ → _long-class-specifier_ | _short-class-specifier_ | _der-class-specifier_
@@ -139,7 +142,7 @@ end _F;
 > &emsp; ~~**redeclare**?~~\
 > &emsp; **final**?\
 > &emsp; ~~**inner**? **outer**?~~\
-> &emsp; ( _class-definition_\
+> &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
@@ -161,7 +164,7 @@ end _F;
 > ~~_constraining-clause_ → **constrainedby** _type-specifier_ _class-modification_?~~
 
 
-## B24 Component**clause**
+## B24 Component clause
 > _component-clause_ → _type-prefix_ _array-subscripts_? _type-specifier_ _component-list_
 
 > _type-prefix_ →\
@@ -191,13 +194,13 @@ end _F;
 
 > _argument_\
 > &emsp; → _element-modification-or-replaceable_\
-> &emsp; | _element-redeclaration_~~
+> &emsp; ~~| _element-redeclaration_~~
 
 > _element-modification-or-replaceable_ →\
 > &emsp; **each**?\
 > &emsp; **final**?\
 > &emsp; ( _element-modification_\
-> &emsp; | _element-replaceable_\
+> &emsp; ~~| _element-replaceable_~~\
 > &emsp; )
 
 > _element-modification_ → _name_ _modification_? _string-comment_
@@ -216,11 +219,11 @@ end _F;
 > &emsp; )\
 > &emsp; _constraining-clause_?~~
 
-> _component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
+> ~~_component-clause1_ → _type-prefix_ _type-specifier_ _component-declaration1_~~
 
-> _component-declaration1_ → _declaration_ _comment_~~
+> ~~_component-declaration1_ → _declaration_ _comment_~~
 
-> _short-class-definition_ → _class-prefixes_ _short-class-specifier_
+> ~~_short-class-definition_ → _class-prefixes_ _short-class-specifier_~~
 
 ## B26 Equations
 

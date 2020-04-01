@@ -39,33 +39,44 @@ From the use cases above, some implicit requirements follow:
 ## Roadmap
 Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
 
-### Flat Modelica 1.0 (this MCP)
+### Flat Modelica 0.1 (this MCP)
 These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
 - [x] Flat Modelica identifier naming scheme.
-- [ ] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
-- [ ] Get rid of the obviously irrelevant parts of the grammar.
+- [x] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
+- [x] Get rid of the obviously irrelevant parts of the grammar.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Birrelevant-grammar/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
+- [x] Get rid of `connect` equations.
+- [x] Get rid of conditional components.
+- [x] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
+- [x] List of supported built-in operators and functions [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfunctions/RationaleMCP/0031/functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
+- [x] Get rid of unbalanced `if`-equations. --> Document in [differences.md](differences.md) file --> Hans
+- [x] Restrict constant expressions for translation time evaluation. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bconstant-expression/RationaleMCP/0031/differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
+- [ ] Handle array dimensions with parameter variability. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bunknown-dimension/RationaleMCP/0031/differences.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
+- [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
+- [ ] Define allowed forms of type aliases. (related to #2468)
+- [ ] Allowing array subscripting on general expressions. --> Hans will prepare.
 - [ ] Handling of parameters treated as constants.
+- [ ] Investigate need for `final`.
+- [ ] Origin of modifications (for start value prioritization).
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
-- [ ] Investigate need for `final`.
-- [ ] Get rid of conditional components and unbalanced `if`-equations.
-- [ ] Get rid of arrays with non-constant dimensions.
-- [ ] Get rid of stream operators: `actualStream(...)`, `inStream(...)`
-- [ ] Get `connect` equations.
+- [ ] Simplify modifications.
+- [ ] Handling of `each`.
+- [ ] Investigate need for `for`-equations.
+- [ ] Marking of top level inputs and outputs.
 - [ ] Get rid of higher order functions.
-- [ ] Decide on just one way to specify array dimensions.
-- [ ] Define allowed forms of type aliases.
 - [ ] Figure out what to do with synchronous features.
-- [ ] Soruce locations pointing back to the original Modelica code.
-- [ ] Origin of modifications (for start value prioritization).
+- [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
+- [ ] Event handling semantics is preserved as in Modelica.
 
-### Flat Modelica 1.1+ (future MCPs)
+### Flat Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
 - [ ] Primitive operations for triggering of events, to which the current event generating functions can be reduced.
 - [ ] Get rid of function calls with named arguments.
 - [ ] Get rid of function argument defaults.
 - [ ] Get rid of record constructors.
+- [ ] Allow to identify connector variables.
+- [ ] Handle equations and algorithms derived from arrays of components efficiently.
 
 ### Flat Modelica 2.0 (future MCPs)
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
