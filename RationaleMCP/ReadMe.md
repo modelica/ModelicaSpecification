@@ -17,6 +17,7 @@ New MCP should be added to the following list - on the main branch to keep track
 but the rest of the development on a branch/pull-request before being accepted.
 
 ## List of existing MCPs
+- MCP0035 Multilingual support od Modelica([MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035))
 - MCP0034 Ternary ([MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034))
 - MCP0033 Annotations for Predefined Plots ([MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033))
 - MCP0032 Selective Model Extension ([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032))
