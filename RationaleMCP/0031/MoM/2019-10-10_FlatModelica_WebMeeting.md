@@ -1,6 +1,6 @@
 Meeting Date: 10.10.2019 09:00
 Location: Skype Meeting
-	
+
 ### Participants
 * Lenord Oliver (Bosch)
 * Werther Kai (ETAS)
@@ -26,7 +26,7 @@ On github a change proposal for Flat Modelica language exists: https://github.co
 
 Here we should share:
 - Grammar for Flat Modelica
-- Code examples 
+- Code examples
 Proposed changes to the initial grammar can be created as pull request with the opportunity to discuss the proposals.
 
 Starting point:

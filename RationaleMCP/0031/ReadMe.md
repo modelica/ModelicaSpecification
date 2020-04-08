@@ -7,7 +7,7 @@ Peter Harman, Werther Kai, Gerd Kurzbach, Oliver Lenord, Hans Olsson, Michael Sc
 This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Flat Modelica_.
 
 ### In a sentence (or two)
-Flat Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.  It is an integral part of the Modelica specification, not a new separate standard. 
+Flat Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.  It is an integral part of the Modelica specification, not a new separate standard.
 
 ### Use cases
 Use cases to have in mind in the design of Flat Modelica, also indicating the usefullness of the Flat Modelica endeavor:
@@ -88,7 +88,7 @@ Big changes that don't make sense to even consider for a minor release of versio
 | 2019-01-09 | Henrik Tidefelt. Filling this document with initial content. |
 
 ## Contributor License Agreement
-All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
+All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
 
 ## Rationale
 The requirements on what Flat Modelica should and shoudn't be are currently being developed in a [separate document](Flat-Modelica-requirements.md).
