@@ -46,7 +46,7 @@ Having types requires handling of modifiers, but could be avoided by allowing mo
 * Support predefined scalar types: Real, Integer, Boolean.
 
 ### type names
-* Should have leading "_" to avoid confusion with variable names and keywords, see name-mapping and related discussion pull 2389.
+* Should have leading underscore ("_ ") to avoid confusion with variable names and keywords, see name-mapping and related discussion pull 2389.
 
 ### parameter
 How to treat a parameter without a value?
