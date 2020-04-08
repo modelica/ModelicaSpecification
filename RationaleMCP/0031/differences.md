@@ -28,7 +28,7 @@ In Flat Modelica, array size is part of an array type.  Each dimension has a siz
 
 When determining expression types, every array dimension must be unambiguously typed as either constant or flexible.  Where there are constraints on array sizes, for instance when adding two arrays, a flexible array size is only compatible with another flexible array size.  It is a runtime error if the two flexible array sizes are found to be incompatible at runtime (a tool can optimize runtime checks away if it can prove that the sizes will be compatible).
 
-In an array equation, the array type must have constant sizes.
+In an array equation, the array type must have constant sizes.  On the other hand, a flexible size on the left hand size of an array assignment does not impose any size constraint on the right hand size, and is allowed.
 
 When determining the type of a function call, the sizes of output array variables are determined based on the input expressions and the function's declarations of input and output components.  An output array size is constant (for the function call at hand) if it can be determined based on the types of input expressions and the constant variability values of input expressions.  When an array size cannot be determined based on this information (including the trivial case of a function output component declared with `:` size), the size is flexible.
 
@@ -39,6 +39,10 @@ model M
     input Integer n;
     input Real[:] x;
     output Real[n + size(x, 1)] y;
+  protected
+    Real[:] a;
+  algorithm
+    a := {0.5}; /* OK: Constant size can be assigned to flexible size. */
     ...
   end f;
   parameter Integer p = 2;
