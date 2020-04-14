@@ -13,6 +13,7 @@ clean:
 MLS.pdf: *.tex
 	pdflatex MLS.tex
 
+# Seems to be some issue with graphicpath, so set path here as well
 MLS.html: *.tex
-	$(LATEXMLPREFIX)latexml MLS.tex --dest MLS.xml
+	$(LATEXMLPREFIX)latexml MLS.tex --path=media --dest MLS.xml
 	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html
