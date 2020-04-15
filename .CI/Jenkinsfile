@@ -18,14 +18,18 @@ pipeline {
   stage('build') {
     agent {
       docker {
-        image 'modelicaspec/latexml:20190319'
+        image 'modelicaspec/latexml:20200415'
         label 'linux'
         alwaysPull true
       }
     }
+    environment {
+      HOME = '/tmp/jenkins'
+    }
     steps {
+      sh 'mkdir -p /tmp/jenkins'
       sh 'latexmk -pdf MLS.tex'
-      sh 'latexml MLS.tex --dest MLS.xml'
+      sh 'latexml --path=media MLS.tex --dest MLS.xml'
       sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html'
       sh 'tar czf MLS.tar.gz *.html *.css media css/'
       archiveArtifacts artifacts: 'MLS.tar.gz', fingerprint: true
