@@ -5,8 +5,8 @@
 * Align goals of eFMI with Flat Modelica MCP of MAP_Lang
 * Discuss the prepared simple example: PID controller
 * Next steps
- 
- 
+
+
 ## Introduction of eFMI EqCode
 
 See ppt slides (https://emphysis.org/svn/EMPHYSIS/trunk/30_Work_Documents/WP3_eFMI-Standardization/WP3_1_Working_group_Eq-Code/eFMI_EqCode-Summary.pptx).
@@ -26,8 +26,8 @@ Below only the first lines of code discussed during the meeting are listed. The 
 ```
 flat_model PID
 
-  type _Time Real (final quantity="Time", final unit="s");	
-	
+  type _Time Real (final quantity="Time", final unit="s");
+
   parameter _Time 'period' = 0.1 "Period of clock (defined as Real number)";
   constant Boolean 'enbDiscretize' = true "discretize system?";
   input Real 'r' "Connector of Real input signal";
@@ -44,9 +44,9 @@ Having types requires handling of modifiers, but could be avoided by allowing mo
 
 * Type declarations should be supported to avoid code repetition and improve readability.
 * Support predefined scalar types: Real, Integer, Boolean.
-	
+
 ### type names
-* Should have leading "_" to avoid confusion with variable names and keywords, see name-mapping and related discussion pull 2389.
+* Should have leading underscore ("_ ") to avoid confusion with variable names and keywords, see name-mapping and related discussion pull 2389.
 
 ### parameter
 How to treat a parameter without a value?
@@ -56,15 +56,15 @@ What is the meaning of a start value for parameters in the context of eFMI?
 
 Side note (added after the meeting):
 On ECU there are different kinds of initializations:
-	- After power on the device is launched (start_up) all memory is brought into a state that is always the same no matter which state other devices are in. This means all inputs must be ignored.
-	- After the launch the device can be initialized.
-	- Anytime during operation the device can be re-initialized, e.g. after a certain event.
+- After power on the device is launched (start_up) all memory is brought into a state that is always the same no matter which state other devices are in. This means all inputs must be ignored.
+- After the launch the device can be initialized.
+- Anytime during operation the device can be re-initialized, e.g. after a certain event.
 
 If the semantics of Moldelica cannot be mapped in reasonable way parameters could be handled by applying a restriction that requires parameters to have values for EqCode to avoid deviation of Flat Modelica from Modelica.
 * topic should be revisited.
 
 ### variable names
-* Always use quoted names according to name-mapping 
+* Always use quoted names according to name-mapping
 Example has been adopted accordingly.
 
 ## Requirements derived from the discussion
@@ -76,7 +76,7 @@ Example has been adopted accordingly.
 ## Issues from github and emails
 
 ### [Michael Tiller] from github
-Although I must say I disagree with the premise that Flat Modelica should be a subset of Modelica. It certainly doesn't need to be. You could reuse a huge amount of the grammar between them without having to prescribe this requirement. 
+Although I must say I disagree with the premise that Flat Modelica should be a subset of Modelica. It certainly doesn't need to be. You could reuse a huge amount of the grammar between them without having to prescribe this requirement.
 * Having Flat Modelica as a separate language will sooner or later lead to compatibility problems. Therefore we see good reasons to consider Flat Modelica as a subset of Modelica.
 
 
@@ -87,10 +87,10 @@ I would say that there are two alternatives - either we standardize such a mangl
 ### [Henrik] from email
 1) Flat Modelica needs to fulfill the needs to process full Modelica.  The Equation Code Language should then impose restrictions on what Flat Modelica it allows.  As an obvious example of this, Flat Modelica needs to allow functions with algorithmic bodies and side effects.  Other things that come to mind here include algorithms, looping constructs, if-equations, when-equations, when-statements, etc. 
 * Agreed, see above Requirements.
-	
+
 2) There are many Modelica constructs that are not deeply involved in the complicated flattening process, and that need to be allowed also in Flat Modelica in order to preserve structure that is necessary for efficient handling of the equations.  These include record and array types. 
 * Agreed, see above Requirements.
-	
+
 3) The "Identifier" section should probably be merged into the thing I did here:
 https://github.com/modelica/ModelicaSpecification/pull/2389
 I think the main topic here is the relation to array and record types.  Then, to avoid confusion, we need to make sure that example code isn't using any other form of identifier.  (To me, the examples under "Identifier" and "Variable name" seem to contradict each other.)

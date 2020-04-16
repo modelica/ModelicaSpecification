@@ -43,7 +43,7 @@ Additional requirements:
 In Modelica, a component reference is a very restricted form of a gneralized expression where literal array subscripting and record member referencing can be applied to any sub-expression.  As such, they are identified with their abstract syntax tree representation.  In particular, their textual input form is insensitive to whitespace and comments.
 
 In Flat Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Flat Modelica component reference is not allowed to contain whitespace or comments.
- 
+
 Examples:
 
 | String | Valid Flat Modelica component reference? |

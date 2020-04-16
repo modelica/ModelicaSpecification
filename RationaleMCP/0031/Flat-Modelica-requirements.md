@@ -21,7 +21,7 @@ Things that the Flat Modelica format should support:
   - Comment (@mtiller): So annotations are present in the grammar but all annotations except vendor annotations are stripped.  If the concern is bloat from annotations that are no longer relevant in the flattened form (*e.g.,* graphical annotations), why not identify what gets excluded vs. what gets included? (see comment about source locations above)
   - Comment (@harmanpa): I agree, I'd like to be able to put arbitary meta-data in.
 - All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Flat Modelica model is exported to an FMU for Model Exchange.)
-  - Comment (@mtiller): The semantics of this are unclear.  When you say constant evaluation, do you mean constant folding?  What about `final` parameters?  Should those be parameters in an FMU? I wouldn't think so.  It seems like they should just be `output`s. 
+  - Comment (@mtiller): The semantics of this are unclear.  When you say constant evaluation, do you mean constant folding?  What about `final` parameters?  Should those be parameters in an FMU? I wouldn't think so.  It seems like they should just be `output`s.
 - List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during flattening for other reasons.
   - `final` can probably be replaced by using normal equation instead of binding equation. meaning that binding eqations can always be treated as non-final.
   - Comment (@mtiller): Why not just add an `Evaluate=true` annotation to indicate these.
@@ -101,7 +101,7 @@ One advantage to this approach would be to organize the semantics of Modelica by
   - Variables
   - Equations
   - Functions
-  
+
 From this perspective, expressions can almost be treated as "pass through".  The editor doesn't really need to
 interpret them in any way. For the most part they just pass through to the flattened form (but with some
 potential simplifications or restrictions, as described above).
@@ -114,17 +114,17 @@ Do after Linköping meeting?
 Need to design grammar: Sub-set of current Modelica or some additions?
 
 One major issue is variable declaration as we have e.g. `a[1].b` as a variable,
-and also need record variables. 
+and also need record variables.
 One possibility would be quoted identifiers - but can clash.
   Can we always quote a quoted one without ambiguity? Just use anything - even base64.
-Another possibility is extended grammar - but looks ambiguous. 
+Another possibility is extended grammar - but looks ambiguous.
 E.g. `a[1].b` could be either a variable, or access to member of array of records.
 
 For declarations we need to know if array dimensions are part of variable or not.
 
-Might need accessing record elements using `.` and `[` for non record variables, 
+Might need accessing record elements using `.` and `[` for non record variables,
   e.g., `f(x)[1]` and `f(x).x[1]`
-  
+
 Array of components. Repeated equations (using quoted identifiers to be clear here):
   `'a[1].x'='a[1].y';`
   `'a[2].x'='a[2].y';`

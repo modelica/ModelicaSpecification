@@ -34,7 +34,7 @@ Post pone this topic to the next meeting as Gerd has to leave.
 
 
 ## Express hybrid DAE
-Kai: SCODE-CONGRA has a separate switching logic appart from the continuous equations. Will spend some thought on this unti next time. 
+Kai: SCODE-CONGRA has a separate switching logic appart from the continuous equations. Will spend some thought on this unti next time.
 
 ## To Dos until next meeting
 Split the current oull request into smaller chunks:
@@ -42,5 +42,5 @@ Split the current oull request into smaller chunks:
 * Comment on this pull request [Gerd + all]
 * Discuss and decide this at the next meeting.
 
-## Next Meeting 
+## Next Meeting
 Friday 6th, 11.00AM
