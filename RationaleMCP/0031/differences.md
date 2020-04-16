@@ -133,7 +133,7 @@ constsize(arrExp, {s1, s2, ..., sn})
 
 It is a type error if a constant array size of `arrExp` does not match the corresponding size of the `constsize` expression.  A flexible size of `arrExp` is asserted to be equal to the corresponding size of the `constsize` expression, and any error is typically not detected until runtime.
 
-The `constsize` expression has the same type as `arrExp`, except that the flexible array dimensions are replaced by the specified constant sizes.
+The `constsize` expression has the same type as `arrExp`, except that the flexible array dimensions are replaced by the specified constant sizes.  Note that this definition also applies to array dimensions with non-`Integer` upper bounds.  For example, any `Boolean` array dimension in `arrExp` must be matched by 2 in the `constsize` expression.
 
 Example:
 ```
@@ -145,14 +145,17 @@ model M
   function g
     output Real[2, :, 4] y;
     ...
-  end f;
+  end g;
+  function h
+    output Real[Boolean, :] y;
+    ...
+  end h;
   Real[2, 3] a = constsize(f(), 2, 3); /* OK. */
   Real[2, 3] b = constsize(f(), size(b)); /* OK. */
-  Real[2, 3, 4] c = constsize(f(), 2, 3); /* OK. */
+  Real[2, 3, 4] c = constsize(g(), 2, 3); /* OK. */
+  Real[Boolean, 3] b = constsize(f(), 2, 3); /* OK; a Boolean dimension has size 2. */
 end M;
 ```
-
-Note: The `constsize` definition also applies to array dimensions with non-`Integer` upper bounds.  For example, any `Boolean` array dimension in `arrExp` must be matched by 2 in the `constsize` expression.
 
 ### Variability of size-expressions
 The variability of an `ndims` expression is constant, as it only depends on the type of the argument and is unaffected by flexible array sizes.
