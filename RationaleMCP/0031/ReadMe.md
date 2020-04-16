@@ -42,15 +42,15 @@ Due to the large size of this MCP, it has been necessary to break it down into s
 ### Flat Modelica 0.1 (this MCP)
 These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
 - [x] Flat Modelica identifier naming scheme.
-- [x] Principles for use of language constructs vs annotations.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-annotations/RationaleMCP/0031/annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
-- [x] Get rid of the obviously irrelevant parts of the grammar.  [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Birrelevant-grammar/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
+- [x] Principles for use of language constructs vs annotations.  [Design](annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459).
+- [x] Get rid of the obviously irrelevant parts of the grammar.  [Design](grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465).
 - [x] Get rid of `connect` equations.
 - [x] Get rid of conditional components.
-- [x] Settle the top level structure. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
-- [x] List of supported built-in operators and functions [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfunctions/RationaleMCP/0031/functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
-- [x] Get rid of unbalanced `if`-equations. --> Document in [differences.md](differences.md) file --> Hans
-- [x] Restrict constant expressions for translation time evaluation. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bconstant-expression/RationaleMCP/0031/differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
-- [x] Handle array dimensions with parameter variability. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bunknown-dimension/RationaleMCP/0031/differences.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
+- [x] Settle the top level structure. [Design](grammar.md#start-rule), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
+- [x] List of supported built-in operators and functions [Design](functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
+- [x] Get rid of unbalanced `if`-equations. [Design](differences.md#unbalanced-if-equations)
+- [x] Restrict constant expressions for translation time evaluation. [Design](differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
+- [x] Handle array dimensions with parameter variability. [Design](differences.md#array-size), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
 - [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
 - [ ] Define allowed forms of type aliases. (related to #2468)
 - [ ] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
