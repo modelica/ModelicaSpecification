@@ -1,5 +1,5 @@
 # The `constsize` expression rationale
-The `constsize` expression is introduced and defined in [differences.md#The-constsize-expression].  This document provides background that may be helpful for understanding the current design, as well as points out possible directions for future developments of `constsize` that could be useful in case it turns out that the current design doesn't solve all the problems it is faced with when applied to actual Modelica test cases.
+The `constsize` expression is introduced and defined in [differences.md#the-constsize-expression].  This document provides background that may be helpful for understanding the current design, as well as points out possible directions for future developments of `constsize` that could be useful in case it turns out that the current design doesn't solve all the problems it is faced with when applied to actual Modelica test cases.
 
 ## Leaving leading sizes flexible
 This section describes a limitation of the current design, and ways in which it can be remedied in the future.
@@ -98,7 +98,7 @@ Pros and cons leading to the current decision of going with the function call sy
 - Not using function call syntax means grammar has to be extended (with `constsize` as Flat Modelica keyword), without added value until generalized to also allow `:`.
 - The currently proposed function call syntax would also be possible to extend, see above.
 
-Example (compare [example using current design](differences.md#The-constsize-expression)):
+Example (compare [example using current design](differences.md#the-constsize-expression)):
 ```
 model M
   function f
