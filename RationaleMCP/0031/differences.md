@@ -118,7 +118,7 @@ To only consider a flexible size compatible with another flexible size is a rest
 It is believed that the clear separation of constant and flexible array sizes is also a necessary starting point for a future extension to allow components with flexible array size outside functions.
 
 ### The `constsize` expression
-A new `constsize` expression is introduced for making assertions on array sizes.
+A new `constsize` expression is introduced for making assertions on array sizes.  A limitation of the current design, and ways it can be addressed in the future are described in a separate [rationale](constsize.md).
 
 The expression comes in different forms.  In the first form, the `s1`, `s2`, …, `sn` are constant variability `Integer` expressions:
 ```
@@ -153,65 +153,6 @@ end M;
 ```
 
 Note: The `constsize` definition also applies to array dimensions with non-`Integer` upper bounds.  For example, any `Boolean` array dimension in `arrExp` must be matched by 2 in the `constsize` expression.
-
-#### Limitation
-Note: The current forms of `constsize` don't allow leaving some leading sizes flexible, while making other sizes constant.  It means that some full Modelica function algorithms cannot be directly converted to Flat Modelica:
-```
-function flexibleTrouble
-protected
-  Real[:, :] a; /* (That the second dimension doesn't have constant size matching 'b' is probably a sign of bad design.) */
-  Real[2] b;
-  Real[:] y;
-algorithm
-  /* Allowed in full Modelica, but not in Flat Modelica.
-   * Size mismatch in array multiplication: ':' is not compatible with constant size.
-   */
-  y := a * b;
-  /* Trying to address Flat Modelica type error.
-   * Well-typed, but will generally fail at runtime, as 42 has nothing to do with the first size of 'a'.
-   */
-  y := constsize(a, 42, 2) * b;
-end flexibleTrouble;
-```
-
-To support this, one could also add a third form where two constant variability `Integer` arrays of equal size are given, where the first array specifies dimensions, and the second array specifies the corresponding sizes:
-```
-constsize(arrExp, {d1, d2, ..., dn}, {sd1, sd2, ..., sdn})
-```
-
-Alternatively, one could make `constsize` a keyword and change the grammar to also allow `:` instead of a constant `Integer` (possibly causing some confusion for human readers that don't understand why a `:` is allowed in a place that looks like a function call argument):
-```
-constsize(arrExp, :, s2, ..., sn)
-```
-
-For now, however, we don't expect this to be a problem for real-world examples.  Regarding the example given above, the variable `a` should probably have been declared as `Real[:, 2]` to start with, and then the matrix multiplication would be fine also in Flat Modelica.  For this reason, and knowing that there are ways that the current `constsize` expressions can be generalized in the future, we leave the design of `constsize` for now with this known limitation.
-
-Finally, note that a very cumbersome workaround that doesn't require generalization of `constsize` is to introduce a new function to do the job:
-```
-function _constsize_Real_flexible_2
-  input Real[:, :] x;
-  output Real[size(x, 1), 2] y;
-algorithm
-  assert(size(x, 2) == 2, "Expected second array dimension to have size 2.");
-  for i in 1 : size(y, 1) loop
-    for j in 1 : size(y, 2) loop
-      y[i, j] := x[i, j];
-    end for;
-  end for;
-end _constsize_Real_flexible_2;
-```
-
-#### Alternative syntax
-Another syntax for `constsize` was also considered to make it easier to address the limitation of not being able to leave some leading sizes flexible.  Here, a `constsize` expression uses special syntax instead of taking the form of a normal function call:
-```
-constsize[s1, s2, ..., sn](arrExp)  /* "Square bracket form" reminding of component declaration. */
-constsize(dimsExp)(arrExp)          /* dimsExp is a constant Integer array expression, such as size(...). */
-```
-
-Pros and cons leading to the current decision of going with the function call syntax instead:
-- Syntax (square bracket form) is easily and naturally extended to also allow `:` sizes where the resulting size must not be constant (the use of `:` in a list of sizes given between square brackets is already established).
-- Not using function call syntax means grammar has to be extended (with `constsize` as Flat Modelica keyword), without added value until generalized to also allow `:`.
-- The currently proposed function call syntax would also be possible to extend, see above.
 
 ### Variability of size-expressions
 The variability of an `ndims` expression is constant, as it only depends on the type of the argument and is unaffected by flexible array sizes.
