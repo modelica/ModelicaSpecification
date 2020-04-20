@@ -171,3 +171,23 @@ In Flat Modelica, component declarations outside functions may only specify cons
 #### Change and reason for the change
 In Modelica, array sizes with parameter variability outside of functions are somehow allowed, at least not forbidden, but the semantics are not defined.
 So it is easier to forbid this feature for now. If introduced in Modelica, it is still possible to introduce them here with the same semantics. It would be impossible the other way around.
+
+## Subscripting of general expressions
+In Flat Modelica it is possible to have a subscript on any (parenthesized) expression.
+The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such 
+expressions and without the slight generalization we could not generate flat Modelica for them. It does not add any real complication
+to the translator.
+
+The reason it is  restricted to parenthesized expressions is that `a.x[1]` (according to normal Modelica semantics) and `(a.x)[1]` will often work differently.
+Consider
+```
+record R
+  Real x[2];
+end R;
+R a[3];
+```
+Here  `a.x[1]` is a slice operation in Modelica generating the array  `{a[1].x[1],a[2].x[1],a[3].x[1]}`, whereas `(a.x)[1]` 
+is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}` 
+(assuming trailing subscripts can be skipped, otherwise it is illegal).
+It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`, 
+and `foo()[1]` without causing any similar ambiguity - but it was not deemed necessary at the moment.
