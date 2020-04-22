@@ -47,7 +47,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of `connect` equations.
 - [x] Get rid of conditional components.
 - [x] Settle the top level structure. [Design](grammar.md#start-rule), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
-- [x] List of supported built-in operators and functions [Design](functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
+- [x] List of supported built-in operators and functions. [Design](functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
 - [x] Get rid of unbalanced `if`-equations. [Design](differences.md#unbalanced-if-equations)
 - [x] Restrict constant expressions for translation time evaluation. [Design](differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
 - [x] Handle array dimensions with parameter variability. [Design](differences.md#array-size), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
