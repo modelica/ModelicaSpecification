@@ -44,9 +44,8 @@ How to edit and generate final documents
 * The pdf-documents are generated with pdflatex, which is part of most LaTeX installations, we used http://miktex.org/download
 * The HTML-documents are generated with LaTeXML. That is more complicated to install - and can optionally be skipped:
 1. First you need perl, we used http://strawberryperl.com/
-2. And then ideally the official LaTeXML package: http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
-3. Except that awaiting one correction we use https://github.com/HansOlsson/LaTeXML/tree/UseLabel
-4. The exact commands are in the Makefile
+2. And then the official LaTeXML package (0.8.4 or later): http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
+3. The exact commands are in the Makefile
 
 It is also possible to get a preview in the pull request.
 There will be a link to the [status check](https://test.openmodelica.org/jenkins/job/ModelicaAssociation/job/ModelicaSpecification/view/change-requests/), which checks that the documents can be generated and gives you an option to download them.
