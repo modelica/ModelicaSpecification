@@ -57,7 +57,6 @@ and only one instance in each state machine must be marked as initial by
 appearing in an \textbf{initialState} statement. The following special
 kinds of connect-statements are used to define transitions between
 states and to define the initial state:
-
 \begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline \endhead
 \multicolumn{2}{|p{12cm}|}{\textbf{Statements to define a state machine}}\\ \hline
@@ -102,7 +101,6 @@ condition, or in when-equations.
 
 It is possible to query the status of the state machine by using the
 following operators:
-
 \begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline \endhead
 \textbf{activeState}(state)&
@@ -214,7 +212,6 @@ opposite end of the initial state {[} \emph{as shown above} {]}.
 
 For the purpose of defining the semantics of state machines, assume that
 the data of all transitions are stored in an array of records:
-
 \begin{lstlisting}[language=modelica]
 record Transition
   Integer from;
@@ -284,11 +281,11 @@ of the transition with true condition and highest priority or 0.
 	  else 0
 	for i in 1:size(t,1));
 \end{lstlisting}
+
 In a similar way, the Integer delayed is calculated as the index for a
 potentially delayed transition, i.e. a transition taking place at the
 next clock tick. In this case the from-state needs to be equal to
 nextState:
-
 \begin{lstlisting}[language=modelica]
   Integer delayed =  max(if
     (if not t[i].immediate and t[i].from == nextState
@@ -298,14 +295,13 @@ nextState:
 	 else 0
   for i in 1:size(t,1));
 \end{lstlisting}
+
 The transition to be fired is determined as follows, taking into account
 that a delayed transition might have higher priority than an immediate:
-
 \begin{lstlisting}[language=modelica]
   Integer fired = max(previous(delayed), immediate);
 \end{lstlisting}
 nextState is set to the found transitions to-state:
-
 \begin{lstlisting}[language=modelica]
   Integer nextState = if active then
                         (if fired > 0
@@ -317,7 +313,6 @@ In order to define synchronize transitions, each state machine must
 determine which are the final states, i.e. states without
 from-transitions and to determine if the state machine is in a final
 state currently:
-
 \begin{lstlisting}[language=modelica]
   Boolean finalStates[nStates] = {
        max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1)) == 0
@@ -331,7 +326,6 @@ example is given below in the semantic example model.
 \subsection{Reset Handling}\doublelabel{reset-handling}
 
 A state can be reset for two reasons:
-
 \begin{itemize}
 \item
   The whole state machine has been reset from its context.\\
@@ -347,13 +341,11 @@ nextResetStates vectors.
 
 The state machine reset flag is propagated and maintained to each state
 individually:
-
 \begin{lstlisting}[language=modelica]
   output Boolean activeResetStates[nStates] = {if reset then true else previous(nextResetStates[i]) for i in 1:nStates};
 \end{lstlisting}
 until a state is eventually executed, then its corresponding reset
 condition is set to false:
-
 \begin{lstlisting}[language=modelica]
   Boolean nextResetStates[nStates] = if  active then {if activeState == i then false else activeResetStates[i] for i in 1:nStates}
    else previous(nextResetStates)
@@ -373,7 +365,6 @@ variables \lstinline!nextState!, \lstinline!nextReset! and \lstinline!nextResetS
 \subsection{Semantics Summary}\doublelabel{semantics-summary}
 
 The entire semantics model is given below:
-
 \begin{lstlisting}[language=modelica]
 model StateMachineSemantics "Semantics of state machines"
   parameter Integer nStates;
@@ -418,7 +409,6 @@ different mutually exclusive states needs to be merged.
 
 In each state, the outer output variables are solved for and for each
 such variable a single definition is formed:
-
 \begin{lstlisting}[language=modelica,escapechar=!]
 v := if activeState(state!\textsubscript{1}!) then expre!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then expre!\textsubscript{2}! elseif ... else last(v)
 \end{lstlisting}
@@ -442,7 +432,6 @@ allow several outputs to be connected to one input.
 It is possible to connect several outputs to an input if all the outputs
 come from states of the same state machine. In such cases, we get the
 following constraint equations:
-
 \begin{lstlisting}[language=modelica,escapechar=!]
 u!\textsubscript{1}! = u!\textsubscript{2}! = ... = y!\textsubscript{1}! = y!\textsubscript{2}! = ...
 \end{lstlisting}
