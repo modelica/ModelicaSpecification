@@ -52,7 +52,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Restrict constant expressions for translation time evaluation. [Design](differences.md#constant-expressions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2473)
 - [x] Handle array dimensions with parameter variability. [Design](differences.md#array-size), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
 - [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
-- [ ] Define allowed forms of type aliases. (related to _one way to specify array dimensions_)
+- [ ] Define allowed forms of type aliases (related to _one way to specify array dimensions_). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btype-aliases/RationaleMCP/0031/type-aliases.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2555)
 - [ ] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
 - [ ] Handling of parameters treated as constants.
 - [ ] Investigate need for `final`.
