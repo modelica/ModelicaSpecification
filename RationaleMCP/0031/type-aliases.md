@@ -1,6 +1,6 @@
 # Type aliases
 
-This document presents some alternative designs for the allowed use of type aliases in Flat Modelica.  Ones the different alternatives are properly described together with their advantages and disadvantages, it will be possible to make an informed decision of which design to choose.
+This document presents some alternative designs for the allowed use of type aliases in Flat Modelica.  Once the different alternatives are properly described together with their advantages and disadvantages, it will be possible to make an informed decision of which design to choose.
 
 
 ## Design alternatives for scalars
