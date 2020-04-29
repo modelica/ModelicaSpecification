@@ -191,3 +191,6 @@ is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}`
 (assuming trailing subscripts can be skipped, otherwise it is illegal).
 It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`, 
 and `foo()[1]` without causing any similar ambiguity - but it was not deemed necessary at the moment.
+
+## Simplify modifications
+
