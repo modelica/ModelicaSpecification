@@ -29,6 +29,16 @@ record Interval
 end Interval;
 ```
 
+One of the variants will be to use a type alias to create the following type:
+```
+record PositiveInterval
+  Real low(min = 0.0);
+  Real high(min = 0.0);
+end PositiveInterval;
+```
+
+Of course, the example is too small to illustrate the scalability benefit of type aliases when used in deeply nested structures; the point of the example is only to illustrate different principles of how a record type can be modified when constructing a type alias.
+
 ### No type aliases for records
 
 Without type aliases for records, all type abstraction that requires modification of an existing type needs to use a record with dummy member:
