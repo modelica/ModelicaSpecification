@@ -8,7 +8,7 @@ all: MLS.pdf MLS.html
 
 clean:
 	rm *.aux MLS.log MLS.toc MLS.pdf
-	rm MLS.xml *.html
+	rm MLS.xml LaTeXML.cache *.html
 
 MLS.pdf: *.tex
 	pdflatex MLS.tex
