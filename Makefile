@@ -6,9 +6,16 @@
 
 all: MLS.pdf MLS.html
 
-clean:
+.PHONY: clean-pdf
+clean-pdf:
 	rm *.aux MLS.log MLS.toc MLS.pdf
+
+.PHONY: clean-html
+clean-html:
 	rm MLS.xml LaTeXML.cache *.html
+
+.PHONY: clean
+clean: clean-pdf clean-html
 
 MLS.pdf: *.tex chapters/*.tex
 	pdflatex MLS.tex
