@@ -79,6 +79,12 @@ Seen this way, the rules about which functions may be called in the body of a fu
 
 This covers what one can currently express in full Modelica.  In the future, one might also introduce _pure discrete_ functions that don't have side effects, but that must be re-evaluated at events, even if the arguments are constant.
 
+## Variability and Modifications
+
+### Handling of final
+
+### Semantics of constants and parameters treated as constants
+
 ## Array size
 
 ### Array types
