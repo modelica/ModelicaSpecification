@@ -6,14 +6,21 @@
 
 all: MLS.pdf MLS.html
 
-clean:
+.PHONY: clean-pdf
+clean-pdf:
 	rm *.aux MLS.log MLS.toc MLS.pdf
-	rm MLS.xml *.html
 
-MLS.pdf: *.tex
+.PHONY: clean-html
+clean-html:
+	rm MLS.xml LaTeXML.cache *.html
+
+.PHONY: clean
+clean: clean-pdf clean-html
+
+MLS.pdf: *.tex chapters/*.tex
 	pdflatex MLS.tex
 
 # Seems to be some issue with graphicpath, so set path here as well
-MLS.html: *.tex
-	$(LATEXMLPREFIX)latexml MLS.tex --path=media --dest MLS.xml
-	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html
+%.html: %.tex chapters/*.tex
+	$(LATEXMLPREFIX)latexml $*.tex --path=media --dest $*.xml
+	$(LATEXMLPREFIX)latexmlpost $*.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest $@
