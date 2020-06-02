@@ -51,10 +51,8 @@ variable is called \firstuse{stream variable}. The following definitions hold:
   For inside connectors (see \autoref{inside-and-outside-connectors}), variables
   with the \lstinline!stream! prefix do not lead to connection equations.
 \item
-  Connection equations with stream variables are generated in a model
-  when using the \lstinline!inStream()! operator or the
-  \lstinline!actualStream()! operator, see \autoref{stream-operator-instream-and-connection-equations}
-  and \autoref{stream-operator-actualstream}.
+  Connection equations with stream variables are generated in a model when using \lstinline!inStream! or \lstinline!actualStream!,
+  see \autoref{stream-operator-instream-and-connection-equations} and \autoref{stream-operator-actualstream}.
 \end{itemize}
 
 \begin{example}
@@ -76,16 +74,15 @@ transported with this flow variable. The stream variables \lstinline!h_outflow! 
 \lstinline!X_outflow! are the stream properties inside the component close to the
 boundary, when fluid flows out of the component into the connection
 point. The stream properties for the other flow direction can be
-inquired with the built-in operator \lstinline!inStream()!. The value of
+inquired with the built-in \lstinline!inStream!. The value of
 the stream variable corresponding to the actual flow direction can be
-inquired through the built-in operator \lstinline!actualStream()!, see
+inquired through the built-in \lstinline!actualStream!, see
 \autoref{stream-operator-actualstream}.
 \end{example}
 
 \section{Stream Operator inStream and Connection Equations}\doublelabel{stream-operator-instream-and-connection-equations}
 
-In combination with the stream variables of a connector, the
-\lstinline!inStream()! operator is designed to describe in a numerically
+In combination with the stream variables of a connector, \lstinline!inStream! is designed to describe in a numerically
 reliable way the bi-directional transport of specific quantities carried
 by a flow of matter.
 
@@ -152,13 +149,11 @@ of flow variables defined in \autoref{generation-of-connection-equations}.
 0 = sum($m_{j}$.c.m_flow for j in 1:N) + sum(-$c_{k}$.m_flow for k in 1:M);
 \end{lstlisting}
 
-Whenever the \lstinline!inStream()! operator is applied to a stream
-variable of an inside connector, the balance equation of the transported
-property must be added under the assumption of flow going into the
-connector
+Whenever \lstinline!inStream! is applied to a stream variable of an inside connector, the balance equation of the transported
+property must be added under the assumption of flow going into the connector
 
 \begin{lstlisting}[language=modelica,mathescape=true]
-// Implicit definition of the inStream() operator applied to inside connector $i$
+// Implicit definition of inStream applied to inside connector $i$
 0 =
   sum($m_{j}$.c.m_flow *
       (if $m_{j}$.c.m_flow > 0 or $j$==$i$ then $\mathit{h\_mix\_in}_{i}$ else $m_{j}$.c.h_outflow)
@@ -220,8 +215,8 @@ Note, that \lstinline[mathescape=true]!inStream($c_{k}$.h_outflow)! is computed 
 to compute it.
 \end{nonnormative}
 
-If the argument of \lstinline!inStream()! is an array, the implicit
-equation system holds elementwise, i.e., \lstinline!inStream()! is
+If the argument of \lstinline!inStream! is an array, the implicit
+equation system holds elementwise, i.e., \lstinline!inStream! is
 vectorizable.
 
 The stream connection equations have singularities and/or multiple
@@ -233,11 +228,8 @@ approximate the solution in an open neighbourhood of that point.
 For example, assume that \lstinline[mathescape=true]!$m_{j}$.c.m_flow = $c_{k}$.m_flow = 0!, then all equations above are identically fulfilled and \lstinline!inStream(..)! can have any value.
 \end{nonnormative}
 
-However, specific optimizations may be applied to avoid the regularization if the
-flow through one port is zero or non-negative, see \autoref{derivation-of-stream-equations}. It is
-required that the \lstinline!inStream()! operator is appropriately
-approximated when regularization is needed and the approximation must
-fulfill the following requirements:
+However, specific optimizations may be applied to avoid the regularization if the flow through one port is zero or non-negative, see \autoref{derivation-of-stream-equations}.
+It is required that \lstinline!inStream! is appropriately approximated when regularization is needed and the approximation must fulfill the following requirements:
 \begin{enumerate}
 \item
   \lstinline[mathescape=true]!inStream($m_{i}$.c.h_outflow)! and
@@ -333,7 +325,7 @@ should be such that:
   values.
 \end{itemize}
 
-Trivial implementation of \lstinline!positiveMax! guarantees continuity of \lstinline!inStream()!:
+Trivial implementation of \lstinline!positiveMax! guarantees continuity of \lstinline!inStream!:
 \begin{lstlisting}[language=modelica,mathescape=true]
 postiveMax(-$m_j$.c.m_flow, $s_i$) = max(-$m_j$.c.m_flow, $\mathit{eps1}$); // so $s_i$ is not needed
 \end{lstlisting}
@@ -355,7 +347,7 @@ positiveMax((-$m_j$.c.m_flow,s_i) := alpha*max(-$m_j$.c.m_flow,0) + (1-alpha)*ep
 The derivation of this implementation is discussed in
 \autoref{derivation-of-stream-equations}. Note that in the cases N = 1, M =0 (unconnected port,
 physically corresponding to a plugged-up flange), and N = 2, M=0
-(one-to-one connection), the result of \lstinline!inStream()! is trivial
+(one-to-one connection), the result of \lstinline!inStream! is trivial
 and no non-linear equations are left in the model, despite the fact that
 the original definition equations are nonlinear.
 
@@ -419,9 +411,9 @@ contexts:
   der(U) = c.m_flow*actualStream(c.h_outflow);  // (1) energy balance equation
   h_c = actualStream(c.h);                      // (2) monitoring the enthalpy at port c
 \end{lstlisting}
-In the case of equation (1), although the \lstinline!actualStream()! operator
+In the case of equation (1), although \lstinline!actualStream!
 is discontinuous, the product with the flow variable is not, because
-\lstinline!actualStream()! is discontinuous when the flow is zero by construction.
+\lstinline!actualStream! is discontinuous when the flow is zero by construction.
 Therefore, a tool might infer that the expression is \lstinline!smooth(0, ...)!
 automatically, and decide whether or not to generate an event. If a user
 wants to avoid events entirely, he/she may enclose the right-hand side
@@ -433,10 +425,10 @@ flowing through a port is. In this case, the user will probably want to
 see the change due to flow reversal at the exact instant, so an event
 should be generated. If the user doesn't bother, then he/she should
 enclose the right-hand side of (2) with \lstinline!noEvent()!. Since the output of
-\lstinline!actualStream()! will be discontinuous, it should not be used by itself to
+\lstinline!actualStream! will be discontinuous, it should not be used by itself to
 model physical behaviour (e.g., to compute densities used in momentum
-balances) --- \lstinline!inStream()! should be used for this purpose. The operator
-\lstinline!actualStream()! should be used to model physical behaviour only when
+balances) --- \lstinline!inStream! should be used for this purpose.
+\lstinline!actualStream! should be used to model physical behaviour only when
 multiplied by the corresponding flow variable (like in the above energy
 balance equation), because this removes the discontinuity.
 \end{nonnormative}
