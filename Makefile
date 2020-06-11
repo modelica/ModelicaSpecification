@@ -21,6 +21,7 @@ MLS.pdf: *.tex chapters/*.tex
 	pdflatex MLS.tex
 
 # Seems to be some issue with graphicpath, so set path here as well
+# Not using %.html since nmake does not support it (instead using old-style suffix rules)
 MLS.html: MLS.tex chapters/*.tex
 	$(LATEXMLPREFIX)latexml $*.tex --path=media --dest $*.xml
 	$(LATEXMLPREFIX)latexmlpost $*.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest $@
