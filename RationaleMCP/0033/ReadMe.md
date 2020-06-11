@@ -39,3 +39,4 @@ See Summary above.  The greatly enhanced user experience was observed even thoug
 To the best of our knowledge, there are no patents that would conflict with the incorporation of this MCP.
 
 ## References
+- Additional examples are provided in a separate repository: https://github.com/otronarp/MCP033Examples/tree/master/MCP0033
