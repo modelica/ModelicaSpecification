@@ -30,7 +30,7 @@ See [separate document](rationale.md).
 The introduction of the keyword `unknown` introduces a backwards incompatibility with code making use of that name for identifiers.
 
 ## Tool Implementation
-A prototype has been implemented in a development version of Wolfram SystemModeler.  In the prototype, the type is named `__Wolfram_Ternary`, and the third truth value is named `__Wolfram_unknwon`.
+A prototype has been implemented in a development version of Wolfram SystemModeler.  In the prototype, the type is named `__Wolfram_Ternary`, and the third truth value is named `__Wolfram_unknown`.
 
 ### Experience with Prototype
 Although introducing a new built-in type is a change that ammounts to a large number of smaller changes, finding the places in a code base that need attention is easy due to the similarity between `Ternary` and `Boolean`.  In a similar way, the implicit conversion from `Boolean` to `Ternary` is a feature that can be implemented by glancing at the handling of implicit conversion from `Integer` to `Real`.
