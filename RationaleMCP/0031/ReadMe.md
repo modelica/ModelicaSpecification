@@ -60,7 +60,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Simplify modifications.
-- [ ] Get rid of `each`.
+- [x] Get rid of `each`.
 - [ ] Investigate need for `for`-equations.
 - [ ] Marking of top level inputs and outputs.
 - [ ] Figure out what to do with synchronous features.
