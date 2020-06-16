@@ -77,7 +77,7 @@ In future minor versions of Flat Modelica 1, we could improve the language by in
 - [ ] Get rid of record constructors.
 - [ ] Allow to identify connector variables.
 - [ ] Handle equations and algorithms derived from arrays of components efficiently.
-- [ ] Reintroduce `each` to improve code.
+- [ ] Reintroduce `each` for efficiency and to avoid code duplication.
 
 ### Flat Modelica 2.0 (future MCPs)
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
