@@ -1,9 +1,5 @@
 \chapter{Stream Connectors}\doublelabel{stream-connectors}
 
-%TODO-FORMAT This chapter uses _ in code blocks and inline code.
-%This is no real Modelica code, but indicates a mathematical index.
-%We currently use \texttt{m\textsubscript j} instead of \lstinline!m_j!
-
 The two basic variable types in a connector -- \emph{potential} (or \emph{across})
 variable and \emph{flow} (or \emph{through}) variable -- are not sufficient to
 describe in a numerically sound way the bi-directional flow of matter
@@ -55,10 +51,8 @@ variable is called \firstuse{stream variable}. The following definitions hold:
   For inside connectors (see \autoref{inside-and-outside-connectors}), variables
   with the \lstinline!stream! prefix do not lead to connection equations.
 \item
-  Connection equations with stream variables are generated in a model
-  when using the \lstinline!inStream()! operator or the
-  \lstinline!actualStream()! operator, see \autoref{stream-operator-instream-and-connection-equations}
-  and \autoref{stream-operator-actualstream}.
+  Connection equations with stream variables are generated in a model when using \lstinline!inStream! or \lstinline!actualStream!,
+  see \autoref{stream-operator-instream-and-connection-equations} and \autoref{stream-operator-actualstream}.
 \end{itemize}
 
 \begin{example}
@@ -80,16 +74,15 @@ transported with this flow variable. The stream variables \lstinline!h_outflow! 
 \lstinline!X_outflow! are the stream properties inside the component close to the
 boundary, when fluid flows out of the component into the connection
 point. The stream properties for the other flow direction can be
-inquired with the built-in operator \lstinline!inStream()!. The value of
+inquired with the built-in \lstinline!inStream!. The value of
 the stream variable corresponding to the actual flow direction can be
-inquired through the built-in operator \lstinline!actualStream()!, see
+inquired through the built-in \lstinline!actualStream!, see
 \autoref{stream-operator-actualstream}.
 \end{example}
 
 \section{Stream Operator inStream and Connection Equations}\doublelabel{stream-operator-instream-and-connection-equations}
 
-In combination with the stream variables of a connector, the
-\lstinline!inStream()! operator is designed to describe in a numerically
+In combination with the stream variables of a connector, \lstinline!inStream! is designed to describe in a numerically
 reliable way the bi-directional transport of specific quantities carried
 by a flow of matter.
 
@@ -99,9 +92,9 @@ from the connection point into the component. This value is computed
 from the stream connection equations of the flow variables and of the
 stream variables.
 
-For the following definition it is assumed that \lstinline!N! inside connectors
-\texttt{m\textsubscript{j}.c} (j=1,2,...,N) and \lstinline!M! outside connectors
-\texttt{c\textsubscript{k}} (k=1,2,...,M) belonging to the same connection set
+For the following definition it is assumed that $N$ inside connectors
+\lstinline[mathescape=true]!$m_{j}$.c! ($j = 1, 2, \ldots, N$) and $M$ outside connectors
+\lstinline[mathescape=true]!$c{k}$! ($k = 1, 2, \ldots, M$) belonging to the same connection set
 (see definition in \autoref{inside-and-outside-connectors}) are connected
 together and a stream variable \lstinline!h_outflow! is associated with a flow
 variable \lstinline!m_flow! in connector \lstinline!c!.
@@ -130,7 +123,7 @@ equation
 end FluidSystem;
 \end{lstlisting}
 \begin{figure}[H]
-\caption{Examplary FluidSystem with N=3 and M=2}
+\caption{Examplary FluidSystem with $N$=3 and $M$=2}
 \begin{center}
 \includegraphics[width=2.3in,height=2.08125in]{fluidsystem}
 \end{center}
@@ -143,8 +136,8 @@ conservation equations for mass and energy.
 \end{nonnormative}
 
 With these prerequisites, the semantics of the expression
-\texttt{inStream(m\textsubscript i.c.h\_outflow)} is given implicitly by
-defining an additional variable \texttt{h\_mix\_in\textsubscript{i}}, and by
+\lstinline[mathescape=true]!inStream($m_{i}$.c.h_outflow)! is given implicitly by
+defining an additional variable $\mathit{h\_mix\_in}_{i}$, and by
 adding to the model the conservation equations for mass and energy
 corresponding to the infinitesimally small volume spanning the
 connection set. The connection equation for the flow variables has
@@ -153,26 +146,27 @@ of flow variables defined in \autoref{generation-of-connection-equations}.
 
 \begin{lstlisting}[language=modelica,mathescape=true]
 // Standard connection equation for flow variables
-0 = sum(m_j.c.m_flow for j in 1:N) + sum(-ck.m_flow for k in 1:M);
+0 = sum($m_{j}$.c.m_flow for j in 1:N) + sum(-$c_{k}$.m_flow for k in 1:M);
 \end{lstlisting}
 
-Whenever the \lstinline!inStream()! operator is applied to a stream
-variable of an inside connector, the balance equation of the transported
-property must be added under the assumption of flow going into the
-connector
+Whenever \lstinline!inStream! is applied to a stream variable of an inside connector, the balance equation of the transported
+property must be added under the assumption of flow going into the connector
 
-\begin{lstlisting}[language=modelica]
-// Implicit definition of the inStream() operator applied to inside connector i
-0 = sum(mj.c.m_flow*(if mj.c.m_flow > 0 or j==i then h_mix_ini else mj.c.h_outflow)
-        for j in 1:N) +
-    sum(-ck.m_flow* (if -ck.m_flow > 0 then h_mix_ini else inStream(ck.h_outflow)
-         for k in 1:M);
-inStream(mi.c.h_outflow) = h_mix_ini;
+\begin{lstlisting}[language=modelica,mathescape=true]
+// Implicit definition of inStream applied to inside connector $i$
+0 =
+  sum($m_{j}$.c.m_flow *
+      (if $m_{j}$.c.m_flow > 0 or $j$==$i$ then $\mathit{h\_mix\_in}_{i}$ else $m_{j}$.c.h_outflow)
+    for $j$ in 1:N) +
+  sum(-$c_{k}$.m_flow *
+      (if -$c_{k}$.m_flow > 0 then $\mathit{h\_mix\_in}_{i}$ else inStream($c_{k}$.h_outflow)
+    for $k$ in 1:M);
+inStream($m_{i}$.c.h_outflow) = $\mathit{h\_mix\_in}_{i}$;
 \end{lstlisting}
 
-Note that the result of the
-\texttt{inStream(m\textsubscript{i}.c.h\_outflow)} operator is different
-for each port \lstinline!i!, because the assumption of flow entering the port is
+Note that the result of
+\lstinline[mathescape=true]!inStream($m_{i}$.c.h_outflow)! is different
+for each port $i$, because the assumption of flow entering the port is
 different for each of them.
 
 Additional equations need to be generated for the stream variables of
@@ -181,38 +175,37 @@ outside connectors.
 \begin{lstlisting}[language=modelica,mathescape=true]
 // Additional connection equations for outside connectors
 for q in 1:M loop
-  0 = sum($m_j$.c.m_flow*(if
-  $m_j$.c.m_flow > 0 then
-  h_mix_out_q
-  else $m_j$.c.h_outflow) for j
-  in 1:N) +
-  sum(-$c_k$.m_flow* (if
-  -$c_k$.m_flow > 0 or k==q
-  then h_mix_out$_q$
-  else inStream($c_k$.h_outflow)
-  for k in 1:M);
-    $c_q$.h_outflow = h_mix_out$_q$;
-  end for;
+  0 =
+    sum($m_j$.c.m_flow *
+        (if $m_j$.c.m_flow > 0 then $\mathit{h\_mix\_out}_{q}$ else $m_j$.c.h_outflow)
+      for j in 1:N) +
+    sum(-$c_k$.m_flow *
+        (if -$c_k$.m_flow > 0 or k==q then $\mathit{h\_mix\_out}_{q}$ else inStream($c_k$.h_outflow))
+      for k in 1:M);
+  $c_q$.h_outflow = $\mathit{h\_mix\_out}_{q}$;
+end for;
 \end{lstlisting}
 
 Neglecting zero flow conditions, the solution of the above-defined
-stream connection equations for inStream values of inside connectors and
+stream connection equations for \lstinline!inStream! values of inside connectors and
 outflow stream variables of outside connectors is (for a derivation, see
 \autoref{derivation-of-stream-equations}):
 \begin{lstlisting}[language=modelica,mathescape=true]
 inStream($m_i$.c.h_outflow) :=
-  (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in cat(1,1:i-1, i+1:N) +
-   sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in 1:M))/
-  (sum(max(-$m_j$.c.m_flow,0) for j in  cat(1,1:i-1, i+1:N) +
+  (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in cat(1, 1:i-1, i+1:N) +
+   sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in 1:M))
+  /
+  (sum(max(-$m_j$.c.m_flow,0) for j in cat(1, 1:i-1, i+1:N) +
    sum(max( $c_k$.m_flow ,0) for k in 1:M));
 
 // Additional equations to be generated for outside connectors q
 for q in 1:M loop
   $c_q$.h_outflow :=
     (sum(max(-$m_j$.c.m_flow,0)*$m_j$.c.h_outflow for j in 1:N) +
-     sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in cat(1,1:q-1, q+1:M))/
-    (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
-     sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+     sum(max( $c_k$.m_flow,0)*inStream($c_k$.h_outflow) for k in cat(1, 1:q-1, q+1:M))
+    /
+    (sum(max(-$m_j$.c.m_flow,0) for j in 1:N) +
+     sum(max( $c_k$.m_flow ,0) for k in cat(1, 1:q-1, q+1:M)));
 end for;
 \end{lstlisting}
 
@@ -222,8 +215,8 @@ Note, that \lstinline[mathescape=true]!inStream($c_{k}$.h_outflow)! is computed 
 to compute it.
 \end{nonnormative}
 
-If the argument of \lstinline!inStream()! is an array, the implicit
-equation system holds elementwise, i.e., \lstinline!inStream()! is
+If the argument of \lstinline!inStream! is an array, the implicit
+equation system holds elementwise, i.e., \lstinline!inStream! is
 vectorizable.
 
 The stream connection equations have singularities and/or multiple
@@ -232,14 +225,11 @@ flows are zero, a singularity is always present, so it is necessary to
 approximate the solution in an open neighbourhood of that point.
 
 \begin{nonnormative}
-For example, assume that \lstinline[mathescape=true]!$m_{j}$.c.m_flow = $c_{k}$.m_flow = 0!, then all equations above are identically fulfilled and \lstinline!inStream(..)! can have any value.
+For example, assume that \lstinline[mathescape=true]!$m_{j}$.c.m_flow = $c_{k}$.m_flow = 0!, then all equations above are identically fulfilled and \lstinline!inStream! can have any value.
 \end{nonnormative}
 
-However, specific optimizations may be applied to avoid the regularization if the
-flow through one port is zero or non-negative, see \autoref{derivation-of-stream-equations}. It is
-required that the \lstinline!inStream()! operator is appropriately
-approximated when regularization is needed and the approximation must
-fulfill the following requirements:
+However, specific optimizations may be applied to avoid the regularization if the flow through one port is zero or non-negative, see \autoref{derivation-of-stream-equations}.
+It is required that \lstinline!inStream! is appropriately approximated when regularization is needed and the approximation must fulfill the following requirements:
 \begin{enumerate}
 \item
   \lstinline[mathescape=true]!inStream($m_{i}$.c.h_outflow)! and
@@ -251,42 +241,35 @@ fulfill the following requirements:
   equation system identically (upto the usual numerical
   accuracy), provided the absolute value of every flow variable in
   the connection set is greater than a small value
-  (\texttt{\textbar{}m\textsubscript{1}.c.m\_flow\textbar{} \textgreater{} eps
-  \textbf{and} \textbar{}m\textsubscript{2}.c.m\_flow\textbar{}
-  \textgreater{} eps \textbf{and} ... \textbf{and}
-  \textbar{}c\textsubscript{M}.m\_flow\textbar{} \textgreater{} eps}).
+  ($\abs{m_{i}\text{\lstinline!.c.m_flow!}} > \text{\lstinline!eps!}$ for $1 \leq i \leq N$ and
+  $\abs{c_{i}\text{\lstinline!.m_flow!}} > \text{\lstinline!eps!}$ for $1 \leq i \leq M$).
 \end{enumerate}
 
 \begin{nonnormative}
 Based on the above requirements, the following implementation is recommended:
 \begin{itemize}
-% This shouldn't be an itemized list, but a list of definitions
-% faking that by using raggedright
-\raggedright
-\item \textbf{N = 1, M = 0:}\newline
+\item $N = 1,\, M = 0$:\hfill
 \begin{lstlisting}[language=modelica,mathescape=true]
-inStream($m_1$.c.h_outflow) =$m_1$.c.h_outflow;
+inStream($m_1$.c.h_outflow) = $m_1$.c.h_outflow;
 \end{lstlisting}
-\item
-\textbf{N = 2, M = 0:}\newline
+\item $N = 2,\, M = 0$:\hfill
 \begin{lstlisting}[language=modelica,mathescape=true]
-inStream($m_1$.c.h_outflow) =$m_2$.c.h_outflow;
-inStream($m_2$.c.h_outflow) =$m_1$.c.h_outflow;
+inStream($m_1$.c.h_outflow) = $m_2$.c.h_outflow;
+inStream($m_2$.c.h_outflow) = $m_1$.c.h_outflow;
 \end{lstlisting}
-\item \textbf{N = 1, M = 1:}\newline
+\item $N = 1,\, M = 1$:\hfill
 \begin{lstlisting}[language=modelica,mathescape=true]
-inStream($m_1$.c.h_outflow) =inStream($c_1$.h_outflow);
+inStream($m_1$.c.h_outflow) = inStream($c_1$.h_outflow);
 // Additional equation to be generated
 $c_1$.h_outflow = $m_1$.c.h_outflow;
 \end{lstlisting}
-\item \textbf{N = 0, M = 2:}\newline
+\item $N = 0,\, M = 2$:\hfill
 \begin{lstlisting}[language=modelica,mathescape=true]
 // Additional equation to be generated
-c1.h_outflow = inStream(c2.h_outflow);
-c2.h_outflow = inStream(c1.h_outflow);
+$c_{1}$.h_outflow = inStream($c_{2}$.h_outflow);
+$c_{2}$.h_outflow = inStream($c_{1}$.h_outflow);
 \end{lstlisting}
-
-\item\textbf{All other cases:}\newline
+\item All other cases:\hfill
 \begin{lstlisting}[language=modelica,mathescape=true]
 if $m_j$.c.m_flow.min >= 0  for all j = 1:N with j <> i  and
    $c_k$.m_flow.max <= 0 for all k = 1:M
@@ -322,94 +305,89 @@ end for;
 \end{itemize}
 
 The operator
-\texttt{positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})}
+\lstinline[mathescape=true]!positiveMax(-$m_{j}$.c.m_flow, $s_{i}$)!
 should be such that:
 \begin{itemize}
 \item
-  positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}) =
-  -m\textsubscript{j}.c\_m\_flow if
-  -m\textsubscript{j}.c.m\_flow\textgreater{}eps1\textsubscript{j}\textgreater{}=0,
-  where eps1\textsubscript{j} are small flows, compared to typical
-  problem-specific value,
+  \lstinline[mathescape=true]!positiveMax(-$m_{j}$.c.m_flow, $s_{i}$)! =
+  \lstinline[mathescape=true]!-$m_{j}$.c.m_flow! if
+  $-m_{j}\text{\lstinline!.c.m_flow!} > \mathit{eps1}_{j} \geq 0$,
+  where $\mathit{eps1}_{j}$ are small flows, compared to typical
+  problem-specific values,
 \item
-  all denominators should be \textgreater{} eps2 \textgreater{} 0,
-  where eps2 is also a small flow, compared to typical problem-specific
+  all denominators should be greater than $\mathit{eps2} > 0$,
+  where $\mathit{eps2}$ is also a small flow, compared to typical problem-specific
   values.
 \end{itemize}
 
-Trivial implementation of positiveMax guarantees continuity of \lstinline!inStream()!:
+Trivial implementation of \lstinline!positiveMax! guarantees continuity of \lstinline!inStream!:
 \begin{lstlisting}[language=modelica,mathescape=true]
-postiveMax(-$m_j$.c.m_flow, $s_i$)= max(-m_j.c.m_flow, eps1); // so $s_i$ is not needed
+postiveMax(-$m_j$.c.m_flow, $s_i$) = max(-$m_j$.c.m_flow, $\mathit{eps1}$); // so $s_i$ is not needed
 \end{lstlisting}
 More sophisticated implementation, with smooth approximation, applied only when {all} flows are small:
 \begin{lstlisting}[language=modelica,escapechar=!,mathescape=true]
-// Define a "small number" eps (!\textbf{nominal}!(v) is the nominal value of v !--! see !\autoref{attributes-start-fixed-nominal-and-unbounded}!)
-  eps := relativeTolerance*min(nominal($m_j$.c.m_flow));
+// Define a "small number" eps (nominal(v) is the nominal value of v - see !\autoref{attributes-start-fixed-nominal-and-unbounded}!)
+eps := relativeTolerance*min(nominal($m_j$.c.m_flow));
 
 // Define a smooth curve, such that  alpha($s_i>=eps$)=1 and alpha($s_i<0$)=0
-  alpha := smooth(1, if $s_i$ > eps then 1 else
-                     if $s_i$ > 0 then  ( $s_i$/eps)^2*(3-2* $s_i$/eps)) else 0);
+alpha := smooth(1, if $s_i$ > eps then 1
+                   else if $s_i$ > 0 then ($s_i$/eps)^2*(3-2* $s_i$/eps)
+                   else 0);
 
-  // Define function positiveMax(v,s_i) as a linear combination of max (v,0)
-  // and of eps along alpha
-  positiveMax((-$m_j$.c.m_flow,s_i)  := alpha*max(-$m_j$.c.m_flow,0) +  (1-alpha)*eps;
+// Define function positiveMax(v,s_i) as a linear combination of max (v,0)
+// and of eps along alpha
+positiveMax((-$m_j$.c.m_flow,s_i) := alpha*max(-$m_j$.c.m_flow,0) + (1-alpha)*eps;
 \end{lstlisting}
 
 The derivation of this implementation is discussed in
-\autoref{derivation-of-stream-equations}. Note that in the cases N = 1, M =0 (unconnected port,
-physically corresponding to a plugged-up flange), and N = 2, M=0
-(one-to-one connection), the result of \lstinline!inStream()! is trivial
+\autoref{derivation-of-stream-equations}. Note that in the cases $N = 1,\, M = 0$ (unconnected port,
+physically corresponding to a plugged-up flange), and $N = 2,\,  M = 0$
+(one-to-one connection), the result of \lstinline!inStream! is trivial
 and no non-linear equations are left in the model, despite the fact that
 the original definition equations are nonlinear.
 
 The following properties hold for this implementation:
 \begin{itemize}
 \item
-  \lstinline!inStream(..)! is continuous (and differentiable),
-  provided that \texttt{m\textsubscript{j}.c.h\_outflow,
-  m\textsubscript{j}.c.m\_flow,
-  c\textsubscript{k}.h\_outflow}, and
-  \texttt{c\textsubscript{k}.m\_flow} are continuous and differentiable.
+  \lstinline!inStream! is continuous (and differentiable),
+  provided that \lstinline[mathescape=true]!$m_{j}$.c.h_outflow!,
+  \lstinline[mathescape=true]!$m_{j}$.c.m_flow!, \lstinline[mathescape=true]!$c_{k}$.h_outflow!, and
+  \lstinline[mathescape=true]!$c_{k}$.m_flow! are continuous and differentiable.
 \end{itemize}
 
 \begin{itemize}
 \item
-  A division by zero can no longer occur (since \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i}))\textgreater{}=eps2}
-  \textgreater{} 0), so the result is always well-defined.
+  A division by zero can no longer occur (since \lstinline[mathescape=true]!sum(positiveMax(-$m_{j}$.c.m_flow, $s_{i}$))! $\geq \mathit{eps2} > 0$),
+  so the result is always well-defined.
 \item
-  The balance equations are exactly fulfilled if the denominator
-  is not close to zero\\
-  (since the exact formula is used, if
-  \texttt{sum(positiveMax(-m\textsubscript{j}.c.m\_flow,s\textsubscript{i})) \textgreater{} eps}).
+  The balance equations are exactly fulfilled if the denominator is not close to zero (since the exact formula is used, if
+  \lstinline[mathescape=true]!sum(positiveMax(-$m_{j}$.c.m_flow, $s_{i}$))! $> \mathit{eps}$).
 \item
   If all flows are zero,
-  \texttt{inStream(m\textsubscript{i}.c.h\_outflow) =
-  sum(m\textsubscript{j}.c.h\_outflow for
-  j\textless{}\textgreater{}i and m\textsubscript{j}.c.m\_flow.min \textless{}
-  0)/Np}, i.e., it is the mean value of all the \lstinline!Np! variables
-  \texttt{m\textsubscript{j}.c.h\_outflow}, such that \texttt{
-  j\textless{}\textgreater{}i} and
-  \texttt{m\textsubscript{j}.c.m\_flow.min \textless{} 0}. This is a
+  \lstinline[mathescape=true]!inStream($m_{i}$.c.h_outflow)! =
+  \lstinline[mathescape=true]!sum($m_{j}$.c.h_outflow for $j \neq{} i$ and $m_{j}$.c.m_flow.min < 0) / $N_{\mathrm{p}}$!,
+  i.e., it is the mean value of all the $N_{\mathrm{p}}$ variables
+  \lstinline[mathescape=true]!$m_{j}$.c.h_outflow!, such that $j \neq i$ and
+  $m_{j}\text{\lstinline!.c.m_flow.min!} < 0$. This is a
   meaningful approximation, considering the physical diffusion effects
   that are relevant at small flow rates in a small connection volume
   (thermal conduction for enthalpy, mass diffusion for mass fractions).
 \end{itemize}
 
-The value of relativeTolerance should be larger than the relative
+The value of \lstinline!relativeTolerance! should be larger than the relative
 tolerance of the nonlinear solver used to solve the implicit algebraic
 equations.
 
 As a final remark, further symbolic simplifications could be
 carried out by taking into account equations that affect the flows in
-the connection set (i.e., equivalent to m\textsubscript{j}.c.m\_flow =
-0, which then implies m\textsubscript{j}.c.m\_flow.min \textgreater{}=
-0). This is interesting, e.g., in the case of a valve when the stem
+the connection set (i.e., equivalent to $m_{j}\text{\lstinline!.c.m_flow!} =
+0$, which then implies $m_{j}\text{\lstinline!.c.m_flow.min!} \geq 0$). This is interesting, e.g., in the case of a valve when the stem
 position is set identically to closed by its controller.
 \end{nonnormative}
 
 \section{Stream Operator actualStream}\doublelabel{stream-operator-actualstream}
 
-The \lstinline!actualStream(v)! operator is provided for convenience, in
+\lstinline!actualStream! is provided for convenience, in
 order to return the actual value of the stream variable, depending on
 the actual flow direction. The only argument of this built-in operator
 needs to be a reference to a stream variable. The operator is
@@ -422,30 +400,23 @@ actualStream(c.h_outflow) = if c.m_flow > 0 then inStream(c.h_outflow) else c.h_
 \end{lstlisting}
 
 \begin{nonnormative}
-The \textbf{actualStream}(v) operator is typically used in two
-contexts:
+\lstinline!actualStream! is typically used in two contexts:
 \begin{lstlisting}[language=modelica]
-  der(U) = c.m_flow*actualStream(c.h_outflow);  // (1)energy balance equation
-  h_c = actualStream(c.h);                      // (2)monitoring the enthalpy at port c
+  der(U) = c.m_flow * actualStream(c.h_outflow);  // (1) energy balance equation
+  h_c = actualStream(c.h);                        // (2) monitoring the enthalpy at port c
 \end{lstlisting}
-In the case of equation (1), although the actualStream() operator
+In the case of equation (1), although \lstinline!actualStream!
 is discontinuous, the product with the flow variable is not, because
-actualStream() is discontinuous when the flow is zero by construction.
-Therefore, a tool might infer that the expression is smooth(0, ...)
+\lstinline!actualStream! is discontinuous when the flow is zero by construction.
+Therefore, a tool might infer that the expression is \lstinline[mathescape=true]!smooth(0, $\ldots$)!
 automatically, and decide whether or not to generate an event. If a user
 wants to avoid events entirely, he/she may enclose the right-hand side
-of (1) with the noEvent() operator.
+of (1) with \lstinline!noEvent!.
 
-Equations like (2) might be used for monitoring purposes (e.g.
-plots), in order to inspect what the actual enthalpy of the fluid
-flowing through a port is. In this case, the user will probably want to
-see the change due to flow reversal at the exact instant, so an event
-should be generated. If the user doesn't bother, then he/she should
-enclose the right-hand side of (2) with noEvent(). Since the output of
-actualStream() will be discontinuous, it should not be used by itself to
-model physical behaviour (e.g., to compute densities used in momentum
-balances) - inStream() should be used for this purpose. The operator
-actualStream() should be used to model physical behaviour only when
-multiplied by the corresponding flow variable (like in the above energy
-balance equation), because this removes the discontinuity.
+Equations like (2) might be used for monitoring purposes (e.g.\ plots), in order to inspect what the actual enthalpy of the fluid flowing through a port is.
+In this case, the user will probably want to see the change due to flow reversal at the exact instant, so an event should be generated.  If the user doesn't
+bother, then he/she should enclose the right-hand side of (2) with \lstinline!noEvent!.  Since the output of \lstinline!actualStream! will be discontinuous,
+it should not be used by itself to model physical behaviour (e.g., to compute densities used in momentum balances) --- \lstinline!inStream! should be used
+for this purpose.  \lstinline!actualStream! should be used to model physical behaviour only when multiplied by the corresponding flow variable (like in the
+above energy balance equation), because this removes the discontinuity.
 \end{nonnormative}

@@ -31,7 +31,7 @@ properties are different to Lucid Synchrone 3.0:
   For this reason, the state machines in this chapter use \emph{immediate}
   (= the same as \emph{strong}) and \emph{delayed} transitions. Delayed
   transitions are \emph{immediate} transitions where the condition is
-  automatically delayed with an implicit \lstinline!previous(..)!.
+  automatically delayed with an implicit \lstinline!previous!.
 \item
   Parallel state machines can be explicitly synchronized with a
   language element (similarly as parallel branches in Sequential
@@ -50,18 +50,19 @@ properties are different to Lucid Synchrone 3.0:
 
 Any Modelica block instance without continuous-time equations or
 algorithms can potentially be a state of a state machine. A cluster of
-instances which are coupled by \textbf{transition} statements makes a
+instances which are coupled by \lstinline!transition! statements makes a
 state machine. All parts of a state machine must have the same clock.
 All transitions leaving one state must have different priorities. One
 and only one instance in each state machine must be marked as initial by
-appearing in an \textbf{initialState} statement. The following special
+appearing in an \lstinline!initialState! statement. The following special
 kinds of connect-statements are used to define transitions between
 states and to define the initial state:
 \begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline \endhead
-\multicolumn{2}{|p{12cm}|}{\textbf{Statements to define a state machine}}\\ \hline
+\multicolumn{2}{|p{12cm}|}{\tablehead{Statements to define a state machine}}\\ \hline
 \begin{tabular}{@{}p{4cm}@{}}
-\textbf{transition}(from, to, \\ condition,\\
+\lstinline!transition!(from, to,\\
+condition,\\
 immediate, reset,\\
 synchronize, priority)
 \end{tabular}
@@ -69,30 +70,29 @@ synchronize, priority)
 Arguments \lstinline!from! and \lstinline!to! are block instances and \lstinline!condition! is a
 \lstinline!Boolean! argument. The optional arguments \lstinline!immediate!, \lstinline!reset!, and
 \lstinline!synchronize! are of type \lstinline!Boolean!, have parametric variability and a
-default of \textbf{true, true, false} respectively. The optional
+default of \lstinline!true!, \lstinline!true!, \lstinline!false! respectively. The optional
 argument \lstinline!priority! is of type \lstinline!Integer!, has parametric variability and
 a default of 1.
 
 This operator defines a transition from instance \lstinline!from! to instance
 \lstinline!to!. The \lstinline!from! and \lstinline!to! instances become states of a state
-machine. The transition fires when condition = \textbf{true} if
-immediate = \textbf{true} (this is called an \firstuse{immediate transition})
-or \textbf{previous}(condition) when immediate = \textbf{false} (this is
+machine. The transition fires when \lstinline!condition = true! if
+\lstinline!immediate = true! (this is called an \firstuse{immediate transition})
+or \lstinline!previous(condition)! when \lstinline!immediate = false! (this is
 called a \firstuse{delayed transition}). Argument \lstinline!priority! defines the
 priority of firing when several transitions could fire. In this case the
 transition with the smallest value of \lstinline!priority! fires. It is required
 that $\textrm{priority}\ge 1$ and that for all transitions from the same state, the
-priorities are different. If reset = \textbf{true}, the states of the
-target state are reinitialized, i.e. state machines are restarted in
+priorities are different. If \lstinline!reset = true!, the states of the
+target state are reinitialized, i.e.\ state machines are restarted in
 initial state and state variables are reset to their start values. If
 synchronize=true, any transition is disabled until all state machines of
-the from-state have reached final states, i.e. states without outgoing
+the from-state have reached final states, i.e.\ states without outgoing
 transitions. For the precise details about firing a transition, see
 \autoref{state-machine-semantics}.\\ \hline
-\textbf{initialState}(state) & Argument \lstinline!state! is the block instance
+\lstinline!initialState(state)! & Argument \lstinline!state! is the block instance
 that is defined to be the initial state of a state machine. At the first
-clock tick of the state machine, this state becomes
-active.\\ \hline
+clock tick of the state machine, this state becomes active.\\ \hline
 \end{longtable}
 
 The transition-, and initialState-equations may only be used in
@@ -103,22 +103,22 @@ It is possible to query the status of the state machine by using the
 following operators:
 \begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline \endhead
-\textbf{activeState}(state)&
+\lstinline!activeState(state)!&
 Argument \lstinline!state! is a block instance. The operator returns
-\textbf{true}, if this instance is a state of a state machine and this
+\lstinline!true!, if this instance is a state of a state machine and this
 state is active at the actual clock tick. If it is not active, the
-operator returns \textbf{false}.
+operator returns \lstinline!false!.
 
 It is an error if the instance is not a state of a state machine.\\ \hline
 \lstinline!ticksInState()! & Returns the number of ticks of the clock of the state machine
 for which the currently active state has maintained its active state without interruption,
-i.e. without local or hierarchical transitions from this state.
+i.e.\ without local or hierarchical transitions from this state.
 In the case of a self-transition to the currently active state or to an active enclosing state,
 the number is reset to one.
 This function can only be used in state machines.\\ \hline
 \lstinline!timeInState()! & Returns the time duration as \lstinline!Real! in {[}s{]}
 for which the currently active state has maintained its active state without interruption,
-i.e. without local or hierarchical transitions from this state.
+i.e.\ without local or hierarchical transitions from this state.
 In the case of a self-transition to the currently active state or to an active enclosing state,
 the time is reset to zero.
 This function can only be used in state machines.\\ \hline
@@ -157,7 +157,7 @@ states and for transition text and \{175,175,175\} for transition
 lines.
 \end{nonnormative}
 
-The annotation for graphics of \lstinline!transition()! has the following
+The annotation for graphics of \lstinline!transition! has the following
 structure: \lstinline[mathescape=true]!annotation(Line($\ldots$), Text($\ldots$))!; and for
 \lstinline!initialState()!: \emph{graphical-primitives}\lstinline[mathescape=true]!(Line($\ldots$))!; with \lstinline!Line!
 and \lstinline!Text! annotations defined in \autoref{annotations}.
@@ -240,15 +240,14 @@ the state machines higher up.
 
 \subsection{State Activation}\doublelabel{state-activation}
 
-The state update starts from nextState, i.e., what has been determined
-to be the next state at the previous time. selectedState takes into
-account if a reset of the state machine is to be done.
+The state update starts from \lstinline!nextState!, i.e., what has been determined to be the next state at the previous time.
+\lstinline!selectedState! takes into account if a reset of the state machine is to be done.
 
 \begin{lstlisting}[language=modelica]
   output Integer selectedState = if reset then 1 else previous(nextState);
 \end{lstlisting}
 The integer fired is calculated as the index of the transition to be
-fired by checking that selectedState is the from-state and the condition
+fired by checking that \lstinline!selectedState! is the from-state and the condition
 is true for an immediate transition or previous(condition) is true for a
 delayed transition. The max function returns the index of the transition
 with highest priority or 0.
@@ -268,7 +267,7 @@ described an equivalent semantics which just require to record the value
 of one integer variable delayed.
 
 The integer immediate is calculated as the index of the immediate
-transition to potentially be fired by checking that selectedState is the
+transition to potentially be fired by checking that \lstinline!selectedState! is the
 from-state and the condition is true. The max function returns the index
 of the transition with true condition and highest priority or 0.
 
@@ -283,9 +282,9 @@ of the transition with true condition and highest priority or 0.
 \end{lstlisting}
 
 In a similar way, the \lstinline!Integer delayed! is calculated as the index for a
-potentially delayed transition, i.e. a transition taking place at the
+potentially delayed transition, i.e.\ a transition taking place at the
 next clock tick. In this case the from-state needs to be equal to
-nextState:
+\lstinline!nextState!:
 \begin{lstlisting}[language=modelica]
   Integer delayed =  max(if
     (if not t[i].immediate and t[i].from == nextState
@@ -301,7 +300,7 @@ that a delayed transition might have higher priority than an immediate:
 \begin{lstlisting}[language=modelica]
   Integer fired = max(previous(delayed), immediate);
 \end{lstlisting}
-nextState is set to the found transitions to-state:
+\lstinline!nextState! is set to the found transitions to-state:
 \begin{lstlisting}[language=modelica]
   Integer nextState = if active then
                         (if fired > 0
@@ -310,7 +309,7 @@ nextState is set to the found transitions to-state:
 					  else previous(nextState);
 \end{lstlisting}
 In order to define synchronize transitions, each state machine must
-determine which are the final states, i.e. states without
+determine which are the final states, i.e.\ states without
 from-transitions and to determine if the state machine is in a final
 state currently:
 \begin{lstlisting}[language=modelica]
@@ -413,7 +412,7 @@ such variable a single definition is formed:
 v := if activeState(state!\textsubscript{1}!) then expre!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then expre!\textsubscript{2}! elseif ... else last(v)
 \end{lstlisting}
 
-\textbf{last}() is special internal semantic operator returning its
+\lstinline!last! is special internal semantic operator returning its
 input. It is just used to mark for the sorting that the incidence of its
 argument should be ignored. A start value must be given to the variable
 if not assigned in the initial state.
@@ -471,7 +470,7 @@ The model demonstrates the following properties:
   \lstinline!state1! is a meta state with two parallel state machines in it.
 \item
   \lstinline!stateA! declares \lstinline!v! as \lstinline!outer output!. \lstinline!state1! is on an intermediate
-  level and declares \lstinline!v! as \lstinline!inner outer output!, i.e. matches lower level
+  level and declares \lstinline!v! as \lstinline!inner outer output!, i.e.\ matches lower level
   \lstinline!outer v! by being \lstinline!inner! and also matches higher level \lstinline!inner v! by being
   \lstinline!outer!. The top level declares \lstinline!v! as \lstinline!inner! and gives the start value.
 \item
