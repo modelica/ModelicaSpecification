@@ -6,13 +6,22 @@
 
 all: MLS.pdf MLS.html
 
-clean:
+.PHONY: clean-pdf
+clean-pdf:
 	rm *.aux MLS.log MLS.toc MLS.pdf
-	rm MLS.xml *.html
 
-MLS.pdf: *.tex
+.PHONY: clean-html
+clean-html:
+	rm MLS.xml LaTeXML.cache *.html
+
+.PHONY: clean
+clean: clean-pdf clean-html
+
+MLS.pdf: *.tex chapters/*.tex
 	pdflatex MLS.tex
 
-MLS.html: *.tex
-	$(LATEXMLPREFIX)latexml MLS.tex --dest MLS.xml
-	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html
+# Seems to be some issue with graphicpath, so set path here as well
+# Not using %.html since nmake does not support it (instead using old-style suffix rules)
+MLS.html: MLS.tex chapters/*.tex
+	$(LATEXMLPREFIX)latexml MLS.tex --path=media --dest MLS.xml
+	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest $@
