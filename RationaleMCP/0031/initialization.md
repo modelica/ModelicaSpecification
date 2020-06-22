@@ -17,7 +17,7 @@ is an equation with prescribed causality, meaning that the perfect matching rule
 
 ## Full Modelica declaration equations
 
-Since the presence of declaration equations are among the things adding to the complexity of variable initialization sementics in Full Modelica, the first step of transforming the initialization to Flat Modelica is to get rid of declaration equations for all variables except constants.  (Due to the special requirements on cosntants in Flat Modelica, it makes good sense to require a constant to be given by a declaration equation.)  A declaration equation is transformed into modification of `start`, an `initial equation` or a normal `equation`, depending on variability and `fixed`, as described below.
+Since the presence of declaration equations are among the things adding to the complexity of variable initialization sementics in Full Modelica, the first step of transforming the initialization to Flat Modelica is to get rid of declaration equations for all variables except constants.  (Due to the special requirements on constants in Flat Modelica, it makes good sense to require a constant to be given by a declaration equation.)  A declaration equation is transformed into modification of `start`, an `initial equation` or a normal `equation`, depending on variability and `fixed`, as described below.
 
 For a (full Modelica) variable with declaration equation and `fixed = true`, the only variability to consider is `parameter`.  Then, this combination has the special interpretation that the `start` shall be ignored in favor of the declaration equation, and there is (as defined currently) no way to set a guess value for the event that the parameter ends up in a nonlinear equation system.  Hence, the parameter (only writing out the default `fixed = true` for clarity)
 ```
@@ -29,7 +29,7 @@ parameter Real p(start = <binding>, fixed = true);
 ```
 Before applying this rewriting rule, one must first issue any warning in case `p` has a present `start` with `fixed = true` but no declaration equation.
 
-If the `start` is removed in the example above, we get the most basic form of Full Modelica parameter initialization:
+If the `start` is removed in the example above, we get the most basic form of full Modelica parameter initialization:
 ```
 parameter Real p = <binding>; /* (A parameter has fixed = true by default.) */
 ```
