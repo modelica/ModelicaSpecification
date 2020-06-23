@@ -264,6 +264,35 @@ end Controller;
 \end{lstlisting}
 \end{example}
 
+An expandable connector array component for which \lstinline!size! is not defined (see \autoref{array-dimension-and-size-functions}) is referred to as a \emph{sizeless array component}.  Such a
+component may not be used without subscripts, and the subscripts must slice the array so that the sizeless dimensions are removed.
+
+\begin{example}
+Valid and invalid uses of sizeless array components:
+\begin{lstlisting}[language=modelica]
+expandable connector EngineBus
+end EngineBus;
+
+block Sensor
+  RealOutput speed;
+end Sensor;
+
+model Engine
+  parameter Integer n=1;
+  EngineBus bus;
+  Sensor sensor;
+  RealOutput sensorSpeeds[:];
+equation
+  /* Comments below refer to the use of sizeless array bus.speed. */
+  connect(bus.speed[n], sensor.speed) ; // OK; subscript to scalar component.
+  connect(bus.speed, sensorSpeeds); // Error; missing subscripts.
+public
+  Real s[:] = bus.speed; // Error; missing subscripts.
+  Real s[2] = bus.speed[{1, 3}]; // OK; subscript selects fixed size sub-array.
+end Engine;
+\end{lstlisting}
+\end{example}
+
 After this elaboration the expandable connectors are treated as normal
 connector instances, and the connections as normal connections, and all
 potentially present variables and array elements that are not actually
