@@ -4,7 +4,22 @@ The concepts used to define how a variable is initialized are different in Flat 
 
 The `initial equation` concept is the same in Flat Modelica as in full Modelica, and any `initial equation` in a full Modelica model will be preserved in the Flat Modelica model.  However, the Flat Modelica model may contain additional `initial equation` coming from the rewriting of other concepts.
 
+## Benefits
+
+To not share the full Modelica initialization model means that there will be a price in terms of lack of specification reuse between full Modelica and Flat Modelica.  The benefits of the new initialization model that make it worth the price include:
+- The Flat Modelica initalization model relies more on the use of equations, making more of the initialization explicit in the model.
+- The possibility to alter start values after translation is more explicit.
+- Not using the `start` attribute means that we can get rid of one more variable attribute with non-constant variability.  This leaves only the potential need for `nominal` to be discrete-time, but it should be possible to get rid of in a similar manner to `start`.
+
+Drawbacks:
+- Not using the `start` attribute means that we cannot embedd this information in a type; something like a record with equations would be needed to bundle an equation for `start('v')` with the variable `'v'` in a type.
+- Not using attributes `start` and `fixed` means more separation of the declaration of a variable and the things involved in its initialization.
+
+## Limitations
+
 Since a constant in Flat Modelica can always be evaluated during translation, constants are excluded from the current discussion of variable initialization.
+
+The initialization of variables described here is currently restricted to non-discrete-time `Real` variables `'v'`, with no appearance of `pre('v')` in the model equations.  Generalization to discrete-time variables and general handling of `pre` should be made analogously to full Modelica, but the details have not yet been considered.
 
 ## Causal equation
 
@@ -80,6 +95,8 @@ initial equation
 Here, `start('p')` and `guess('p')` never come into play for the initialization of `'p'`.
 
 ## Reducing full Modelica initialization to Flat Modelica (IN PROGRESS)
+
+To show that the initialization model described above for Flat Modelica has the expressive power to deal with full Modelica initialization, this section will show how the full Modelica concepts involved in initialization can be reduced to Flat Modelica.  At intermediate stages of this reduction process, a mix of full Modelica and Flat Modelica will be used, but this shouldn't cause too much confusion since very few constructs are shared.
 
 ### Full Modelica declaration equations
 
