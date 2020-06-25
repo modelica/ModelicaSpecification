@@ -260,7 +260,7 @@ sections have partially restrictions on their input arguments that are
 not present for Modelica functions. To define the restrictions, the
 following term is used.
 
-\begin{definition}[Component expression]
+\begin{definition}[Component expression]\doublelabel{def:component-expression}
 A Component Reference which is an Expression, i.e.\ does not refer to models or blocks with equations.  It is an instance of a (a) base type, (b) derived type, (c) record, (d) an array of such an
 instance (a-c), (e) one or more elements of such an array (d) defined by index expressions which are parameter expressions (see below), or (f) an element of records.
 \begin{nonnormative}
@@ -269,52 +269,43 @@ A Component Expression can be constant or can vary with time.
 \end{nonnormative}
 \end{definition}
 
-In the following sections the following notation is partially used when defining the operators.
+In the following sections, when defining an operator with function calling syntax, there are some common restrictions being used for the input arguments (operands).  For example, an input argument to the operator may be required to be a component expression (\autoref{def:component-expression}) or parameter expression (\autoref{variability-of-expressions}).  To emphasize that there are no such restrictions, an input argument may be said to be just an expression.
 
-\begin{definition}[\emph{{[}The input argument is a{]}} component expression]
-  The meaning is that the input argument when calling the operator must be a \emph{component expression}.
-  \begin{nonnormative}
-  The reason for this restriction is that the start value of the input argument is returned before the first tick of the clock of the input argument and this is not possible for a general expression.
-  \end{nonnormative}
-  \begin{example}
+\begin{nonnormative}
+The reason for restricting an input argument to be a component expression is that the start value of the input argument is returned before the first tick of the clock of the input argument and this
+is not possible for a general expression.
+
+The reason for restricting an input argument to be a parameter expression is that the value of the input argument needs to be evaluated during translation, in order that clock analysis can be performed during translation.
+\end{nonnormative}
+
+\begin{example}
+The input argument to \lstinline!previous! is restricted to be a component expression.
 \begin{lstlisting}[language=modelica]
   Real u1;
   Real u2[4];
   Complex c;
   Resistor R;
-  ...
+  $\ldots$
   y1 = previous(u1);    // fine
   y2 = previous(u2);    // fine
   y3 = previous(u2[2]); // fine
   y4 = previous(c.im);  // fine
-  y5 = previous(2*u);   // error (general expression, no Component Expression)
+  y5 = previous(2 * u); // error (general expression, no Component Expression)
   y6 = previous(R);     // error (component, no Component Expression)
 \end{lstlisting}
-  \end{example}
-\end{definition}
+\end{example}
 
-\begin{definition}[\emph{{[}The input argument is a{]}} parameter expression]
-  The meaning is that the input argument when calling the operator must have parameter variability, that is the argument must depend directly or indirectly only on parameters, constants or literals,
-  see \autoref{variability-of-expressions}.
-  \begin{nonnormative}
-  The reason for this restriction is that the value of the input argument needs to be evaluated during translation, in order that clock analysis can be performed during translation.
-  \end{nonnormative}
-  \begin{example}
+\begin{example}
+The named argument \lstinline!factor! of \lstinline!subSample! is restricted to be a parameter expression.
 \begin{lstlisting}[language=modelica]
   Real u;
   parameter Real p=3;
-  ...
-  y1 = subSample(u, factor=3);       // fine (literal)
-  y2 = subSample(u, factor=2*p - 3); // fine (parameter expression)
-  y3 = subSample(u, factor=3*u);     // error (general expression)
+  $\ldots$
+  y1 = subSample(u, factor = 3);         // fine (literal)
+  y2 = subSample(u, factor = 2 * p - 3); // fine (parameter expression)
+  y3 = subSample(u, factor = 3 * u);     // error (general expression)
 \end{lstlisting}
-  \end{example}
-\end{definition}
-
-\begin{definition}[\emph{{[}The input argument is an{]}} expression]
-  There is no restriction on the input argument when calling the operator.  This notation is used to emphasis when a standard function call is used (is an \emph{expression}), instead of restricting
-  the input (is a \emph{component expression}).
-\end{definition}
+\end{example}
 
 Note that the operators defined in this chapter do not automatically vectorize,
 but some operate on arrays in a similar way.
