@@ -36,7 +36,7 @@ When a causal equation exists with `<var>` on the left hand side, we say that `<
 
 ## Flat Modelica variable initialization
 
-The initialization of the `Real` variable `'v'` is described using the associated _initialization parameters_ `start('v')` and `guess('v')`.  The initialization parameters are not declared separately, but exist implicitly for any non-constant variable `'v'`.  (Here, `start('v')` takes the role of the full Modelica built-in attribute `start`.)  The only built-in attribute of `'v'` involved in the initialization process is the constant `Boolean` `start_final` which defaults to `false`.
+The initialization of the `Real` variable `'v'` is described using the associated _initialization parameters_ `start('v')` and `guess('v')`.  The initialization parameters are not declared separately, but exist implicitly for any non-constant variable `'v'`.  (Here, `start('v')` takes the role of the full Modelica built-in attribute `start`.)  There are no built-in attributes of `'v'` involved in the initialization process.
 
 The initialization parameters must be determined by causal initial equations.  When an initialization parameter doesn't have a causal equation, the following are used:
 ```
@@ -46,7 +46,7 @@ initial equation
 
   /* Default causal equation for guess('v') */
   guess('v') :=
-    if not 'v'.start_final and userOverridesStart('v') then
+    if userOverridesStart('v') then
       getUserStart('v')
     else
       start('v');
@@ -84,9 +84,9 @@ initial equation
   start('p') := <expr>;
 ```
 
-**This is how it works:** First, `'p'.start_final` will determine whether `guess('p')` will be identical to `start('p')` or if the user can override `<expr>`.  Since the initialization of `'p'` is under-determined, a default initialization equation will be added, finally propagating `guess('p')` to `'p'` itself.
+**This is how it works:** Since the initialization of `'p'` is under-determined, the default initialization equation `'p' = guess('p')` is implicit, and the default causal initial equation for `guess('p')` makes the connection to `start('p')` (meaning it will be possible to override `<expr>` after translation).
 
-Note that the use of a declaration equation in Flat Modelica is not an option for a Full Modelica final parameter.  In Flat Modelica, this is expressed by giving an equation directly for `'p'`:
+The use of a declaration equation in Flat Modelica is not an option for a full Modelica `final` parameter.  In Flat Modelica, this is expressed by giving an equation directly for `'p'`:
 ```
   parameter Real 'p';
 initial equation
@@ -175,54 +175,45 @@ In Flat Modelica, the key part of the `final` can be expressed by bypassing `sta
 initial equation
   'p' := <exact>; /* Cannot be part of system of equations; won't need guess. */
 ```
-If the equation for `'p'` ends up in a nonlinear equation system, `start('p')` will still be used, but it could be acceptable that the Flat Modelica tool allows the user to modify `start('p')` as long as the solution still satisfies the `initial equation`.  A remedy to this is proposed below using a new built-in attribute `start_final`.
 
-For a non-parameter,
+If the parameter `p` is replaced by the non-parameter `v`,
 ```
-Real x(final start = <exact>, fixed = true);
+Real v(final start = <exact>, fixed = true);
 ```
-the difference is that one also needs to keep the `start` attribute:
+a non-causal equation is used instead, and one can prevent that `guess('v')` from being modified after translation:
 ```
-  Real 'x'(start = <exact>); /* As long as we don't know whether a guess value is needed, the 'start' must be kept. */
+  Real 'v';
 initial equation
-  'x' := <exact>; /* May become part of system of equations; might need guess. */
+  'v' = <exact>;
+  guess('v') := <exact>;
+```
+Since Full Modelica cannot distinguish between the two different uses of `<exact>`, it could also be acceptable for the Flat Modelica equations to replace the equation for `guess('v')` by one for `start('v')`:
+```
+  Real 'v';
+initial equation
+  'v' := <exact>; /* Equation cannot be overridden, but can be part of system of equations. */
+  start('v') := <exact>; /* Overridable guess value. */
 ```
 
-#### Using built-in attribute `start_final`
+#### Possible variation: Built-in attribute `start_final`
 
 By introducing a built-in attribute called `start_final` (`false` by default), the use of a causal equation assigning to `start('p')` can be replaced by a small modification of the hidden equation:
 ```
-start('p') := if not 'p'.start_final and userOverridesStart('p') then getUserStart('p') else <expr>;
-```
-
-This way,
-```
-parameter Real p(final start = <guess>, fixed = false);
-```
-turns into
-```
-parameter Real p(start = <guess>, start_final = true);
-```
-
-For the case of `fixed = true`, first consider a parameter, where it is known that no guess value will be needed:
-```
-parameter Real p(final start = <exact>, fixed = true);
-```
-we don't need to keep the `start` attribute at all:
-```
-  parameter Real 'p';
-initial equation
-  'p' := <exact>; /* Won't need guess value. */
+start('p') :=
+  if not 'p'.start_final and userOverridesStart('p') then
+    getUserStart('p')
+  else
+    <expr>;
 ```
 
 For a non-parameter,
 ```
-Real x(final start = <exact>, fixed = true);
+Real v(final start = <exact>, fixed = true);
 ```
 we can use `start_final` to express two alternatives for how to treat the guess value:
 ```
-  parameter Real 'x'(start = <exact>, start_final = false); /* Allow guess value to be changed after translation. */
-  parameter Real 'x'(start = <exact>, start_final = true); /* Don't allow changing guess value. */
+  parameter Real 'v'(start = <exact>, start_final = false); /* Allow guess value to be changed after translation. */
+  parameter Real 'v'(start = <exact>, start_final = true); /* Don't allow changing guess value. */
 initial equation
-  'x' := <exact>; /* May need guess value */
+  'v' := <exact>; /* May need guess value */
 ```
