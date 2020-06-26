@@ -57,9 +57,9 @@ together with sample and (zero-order) hold elements}
   The \lstinline!when!-clause in the controller could also be removed
   and the controller could just be defined by the equations:
 \begin{lstlisting}[language=modelica]
-  // discrete controller
-  E*xd = A*previous(xd) + B*yd;
-  ud = C*previous(xd) + D*yd;
+// discrete controller
+E*xd = A*previous(xd) + B*yd;
+ud = C*previous(xd) + D*yd;
 \end{lstlisting}
 \item
   \lstinline!previous(xd)! returns the value of \lstinline!xd! at
@@ -281,29 +281,29 @@ The reason for restricting an input argument to be a parameter expression is tha
 \begin{example}
 The input argument to \lstinline!previous! is restricted to be a component expression.
 \begin{lstlisting}[language=modelica]
-  Real u1;
-  Real u2[4];
-  Complex c;
-  Resistor R;
-  $\ldots$
-  y1 = previous(u1);    // fine
-  y2 = previous(u2);    // fine
-  y3 = previous(u2[2]); // fine
-  y4 = previous(c.im);  // fine
-  y5 = previous(2 * u); // error (general expression, no Component Expression)
-  y6 = previous(R);     // error (component, no Component Expression)
+Real u1;
+Real u2[4];
+Complex c;
+Resistor R;
+$\ldots$
+y1 = previous(u1);    // fine
+y2 = previous(u2);    // fine
+y3 = previous(u2[2]); // fine
+y4 = previous(c.im);  // fine
+y5 = previous(2 * u); // error (general expression, no Component Expression)
+y6 = previous(R);     // error (component, no Component Expression)
 \end{lstlisting}
 \end{example}
 
 \begin{example}
 The named argument \lstinline!factor! of \lstinline!subSample! is restricted to be a parameter expression.
 \begin{lstlisting}[language=modelica]
-  Real u;
-  parameter Real p=3;
-  $\ldots$
-  y1 = subSample(u, factor = 3);         // fine (literal)
-  y2 = subSample(u, factor = 2 * p - 3); // fine (parameter expression)
-  y3 = subSample(u, factor = 3 * u);     // error (general expression)
+Real u;
+parameter Real p=3;
+$\ldots$
+y1 = subSample(u, factor = 3);         // fine (literal)
+y2 = subSample(u, factor = 2 * p - 3); // fine (parameter expression)
+y3 = subSample(u, factor = 3 * u);     // error (general expression)
 \end{lstlisting}
 \end{example}
 
@@ -436,8 +436,8 @@ that is modeled as Boolean in the simulation model.
 \par
 \begin{example*}
 \begin{lstlisting}[language=modelica]
-  Clock c = Clock(angle > 0, 0.1) // before first tick of c:
-                                  // interval(c) = 0.1
+Clock c = Clock(angle > 0, 0.1) // before first tick of c:
+                                // interval(c) = 0.1
 \end{lstlisting}
 
 The implicitly given interval and time shift can be modified by
@@ -462,10 +462,10 @@ String, then this Clock-construct does not associate an integrator with the retu
 \par
 \begin{example*}
 \begin{lstlisting}[language=modelica]
-  Clock c1 = Clock(1,10) // 100 ms, no solver
-  Clock c2 = Clock(c1, "ImplicitTrapezoid");
-    // 100 ms, ImplicitTrapezoid solver
-  Clock c3 = Clock(c2, ""); // 100 ms, no solver
+Clock c1 = Clock(1,10) // 100 ms, no solver
+Clock c2 = Clock(c1, "ImplicitTrapezoid");
+  // 100 ms, ImplicitTrapezoid solver
+Clock c3 = Clock(c2, ""); // 100 ms, no solver
 \end{lstlisting}
 \end{example*}
 \end{tabular}
@@ -695,11 +695,11 @@ base clock.
 \par
 \begin{example*}
 \begin{lstlisting}[language=modelica]
-  Clock u = Clock(x > 0);
-  Clock y1 = subSample(u,4);
-  Clock y2 = superSample(y1,2); // fine; y2 =  subSample(u,2)
-  Clock y3 = superSample(u ,2); // error
-  Clock y4 = superSample(y1,5); // error
+Clock u = Clock(x > 0);
+Clock y1 = subSample(u,4);
+Clock y2 = superSample(y1,2); // fine; y2 =  subSample(u,2)
+Clock y3 = superSample(u ,2); // error
+Clock y4 = superSample(y1,5); // error
 \end{lstlisting}
 \end{example*}
 \\ \hline
@@ -953,38 +953,38 @@ All continuous-time partitions are collected together and form \emph{the} contin
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  // Controller 1
-  ud1 = sample(y,c1);
-  0 = f1(yd1, ud1, previous(yd1));
+// Controller 1
+ud1 = sample(y,c1);
+0 = f1(yd1, ud1, previous(yd1));
 
-  // Controller 2
-  ud2 = superSample(yd1,2);
-  0 = f2(yd2, ud2);
+// Controller 2
+ud2 = superSample(yd1,2);
+0 = f2(yd2, ud2);
 
-  // Continuous-time system
-  u = hold(yd2);
-  0 = f3(der(x1), x1, u);
-  0 = f4(der(x2), x2, x1);
-  0 = f5(der(x3), x3);
-  0 = f6(y, x1, u);
+// Continuous-time system
+u = hold(yd2);
+0 = f3(der(x1), x1, u);
+0 = f4(der(x2), x2, x1);
+0 = f5(der(x3), x3);
+0 = f6(y, x1, u);
 \end{lstlisting}
 
 After base clock partitioning, the following partitions are identified:
 \begin{lstlisting}[language=modelica]
-  // Base partition 1 // clocked partition
-  ud1 = sample (y,c1); // incidence(e) = {ud1}
-  0 = f1(yd1, ud1, previous(ud1)); // incidence(e) = {yd1,ud1}
-  ud2 = superSample (yd1,2); // incidence(e) = {ud2, yd1}
-  0 = f2(yd2, ud2); // incidence(e) = {yd2, ud2}
+// Base partition 1 // clocked partition
+ud1 = sample (y,c1); // incidence(e) = {ud1}
+0 = f1(yd1, ud1, previous(ud1)); // incidence(e) = {yd1,ud1}
+ud2 = superSample (yd1,2); // incidence(e) = {ud2, yd1}
+0 = f2(yd2, ud2); // incidence(e) = {yd2, ud2}
 
-  // Base partition 2 // continuous-time partition
-  u = hold (yd2); // incidence(e) = {u}
-  0 = f3(der(x1), x1, u); // incidence(e) = {x1,u}
-  0 = f4(der(x2), x2, x1); // incidence(e) = {x2,x1}
-  0 = f6(y, x1, u); // incidence(e) = {y,x1,u}
+// Base partition 2 // continuous-time partition
+u = hold (yd2); // incidence(e) = {u}
+0 = f3(der(x1), x1, u); // incidence(e) = {x1,u}
+0 = f4(der(x2), x2, x1); // incidence(e) = {x2,x1}
+0 = f6(y, x1, u); // incidence(e) = {y,x1,u}
 
-  // Identified as separate partition, but belonging to partition 2
-  0 = f5(der(x3), x3); // incidence(e) = {x3}
+// Identified as separate partition, but belonging to partition 2
+0 = f5(der(x3), x3); // incidence(e) = {x3}
 \end{lstlisting}
 \end{example}
 
@@ -1020,21 +1020,21 @@ $E = \bigcup E_{ij}$
 \begin{example}
 After sub-clock partitioning of the example from \autoref{base-clock-partitioning}, the following partitions are identified:
 \begin{lstlisting}[language=modelica]
-  // Base partition 1 (clocked partition)
-  // Sub-clock partition 1.1
-  ud1 = sample (y,c1); // incidence(e) = {ud1}
-  0 = f1(yd1,ud1,previous(yd1)); // incidence(e) = {yd1,ud1}
+// Base partition 1 (clocked partition)
+// Sub-clock partition 1.1
+ud1 = sample (y,c1); // incidence(e) = {ud1}
+0 = f1(yd1,ud1,previous(yd1)); // incidence(e) = {yd1,ud1}
 
-  // Sub-Clock partition 1.2
-  ud2 = superSample (yd1,2); // incidence(e) = {ud2}
-  0 = f2(yd2,ud2); // incidence(e) = {yd2,ud2}
+// Sub-Clock partition 1.2
+ud2 = superSample (yd1,2); // incidence(e) = {ud2}
+0 = f2(yd2,ud2); // incidence(e) = {yd2,ud2}
 
-  // Base partition 2 (no sub-clock partitioning, since continuous-time)
-  u = hold (yd2);
-  0 = f3(der(x1), x1, u);
-  0 = f4(der(x2), x2, x1);
-  0 = f5(der(x3), x3);
-  0 = f6(y, x1, u);
+// Base partition 2 (no sub-clock partitioning, since continuous-time)
+u = hold (yd2);
+0 = f3(der(x1), x1, u);
+0 = f4(der(x2), x2, x1);
+0 = f5(der(x3), x3);
+0 = f6(y, x1, u);
 \end{lstlisting}
 \end{example}
 
@@ -1304,16 +1304,16 @@ with this clock, then the partition is integrated with it.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  // Continuous PI controller in a clocked partition
-  vd = sample(x2, Clock(Clock(1,10),solverMethod="ImplicitEuler"));
-  e = ref-vd;
-  der(xd) = e/Ti;
-  u = k*(e + xd);
+// Continuous PI controller in a clocked partition
+vd = sample(x2, Clock(Clock(1,10),solverMethod="ImplicitEuler"));
+e = ref-vd;
+der(xd) = e/Ti;
+u = k*(e + xd);
 
-  // Physical model
-  f = hold(u);
-  der(x1) = x2;
-  m*der(x2) = f;
+// Physical model
+f = hold(u);
+der(x1) = x2;
+m*der(x2) = f;
 \end{lstlisting}
 \end{example}
 

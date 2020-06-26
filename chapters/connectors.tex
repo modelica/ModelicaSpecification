@@ -91,21 +91,21 @@ The figure visualizes the following \lstinline!connect! equations to
 the connector \lstinline!c! in the models \lstinline!m!$i$. Consider the
 following \lstinline!connect! equations found in the model for component \lstinline!m0!:
 \begin{lstlisting}[language=modelica]
-  connect(m1.c, m3.c); // m1.c and m3.c are inside connectors
-  connect(m2.c, m3.c); // m2.c and m3.c are inside connectors
+connect(m1.c, m3.c); // m1.c and m3.c are inside connectors
+connect(m2.c, m3.c); // m2.c and m3.c are inside connectors
 \end{lstlisting}
 and in the model for component \lstinline!m3! (\lstinline!c.x! is a sub-connector inside
 \lstinline!c!):
 \begin{lstlisting}[language=modelica]
-  connect(c, m4.c); // c is an outside
-  connector, m4.c is an inside connector
-  connect(c.x, m5.c); // c.x is an outside
-  connector, m5.c is an inside connector
-  connect(c , d) ; // c is an outside  connector, d  is an outside connector
+connect(c, m4.c); // c is an outside
+connector, m4.c is an inside connector
+connect(c.x, m5.c); // c.x is an outside
+connector, m5.c is an inside connector
+connect(c , d) ; // c is an outside  connector, d  is an outside connector
 \end{lstlisting}
 and in the model for component \lstinline!m6!:
 \begin{lstlisting}[language=modelica]
-  connect(d, m7.c); // d is an outside connector, m7.c is an inside connector
+connect(d, m7.c); // d is an outside connector, m7.c is an inside connector
 \end{lstlisting}
 \end{example}
 
@@ -365,12 +365,12 @@ of the union of all connectors is introduced.
 
 The \lstinline!engine_bus! contains the following variable declarations:
 \begin{lstlisting}[language=modelica]
-  RealOutput engine_speed;
-  RealOutput engine_temp;
-  CylinderBus cylinder_bus[1];
-  CylinderBus cylinder_bus[2];
-  CylinderBus cylinder_bus[3];
-  CylinderBus cylinder_bus[4];
+RealOutput engine_speed;
+RealOutput engine_temp;
+CylinderBus cylinder_bus[1];
+CylinderBus cylinder_bus[2];
+CylinderBus cylinder_bus[3];
+CylinderBus cylinder_bus[4];
 \end{lstlisting}
 \end{example}
 
@@ -1081,41 +1081,42 @@ passed between components, in order to avoid redundant equations.
 An overdetermined connector for 3-dimensional mechanical systems
 may be defined as:
 \begin{lstlisting}[language=modelica]
-  type TransformationMatrix = Real[3,3];
-  type Orientation "Orientation from frame 1 to frame 2"
-    extendsTransformationMatrix;
-    function equalityConstraint
-      input Orientation R1 "Rotation from inertial frame to frame 1";
-      input Orientation R2 "Rotation from inertial frame to frame 2";
-      output Real residue[3];
-      protected
-      Orientation R_rel "Relative Rotation from frame 1 to frame 2";
-    algorithm
-      R_rel := R2*transpose(R1);
-      /* If frame_1 and frame_2 are identical, R_rel must be
-the unit matrix. If they are close together, R_rel can be
-linearized yielding:
-R_rel = [ 1, phi3, -phi2;
--phi3, 1, phi1;
-phi2, -phi1, 1 ];
-where phi1, phi2, phi3 are the small rotation angles around
-axis x, y, z of frame 1 to rotate frame 1 into frame 2.
-The atan2 is used to handle large rotation angles, but does not
-modify the result for small angles.
-*/
-      residue := { Modelica.Math.atan2(R_rel[2, 3], R_rel[1, 1]),
-      Modelica.Math.atan2(R_rel[3, 1], R_rel[2, 2]),
-      Modelica.Math.atan2(R_rel[1, 2], R_rel[3, 3])};
-    end equalityConstraint;
-  end Orientation;
+type TransformationMatrix = Real[3,3];
+type Orientation "Orientation from frame 1 to frame 2"
+  extendsTransformationMatrix;
+  function equalityConstraint
+    input Orientation R1 "Rotation from inertial frame to frame 1";
+    input Orientation R2 "Rotation from inertial frame to frame 2";
+    output Real residue[3];
+    protected
+    Orientation R_rel "Relative Rotation from frame 1 to frame 2";
+  algorithm
+    R_rel := R2*transpose(R1);
+    /*
+      If frame_1 and frame_2 are identical, R_rel must be
+      the unit matrix. If they are close together, R_rel can be
+      linearized yielding:
+        R_rel = [ 1, phi3, -phi2;
+        -phi3, 1, phi1;
+        phi2, -phi1, 1 ];
+      where phi1, phi2, phi3 are the small rotation angles around
+      axis x, y, z of frame 1 to rotate frame 1 into frame 2.
+      The atan2 is used to handle large rotation angles, but does not
+      modify the result for small angles.
+    */
+    residue := { Modelica.Math.atan2(R_rel[2, 3], R_rel[1, 1]),
+    Modelica.Math.atan2(R_rel[3, 1], R_rel[2, 2]),
+    Modelica.Math.atan2(R_rel[1, 2], R_rel[3, 3])};
+  end equalityConstraint;
+end Orientation;
 
-  connector Frame "3-dimensional mechanical connector"
-    import Modelica.Units.SI;
-    SI.Position r[3] "Vector from inertial frame to Frame";
-    Orientation R "Orientation from inertial frame to Frame";
-    flow SI.Force f[3] "Cut-force resolved in Frame";
-    flow SI.Torque t[3] "Cut-torque resolved in Frame";
-  end Frame;
+connector Frame "3-dimensional mechanical connector"
+  import Modelica.Units.SI;
+  SI.Position r[3] "Vector from inertial frame to Frame";
+  Orientation R "Orientation from inertial frame to Frame";
+  flow SI.Force f[3] "Cut-force resolved in Frame";
+  flow SI.Torque t[3] "Cut-torque resolved in Frame";
+end Frame;
 \end{lstlisting}
 A fixed translation from a frame \lstinline!A! to a frame \lstinline!B! may be defined as:
 \begin{lstlisting}[language=modelica]
