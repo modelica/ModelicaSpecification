@@ -255,9 +255,7 @@ equation
 \end{lstlisting}
 
 \begin{nonnormative}
-The equivalence is conceptual since \lstinline!pre()! of a non
-discrete-time Real variable or expression can only be used within a
-when-clause. Example:
+The equivalence is conceptual since \lstinline!pre($\ldots$)! of a non discrete-time \lstinline!Real! variable or expression can only be used within a when-clause.  Example:
 \begin{lstlisting}[language=modelica]
   /* discrete */ Real x;
   input Real u;
@@ -269,18 +267,13 @@ equation
   y = x;
 \end{lstlisting}
 
-In this example x is a discrete-time variable (whether it is
-declared with the discrete prefix or not), but u and y cannot be
-discrete-time variables (since they are not assigned in when-clauses).
-However, pre(u) is legal within the when-clause, since the body of the
-when-clause is only evaluated at events, and thus all expressions are
-discrete-time expressions.
+Here, \lstinline!x! is a discrete-time variable (whether it is declared with the \lstinline!discrete! prefix or not), but \lstinline!u! and \lstinline!y! cannot be discrete-time variables
+(since they are not assigned in when-clauses).  However, \lstinline!pre(u)! is legal within the when-clause, since the body of the when-clause is only evaluated at events, and thus all expressions
+are discrete-time expressions.
 \end{nonnormative}
 
-The start-values of the introduced Boolean variables are defined by the
-taking the start-value of the when-condition, as above where \lstinline!b! is a
-parameter variable. The start-values of the special functions \lstinline!initial!,
-\lstinline!terminal!, and \lstinline!sample! is false.
+The start-values of the introduced \lstinline!Boolean! variables are defined by the taking the start-value of the when-condition, as above where \lstinline!b! is a parameter
+variable.  The start-value of the special functions \lstinline!initial!, \lstinline!terminal!, and \lstinline!sample! is \lstinline!false!.
 
 \subsubsection{Restrictions on Equations within When-Equations}\doublelabel{restrictions-on-equations-within-when-equations}
 
@@ -434,7 +427,7 @@ variable in when and else-when of the same variable is allowed). In case
 of \lstinline!reinit! active during initialization (due to when initial), see
 \autoref{initialization-initial-equation-and-initial-algorithm}.
 
-\lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates expr to a value (value),
+\lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value,
 then at the end of the current event iteration step it assigns this value to \lstinline!x! (this copying from values to reinitialized state(s) is
 done after all other evaluations of the model and before copying \lstinline!x! to \lstinline!pre(x)!).
 
@@ -752,15 +745,12 @@ consistent values for all variables present in the model. During this
 phase, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!),
 are interpreted as unknown algebraic variables. The initialization uses
 all equations and algorithms that are utilized in the intended operation
-(such as simulation or linearization).  The equations of a
-when-clause are active during initialization, if and only if they are
-explicitly enabled with \lstinline!initial()!; and only in one of the
-two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!
-(and similarly for algorithms see below). In this case, the when-clause equations remain active during the
-whole initialization phase. In case of a
-\lstinline!reinit(x, expr)! being active during initialization (due to being inside
-\lstinline!when initial()!) this is interpreted as adding \lstinline!x = expr! (the
-\lstinline!reinit!-equation) as an initial equation.
+(such as simulation or linearization).
+
+The equations of a when-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
+\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for algorithms see below).  In this case, the when-clause equations remain active during the
+whole initialization phase.  In case of a \lstinline!reinit(x, expr)! being active during initialization (due to being inside \lstinline!when initial()!) this is interpreted as adding
+\lstinline!x = expr! (the \lstinline!reinit!-equation) as an initial equation.
 
 \begin{nonnormative}
 If a when-clause equation \lstinline!v = expr;! is not active during the initialization phase, the equation \lstinline!v = pre(v)! is added for
@@ -768,10 +758,9 @@ initialization.  This follows from the mapping rule of when-clause equations.  I
 but not in one of the specific forms, the when-clause is not active during initialization: \lstinline!when not initial() then print("simulation started"); end when;!
 \end{nonnormative}
 
-The algorithmic statements within a when-statement are active during initialization, if and only they are
-explicitly enabled with \lstinline!initial()!; and only in one of the
-two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
-In this case, the algorithmic statements within the when-statement remain active during the whole initialization phase.
+The algorithmic statements within a when-statement are active during initialization, if and only they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
+\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!. In this case, the algorithmic statements within the when-statement remain active during the whole
+initialization phase.
 
 \begin{nonnormative}
 There is no special handling of inactive when-statements during initialization, instead
@@ -789,58 +778,44 @@ variables, can be defined in the following ways:
   variables at the initial time instant. It is not allowed to use
   when-clauses in these sections.
 \item
-  For all non-discrete (that is continuous-time) Real variables \lstinline!vc!, the
-  equation \lstinline!pre(vc) = vc! is added to the initialization
-  equations.
+  For a non-discrete (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!pre(vc) = vc! is added to the initialization equations.
   \begin{nonnormative}
   If \lstinline!pre(vc)! is not present in the flattened model, a tool may choose not to introduce this equation, or if it was introduced
   it can eliminate it (to avoid the introduction of many dummy variables \lstinline!pre(vc)!).
   \end{nonnormative}
 \item
-  Implicitly by using the attributes \lstinline!start=value! and \lstinline!fixed=true! in the
-  declaration of variables:
-\begin{itemize}
-\item
-  For all non-discrete (that is continuous-time) Real variables \lstinline!vc!, the
-  equation \lstinline!vc = startExpression! is added to the initialization
-  equations, if \lstinline!start = startExpression! and \lstinline!fixed = true!.
-\item
-  For all discrete variables \lstinline!vd!, the equation \lstinline!pre(vd) = startExpression!
-  is added to the initialization equations, if \lstinline!start = startExpression!
-  and \lstinline!fixed = true!.
-\item
-  For all variables declared as constant and parameter, with \lstinline!fixed = true!; no equation is added to the initialization equations.
-\end{itemize}
+  Implicitly by using the \lstinline!start! attribute for variables with \lstinline!fixed = true!.  With \lstinline!start! given by \lstinline!startExpression!:
+  \begin{itemize}
+  \item
+    For a non-discrete (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
+  \item
+    For a discrete variables \lstinline!vd!, the equation \lstinline!pre(vd) = startExpression! is added to the initialization equations.
+  \item
+    For a variable declared as \lstinline!constant! or \lstinline!parameter!, no equation is added to the initialization equations.
+  \end{itemize}
 \end{enumerate}
 
-For constants and parameters, the attribute fixed is by default true.
-For other variables fixed is by default false. For all variables
-declared as constant it is an error to have \lstinline!fixed = false!.
+For constants and parameters, the attribute \lstinline!fixed! defaults to \lstinline!true!, which is the only allowed value for a constant.  For other variables,
+\lstinline!fixed! defaults to \lstinline!false!.
 
-Start-values of variables having fixed = false can be used as initial
-guesses, in case iterative solvers are used in the initialization phase.
+\lstinline!start!-values of variables having \lstinline!fixed = false! can be used as initial guesses, in case iterative solvers are used in the initialization phase.
 
 \begin{nonnormative}
 In case of iterative solver failure, it is recommended to specially report those variables for which the solver needs an initial guess, but which only have the default
 value of the start attribute as defined in \autoref{predefined-types-and-classes}, since the lack of appropriate initial guesses is a likely cause of the solver failure.
 \end{nonnormative}
 
-If a parameter has a modifier for the \lstinline!start!-attribute, does not have
-\lstinline!fixed=false!, and neither has a binding equation nor is part of a record
-having a binding equation, the modifier for the start-attribute can be
-used to add a parameter binding equation assigning the parameter to that
-start-modifier. In this case a diagnostic message is recommended in a
-simulation model.
+If a parameter has a modifier for the \lstinline!start! attribute, does not have \lstinline!fixed = false!, and neither has a binding equation nor is part of a record having a binding equation,
+the modifier for the \lstinline!start! attribute can be used to add a parameter binding equation assigning the parameter to that \lstinline!start! value.  In this case a diagnostic message is
+recommended in a simulation model.
 
 \begin{nonnormative}
 This is used in libraries to give non-zero defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters
 that need to be set.
 \end{nonnormative}
 
-All variables declared as parameter having \lstinline!fixed = false! are treated as
-unknowns during the initialization phase, i.e.\ there must be additional
-equations for them -- and the start-value can be used as a guess-value
-during initialization.
+All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e.\ there must be additional equations for them --- and
+the \lstinline!start!-value can be used as a guess-value during initialization.
 
 \begin{nonnormative}
 In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostics is recommended, but the parameter should be solved from the binding equation.
@@ -851,15 +826,15 @@ Non-discrete (that is continuous-time) \lstinline!Real! variables \lstinline!vc!
 Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!. If this is not the case for some variables
 \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
 
-A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form. This may require to differentiate equations for index
+A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.  This may require to differentiate equations for index
 reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.  This whole set of equations, together with the additional constraints
 defined above, should lead to an algebraic system of equations where the number of equations and the number of all variables (including \lstinline!der! and \lstinline!pre!
 variables) is equal.  Often, this is a nonlinear system of equations and therefore it may be necessary to provide appropriate guess values (i.e., \lstinline!start! values and
 \lstinline!fixed = false!) in order to compute a solution numerically.
 
-It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index. A tool may add or remove initial equations
+It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index.  A tool may add or remove initial equations
 automatically such that the resulting system is structurally nonsingular.  In these cases diagnostics are appropriate since the result is not unique and may not be what the user
-expects.  A missing initial value of a discrete variable which does not influence the simulation result, may be automatically set to the start value or its default without
+expects.  A missing initial value of a discrete variable which does not influence the simulation result, may be automatically set to the \lstinline!start! value or its default without
 informing the user.  For example, variables assigned in a when-clause which are not accessed outside of the when-clause and where \lstinline!pre! is not explicitly
 used on these variables, do not have an effect on the simulation.
 \end{nonnormative}
@@ -882,7 +857,7 @@ y = - b / a * u;
 \end{example}
 
 \begin{example}
-Continuous time controller initialized either in steady-state or by providing a start value for state \lstinline!y!:
+Continuous time controller initialized either in steady-state or by providing a \lstinline!start! value for state \lstinline!y!:
 \begin{lstlisting}[language=modelica]
   parameter Boolean steadyState = true;
   parameter Real y0 = 0 "start value for y, if not steadyState";
