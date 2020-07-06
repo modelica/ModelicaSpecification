@@ -116,9 +116,9 @@ gets the value of that element and that is used to evaluate the body of the for-
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-for i in 1:10 loop             // i takes the values 1,2,3,...,10
+for i in 1 : 10 loop           // i takes the values 1, 2, 3, ..., 10
 for r in 1.0 : 1.5 : 5.5 loop  // r takes the values 1.0, 2.5, 4.0, 5.5
-for i in {1,3,6,7} loop        // i takes the values 1, 3, 6, 7
+for i in {1, 3, 6, 7} loop     // i takes the values 1, 3, 6, 7
 for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two
                                // for TwoEnums = enumeration(one,two)
 \end{lstlisting}
@@ -239,7 +239,7 @@ equation
 A when-equation:
 \begin{lstlisting}[language=modelica]
 equation
-  when x>2 then
+  when x > 2 then
     v1 = expr1;
     v2 = expr2;
   end when;
@@ -247,9 +247,9 @@ equation
 is conceptually equivalent to the following equations containing special if-expressions
 \begin{lstlisting}[language=modelica]
   // Not correct Modelica
-  Boolean b(start=x.start>2);
+  Boolean b(start = x.start > 2);
 equation
-  b  = x>2;
+  b  = x > 2;
   v1 = if edge(b) then expr1 else pre(v1);
   v2 = if edge(b) then expr2 else pre(v2);
 \end{lstlisting}
@@ -259,12 +259,12 @@ The equivalence is conceptual since \lstinline!pre()! of a non
 discrete-time Real variable or expression can only be used within a
 when-clause. Example:
 \begin{lstlisting}[language=modelica]
-  /* discrete*/ Real x;
+  /* discrete */ Real x;
   input Real u;
   output Real y;
 equation
   when sample() then
-    x = a*pre(x)+b*pre(u);
+    x = a * pre(x) + b * pre(u);
   end when;
   y = x;
 \end{lstlisting}
@@ -305,8 +305,10 @@ end when;
 The equations within the when-equation must have one of the following
 forms:
 \begin{itemize}
-\item \lstinline!v = expr;!
-\item \lstinline!(out1, out2, out3, ...) = function_call_name(in1, in2, ...);!
+\item
+  \lstinline!v = expr;!
+\item
+  \lstinline!(out1, out2, out3, $\ldots$) = function_call_name(in1, in2, $\ldots$);!
 \item
   operators \lstinline!assert!, \lstinline!terminate!, \lstinline!reinit!
 \item
@@ -322,7 +324,7 @@ forms:
   conditions.
 \end{itemize}
 
-Any left hand side reference, (\lstinline!v!, \lstinline!out1!, ...), in a when-clause must
+Any left hand side reference, (\lstinline!v!, \lstinline!out1!, \ldots), in a when-clause must
 be a component reference, and any indices must be parameter expressions.
 
 \begin{nonnormative}
@@ -333,7 +335,7 @@ becomes apparent with the following example:
 equation
   x + y = 5;
   when condition then
-    2*x + y = 7; // error: not valid Modelica
+    2 * x + y = 7; // error: not valid Modelica
   end when;
 \end{lstlisting}
 
@@ -345,7 +347,7 @@ A corrected version of this example is:
 equation
   x + y = 5;
   when condition then
-    y = 7 - 2*x;       // fine
+    y = 7 - 2 * x; // fine
   end when;
 \end{lstlisting}
 Here, variable \lstinline!y! is held constant when the when-equation is
@@ -371,15 +373,15 @@ conditions would become \lstinline!true! at the same time instant.
 model DoubleWhenConflict
   Boolean close;   // Erroneous model: close defined by two equations!
 equation
-  ...
+  $\ldots$
   when condition1 then
-    ...
+    $\ldots$
     close = true;
   end when;
   when condition2 then
     close = false;
   end when;
-  ...
+  $\ldots$
 end DoubleWhenConflict;
 \end{lstlisting}
 
@@ -401,13 +403,13 @@ associated conditional equations has a higher priority than \lstinline!condition
 model WhenPriority
   Boolean close;   // Correct model: close defined by two equations!
 algorithm
-  ...
+  $\ldots$
   when condition1 then
     close = true;
   elsewhen condition2 then
     close = false;
   end when;
-  ...
+  $\ldots$
 end WhenPriority;
 \end{lstlisting}
 \end{nonnormative}
@@ -449,9 +451,9 @@ Example for the usage of \lstinline!reinit! (bouncing ball):
 \begin{lstlisting}[language=modelica]
 der(h) = v;
 der(v) = if flying then -g else 0;
-flying = not(h<=0 and v<=0);
+flying = not (h <= 0 and v <= 0);
 when h < 0 then
-  reinit(v, -e*pre(v));
+  reinit(v, -e * pre(v));
 end when
 \end{lstlisting}
 \end{example}
@@ -541,10 +543,10 @@ model ThrowingBall
   Real x(start=0);
   Real y(start=1);
 equation
-  der(x)=...
-  der(y)=...
+  der(x) = $\ldots$;
+  der(y) = $\ldots$;
 algorithm
-  when y<0 then
+  when y < 0 then
     terminate("The ball touches the ground");
   end when;
 end ThrowingBall;
@@ -724,11 +726,11 @@ algorithm
   end when;
 algorithm
   when fastSample then   // fast sampling
-    ...
+    $\ldots$
   end when;
 algorithm
   when slowSample then   // slow sampling (5-times slower)
-    ...
+    $\ldots$
   end when;
 \end{lstlisting}
 
@@ -773,7 +775,7 @@ In this case, the algorithmic statements within the when-statement remain active
 
 \begin{nonnormative}
 There is no special handling of inactive when-statements during initialization, instead
-variables assigned in when-statements are initialized using \lstinline!v:=pre(v)!
+variables assigned in when-statements are initialized using \lstinline!v := pre(v)!
 before the body of the algorithm (since they are discrete), see \autoref{execution-of-an-algorithm-in-a-model}.
 \end{nonnormative}
 
@@ -844,7 +846,7 @@ during initialization.
 In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostics is recommended, but the parameter should be solved from the binding equation.
 
 Non-discrete (that is continuous-time) \lstinline!Real! variables \lstinline!vc! have exactly one initialization value since the rules above assure that during initialization
-\lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed=true!).
+\lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed = true!).
 
 Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!. If this is not the case for some variables
 \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
@@ -853,7 +855,7 @@ A Modelica translator may first transform the continuous equations of a model, a
 reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.  This whole set of equations, together with the additional constraints
 defined above, should lead to an algebraic system of equations where the number of equations and the number of all variables (including \lstinline!der! and \lstinline!pre!
 variables) is equal.  Often, this is a nonlinear system of equations and therefore it may be necessary to provide appropriate guess values (i.e., \lstinline!start! values and
-\lstinline!fixed=false!) in order to compute a solution numerically.
+\lstinline!fixed = false!) in order to compute a solution numerically.
 
 It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index. A tool may add or remove initial equations
 automatically such that the resulting system is structurally nonsingular.  In these cases diagnostics are appropriate since the result is not unique and may not be what the user
@@ -867,7 +869,7 @@ Continuous time controller initialized in steady-state:
 \begin{lstlisting}[language=modelica]
   Real y(fixed = false);  // fixed=false is redundant
 equation
-  der(y) = a*y + b*u;
+  der(y) = a * y + b * u;
 initial equation
   der(y) = 0;
 \end{lstlisting}
@@ -875,7 +877,7 @@ initial equation
 This has the following solution at initialization:
 \begin{lstlisting}[language=modelica]
 der(y) = 0;
-y = -b/a *u;
+y = - b / a * u;
 \end{lstlisting}
 \end{example}
 
@@ -886,10 +888,10 @@ Continuous time controller initialized either in steady-state or by providing a 
   parameter Real y0 = 0 "start value for y, if not steadyState";
   Real y;
 equation
-  der(y) = a*y + b*u;
+  der(y) = a * y + b * u;
 initial equation
   if steadyState then
-    der(y)=0;
+    der(y) = 0;
   else
     y = y0;
   end if;
@@ -897,11 +899,11 @@ initial equation
 
 This can also be written as follows (this form is less clear):
 \begin{lstlisting}[language=modelica]
-  parameter Boolean steadyState=true;
-  Real y    (start=0, fixed=not steadyState);
-  Real der_y(start=0, fixed=steadyState) = der(y);
+  parameter Boolean steadyState = true;
+  Real y    (start = 0, fixed = not steadyState);
+  Real der_y(start = 0, fixed = steadyState) = der(y);
 equation
-  der(y) = a*y + b*u;
+  der(y) = a * y + b * u;
 \end{lstlisting}
 \end{example}
 
@@ -911,7 +913,7 @@ Discrete time controller initialized in steady-state:
   discrete Real y;
 equation
   when {initial(), sampleTrigger} then
-    y = a*pre(y) + b*u;
+    y = a * pre(y) + b * u;
   end when;
 initial equation
   y = pre(y);
@@ -919,12 +921,12 @@ initial equation
 
 This leads to the following equations during initialization:
 \begin{lstlisting}[language=modelica]
-y = a*pre(y) + b*u;
+y = a * pre(y) + b * u;
 y = pre(y);
 \end{lstlisting}
 with the solution:
 \begin{lstlisting}[language=modelica]
-y := (b*u)/(1-a)
+y := (b * u) / (1 - a);
 pre(y) := y;
 \end{lstlisting}
 \end{example}
