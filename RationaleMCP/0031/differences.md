@@ -191,3 +191,42 @@ is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}`
 (assuming trailing subscripts can be skipped, otherwise it is illegal).
 It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`, 
 and `foo()[1]` without causing any similar ambiguity - but it was not deemed necessary at the moment.
+
+## Input output
+
+The input and output causality shall only be present at the top of the model (and in functions).
+
+For converting a Modelica model it means that input or output shall only be preserved
+for variables that are:
+* public top-level connector variables
+* declared inside top-level connector variables
+* public top-level non-connector scalar
+* public top-level non-connector record
+
+Consider:
+```
+connector C
+  input Real x;
+  output Real y;
+end C;
+record R
+  Real x;
+end R;
+connector RealInput=input Real;
+model MSub
+  input R r;
+  RealInput a;
+  C c;
+  output Real z;
+protected
+  RealInput a2;
+  C c2;
+  output Real z2;
+end MSub;
+model M
+  extends MSub;
+  MSub msub(r=r);
+end M;
+```
+The Flat Modelica for `M` should only preserve input for `r`, `a`, `c.x` and output for `c.y`, `z`,
+and thus not preserve it for protected variables and for variables in `msub`. 
