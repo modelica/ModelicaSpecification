@@ -37,13 +37,11 @@
 %\usepackage{t1enc}
 \usepackage{graphicx}
 \graphicspath{{media/}{../media/}} % so that chapter files can also find the images
-\def\figureautorefname{figure} % Use lower case initial, just like for sections.
 
 % Don't use subfig.sty until this LaTeXML issue has been fixed:
-% - https://github.com/brucemiller/LaTeXML/issues/1292
+% - https://github.com/brucemiller/LaTeXML/issues/1292 (marked as fixed as of commit 9f5c893b)
 % Leaving commented-out code as a hint to anyone who considers using subfig.
 %\usepackage{subfig}
-%\newcommand{\subfigureautorefname}{\figureautorefname}
 
 \usepackage{verbatim}
 % The fixltx2e that was used for textsubscript is no longer needed for pdf, but is needed by latexml
@@ -81,8 +79,6 @@
 %\usepackage{enumitem} % Package not available for continuous integration builds.
 \usepackage{color}
 \usepackage[table]{xcolor}
-%\def\doublelabel#1{\label{#1}\hypertarget{#1}{}}
-\def\doublelabel#1{\label{#1}}
 \def\S0#1#2{\hypertarget{#2}\chapter{#1}\label{#2}}
 \def\S1#1#2{\hypertarget{#2}\section{#1}\label{#2}}
 \def\S2#1#2{\hypertarget{#2}\subsection{#1}\label{#2}}
@@ -138,11 +134,12 @@
 % Formatting of table headings.
 \newcommand{\tablehead}[1]{\textit{#1}}
 
-\newcommand{\autonameref}[1]{\autoref{#1}~\emph{\nameref*{#1}}}
-
 \newcommand{\glossaryitem}[1]{\textbf{#1}}
 
 \newcommand{\bibitemtitle}[1]{\emph{#1}}
+
+\usepackage[nameinlink,noabbrev]{cleveref}
+\def\autoref#1{\errmessage{You are not supposed to use \autoref; use \cref or \Cref instead.}}
 
 % Environment for definitions.
 \usepackage{amsthm}
@@ -160,7 +157,8 @@
 % so instead we make the 'definition' environment a wrapper around the amsthm-base environment.
 \makeatletter
 \newtheorem{definition@inner}{Definition}[chapter]
-\newcommand{\definition@innerautorefname}{definition}
+\crefname{definition@inner}{definition}{definitions}
+\Crefname{definition@inner}{Definition}{Definitions}
 \newenvironment{definition}{\begin{definition@inner}}{\qed\end{definition@inner}}
 \makeatother
 
@@ -316,11 +314,24 @@
 \newcommand{\textgreatereq}{$\geq$}
 \newcommand{\textlesseq}{$\leq$}
 
-% Change all autoref variants below chapter to use "section"
-\def\subsectionautorefname{section}
-\def\subsubsectionautorefname{section}
-\def\paragraphautorefname{section}
-\def\subparagraphautorefname{section}
+% Change all \cref and \Cref variants below chapter to use "section"
+\crefname{subsection}{section}{sections}
+\Crefname{subsection}{Section}{Sections}
+\crefname{subsubsection}{section}{sections}
+\Crefname{subsubsection}{Section}{Sections}
+\crefname{paragraph}{section}{sections}
+\Crefname{paragraph}{Section}{Sections}
+\crefname{subparagraph}{section}{sections}
+\Crefname{subparagraph}{Section}{Sections}
+
+% We can't use cleveref.sty the way we want for equations until this LaTeXML has been fixed:
+% - https://github.com/brucemiller/LaTeXML/issues/1306
+% In the meantime, we use \eqref to achieve the same result.
+%\crefname{equation}{}{}
+%\Crefname{equation}{}{}
+
+\newcommand{\crefnameref}[1]{\cref{#1}~\emph{\nameref*{#1}}}
+\newcommand{\Crefnameref}[1]{\Cref{#1}~\emph{\nameref*{#1}}}
 
 % Make all description lists break the line after each key.
 % henrikt-ma: Commenting out use of the enumitem package, see above.
