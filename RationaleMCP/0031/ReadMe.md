@@ -60,9 +60,9 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Simplify modifications.
-- [x] Get rid of `each`.
+- [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
 - [ ] Investigate need for `for`-equations.
-- [ ] Marking of top level inputs and outputs.
+- [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
 - [ ] Figure out what to do with synchronous features.
 - [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
