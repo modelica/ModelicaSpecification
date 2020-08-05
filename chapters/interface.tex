@@ -1,84 +1,66 @@
-\chapter{Interface or Type Relationships}\doublelabel{interface-or-type-relationships}
+\chapter{Interface or Type Relationships}\label{interface-or-type-relationships}
 
 A class or component, e.g.\ denoted \lstinline!A!, can in some cases be used at a
 location designed for another class or component, e.g.\ denoted \lstinline!B!. In
-Modelica this is the case for replaceable classes (see \autoref{redeclaration}) and
-for \lstinline!inner!/\lstinline!outer! elements (see \autoref{instance-hierarchy-name-lookup-of-inner-declarations}).
+Modelica this is the case for replaceable classes (see \cref{redeclaration}) and
+for \lstinline!inner!/\lstinline!outer! elements (see \cref{instance-hierarchy-name-lookup-of-inner-declarations}).
 Replaceable classes are the
 primary mechanism to create very flexible models. In this chapter, the
 precise rules are defined when \lstinline!A! can be used at a location designed for
 \lstinline!B!. The restrictions are defined in terms of compatibility rules
-(\autoref{interface-compatibility-or-subtyping} and \autoref{plug-compatibility-or-restricted-subtyping}) between ''interfaces'' (\autoref{the-concepts-of-type-interface-and-subtype}); this can
-also be viewed as sub-typing (\autoref{the-concepts-of-type-interface-and-subtype}).
+(\cref{interface-compatibility-or-subtyping} and \cref{plug-compatibility-or-restricted-subtyping}) between ''interfaces'' (\cref{the-concepts-of-type-interface-and-subtype}); this can
+also be viewed as sub-typing (\cref{the-concepts-of-type-interface-and-subtype}).
 
 In this chapter, two kinds of terminology is used for identical concepts
 to get better understanding (e.g.\ by both engineers and computer
 scientists). A short summary of the terms is given in the following
 table. The details are defined in the rest of this chapter.
 
-\begin{longtable}{|p{4cm}|p{8cm}|}
-\hline \endhead
-\tablehead{Term} & \tablehead{Description}\\ \hline
-type or interface
-& The ``essential'' part of the public declaration sections of a class
+\begin{definition}[Type \emph{or} interface]
+The ``essential'' part of the public declaration sections of a class
 that is needed to decide whether \lstinline!A! can be used instead of \lstinline!B!.
 \par
 \begin{nonnormative*}
 E.g.\ a declaration \lstinline!Real x! is part of the type (also called \emph{interface}), but \lstinline!import A! is not.
 \end{nonnormative*}
-\\ \hline
-\begin{tabular}{@{}p{4cm}@{}}
-class type or\\
-inheritance interface
-\end{tabular}
-&
-The ``essential'' part of the public \emph{and protected} declaration
-sections of a class that is needed to decide whether \lstinline!A! can be used
-instead of \lstinline!B!. The class type, also called inheritance interface, is
-needed when inheritance takes place, since then the protected
-declarations have to be taken into account.\\ \hline
-\begin{tabular}{@{}p{4cm}@{}}
-subtype or\\
-compatible interface
-\end{tabular} &
-\lstinline!A! is a subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is compatible
-to the interface of \lstinline!B!, if the ``essential'' part of the public
-declaration sections of \lstinline!B! is also available in \lstinline!A!.
+\end{definition}
+
+\begin{definition}[Class type \emph{or} inheritance interface]
+The ``essential'' part of the public \emph{and protected} declaration sections of a class that is needed to decide whether \lstinline!A! can be used instead of \lstinline!B!. The class type, also
+called inheritance interface, is needed when inheritance takes place, since then the protected declarations have to be taken into account.
+\end{definition}
+
+\begin{definition}[Subtype \emph{or} compatible interface]
+\lstinline!A! is a subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is compatible to the interface of \lstinline!B!, if the ``essential'' part of the public declaration
+sections of \lstinline!B! is also available in \lstinline!A!.
 \par
 \begin{nonnormative*}
-E.g., if \lstinline!B! has a declaration \lstinline!Real x!, this declaration must also be present in \lstinline!A!.  If \lstinline!A! has a
-declaration \lstinline!Real y!, this declaration must not be present in \lstinline!B!.
+E.g., if \lstinline!B! has a declaration \lstinline!Real x!, this declaration must also be present in \lstinline!A!.  If \lstinline!A! has a declaration \lstinline!Real y!, this declaration must
+not be present in \lstinline!B!.
 \end{nonnormative*}
-\\ \hline
-\begin{tabular}{@{}p{4cm}@{}}
-restricted subtype or plug compatible interface
-\end{tabular} &
-\lstinline!A! is a restricted subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is
-plug compatible to the interface of \lstinline!B!, if \lstinline!A! is a subtype of \lstinline!B! and if
-connector components in \lstinline!A! that are not in \lstinline!B!, are default connectable.
+\end{definition}
+
+\begin{definition}[Restricted subtype \emph{or} plug compatible interface]
+\lstinline!A! is a restricted subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is plug compatible to the interface of \lstinline!B!, if \lstinline!A! is a subtype of
+\lstinline!B! and if connector components in \lstinline!A! that are not in \lstinline!B!, are default connectable.
 \begin{nonnormative}
 E.g.\ it is not allowed that these connectors have variables with the \lstinline!input! prefix, because then they must be connected.
 \end{nonnormative}
-A model or block \lstinline!A! cannot be used instead of \lstinline!B!, if the particular
-situation does not allow to make a connection to these additional
-connectors. In such a case the stricter \emph{plug compatible} is required
-for a redeclaration.\\ \hline
-\begin{tabular}{@{}p{4cm}@{}}
-function subtype or\\
-function compatible interface
-\end{tabular} &
-\lstinline!A! is a function subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is
-function compatible to the interface of \lstinline!B!, if \lstinline!A! is a subtype of \lstinline!B! and if
-the additional arguments of function \lstinline!A! that are not in function \lstinline!B! are
-defined in such a way, that \lstinline!A! can be called at places where \lstinline!B! is called.
+A model or block \lstinline!A! cannot be used instead of \lstinline!B!, if the particular situation does not allow to make a connection to these additional connectors. In such a case the stricter
+\emph{plug compatible} is required for a redeclaration.
+\end{definition}
+
+\begin{definition}[Function subtype \emph{or} function compatible interface]
+\lstinline!A! is a function subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is function compatible to the interface of \lstinline!B!, if \lstinline!A! is a subtype of
+\lstinline!B! and if the additional arguments of function \lstinline!A! that are not in function \lstinline!B! are defined in such a way, that \lstinline!A! can be called at places where
+\lstinline!B! is called.
 \par
 \begin{nonnormative*}
 E.g.\ an additional argument must have a default value.
 \end{nonnormative*}
-\\ \hline
-\end{longtable}
+\end{definition}
 
-\section{The Concepts of Type, Interface and Subtype}\doublelabel{the-concepts-of-type-interface-and-subtype}
+\section{The Concepts of Type, Interface and Subtype}\label{the-concepts-of-type-interface-and-subtype}
 
 A \emph{type} can conceptually be viewed as a \emph{set of values}. When
 we say that the variable \lstinline!x! has the type \lstinline!Real!, we mean that the value of
@@ -99,14 +81,14 @@ values corresponding to type \lstinline!A!.
 The type \lstinline!Integer! is not a subtype of \lstinline!Real! in Modelica even though the
 set of primitive integer values is a subset of the primitive real values
 since there are some attributes of \lstinline!Real! that are not part of \lstinline!Integer!
-(\autoref{predefined-types-and-classes}).
+(\cref{predefined-types-and-classes}).
 
-The concept of \emph{interface} as defined in \autoref{interface-or-type} and used in
+The concept of \emph{interface} as defined in \cref{interface-or-type} and used in
 this document is equivalent to the notion of type based on sets in the
 following sense:
 
 An element is characterized by its interface defined by some attributes
-(\autoref{interface-or-type}). The \emph{type} of the element is the set of values
+(\cref{interface-or-type}). The \emph{type} of the element is the set of values
 having the same interface, i.e.\ the same attributes.
 
 A \emph{subtype} \lstinline!A1! in relation to another type \lstinline!A!, means that the
@@ -143,7 +125,7 @@ that all contain \lstinline!x!, \lstinline!b!, and \lstinline!y!.}
 \end{figure}
 \end{example}
 
-\section{Interface or Type}\doublelabel{interface-or-type}
+\section{Interface or Type}\label{interface-or-type}
 
 Based on a flattened class or component we can construct an interface
 for that flattened class or component. The interface or type
@@ -155,7 +137,7 @@ flattened element itself:
   Whether it is replaceable or not.
 \item
   Whether the class itself or the class of the component is transitively
-  non-replaceable (\autoref{transitively-non-replaceable}), and if not, the reference to the
+  non-replaceable (\cref{transitively-non-replaceable}), and if not, the reference to the
   replaceable class it refers to.
 \item
   Whether it is a component or a class.
@@ -189,7 +171,7 @@ flattened element itself:
   \end{itemize}
 \item
   Only for an \lstinline!operator record! class and classes derived from \lstinline!ExternalObject!: the full name of the operator record base-class
-  (i.e.\  the one containing the operations), or the derived class.  See \autoref{overloaded-operators} and \autoref{external-objects}.
+  (i.e.\  the one containing the operations), or the derived class.  See \cref{overloaded-operators} and \cref{external-objects}.
 
   The following item does not apply for an \lstinline!operator record! class or class derived from \lstinline!ExternalObject!, since the type is already
   uniquely defined by the full name.
@@ -208,7 +190,7 @@ flattened element itself:
 \end{itemize}
 
 The corresponding \emph{constraining} interface is constructed based on
-the \emph{constraining} type (\autoref{constraining-type}) of the declaration (if
+the \emph{constraining} type (\cref{constraining-type}) of the declaration (if
 replaceable -- otherwise same as actual type) and with the
 \emph{constraining} interface for the named elements.
 
@@ -223,7 +205,7 @@ The public interface does not contain all of the information about the class or 
 for internal type-checking we need e.g.\ import-elements.  However, the information is sufficient for checking compatibility and for using the class to flatten components.
 \end{nonnormative}
 
-\subsection{Transitively non-Replaceable}\doublelabel{transitively-non-replaceable}
+\subsection{Transitively non-Replaceable}\label{transitively-non-replaceable}
 
 \begin{nonnormative}
 In several cases it is important that no new elements can be
@@ -245,13 +227,13 @@ only if}) all parts of the name satisfy the following:
 \end{itemize}
 
 \begin{nonnormative}
-According to \autoref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}, for a hierarchical name all
+According to \cref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}, for a hierarchical name all
 parts of the name must be transitively non-replaceable, i.e.\ in \lstinline!extends A.B.C! this implies that \lstinline!A.B.C! must be transitively
 non-replaceable, as well as \lstinline!A! and \lstinline!A.B!, with the exception of the \emph{class
-extends redeclaration mechanism} see \autoref{the-class-extends-redeclaration-mechanism}.
+extends redeclaration mechanism} see \cref{the-class-extends-redeclaration-mechanism}.
 \end{nonnormative}
 
-\subsection{Inheritance Interface or Class Type}\doublelabel{inheritance-interface-or-class-type}
+\subsection{Inheritance Interface or Class Type}\label{inheritance-interface-or-class-type}
 
 For inheritance the interface also must include protected elements; this
 is the only change compared to above.
@@ -265,7 +247,7 @@ itself:
   Whether it is replaceable or not.
 \item
   Whether the class itself or the class of the component is transitively
-  non-replaceable (\autoref{transitively-non-replaceable}), and if not the reference to
+  non-replaceable (\cref{transitively-non-replaceable}), and if not the reference to
   replaceable class it refers to.
 \item
   For each named element of the class (including both local and
@@ -317,7 +299,7 @@ itself:
   \end{itemize}
 \end{itemize}
 
-\section{Interface Compatibility or Subtyping}\doublelabel{interface-compatibility-or-subtyping}
+\section{Interface Compatibility or Subtyping}\label{interface-compatibility-or-subtyping}
 
 An interface of a class or component \lstinline!A! is compatible with an interface
 of a class or component \lstinline!B! (or the constraining interface of \lstinline!B!), or
@@ -329,17 +311,17 @@ equivalently that the type of \lstinline!A! is a subtype of the type of \lstinli
 \item
   If \lstinline!A! has an \lstinline!operator record! base-class then \lstinline!B! must also have one and
   it must be the same. If \lstinline!A! does not have an operator record base-class
-  then \lstinline!B! may not have one. See \autoref{overloaded-operators}.
+  then \lstinline!B! may not have one. See \cref{overloaded-operators}.
 \item
   If \lstinline!A! is derived from \lstinline!ExternalObject!, then \lstinline!B! must also be derived from
   \lstinline!ExternalObject! and have the same full name. If \lstinline!A! is not derived from
   \lstinline!ExternalObject! then \lstinline!B! may not derived from \lstinline!ExternalObject!. See
-  \autoref{external-objects}.
+  \cref{external-objects}.
 \item
   If \lstinline!B! is not replaceable then \lstinline!A! may not be replaceable.
 \item
   If \lstinline!B! is transitively non-replaceable then \lstinline!A! must be transitively
-  non-replaceable (\autoref{transitively-non-replaceable}). For all elements of the inheritance
+  non-replaceable (\cref{transitively-non-replaceable}). For all elements of the inheritance
   interface of \lstinline!B! there must exist a compatible element with the same
   name and visibility in the inheritance interface of \lstinline!A!. The interface
   of \lstinline!A! may not contain any other elements.
@@ -423,8 +405,8 @@ Intuitively, that the type \lstinline!A! is a subtype of the type of \lstinline!
 \end{nonnormative}
 
 Plug-compatibility is a further restriction of compatibility (subtyping)
-defined in \autoref{plug-compatibility-or-restricted-subtyping}, and further restricted for functions, see
-\autoref{function-compatibility-or-function-subtyping-for-functions}. For a replaceable declaration or modifier the default class
+defined in \cref{plug-compatibility-or-restricted-subtyping}, and further restricted for functions, see
+\cref{function-compatibility-or-function-subtyping-for-functions}. For a replaceable declaration or modifier the default class
 must be compatible with the constraining class.
 
 For a modifier the following must apply:
@@ -433,7 +415,7 @@ For a modifier the following must apply:
   The modified element should exist in the element being modified.
 \item
   The modifier should be compatible with the element being modified, and
-  in most cases also plug-compatible, \autoref{plug-compatibility-or-restricted-subtyping}.
+  in most cases also plug-compatible, \cref{plug-compatibility-or-restricted-subtyping}.
 \end{itemize}
 
 \begin{nonnormative}
@@ -445,10 +427,10 @@ and compatible with original constraining class) and references refer to
 similar entities.
 \end{nonnormative}
 
-\section{Plug-Compatibility or Restricted Subtyping}\doublelabel{plug-compatibility-or-restricted-subtyping}
+\section{Plug-Compatibility or Restricted Subtyping}\label{plug-compatibility-or-restricted-subtyping}
 
 \begin{nonnormative}
-If a sub-component is redeclared, see \autoref{redeclaration}, it is
+If a sub-component is redeclared, see \cref{redeclaration}, it is
 impossible to connect to any new connector. A connector with input
 prefix must be connected to, and since one cannot connect across
 hierarchies, one should not be allowed to introduce such a connector at
@@ -457,8 +439,7 @@ components present in the interface A that are not present in B must be
 connected by default.
 \end{nonnormative}
 
-\numbereddefinition{Plug-compatibility (= restricted subtyping)}
-
+\begin{definition}[Plug-compatibility (= restricted subtyping)]
 An interface \lstinline!A! is plug-compatible with (a restricted subtype of) an
 interface \lstinline!B! (or the constraining interface of \lstinline!B!) iff:
 \begin{itemize}
@@ -468,9 +449,9 @@ interface \lstinline!B! (or the constraining interface of \lstinline!B!) iff:
   All public components present in \lstinline!A! but not in \lstinline!B! must be
   default-connectable (as defined below).
 \end{itemize}
+\end{definition}
 
-\numbereddefinition{Default connectable}
-
+\begin{definition}[Default connectable]
 A component of an interface is default-connectable iff:
 \begin{itemize}
 \item
@@ -490,6 +471,7 @@ A component of an interface is default-connectable iff:
   binding equation or all of its sub-components must have binding
   equations.
 \end{itemize}
+\end{definition}
 
 Based on the above definitions, there are the following restrictions:
 \begin{itemize}
@@ -562,18 +544,17 @@ plug-compatibility is required not only for replaceable sub-components,
 but also for replaceable classes.
 \end{nonnormative}
 
-\section{Function-Compatibility or Function-Subtyping for Functions}\doublelabel{function-compatibility-or-function-subtyping-for-functions}
+\section{Function-Compatibility or Function-Subtyping for Functions}\label{function-compatibility-or-function-subtyping-for-functions}
 
 \begin{nonnormative}
 Functions may be called with either named or positional
 arguments, and thus both the name and order is significant. If a
-function is redeclared, see \autoref{redeclaration}, any new arguments must
+function is redeclared, see \cref{redeclaration}, any new arguments must
 have defaults (and be at the end) in order to preserve the meaning of
 existing calls.
 \end{nonnormative}
 
-\numbereddefinition{Function-Compatibility or Function-Subtyping for Functions}
-
+\begin{definition}[Function-compatibility or function-subtyping for functions]
 A function class \lstinline!A! is \emph{function-compatible with or a function
 subtype of} function class \lstinline!B! iff (the terms \emph{function-compatible}
 and \emph{function subtype} of are synonyms and used interchangeably):
@@ -595,6 +576,7 @@ and \emph{function subtype} of are synonyms and used interchangeably):
   A public input component of \lstinline!A! not present in \lstinline!B! must have a binding
   assignment.
 \end{itemize}
+\end{definition}
 
 Based on the above definition the following restriction holds:
 \begin{itemize}
@@ -646,7 +628,7 @@ inside \lstinline!PlanetSimulation! is function-compatible with
 \lstinline!GravityInterface!.
 \end{example}
 
-\section{Type Compatible Expressions}\doublelabel{type-compatible-expressions}
+\section{Type Compatible Expressions}\label{type-compatible-expressions}
 
 Certain expressions consist of an operator applied to two or more type
 compatible sub-expressions (\lstinline!A! and \lstinline!B!), including binary operators, e.g.
@@ -675,14 +657,14 @@ compatible subexpressions \lstinline!A! and \lstinline!B! is defined as follows:
   expression of a simple type.
 \item
   If \lstinline!A! is a \lstinline!Real! expression then \lstinline!B! must be a \lstinline!Real! or \lstinline!Integer! expression
-  and the type compatible expression is \lstinline!Real!, compare \autoref{standard-type-coercion}.
+  and the type compatible expression is \lstinline!Real!, compare \cref{standard-type-coercion}.
 \item
   If \lstinline!A! is an \lstinline!Integer! expression then \lstinline!B! must be a \lstinline!Real! or \lstinline!Integer!
   expression. For exponentiation and division the type compatible
-  expression is \lstinline!Real! (even if both \lstinline!A! and \lstinline!B! are \lstinline!Integer!) see \autoref{exponentiation-of-scalars-of-numeric-elements}
-  and \autoref{division-of-scalars-or-numeric-arrays-by-numeric-scalars}, in
+  expression is \lstinline!Real! (even if both \lstinline!A! and \lstinline!B! are \lstinline!Integer!) see \cref{exponentiation-of-scalars-of-numeric-elements}
+  and \cref{division-of-scalars-or-numeric-arrays-by-numeric-scalars}, in
   other cases the type compatible expression is \lstinline!Real! or \lstinline!Integer! (same as
-  \lstinline!B!), compare \autoref{standard-type-coercion}.
+  \lstinline!B!), compare \cref{standard-type-coercion}.
 \item
   If \lstinline!A! is a \lstinline!Boolean! expression then \lstinline!B! must be a \lstinline!Boolean! expression and
   the type compatible expression is \lstinline!Boolean!.
