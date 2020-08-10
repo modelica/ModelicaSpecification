@@ -18,15 +18,46 @@ pipeline {
   stage('build') {
     agent {
       docker {
-        image 'modelicaspec/latexml:20190319'
+        image 'modelicaspec/latexml:20200803'
         label 'linux'
         alwaysPull true
       }
     }
+    environment {
+      HOME = '/tmp/jenkins'
+    }
     steps {
+      sh 'mkdir -p /tmp/jenkins'
       sh 'latexmk -pdf MLS.tex'
-      sh 'latexml MLS.tex --dest MLS.xml'
-      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html'
+      sh 'latexml --path=media MLS.tex --dest MLS.xml'
+      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html'
+      sh 'ln -s preface.html Chx1.html'
+      sh 'ln -s lexical-structure.html Ch2.html'
+      sh 'ln -s operators-and-expressions.html Ch3.html'
+      sh 'ln -s class-predefined-types-and-declarations.html Ch4.html'
+      sh 'ln -s scoping-name-lookup-and-flattening.html Ch5.html'
+      sh 'ln -s interface-or-type-relationships.html Ch6.html'
+      sh 'ln -s inheritance-modification-and-redeclaration.html Ch7.html'
+      sh 'ln -s equations.html Ch8.html'
+      sh 'ln -s connectors-and-connections.html Ch9.html'
+      sh 'ln -s arrays.html Ch10.html'
+      sh 'ln -s statements-and-algorithm-sections.html Ch11.html'
+      sh 'ln -s functions.html Ch12.html'
+      sh 'ln -s packages.html Ch13.html'
+      sh 'ln -s overloaded-operators.html Ch14.html'
+      sh 'ln -s stream-connectors.html Ch15.html'
+      sh 'ln -s synchronous-language-elements.html Ch16.html'
+      sh 'ln -s state-machines.html Ch17.html'
+      sh 'ln -s annotations.html Ch18.html'
+      sh 'ln -s unit-expressions.html Ch19.html'
+      sh 'ln -s the-modelica-standard-library.html Ch20.html'
+      sh 'ln -s glossary.html A1.html'
+      sh 'ln -s modelica-concrete-syntax.html A2.html'
+      sh 'ln -s modelica-dae-representation.html A3.html'
+      sh 'ln -s derivation-of-stream-equations.html A4.html'
+      sh 'ln -s modelica-revision-history.html A5.html'
+      sh 'ln -s literature.html A6.html'
+      sh script: '! (find . -type l -xtype l | egrep \'.*\')', label: 'Verify symbolic links work'
       sh 'tar czf MLS.tar.gz *.html *.css media css/'
       archiveArtifacts artifacts: 'MLS.tar.gz', fingerprint: true
       archiveArtifacts artifacts: 'MLS.pdf', fingerprint: true

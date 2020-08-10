@@ -38,6 +38,11 @@
 \usepackage{graphicx}
 \graphicspath{{media/}{../media/}} % so that chapter files can also find the images
 
+% Don't use subfig.sty until this LaTeXML issue has been fixed:
+% - https://github.com/brucemiller/LaTeXML/issues/1292 (marked as fixed as of commit 9f5c893b)
+% Leaving commented-out code as a hint to anyone who considers using subfig.
+%\usepackage{subfig}
+
 \usepackage{verbatim}
 % The fixltx2e that was used for textsubscript is no longer needed for pdf, but is needed by latexml
 \ifpdf
@@ -71,10 +76,9 @@
 \usepackage{longtable}
 \usepackage{multirow} % for multirow entries in tables
 \usepackage{listings}
+%\usepackage{enumitem} % Package not available for continuous integration builds.
 \usepackage{color}
 \usepackage[table]{xcolor}
-%\def\doublelabel#1{\label{#1}\hypertarget{#1}{}}
-\def\doublelabel#1{\label{#1}}
 \def\S0#1#2{\hypertarget{#2}\chapter{#1}\label{#2}}
 \def\S1#1#2{\hypertarget{#2}\section{#1}\label{#2}}
 \def\S2#1#2{\hypertarget{#2}\subsection{#1}\label{#2}}
@@ -89,17 +93,74 @@
 \renewcommand{\labelenumiii}{\labelenumii\arabic{enumiii}.}
 \renewcommand{\labelenumiv}{\labelenumiii\arabic{enumiv}.}
 
-% Non-normative content
-\newenvironment{nonnormative}[0]{%
+% Non-normative content without paragraph breaks at beginning and end.
+% In most cases, one should use the 'nonnormative' environment instead.
+\newenvironment{nonnormative*}[0]{%
 {[}\itshape\ignorespaces
 }{%
 \unskip\upshape{]}%
 }
-\newenvironment{example}[0]{%
-\begin{nonnormative}Example:
+
+% Non-normative content with paragraph breaks at beginning and end.
+\newenvironment{nonnormative}[0]{%
+\par\begin{nonnormative*}%
+}{%
+\end{nonnormative*}\par%
+}
+
+% Example environment, as a special case of non-normative content.
+\newenvironment{example*}[1][\unskip]{%
+\begin{nonnormative*}Example #1:
+}{%
+\end{nonnormative*}
+}
+\newenvironment{example}[1][\unskip]{%
+\begin{nonnormative}Example #1:
 }{%
 \end{nonnormative}
 }
+
+% Like \emph, but marking this as the place where new terminology is introduced.
+% In the future, we can change this to something that will automatically add this
+% to an index/glossary.
+\newcommand{\firstuse}[1]{\emph{#1}}
+
+% Formatting for filenames, URIs, etc.
+% For now, the content is wrapped in \mbox to avoid hyphenation to inject
+% hyphens.  A better solution could be to change the directory separator
+% characters to also produce an \allowbreak{} following the directory separator.
+\newcommand{\filename}[1]{\mbox{\textsf{#1}}}
+
+% Formatting of table headings.
+\newcommand{\tablehead}[1]{\textit{#1}}
+
+\newcommand{\glossaryitem}[1]{\textbf{#1}}
+
+\newcommand{\bibitemtitle}[1]{\emph{#1}}
+
+\usepackage[nameinlink,noabbrev]{cleveref}
+\def\autoref#1{\errmessage{You are not supposed to use \autoref; use \cref or \Cref instead.}}
+
+% Environment for definitions.
+\usepackage{amsthm}
+\newtheoremstyle{mlsdefinition}
+  {\topsep}   % ABOVESPACE
+  {\topsep}   % BELOWSPACE
+  {}          % BODYFONT
+  {}          % INDENT (empty value is the same as 0pt)
+  {\bfseries} % HEADFONT
+  {.}         % HEADPUNCT
+  {.75em}     % HEADSPACE
+  {Definition~#2. \firstuse{#3}}        % CUSTOM-HEAD-SPEC
+\theoremstyle{mlsdefinition}
+% In order to show where the definition ends, we put a \qed at the end.  This can't be done using \newtheoremstyle,
+% so instead we make the 'definition' environment a wrapper around the amsthm-base environment.
+\makeatletter
+\newtheorem{definition@inner}{Definition}[chapter]
+\crefname{definition@inner}{definition}{definitions}
+\Crefname{definition@inner}{Definition}{Definitions}
+\newenvironment{definition}{\begin{definition@inner}}{\qed\end{definition@inner}}
+\makeatother
 
 \setcounter{secnumdepth}{5}
 % Note: Toc changed for appendex
@@ -168,7 +229,9 @@
 
 \lstset{ %
   backgroundcolor=\color{white},   % choose the background color
-  breaklines=true,                % automatic line breaking only at whitespace
+  mathescape=true,
+  breaklines=true,                 % automatic line breaking only at whitespace
+  keepspaces,                      % don't remove space such as those after closing parenthesis
   captionpos=b,                    % sets the caption-position to bottom
   commentstyle=\color[rgb]{0,0.4,0}\sffamily,    % comment style
   keywordstyle=\color{blue}\ttfamily\bfseries,       % keyword style
@@ -181,6 +244,7 @@
   frame=lrtb, %
   xleftmargin=\fboxsep, %
   xrightmargin=-\fboxsep, %
+  belowskip=0pt, %
 }
 
 % Duplicate this definition here to avoid issue - and name it "fortran77" to avoid problem in LatexML
@@ -233,14 +297,61 @@
 
 % Note: \lstinline!...! used for inline Modelica using [short]modelica
 
-% Change all autoref variants below chapter to use "section"
-\def\subsectionautorefname{section}
-\def\subsubsectionautorefname{section}
-\def\paragraphautorefname{section}
-\def\subparagraphautorefname{section}
+% Misc math
+\makeatletter
+\newcommand{\pdfrac}[3][\@nil]{%
+  \def\tmp{#1}%
+  \ifx\tmp\@nnil
+    \frac{\mathrm{d}#2}{\mathrm{d}#3}%
+  \else
+    \frac{\mathrm{d}^{#1}#2}{\mathrm{d}#3^{#1}}%
+  \fi%
+}
+\makeatother
+\newcommand{\abs}[1]{\left\lvert #1{} \right\rvert}
 
-\title{Modelica® - A Unified Object-Oriented Language for Systems
-Modeling\\[2\baselineskip]Language
-Specification\\[2\baselineskip]Version 3.5-dev}
+% Text mode additions
+\newcommand{\textgreatereq}{$\geq$}
+\newcommand{\textlesseq}{$\leq$}
+
+% Change all \cref and \Cref variants below chapter to use "section"
+\crefname{subsection}{section}{sections}
+\Crefname{subsection}{Section}{Sections}
+\crefname{subsubsection}{section}{sections}
+\Crefname{subsubsection}{Section}{Sections}
+\crefname{paragraph}{section}{sections}
+\Crefname{paragraph}{Section}{Sections}
+\crefname{subparagraph}{section}{sections}
+\Crefname{subparagraph}{Section}{Sections}
+
+% We can't use cleveref.sty the way we want for equations until this LaTeXML has been fixed:
+% - https://github.com/brucemiller/LaTeXML/issues/1306
+% In the meantime, we use \eqref to achieve the same result.
+%\crefname{equation}{}{}
+%\Crefname{equation}{}{}
+
+\newcommand{\crefnameref}[1]{\cref{#1}~\emph{\nameref*{#1}}}
+\newcommand{\Crefnameref}[1]{\Cref{#1}~\emph{\nameref*{#1}}}
+
+% Make all description lists break the line after each key.
+% henrikt-ma: Commenting out use of the enumitem package, see above.
+%\setlist[description]{
+%  style=nextline,
+%  labelwidth=0pt,
+%  leftmargin=15pt,
+%  itemindent=\dimexpr-5pt-\labelsep\relax,
+%}
+
+\title{
+\ifpdf
+\begin{center}
+\includegraphics[width=8cm]{Modelica_Language}
+\end{center}
+~\\[2\baselineskip]
+\fi
+Modelica\textsuperscript\textregistered - A Unified Object-Oriented Language for Systems
+Modeling\\[2\baselineskip]
+Language Specification\\[2\baselineskip]
+Version 3.5-dev}
 \date{\today}
 \author{Modelica Association}
