@@ -156,25 +156,6 @@ The \lstinline!caption! attribute of \lstinline!Figure! can use the restricted
 form of text markup described in \cref{text-markup-in-captions} as well as
 the variable replacements described in \cref{variable-replacements}.
 
-\subsubsection{Plot Curves}\label{plot-curves}
-The actual data to plot is specified in the \lstinline!curves! of a \lstinline!Plot!:
-\begin{lstlisting}[language=modelica]
-record Curve
-  expression x = time "X coordinate values";
-  expression y "Y coordinate values";
-  String legend "Legend";
-end Curve;
-\end{lstlisting}
-
-The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be
-component references refering to a scalar variable or \lstinline!time!.
-
-When \lstinline!legend! isn't provided, the tool produces a default based on
-\lstinline!x! and/or \lstinline!y!.  Providing the empty string as
-\lstinline!legend! means that the curve shall be omitted from the plot legend.
-Variable replacements, as described in \cref{variable-replacements}, can be
-used in the \lstinline!legend! of \lstinline!Curve!.
-
 \subsubsection{Axis Properties}\label{axis-properties}
 Properties may be defined for each \lstinline!Plot! axis:
 \begin{lstlisting}[language=modelica]
@@ -189,13 +170,38 @@ end Axis;
 When an axis bound isn't provided, the tool computes one automatically.
 
 The Modelica tool is responsible for showing the unit used for values at the
-axis tick marks, so the axis \lstinline!label! shall not be used to convey this
-information.
+axis tick marks, so the axis \lstinline!label! shall not contain the unit.
+
+If a tool does not recognize the \lstinline!unit!, it is recommended to issue a
+warning and treat the \lstinline!unit! as if it was not specified.
 
 When an axis label isn't provided, the tool produces a default label. Providing
 the empty string as axis label means that no label should be shown. Variable
 replacements, as described in \cref{variable-replacements}, can be used in
 the \lstinline!label! of \lstinline!Axis!
+
+\subsubsection{Plot Curves}\label{plot-curves}
+The actual data to plot is specified in the \lstinline!curves! of a \lstinline!Plot!:
+\begin{lstlisting}[language=modelica]
+record Curve
+  expression x = time "X coordinate values";
+  expression y "Y coordinate values";
+  String legend "Legend";
+end Curve;
+\end{lstlisting}
+
+The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be
+component references refering to a scalar variable or \lstinline!time!. It
+is an error if \lstinline!x! or \lstinline!y! does not designate a scalar variable.
+It is an error if the unit of an expression (i.e., a variable's \lstinline!unit!,
+or second for \lstinline!time!) is incompatible with the \lstinline!unit! of the
+corresponding axis.
+
+When \lstinline!legend! isn't provided, the tool produces a default based on
+\lstinline!x! and/or \lstinline!y!.  Providing the empty string as
+\lstinline!legend! means that the curve shall be omitted from the plot legend.
+Variable replacements, as described in \cref{variable-replacements}, can be
+used in the \lstinline!legend! of \lstinline!Curve!
 
 \subsubsection{Variable Replacements}\label{variable-replacements}
 In most places where text for display is defined the final value of a result
