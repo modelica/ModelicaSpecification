@@ -148,7 +148,7 @@ initial equation
 ```
 (Since `start('p')` is assumed not being solved in a nonlinear equation system, the initializability of `p` is _exact_.)
 
-Example 2: When the full Modelica parameter as `fixed = false`, there will also be a corresponding equation somewhere else:
+When the full Modelica parameter has `fixed = false`, there will also be a corresponding equation somewhere else:
 ```
 parameter Real p(start = <guess>, fixed = false);
 ```
@@ -180,7 +180,7 @@ If the parameter `p` is replaced by the non-parameter `v`,
 ```
 Real v(final start = <exact>, fixed = true);
 ```
-a non-causal equation is used instead, and one can prevent that `guess('v')` from being modified after translation:
+a non-causal equation is used instead, and one can prevent `guess('v')` from being modified after translation:
 ```
   Real 'v';
 initial equation
