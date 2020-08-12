@@ -158,6 +158,20 @@ In Flat Modelica all we need to do is drop the `fixed`, as the guess value for a
 ```
 (A tool will need to analyze the equations in order to tell whether `start('p')` is ever used, marking the difference between `approx` and `calculated` initializability of `p`.)
 
+### Reduction of `start`
+
+Here, only non-`final` modification of `start` is considered; the case of a `final` modification will be considered in the next section.
+
+Above, it has been said that the full Modelica attribute `start` only provides the default for `start('p')`.  What this means is simply that we now transform
+```
+  Real 'x'(start = <expr>);
+```
+into
+```
+  Real 'x';
+initial equation
+  start('x') := <expr>;
+```
 
 ### Rewriting of `final`
 
