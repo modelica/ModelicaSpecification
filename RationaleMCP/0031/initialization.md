@@ -121,7 +121,7 @@ This is rewritten in the same way as when `start` was present:
 parameter Real p(start = <binding>, fixed = true);
 ```
 
-For a variable with declaration equation and `fixed = false`, the `start` is always a guess value, and the declaration equation simply moved to either `initial equation` (for parameters) or `equation` (otherwise).  This is done using a causal equation, so that variability checking isn't affected.  For example,
+For a variable with declaration equation and `fixed = false`, the `start` is always a guess value, and the declaration equation simply moved to either `initial equation` (for parameters) or `equation` (otherwise).  This is done using a causal equation, so that variability checking isn't affected (**but also meaning the equation isn't allowed in a system of equations — this might be too restrictive!**).  For example,
 ```
 Real y(start = <guess>, fixed = false) = <binding>;
 ```
