@@ -1,11 +1,11 @@
-\chapter{Packages}\doublelabel{packages}
+\chapter{Packages}\label{packages}
 
-\section{Package as Specialized Class}\doublelabel{package-as-specialized-class}
+\section{Package as Specialized Class}\label{package-as-specialized-class}
 
-The package concept is a specialized class (\autoref{specialized-classes}), using the
+The package concept is a specialized class (\cref{specialized-classes}), using the
 keyword \lstinline!package!.
 
-\section{Motivation and Usage of Packages}\doublelabel{motivation-and-usage-of-packages}
+\section{Motivation and Usage of Packages}\label{motivation-and-usage-of-packages}
 
 \begin{nonnormative}
 Packages in Modelica may contain definitions of constants and
@@ -42,7 +42,7 @@ useful for a number of reasons:
 \end{itemize}
 \end{nonnormative}
 
-\subsection{Importing Definitions from a Package}\doublelabel{importing-definitions-from-a-package}
+\subsection{Importing Definitions from a Package}\label{importing-definitions-from-a-package}
 
 The import-clause makes public classes and other public definitions
 declared in some package available for use by shorter names in a class
@@ -61,74 +61,62 @@ Import-clauses in a package or class fill the following two needs:
 \end{nonnormative}
 
 %TODO-FORMAT Should be formatted using tabs or tabular?
-\lstinline!An! import-clause can occur in one of the following five syntactic forms:
+An \lstinline!import!-clause can occur in one of the following syntactic forms:
 
-\lstinline!import! \emph{packagename}\lstinline!;! (qualified import)
+% Note a syntactic form cannot be written as a single \lstinline due to LaTeXML problem reported here:
+%   https://github.com/brucemiller/LaTeXML/issues/1274 (marked as fixed as of commit 80d7940)
+% Instead, we need to break up the \lstinline in mysterious ways.  Be sure to check that the generated HTML
+% looks OK when making changes!
 
-\lstinline!import! {[}\emph{packagename}.{]}\emph{definitionname}\lstinline!;! (single
-definition import)
+\lstinline!import $\mathit{definitionname}$;! (qualified import of top-level definition)
 
-\lstinline!import!
-{[}\emph{packagename}.{]}\{\emph{def1,def2,\ldots{}defN}\}\lstinline!;! (multiple
-definition import)
+\lstinline!import $\mathit{packagename}$.!% Break up \lstinline as workaround for LaTeXML issue described above.
+\lstinline!$\mathit{definitionname}$;! (qualified import)
 
-\lstinline!import! \emph{packagename}.*\lstinline!;! (unqualified import)
+\lstinline!import $\mathit{packagename}$.{$\mathit{def}_{1}$, $\mathit{def}_{2}$, $\ldots$, $\mathit{def}_{n}$};! (multiple definition import)
 
-\lstinline!import! \emph{shortpackagename} = \emph{packagename}\lstinline!;! (renaming
-import)
+\lstinline!import $\mathit{packagename}$.*;! (unqualified import)
 
-\lstinline!import! \emph{shortpackagename} =
-{[}\emph{packagename.{]}definitionname}\lstinline!;! (renaming single def. import)
+\lstinline!import $\mathit{shortname}$ = $\mathit{definitionname}$;! (renaming import of top-level definition)
 
-Here \emph{packagename} is the fully qualified name of the imported
-package including possible dot notation and \emph{definitionname} is the
-name of an element in a package. The multiple definition import is
-equivalent to multiple single definition imports with corresponding
-packagename and definition names.
+\lstinline!import $\mathit{shortname}$ = $\mathit{packagename}$.!% Break up \lstinline as workaround for LaTeXML issue described above.
+\lstinline!$\mathit{definitionname}$;! (renaming import)
 
-\subsubsection{Lookup of Imported Names}\doublelabel{lookup-of-imported-names}
+Here $\mathit{packagename}$ is the fully qualified name of the imported package including possible dot notation and $\mathit{definitionname}$ is the name of an element in a package.  The multiple definition import is equivalent
+to multiple single definition imports with corresponding $\mathit{packagename}$ and definition names.
 
-This section only defines how the imported name is looked up in the
-import clause. For lookup in general -- including how import clauses are
-used, see \autoref{static-name-lookup}.
+\subsubsection{Lookup of Imported Names}\label{lookup-of-imported-names}
 
-Lookup of the name of an imported package or class, e.g. \lstinline!A.B.C! in the
-clauses \lstinline!import A.B.C; import D=A.B.C; import A.B.C.*!, deviates from the
-normal lexical lookup by starting the lexical lookup of the first part
-of the name at the top-level.
+This section only defines how the imported name is looked up in the import clause. For lookup in general -- including how import clauses are used -- see \cref{static-name-lookup}.
 
-Qualified import clauses may only refer to packages or elements of
-packages, i.e., in \lstinline!import A.B.C;! or \lstinline!import D=A.B.C;!,
-\lstinline!A.B! must be a
-package. Unqualified import clauses may only import from packages, i.e.,
-in \lstinline!import A.B.*;!, \lstinline!A.B! must be a package. {[}\emph{Note: in} \lstinline!import A;!
-\emph{the class} \lstinline!A! \emph{can be any class which is an element of the
-unnamed top-level package}{]}
+Lookup of the name of an imported package or class deviates from the normal lexical lookup.  For example, consider \lstinline!A.B.C! in the clauses \lstinline!import A.B.C;!, \lstinline!import D = A.B.C;!, or \lstinline!import A.B.C.*;!.
+Here, lookup starts with the lexical lookup of the first part of the name (\lstinline!A!) at the top-level.
+
+Qualified import clauses may only refer to packages or elements of packages, i.e., in \lstinline!import A.B.C;! or \lstinline!import D = A.B.C;!, \lstinline!A.B! must be a package.  Unqualified import clauses may only import
+from packages, i.e., in \lstinline!import A.B.*;!, \lstinline!A.B! must be a package.
 
 \begin{nonnormative}
-For example, if the package \lstinline!ComplexNumbers! would have
-been declared as a subpackage inside the package \lstinline!Modelica.Math!,
-its fully qualified name would be \lstinline!Modelica.Math.ComplexNumbers!.
-Definitionname is the simple name without dot notation of a single
-definition that is imported. A shortpackagename is a simple name without
-dot notation that can be used to refer to the package after import
-instead of the presumably much longer packagename.
+In \lstinline!import A;! the class \lstinline!A! can be any class which is an element of the unnamed top-level package.
+\end{nonnormative}
 
-The forms of \lstinline!import! are exemplified below assuming that we want to
-access the addition operation of the hypothetical package \lstinline!Modelica.Math.ComplexNumbers!:
+\begin{nonnormative}
+For example, if the package \lstinline!ComplexNumbers! would have been declared as a subpackage inside the package \lstinline!Modelica.Math!, its fully qualified name would be
+\lstinline!Modelica.Math.ComplexNumbers!.  $\mathit{definitionname}$ is the simple name without dot notation of a single definition that is imported.  A $\mathit{shortname}$ is
+a simple name without dot notation that can be used to refer to the package after import instead of the presumably much longer $\mathit{packagename}$.
+
+The forms of \lstinline!import! are exemplified below assuming that we want to access the addition operation of the hypothetical package \lstinline!Modelica.Math.ComplexNumbers!:
 \begin{lstlisting}[language=modelica]
-  import Modelica.Math.ComplexNumbers;       // Accessed by ComplexNumbers.Add
-  import Modelica.Math.ComplexNumbers.Add;   // Accessed by Add
-  import Modelica.Math.ComplexNumbers.{Add,Sub}; // Accessed by Add and Sub
-  import Modelica.Math.ComplexNumbers.*;     // Accessed by Add
-  import Co = Modelica.Math.ComplexNumbers;  // Accessed by Co.Add
+import Modelica.Math.ComplexNumbers;       // Accessed by ComplexNumbers.Add
+import Modelica.Math.ComplexNumbers.Add;   // Accessed by Add
+import Modelica.Math.ComplexNumbers.{Add,Sub}; // Accessed by Add and Sub
+import Modelica.Math.ComplexNumbers.*;     // Accessed by Add
+import Co = Modelica.Math.ComplexNumbers;  // Accessed by Co.Add
 \end{lstlisting}
 \end{nonnormative}
 
-\subsubsection{Summary of Rules for Import Clauses}\doublelabel{summary-of-rules-for-import-clauses}
+\subsubsection{Summary of Rules for Import Clauses}\label{summary-of-rules-for-import-clauses}
 
 The following rules apply to import-clauses:
-
 \begin{itemize}
 \item
   Import-clauses are \emph{not} inherited.
@@ -149,13 +137,12 @@ The following rules apply to import-clauses:
   Multiple qualified import-clauses may not have the same import name.
 \end{itemize}
 
-\subsection{Mapping Package/Class Structures to a Hierarchical File System}\doublelabel{mapping-package-class-structures-to-a-hierarchical-file-system}
+\subsection{Mapping Package/Class Structures to a Hierarchical File System}\label{mapping-package-class-structures-to-a-hierarchical-file-system}
 
 Packages/classes may be represented in the hierarchical structure of the
-operating system {[}\emph{the file system}{]}. For classes with version
-information see also \autoref{mapping-of-versions-to-file-system}. The nature of such an external
+operating system (the file system). For classes with version
+information see also \cref{mapping-of-versions-to-file-system}. The nature of such an external
 entity falls into one of the following two groups:
-
 \begin{itemize}
 \item
   Directory in the file system.
@@ -169,25 +156,33 @@ entity falls into one of the following two groups:
 Each Modelica file in the file-system is stored in UTF-8 format (defined
 by The Unicode Consortium; \lstinline!http://www.unicode.org!) and may start with
 the UTF-8 encoded byte order mark (\lstinline!0xef 0xbb 0xbf!); this is treated as
-white-space in the grammar. \emph{{[}Tools may also store classes in
-data-base systems, but that is not standardized.{]}}
+white-space in the grammar.
 
-\subsubsection{Mapping a Package/Class Hierarchy into a Directory Hierarchy (Structured Entity)}\doublelabel{mapping-a-package-class-hierarchy-into-a-directory-hierarchy-structured-entity}
+\begin{nonnormative}
+Tools may also store classes in data-base systems, but that is not standardized.
+\end{nonnormative}
+
+\subsubsection{Mapping a Package/Class Hierarchy into a Directory Hierarchy (Structured Entity)}\label{mapping-a-package-class-hierarchy-into-a-directory-hierarchy-structured-entity}
 
 A directory shall contain a node, the file \filename{package.mo}. The node shall contain a stored-definition that defines a class \lstinline!A! with a name
-matching the name of the structured entity. {[}\emph{The node typically
-contains documentation and graphical information for a package, but may
-also contain additional elements of the class} \lstinline!A!.{]}
+matching the name of the structured entity.
+
+\begin{nonnormative}
+The node typically contains documentation and graphical information for a package, but may also contain additional elements of the class \lstinline!A!.
+\end{nonnormative}
 
 A directory may also contain one or more sub-entities (directories or
 files). The sub-entities are mapped as elements of the class defined by
-their enclosing structured entity. {[}\emph{For example, if directory} \filename{A}
-\emph{contains the three files} \filename{package.mo}, \filename{B.mo} \emph{and}
-\filename{C.mo}
-\emph{the classes defined are} \lstinline!A!, \lstinline!A.B!, \emph{and} \lstinline!A.C.!{]} Two
-sub-entities shall not define classes with identical names {[}\emph{for
-example, a directory shall not contain both the sub-directory} \filename{A}
-\emph{and the file} \filename{A.mo}{]}.
+their enclosing structured entity.  Two sub-entities shall not define classes with identical names
+
+\begin{example}
+If directory \filename{A} contains the three files \filename{package.mo}, \filename{B.mo} and \filename{C.mo}, the classes defined are \lstinline!A!,
+\lstinline!A.B!, and \lstinline!A.C.!
+\end{example}
+
+\begin{example}
+A directory shall not contain both the sub-directory \filename{A} and the file \filename{A.mo}.
+\end{example}
 
 In order to preserve the order of sub-entities it is advisable to create
 a file \filename{package.order} where each line contains the name of one class or
@@ -200,21 +195,18 @@ constants that are stored in \filename{package.mo} are also present in
 \filename{package.mo} (this ensures that the relative order between classes and
 constants stored in different ways is preserved).
 
-\subsubsection{Mapping a Package/Class Hierarchy into a Single File (Nonstructured Entity)}\doublelabel{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}
+\subsubsection{Mapping a Package/Class Hierarchy into a Single File (Nonstructured Entity)}\label{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}
 
-When mapping a package or class-hierarchy to a file {[}\emph{e.g. the
-  file} \filename{A.mo}{]}, that file shall only define a single class \lstinline!A! with a
-name matching the name of the nonstructured entity. In a file hierarchy
-the files shall have the extension \filename{.mo}.
+When mapping a package or class-hierarchy to a file (e.g.\ the file \filename{A.mo}), that file shall only define a single class \lstinline!A! with a
+name matching the name of the nonstructured entity. In a file hierarchy the files shall have the extension \filename{.mo}.
 
 A \filename{.mo} file defining more than one class cannot be part of the mapping
 to file-structure and it is an error if it is loaded from the
 \lstinline!MODELICAPATH!.
 
-\subsubsection{The within Clause}\doublelabel{the-within-clause}
+\subsubsection{The within Clause}\label{the-within-clause}
 
 A within-clause has the following syntax:
-
 \begin{lstlisting}[language=grammar]
   within [ packageprefixname ] ";"
 \end{lstlisting}
@@ -232,17 +224,17 @@ The subpackage \lstinline!Rotational! declared within
 the packageprefixname with the short name of the package. The
 declaration of \lstinline!Rotational! could be given as below:
 \begin{lstlisting}[language=modelica]
-  within Modelica.Mechanics;
-  package Rotational // Modelica.Mechanics.Rotational
-    ...
+within Modelica.Mechanics;
+package Rotational // Modelica.Mechanics.Rotational
+  ...
 \end{lstlisting}
 \end{example}
 
-\subsection{External resources}\doublelabel{external-resources}
+\subsection{External resources}\label{external-resources}
 
 In order to reference external resources from documentation (such as
 links and images in html-text) and/or to reference images in the Bitmap
-annotation (see \autoref{bitmap}). URIs should be used, for example
+annotation (see \cref{bitmap}). URIs should be used, for example
 \filename{file:///} and the URI scheme \filename{modelica://} which can be used to retrieve
 resources associated with a package. According to the URI specification scheme names are
 case-insensitive, but the lower-case form should be used, that is \filename{Modelica://} is allowed but \filename{modelica://} is the
@@ -266,30 +258,22 @@ that a resource with a given path should be unique for any package name
 that precedes it. The first part of the path may not be the name of a
 class in the package given by the authority.
 
-When Modelica packages are stored hierarchically in a file-system (i.e.
-package \lstinline!A! in a directory \filename{A} containing \filename{package.mo}) the resource
-\filename{modelica://A/Resources/C.jpg} should be stored in the file
-\filename{A/Resources/C.jpg}, it is not recommend to use \filename{modelica://A.B/C.jpg}
-for referencing resources; it could be stored in the file \filename{A/B/C.jpg} --
-which is counter-intuitive if \lstinline!A.B! is stored together with \lstinline!A!. When
-Modelica packages are stored in other formats a similar mapping should
-be defined, such that a resource with a given path should be unique for
-any package name that precedes it. The first part of the path may not be
-the name of a class in the package given by the authority. As above for
-\filename{Modelica 3.2.1/package.mo} i.e. resources starting from \filename{Modelica
-3.2.1}, and \filename{modelica://Modelica.Mechanics/C.jpg} is \filename{Modelica
-3.2.1/Mechanics/C.jpg} - regardless of whether \lstinline!Modelica.Mechanics! is
-stored in \filename{Modelica 3.2.1/package.mo}, \filename{Modelica
-3.2.1/Mechanics/package.mo}, or \filename{Modelica 3.2.1/Mechanics.mo}.
+When Modelica packages are stored hierarchically in a file-system (i.e.\ package \lstinline!A! in a directory \filename{A} containing \filename{package.mo}) the resource
+\filename{modelica://A/Resources/C.jpg} should be stored in the file \filename{A/Resources/C.jpg}, it is not recommend to use \filename{modelica://A.B/C.jpg} for referencing
+resources; it could be stored in the file \filename{A/B/C.jpg} -- which is counter-intuitive if \lstinline!A.B! is stored together with \lstinline!A!.  When Modelica packages
+are stored in other formats a similar mapping should be defined, such that a resource with a given path should be unique for any package name that precedes it.  The first
+part of the path may not be the name of a class in the package given by the authority.  As above for \filename{Modelica 3.2.1/package.mo} i.e.\ resources starting from
+\filename{Modelica 3.2.1}, and \filename{modelica://Modelica.Mechanics/C.jpg} is \filename{Modelica 3.2.1/Mechanics/C.jpg} -- regardless of whether \lstinline!Modelica.Mechanics!
+is stored in \filename{Modelica 3.2.1/package.mo}, \filename{Modelica 3.2.1/Mechanics/package.mo}, or \filename{Modelica 3.2.1/Mechanics.mo}.
 
 For a Modelica-package stored as a single file, \filename{A.mo}, the resource
 \filename{modelica://A/C.jpg} refers to a file \filename{C.jpg} stored in the same
 directory as \filename{A.mo}, but using resources in this variant is not
 recommended since multiple packages will share resources.
 
-In case the class-name contains quoted identifiers, the single-quote `\lstinline!`!'
+In case the name of the class contains quoted identifiers, the single-quote `\lstinline!`!'
 and any reserved characters (`\lstinline!:!', `\lstinline!/!', `\lstinline!?!', `\lstinline!\#!', `\lstinline![!',
-`\lstinline!]!', `\lstinline!@!', `\lstinline!!!', `\lstinline!\$!', `\lstinline!\&!', `\lstinline!(!', `\lstinline!)!', `\lstinline!*!', `\lstinline!+!',
+`\lstinline!]!', `\lstinline!@!', `\lstinline!!!', `\lstinline[mathescape=false]!\$!', `\lstinline!\&!', `\lstinline!(!', `\lstinline!)!', `\lstinline!*!', `\lstinline!+!',
 `\lstinline!,!', `\lstinline!;!', `\lstinline!=!') should be percent-encoded as normal in URIs.
 
 \begin{example}
@@ -301,80 +285,67 @@ Consider a top-level package \lstinline!Modelica! and a class
 resource than \filename{modelica://Modelica/C.jpg}.
 \end{example}
 
-\subsection{The Modelica Library Path -- MODELICAPATH}\doublelabel{the-modelica-library-path-modelicapath}
+\subsection{The Modelica Library Path -- MODELICAPATH}\label{the-modelica-library-path-modelicapath}
 
 The top-level scope implicitly contains a number of classes stored
 externally. If a top-level name is not found at global scope, a Modelica
 translator shall look up additional classes in an ordered list of
-library roots, called \lstinline!MODELICAPATH!. {[}\emph{The implementation of}
-\lstinline!MODELICAPATH! \emph{is tool dependent. In order that a user can work in
-parallel with different Modelica tools, it is advisable to not have this
-list as environment variable, but as a setting in the respective tool.
-Since MODELICAPATH is tool dependent, it is not specified in which way
-the list of library roots is stored. Typically, on a Windows system
-\lstinline!MODELICAPATH! is a string with path names separated by `;' whereas on a
-Linux system it is a string with path names separated by a `:'.}{]}
+library roots, called \lstinline!MODELICAPATH!.
+
+\begin{nonnormative}
+The implementation of \lstinline!MODELICAPATH! is tool dependent.  In order that a user can work in parallel with different Modelica tools, it is advisable to not
+have this list as environment variable, but as a setting in the respective tool.  Since \lstinline!MODELICAPATH! is tool dependent, it is not specified in which way
+the list of library roots is stored.  Typically, on a Windows system \lstinline!MODELICAPATH! is a string with path names separated by `\filename{;}' whereas on a Linux system
+it is a string with path names separated by a `\filename{:}'.
+\end{nonnormative}
 
 In addition a tool may define an internal list of libraries, since it is
 in general not advisable for a program installation to modify global
 environment variables. The version information for a library (as defined
-in \autoref{annotations-for-version-handling}) may also be used during this search to search for a
-specific version of the library (e.g. if Modelica library version 2.2 is
-needed and the first directory in MODELICAPATH contain Modelica library
+in \cref{annotations-for-version-handling}) may also be used during this search to search for a
+specific version of the library (e.g.\ if Modelica library version 2.2 is
+needed and the first directory in \lstinline!MODELICAPATH! contain Modelica library
 version 2.1, whereas the second directory contains Modelica version 2.2,
 then Modelica library version 2.2 is loaded from the second directory.).
 
-{[}\emph{The first part of the path} \lstinline!A.B.C! (\emph{i.e.}, \lstinline!A!) \emph{is
-located by searching the ordered list of roots in} \lstinline!MODELICAPATH!.
-\emph{If no root contains} \lstinline!A! \emph{the lookup fails}. \emph{If} \lstinline!A!
-\emph{has been found in one of the roots, the rest of the path is
-located in} A; \emph{if that fails, the entire lookup fails without
-searching} \emph{for} \lstinline!A! \emph{in any of the remaining roots in}
-\lstinline!MODELICAPATH!.{]}
+\begin{nonnormative}
+The first part of the path \lstinline!A.B.C! (i.e., \lstinline!A!) is located by searching the ordered list of roots in \lstinline!MODELICAPATH!.  If no root contains
+\lstinline!A! the lookup fails.  If \lstinline!A! has been found in one of the roots, the rest of the path is located in \lstinline!A!; if that fails, the entire lookup
+fails without searching for \lstinline!A! in any of the remaining roots in \lstinline!MODELICAPATH!.
+\end{nonnormative}
 
-\subsubsection{Example of Searching MODELICAPATH}\doublelabel{example-of-searching-modelicapath}
+\subsubsection{Example of Searching MODELICAPATH}\label{example-of-searching-modelicapath}
 
 If during lookup a top-level name is not found in the unnamed top-level
 scope, the search continues in the package hierarchies stored in these
-directories. {[}\emph{\autoref{fig:roots} below shows an example} \lstinline!MODELICAPATH! =
-\lstinline!"C:\library;C:\lib1;C:\lib2"!\emph{,
-with three directories containing the roots of the package hierarchies}
-\lstinline!Modelica! \emph{,} \lstinline!MyLib!\emph{, and} \lstinline!ComplexNumbers!\emph{. The first two are represented as the subdirectories}
-\filename{C:\textbackslash{}library\textbackslash{}Modelica} \emph{and}
-\filename{C:\textbackslash{}lib1\textbackslash{}MyLib}\emph{, whereas the third is stored
-as the file} \filename{C:\textbackslash{}lib2\textbackslash{}ComplexNumbers.mo}\emph{.}
+directories.
+
+\begin{example}
+\Cref{fig:roots} below shows an example \lstinline!MODELICAPATH! = \filename{"C:\textbackslash{}library;C:\textbackslash{}lib1;C:\textbackslash{}lib2"}, with three
+directories containing the roots of the package hierarchies \lstinline!Modelica!, \lstinline!MyLib!, and \lstinline!ComplexNumbers!.  The first two are represented as
+the subdirectories \filename{C:\textbackslash{}library\textbackslash{}Modelica} and \filename{C:\textbackslash{}lib1\textbackslash{}MyLib}, whereas the third is stored
+as the file \filename{C:\textbackslash{}lib2\textbackslash{}ComplexNumbers.mo}.
 
 \begin{figure}[H]
-\caption{Roots of package hierarchies, e.g.,
-\texttt{Modelica}, \texttt{MyLib}, and \texttt{ComplexNumbers} in
-\texttt{MODELICAPATH ="C:\textbackslash library;C:\textbackslash lib1;C:\textbackslash lib2"}.}
+\caption{%
+Roots of package hierarchies, e.g., \lstinline!Modelica!, \lstinline!MyLib!, and \lstinline!ComplexNumbers! in
+\lstinline!MODELICAPATH! = \filename{"C:\textbackslash{}library;C:\textbackslash{}lib1;C:\textbackslash{}lib2"}.
+}
 \label{fig:roots}
 \includegraphics[width=6in,height=2in]{modelicapath}
 \end{figure}
 
-\emph{Assume that we want to access the package} \lstinline!MyLib.Pack2! \emph{in
-\autoref{fig:roots} above, e.g. through an} \lstinline!import! \emph{clause}
-\lstinline!import MyLib.Pack2;!\emph{. During lookup we first try to find a package} \lstinline!MyLib!
-\emph{corresponding to the first part of the import name. It is not
-found in the top-level scope since it has not previously been loaded
-into the environment. }
+Assume that we want to access the package \lstinline!MyLib.Pack2! in \cref{fig:roots} above, e.g.\ through an \lstinline!import!-clause \lstinline!import MyLib.Pack2;!.
+During lookup we first try to find a package \lstinline!MyLib! corresponding to the first part of the import name.  It is not found in the top-level scope since it has not
+previously been loaded into the environment.
 
-\emph{Since the name was not found in the top-level scope the search
-continues in the directories in the} \lstinline!MODELICAPATH! \emph{in the specified
-order. For the search to succeed, there must be a subdirectory} \lstinline!MyLib!
-\emph{or a file} \filename{MyLib.mo} \emph{in one of the directories mentioned in
-the} \lstinline!MODELICAPATH!\emph{. If there is no such subdirectory or file, the
-lookup fails. If} \lstinline!MyLib! \emph{is found in one of the directories, the
-rest of the name, in this case} \lstinline!Pack2!\emph{, is located in} \lstinline!MyLib!\emph{.
-If that fails, the entire lookup fails without continuing the search in
-possibly remaining directories.}
+Since the name was not found in the top-level scope the search continues in the directories in the \lstinline!MODELICAPATH! in the specified order.  For the search to succeed,
+there must be a subdirectory \filename{MyLib} or a file \filename{MyLib.mo} in one of the directories mentioned in the \lstinline!MODELICAPATH!.  If there is no such
+subdirectory or file, the lookup fails.  If \filename{MyLib} is found in one of the directories, the rest of the name, in this case \lstinline!Pack2!, is located in
+\filename{MyLib}.  If that fails, the entire lookup fails without continuing the search in possibly remaining directories.
 
-\emph{In this example the name matches the subdirectory named} \lstinline!MyLib!
-\emph{in the second directory} \filename{C:\textbackslash{}lib1}
-\emph{mentioned in the} \lstinline!MODELICAPATH!\emph{. This subdirectory must have
-a file} \filename{package.mo} \emph{containing a definition of the package}
-\lstinline!MyLib!\emph{, according to the Modelica rules on how to map a package
-hierarchy to the file system. The subpackage} \lstinline!Pack2! \emph{is stored in
-its own subdirectory or file in the subdirectory} \filename{MyLib}\emph{. In this
-case the search succeeds and the package} \lstinline!MyLib.Pack2! \emph{is loaded
-into the environment.}{]}
+In this example the name matches the subdirectory named \filename{MyLib} in the second directory \filename{C:\textbackslash{}lib1} mentioned in the \lstinline!MODELICAPATH!.
+This subdirectory must have a file \filename{package.mo} containing a definition of the package \lstinline!MyLib!, according to the Modelica rules on how to map a package
+hierarchy to the file system.  The subpackage \lstinline!Pack2! is stored in its own subdirectory or file in the subdirectory \filename{MyLib}.  In this case the search
+succeeds and the package \lstinline!MyLib.Pack2! is loaded into the environment.
+\end{example}

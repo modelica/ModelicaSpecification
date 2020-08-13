@@ -1,6 +1,7 @@
-\chapter{State Machines}\doublelabel{state-machines}
+\chapter{State Machines}\label{state-machines}
 
-{[}\emph{This chapter defines language elements to define clocked state
+\begin{nonnormative}
+This chapter defines language elements to define clocked state
 machines. These state machines have a similar modeling power as
 Statecharts (Harel 1987) and have the important feature that at one
 clock tick, there is only one assignment to every variable (for example,
@@ -10,90 +11,88 @@ detected during translation). Furthermore, it is possible to activate
 and deactivate clocked equations and blocks at a clock tick. An
 efficient implementation will only evaluate the equations and blocks
 that are active at the current clock tick. With other Modelica language
-elements, this important feature cannot be defined.}
+elements, this important feature cannot be defined.
 
-\emph{The semantics of the state machines defined in this chapter is
+The semantics of the state machines defined in this chapter is
 inspired by mode automata and is basically the one from Lucid Synchrone
 3.0 (Pouzet 2006). Note, safety critical control software in aircrafts
 is often defined with such kind of state machines. The following
-properties are different to Lucid Synchrone 3.0:}
-
+properties are different to Lucid Synchrone 3.0:
 \begin{itemize}
 \item
-  \emph{Lucid Synchrone has two kinds of transitions: \emph{strong} and
+  Lucid Synchrone has two kinds of transitions: \emph{strong} and
   \emph{weak} transitions. Strong transitions are executed before the
   actions of a state are evaluated and weak transitions are executed
   after the actions of a state are evaluated. This can lead to
   surprising behavior, because the actions of a state are skipped if it
   is activated by a weak transition and exited by a true strong
-  transition.\\
+  transition.
+
   For this reason, the state machines in this chapter use \emph{immediate}
   (= the same as \emph{strong}) and \emph{delayed} transitions. Delayed
   transitions are \emph{immediate} transitions where the condition is
-  automatically delayed with an implicit \textbf{previous}(..). }
+  automatically delayed with an implicit \lstinline!previous!.
 \item
-  \emph{Parallel state machines can be explicitly synchronized with a
+  Parallel state machines can be explicitly synchronized with a
   language element (similarly as parallel branches in Sequential
   Function Charts). This often occurring operation can also be defined
   in Statecharts or in Lucid Synchrone state machines but only
-  indirectly with appropriate conditions on transitions.}
+  indirectly with appropriate conditions on transitions.
 \item
-  \emph{Modelica blocks can be used as states. They might contain
+  Modelica blocks can be used as states. They might contain
   clocked or clocked discretized continuous-time equations (in the
   latter case, the equations are integrated between the previous and the
-  next clock tick, if the corresponding state is active).}
+  next clock tick, if the corresponding state is active).
 \end{itemize}
+\end{nonnormative}
 
-{]}
-
-\section{Transitions}\doublelabel{transitions}
+\section{Transitions}\label{transitions}
 
 Any Modelica block instance without continuous-time equations or
 algorithms can potentially be a state of a state machine. A cluster of
-instances which are coupled by \textbf{transition} statements makes a
+instances which are coupled by \lstinline!transition! statements makes a
 state machine. All parts of a state machine must have the same clock.
 All transitions leaving one state must have different priorities. One
 and only one instance in each state machine must be marked as initial by
-appearing in an \textbf{initialState} statement. The following special
+appearing in an \lstinline!initialState! statement. The following special
 kinds of connect-statements are used to define transitions between
 states and to define the initial state:
-
 \begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline \endhead
-\multicolumn{2}{|p{12cm}|}{\textbf{Statements to define a state machine}}\\ \hline
+\multicolumn{2}{|p{12cm}|}{\tablehead{Statements to define a state machine}}\\ \hline
 \begin{tabular}{@{}p{4cm}@{}}
-\textbf{transition}(from, to, \\ condition,\\
+\lstinline!transition!(from, to,\\
+condition,\\
 immediate, reset,\\
 synchronize, priority)
 \end{tabular}
 &
 Arguments \lstinline!from! and \lstinline!to! are block instances and \lstinline!condition! is a
-Boolean argument. The optional arguments \lstinline!immediate!, \lstinline!reset!, and
-\lstinline!synchronize! are of type Boolean, have parametric variability and a
-default of \textbf{true, true, false} respectively. The optional
-argument \lstinline!priority! is of type Integer, has parametric variability and
+\lstinline!Boolean! argument. The optional arguments \lstinline!immediate!, \lstinline!reset!, and
+\lstinline!synchronize! are of type \lstinline!Boolean!, have parametric variability and a
+default of \lstinline!true!, \lstinline!true!, \lstinline!false! respectively. The optional
+argument \lstinline!priority! is of type \lstinline!Integer!, has parametric variability and
 a default of 1.
 
 This operator defines a transition from instance \lstinline!from! to instance
 \lstinline!to!. The \lstinline!from! and \lstinline!to! instances become states of a state
-machine. The transition fires when condition = \textbf{true} if
-immediate = \textbf{true} (this is called an \emph{immediate transition})
-or \textbf{previous}(condition) when immediate = \textbf{false} (this is
-called a \emph{delayed transition}). Argument \lstinline!priority! defines the
+machine. The transition fires when \lstinline!condition = true! if
+\lstinline!immediate = true! (this is called an \firstuse{immediate transition})
+or \lstinline!previous(condition)! when \lstinline!immediate = false! (this is
+called a \firstuse{delayed transition}). Argument \lstinline!priority! defines the
 priority of firing when several transitions could fire. In this case the
 transition with the smallest value of \lstinline!priority! fires. It is required
 that $\textrm{priority}\ge 1$ and that for all transitions from the same state, the
-priorities are different. If reset = \textbf{true}, the states of the
-target state are reinitialized, i.e. state machines are restarted in
+priorities are different. If \lstinline!reset = true!, the states of the
+target state are reinitialized, i.e.\ state machines are restarted in
 initial state and state variables are reset to their start values. If
 synchronize=true, any transition is disabled until all state machines of
-the from-state have reached final states, i.e. states without outgoing
+the from-state have reached final states, i.e.\ states without outgoing
 transitions. For the precise details about firing a transition, see
-\autoref{state-machine-semantics}.\\ \hline
-\textbf{initialState}(state) & Argument \lstinline!state! is the block instance
+\cref{state-machine-semantics}.\\ \hline
+\lstinline!initialState(state)! & Argument \lstinline!state! is the block instance
 that is defined to be the initial state of a state machine. At the first
-clock tick of the state machine, this state becomes
-active.\\ \hline
+clock tick of the state machine, this state becomes active.\\ \hline
 \end{longtable}
 
 The transition-, and initialState-equations may only be used in
@@ -102,34 +101,33 @@ condition, or in when-equations.
 
 It is possible to query the status of the state machine by using the
 following operators:
-
 \begin{longtable}[]{|p{4cm}|p{10cm}|}
 \hline \endhead
-\textbf{activeState}(state)&
+\lstinline!activeState(state)!&
 Argument \lstinline!state! is a block instance. The operator returns
-\textbf{true}, if this instance is a state of a state machine and this
+\lstinline!true!, if this instance is a state of a state machine and this
 state is active at the actual clock tick. If it is not active, the
-operator returns \textbf{false}.
+operator returns \lstinline!false!.
 
 It is an error if the instance is not a state of a state machine.\\ \hline
-\textbf{ticksInState()} & Returns the number of ticks of the clock of the state machine
+\lstinline!ticksInState()! & Returns the number of ticks of the clock of the state machine
 for which the currently active state has maintained its active state without interruption,
-i.e. without local or hierarchical transitions from this state.
+i.e.\ without local or hierarchical transitions from this state.
 In the case of a self-transition to the currently active state or to an active enclosing state,
 the number is reset to one.
 This function can only be used in state machines.\\ \hline
-\textbf{timeInState()} & Returns the time duration as Real in {[}s{]}
+\lstinline!timeInState()! & Returns the time duration as \lstinline!Real! in {[}s{]}
 for which the currently active state has maintained its active state without interruption,
-i.e. without local or hierarchical transitions from this state.
+i.e.\ without local or hierarchical transitions from this state.
 In the case of a self-transition to the currently active state or to an active enclosing state,
 the time is reset to zero.
 This function can only be used in state machines.\\ \hline
-
 \end{longtable}
+
 \begin{example}
-If there is a transition with immediate=false from
-state A1 to A2 and the condition is ticksInState() $\ge 5$, and A1 became
-active at 10ms, and the clock period is 1ms, then A1 will be active at
+If there is a transition with \lstinline!immediate=false! from
+state \lstinline!A1! to \lstinline!A2! and the condition is \lstinline!ticksInState() >= 5!, and \lstinline!A1! became
+active at 10ms, and the clock period is 1ms, then \lstinline!A1! will be active at
 10ms, 11ms, 12ms, 13ms, 14ms, and will be not active at 15 ms.
 \begin{lstlisting}[language=modelica]
   block State end State;
@@ -142,7 +140,8 @@ equation
   transition(A1, A2, ticksInState() >= 5, immediate=false);
 \end{lstlisting}
 \end{example}
-\section{State Machine Graphics}\doublelabel{state-machine-graphics}
+
+\section{State Machine Graphics}\label{state-machine-graphics}
 
 \begin{nonnormative}
 The recommended layout of state machines is shown below for a
@@ -158,10 +157,10 @@ states and for transition text and \{175,175,175\} for transition
 lines.
 \end{nonnormative}
 
-The annotation for graphics of \textbf{transition}() has the following
-structure: \textbf{annotation}(Line(\ldots{}), Text(\ldots{})); and for
-\textbf{initialState}(): \textbf{graphical-primitives}(Line(\ldots{})); with Line
-and Text annotations defined in \autoref{annotations}.
+The annotation for graphics of \lstinline!transition! has the following
+structure: \lstinline!annotation(Line($\ldots$), Text($\ldots$))!; and for
+\lstinline!initialState()!: \emph{graphical-primitives}\lstinline!(Line($\ldots$))!; with \lstinline!Line!
+and \lstinline!Text! annotations defined in \cref{annotations}.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -197,24 +196,22 @@ last point.
 
 If the condition text is somewhat distant from the perpendicular line, a
 dimmed straight line joins the transition text and the perpendicular
-line {[} \emph{See the rightmost transition above.} {]}.
+line.  (See the rightmost transition above.)
 
 If \lstinline!reset=true!, a filled arrow head is used otherwise an open arrow head.
 For \lstinline!synchronize=true!, an inverse ``fork'' symbol is used in the
-beginning of the arrow {[} \emph{See the rightmost transition above.}
-{]}.
+beginning of the arrow.  (See the rightmost transition above.)
 
 The value of the \lstinline!priority! attribute is prefixing the condition text
 followed by a colon if \lstinline!priority! \textgreater{} 1.
 
 The \lstinline!initialState! line has a filled arrow head and a bullet at the
-opposite end of the initial state {[} \emph{as shown above} {]}.
+opposite end of the initial state (as shown above).
 
-\section{State Machine Semantics}\doublelabel{state-machine-semantics}
+\section{State Machine Semantics}\label{state-machine-semantics}
 
 For the purpose of defining the semantics of state machines, assume that
 the data of all transitions are stored in an array of records:
-
 \begin{lstlisting}[language=modelica]
 record Transition
   Integer from;
@@ -229,41 +226,41 @@ end Transition;
 The transitions are sorted with lowest priority number last in the
 array; and the priorities must be unique for each value of \lstinline!from!. The
 states are enumerated from 1 and up. The transition conditions are
-stored in a separate array c{[}:{]} since they are time varying.
+stored in a separate array \lstinline!c[:]! since they are time varying.
 
-  The semantics model is a discrete-time system with inputs \{ c{[}:{]},
-  active, reset\} with t being an array corresponding to the inputs to the
-  transition operator, outputs \{activeState, activeReset,
-  activeResetStates{[}:{]}\} and states \{nextState, nextReset,
-  nextResetStates{[}:{]}\}. For a top level state machine, active is
-  always true. For sub-state machines, active is true only when the parent
-  state is active. For a top level state machine, reset is true at the
-  first activation only. For sub-state machine, reset is propagated from
+The semantics model is a discrete-time system with inputs \{\lstinline!c[:]!,
+\lstinline!active!, \lstinline!reset!\} with \lstinline!t! being an array corresponding to the inputs to the
+transition operator, outputs \{\lstinline!activeState!, \lstinline!activeReset!,
+\lstinline!activeResetStates[:]!\} and states \{\lstinline!nextState!, \lstinline!nextReset!,
+\lstinline!nextResetStates[:]!\}. For a top level state machine, active is
+always true. For sub-state machines, active is true only when the parent
+state is active. For a top level state machine, reset is true at the
+first activation only. For sub-state machine, reset is propagated from
 the state machines higher up.
 
-\subsection{State Activation}\doublelabel{state-activation}
+\subsection{State Activation}\label{state-activation}
 
-The state update starts from nextState, i.e., what has been determined
-to be the next state at the previous time. selectedState takes into
-account if a reset of the state machine is to be done.
+The state update starts from \lstinline!nextState!, i.e., what has been determined to be the next state at the previous time.
+\lstinline!selectedState! takes into account if a reset of the state machine is to be done.
 
 \begin{lstlisting}[language=modelica]
-  output Integer selectedState = if reset then 1 else previous(nextState);
+output Integer selectedState = if reset then 1 else previous(nextState);
 \end{lstlisting}
 The integer fired is calculated as the index of the transition to be
-fired by checking that selectedState is the from-state and the condition
+fired by checking that \lstinline!selectedState! is the from-state and the condition
 is true for an immediate transition or previous(condition) is true for a
 delayed transition. The max function returns the index of the transition
 with highest priority or 0.
 
 \begin{lstlisting}[language=modelica]
-  Integer fired = max(if
-    (if t[i].from == selectedState
-	   then (if t[i].immediate then c[i] else previous(c[i]))
-	   else false)
-	 then i
-	 else 0
-   for i in 1:size(t,1));
+Integer fired =
+  max(
+    if (if t[i].from == selectedState
+        then (if t[i].immediate then c[i] else previous(c[i]))
+        else false)
+      then i
+      else 0
+    for i in 1:size(t,1));
 \end{lstlisting}
 The start value of c is false. This definition would require that the
 previous value is recorded for all transitions conditions. Below is
@@ -271,67 +268,68 @@ described an equivalent semantics which just require to record the value
 of one integer variable delayed.
 
 The integer immediate is calculated as the index of the immediate
-transition to potentially be fired by checking that selectedState is the
+transition to potentially be fired by checking that \lstinline!selectedState! is the
 from-state and the condition is true. The max function returns the index
 of the transition with true condition and highest priority or 0.
 
 \begin{lstlisting}[language=modelica]
-  Integer immediate = max(if
-     (if t[i].immediate and  t[i].from == selectedState
+Integer immediate =
+  max(
+    if (if t[i].immediate and t[i].from == selectedState
         then c[i]
-		else false)
-	  then i
-	  else 0
-	for i in 1:size(t,1));
+        else false)
+      then i
+      else 0
+    for i in 1:size(t,1));
 \end{lstlisting}
-In a similar way, the Integer delayed is calculated as the index for a
-potentially delayed transition, i.e. a transition taking place at the
-next clock tick. In this case the from-state needs to be equal to
-nextState:
 
+In a similar way, the \lstinline!Integer delayed! is calculated as the index for a
+potentially delayed transition, i.e.\ a transition taking place at the
+next clock tick. In this case the from-state needs to be equal to
+\lstinline!nextState!:
 \begin{lstlisting}[language=modelica]
-  Integer delayed =  max(if
-    (if not t[i].immediate and t[i].from == nextState
-	   then c[i]
-	   else false)
-	 then i
-	 else 0
-  for i in 1:size(t,1));
+Integer delayed =
+  max(
+    if (if not t[i].immediate and t[i].from == nextState
+        then c[i]
+        else false)
+      then i
+      else 0
+    for i in 1:size(t,1));
 \end{lstlisting}
+
 The transition to be fired is determined as follows, taking into account
 that a delayed transition might have higher priority than an immediate:
-
 \begin{lstlisting}[language=modelica]
-  Integer fired = max(previous(delayed), immediate);
+Integer fired = max(previous(delayed), immediate);
 \end{lstlisting}
-nextState is set to the found transitions to-state:
-
+\lstinline!nextState! is set to the found transitions to-state:
 \begin{lstlisting}[language=modelica]
-  Integer nextState = if active then
-                        (if fired > 0
-						   then t[fired].to
-						   else selectedState)
-					  else previous(nextState);
+Integer nextState =
+  if active then
+    (if fired > 0
+		  then t[fired].to
+		  else selectedState)
+	else
+    previous(nextState);
 \end{lstlisting}
 In order to define synchronize transitions, each state machine must
-determine which are the final states, i.e. states without
+determine which are the final states, i.e.\ states without
 from-transitions and to determine if the state machine is in a final
 state currently:
-
 \begin{lstlisting}[language=modelica]
-  Boolean finalStates[nStates] = {
-       max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1)) == 0
-	for i in 1:nStates};
-  Boolean stateMachineInFinalState = finalStates[activeState];
+Boolean finalStates[nStates] = {
+  max(if  t[j].from == i then 1 else 0 for j in 1:size(t,1)) == 0
+  for i in 1:nStates};
+Boolean stateMachineInFinalState = finalStates[activeState];
 \end{lstlisting}
 To enable a synchronize transition, all the stateMachineInFinalState
 conditions of all state machines within the meta state must be true. An
 example is given below in the semantic example model.
 
-\subsection{Reset Handling}\doublelabel{reset-handling}
+\subsection{Reset Handling}\label{reset-handling}
 
 A state can be reset for two reasons:
-
 \begin{itemize}
 \item
   The whole state machine has been reset from its context.\\
@@ -347,33 +345,33 @@ nextResetStates vectors.
 
 The state machine reset flag is propagated and maintained to each state
 individually:
-
 \begin{lstlisting}[language=modelica]
-  output Boolean activeResetStates[nStates] = {if reset then true else previous(nextResetStates[i]) for i in 1:nStates};
+output Boolean activeResetStates[nStates] = {if reset then true else previous(nextResetStates[i]) for i in 1:nStates};
 \end{lstlisting}
 until a state is eventually executed, then its corresponding reset
 condition is set to false:
-
 \begin{lstlisting}[language=modelica]
-  Boolean nextResetStates[nStates] = if  active then {if activeState == i then false else activeResetStates[i] for i in 1:nStates}
-   else previous(nextResetStates)
+Boolean nextResetStates[nStates] =
+  if active then
+    {if activeState == i then false else activeResetStates[i] for i in 1:nStates}
+  else
+    previous(nextResetStates)
 \end{lstlisting}
 The second reset mechanism is implemented with the selectedReset~and
 nextReset~variables. If no reset transition is fired, the nextReset is
 set to false for the next cycle.
 
-\subsection{Activation handling}\doublelabel{activation-handling}
+\subsection{Activation handling}\label{activation-handling}
 
 The execution of a sub-state machine has to be suspended when its
 enclosing state is not active. This activation flag is given as a
-Boolean input \lstinline!active!. When this flag is true, the sub-state machine
+\lstinline!Boolean! input \lstinline!active!. When this flag is true, the sub-state machine
 maintains its previous state, by guarding the equations of the state
 variables \lstinline!nextState!, \lstinline!nextReset! and \lstinline!nextResetStates!.
 
-\subsection{Semantics Summary}\doublelabel{semantics-summary}
+\subsection{Semantics Summary}\label{semantics-summary}
 
 The entire semantics model is given below:
-
 \begin{lstlisting}[language=modelica]
 model StateMachineSemantics "Semantics of state machines"
   parameter Integer nStates;
@@ -406,7 +404,7 @@ machine should be reset";
   Boolean stateMachineInFinalState = finalStates[activeState];
 end StateMachineSemantics;
 \end{lstlisting}
-\subsection{Merging Variable Definitions}\doublelabel{merging-variable-definitions}
+\subsection{Merging Variable Definitions}\label{merging-variable-definitions}
 
 \begin{nonnormative}
 When a state class uses an \lstinline!outer output! declaration,
@@ -418,12 +416,11 @@ different mutually exclusive states needs to be merged.
 
 In each state, the outer output variables are solved for and for each
 such variable a single definition is formed:
-
 \begin{lstlisting}[language=modelica,escapechar=!]
 v := if activeState(state!\textsubscript{1}!) then expre!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then expre!\textsubscript{2}! elseif ... else last(v)
 \end{lstlisting}
 
-\textbf{last}() is special internal semantic operator returning its
+\lstinline!last! is special internal semantic operator returning its
 input. It is just used to mark for the sorting that the incidence of its
 argument should be ignored. A start value must be given to the variable
 if not assigned in the initial state.
@@ -431,7 +428,7 @@ if not assigned in the initial state.
 A new assignment equation is formed which might be merged on higher
 levels in nested state machines.
 
-\subsection{Merging Connections to Multiple Outputs}\doublelabel{merging-connections-to-multiple-outputs}
+\subsection{Merging Connections to Multiple Outputs}\label{merging-connections-to-multiple-outputs}
 
 \begin{nonnormative}
 Since instances of blocks can be used as states of a state
@@ -442,7 +439,6 @@ allow several outputs to be connected to one input.
 It is possible to connect several outputs to an input if all the outputs
 come from states of the same state machine. In such cases, we get the
 following constraint equations:
-
 \begin{lstlisting}[language=modelica,escapechar=!]
 u!\textsubscript{1}! = u!\textsubscript{2}! = ... = y!\textsubscript{1}! = y!\textsubscript{2}! = ...
 \end{lstlisting}
@@ -459,7 +455,7 @@ u!\textsubscript{2}! = v
 ...
 \end{lstlisting}
 
-The merge of the definitions of v is then made according to \autoref{merging-variable-definitions}:
+The merge of the definitions of v is then made according to \cref{merging-variable-definitions}:
 Merging Variable Definitions. The result is after
 simplification:
 \begin{lstlisting}[language=modelica,escapechar=!]
@@ -469,31 +465,31 @@ u!\textsubscript{2}! = v
 ...
 \end{lstlisting}
 
-\subsection{Example}\doublelabel{example}
+\subsection{Example}\label{example}
 
-\emph{{[} Consider the following hierarchical state machine:}
+\begin{example}
+Consider the following hierarchical state machine:
 
 \includegraphics[width=5.34375in,height=5.72917in]{statemachine2}
 
-\emph{The model demonstrates the following properties:}
-
+The model demonstrates the following properties:
 \begin{itemize}
 \item
-  \emph{\lstinline!state1! is a meta state with two parallel state machines in it.}
+  \lstinline!state1! is a meta state with two parallel state machines in it.
 \item
-  \emph{\lstinline!stateA! declares \lstinline!v! as \lstinline!outer output!. \lstinline!state1! is on an intermediate
-  level and declares \lstinline!v! as \lstinline!inner outer output!, i.e. matches lower level
+  \lstinline!stateA! declares \lstinline!v! as \lstinline!outer output!. \lstinline!state1! is on an intermediate
+  level and declares \lstinline!v! as \lstinline!inner outer output!, i.e.\ matches lower level
   \lstinline!outer v! by being \lstinline!inner! and also matches higher level \lstinline!inner v! by being
-  \lstinline!outer!. The top level declares \lstinline!v! as \lstinline!inner! and gives the start value.}
+  \lstinline!outer!. The top level declares \lstinline!v! as \lstinline!inner! and gives the start value.
 \item
-  \emph{\lstinline!count! is defined with a start value in \lstinline!state1!. It is reset when
-  a reset transition (v\textgreater{}=20) is made to \lstinline!state1!.}
+  \lstinline!count! is defined with a start value in \lstinline!state1!. It is reset when
+  a reset transition (v\textgreater{}=20) is made to \lstinline!state1!.
 \item
-  \emph{\lstinline!stateX! declares the local variable \lstinline!w! to be equal to \lstinline!v! declared
-  as \lstinline!inner input!.}
+  \lstinline!stateX! declares the local variable \lstinline!w! to be equal to \lstinline!v! declared
+  as \lstinline!inner input!.
 \item
-  \emph{\lstinline!stateY! declares a local counter \lstinline!j!. It is reset at start and as a
-  consequence of the reset transition (v\textgreater{}=20) to \lstinline!state1!:}
+  \lstinline!stateY! declares a local counter \lstinline!j!. It is reset at start and as a
+  consequence of the reset transition (v\textgreater{}=20) to \lstinline!state1!:
   When the reset transition ($v\ge 20$) fires, then the variables of the
   active states are reset immediately (so \lstinline!count! from \lstinline!state1!, and \lstinline!i!
   from \lstinline!stateX!). The variables of other states are only reset at the time
@@ -501,13 +497,12 @@ u!\textsubscript{2}! = v
   0, when the transition \lstinline!stateX.i! \textgreater{} 20 fires (after \lstinline!state1!
   became active again, so after the reset transition $v\ge 20$).
 \item
-  \emph{Synchronizing the exit from the two parallel state machines of
+  Synchronizing the exit from the two parallel state machines of
   \lstinline!state1! is done by checking that \lstinline!stated! and \lstinline!stateY! are active using the
-  \lstinline!activeState! function.}
+  \lstinline!activeState! function.
 \end{itemize}
 
-\emph{The Modelica code (without annotations) is:}
-
+The Modelica code (without annotations) is:
 \begin{lstlisting}[language=modelica]
 block HierarchicalAndParallelStateMachine
   inner Integer v(start=0);
@@ -589,14 +584,14 @@ public
 end HierarchicalAndParallelStateMachine;
 \end{lstlisting}
 
-\emph{The behavior of the state machine can be seen in the plots of v:}
+The behavior of the state machine can be seen in the plots of \lstinline!v!:
 \begin{figure}[H]
 \includegraphics[width=4.16667in,height=2.91667in]{statemachineplot}
 \end{figure}
-\emph{The transition from \lstinline!state1! to \lstinline!state2! could have been done with a
-\lstinline!synchronize! transition with \lstinline!condition=true! instead. The semantically
-equivalent model is shown below:}
 
+The transition from \lstinline!state1! to \lstinline!state2! could have been done with a
+\lstinline!synchronize! transition with \lstinline!condition=true! instead. The semantically
+equivalent model is shown below:
 \begin{lstlisting}[language=modelica]
 block HierarchicalAndParallelStateMachine
   extends StateMachineSemantics(
@@ -708,3 +703,4 @@ equation
   end if;
 end HierarchcialAndParallelStateMachine;
 \end{lstlisting}
+\end{example}

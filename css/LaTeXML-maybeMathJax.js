@@ -2,12 +2,8 @@
 // Load MathJax, IFF the current browser can't handle MathML natively.
 
 (function() {
-    // cdn.mathjax.org shutdown:
-    //var mathjax_url =
-    //    "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=MML_HTMLorMML";
     var mathjax_url =
         "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=MML_HTMLorMML";
-    
 
     function refreshMath() {
         // Maybe unnecessary, or overkill, but...
