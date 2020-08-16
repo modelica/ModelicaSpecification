@@ -18,7 +18,7 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 This MCP consists of three parts:
 - `resolveURI` a new operator with function syntax to replace the MSL function `loadResource`, see [separate document](resolve-uri.md).
 - New forms of Modelica URIs, see [separate document](modelica-uris.md).
-- New structure for storing external resources with a Modelica class on a file system.
+- New structure for storing external resources with a Modelica class on a file system, see [separate document](resource-directory.md).
 
 See [#2387](https://github.com/modelica/ModelicaSpecification/pull/2387) for an extensive early discussion about the goals for this MCP.  Since then, the [MCP for figure annotations](https://github.com/modelica/ModelicaSpecification/pull/2482) has matured, adding new use cases for referencing resource within and across classes.
 
@@ -29,7 +29,8 @@ Besides addressing the problem with case insensitivity of the _host_ part of a U
 - References to special views of a class (_icon_, etc) shouldn't interfere with user-defined anchors and fragment specifiers.  Instead, Modelica URIs must have a flexible form allowing for new kinds of resources attached to a class, for example:
   - Figures and plots ([MCP-0033](https://github.com/modelica/ModelicaSpecification/pull/2482)).
   - Figure style sheets (topic for future MCP).
-  - Reference result of an `experiment` annotation (topic for future MCP).
+  - Named experiments (topic for future MCP).
+  - A component of the instantiated class.
 
 The file system storage of external resources together with a Modelica class makes use of a new, special, directory name for external resources, removing amiguity in how to reference an external resource, as well as making it easier to determine which parts of a file system hierarchy that might contain external resources.
 
