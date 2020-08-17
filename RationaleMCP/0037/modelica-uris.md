@@ -8,13 +8,13 @@ A Modelica URI can be divided into two main parts: a reference to a Modelica cla
 Below, "…" represent the class-relative resource part of the Modelica URI, [described below](class-relative-resource).  These are the different ways of referencing a class, where the _host_, _fullclass_, and _relclass_ represent a Modelica class reference (that is, Modelica identifiers, separated by the period charater, and hence free of the path separator that would have to be percent-encoded if present inside a quoted identifier):
 - _modelica://host/…_ (non-empty host) — This is the form defined today, becoming deprecated as of this MCP.
   * Example: _modelica://Modelica.Electrical.Analog/media/foo.png_
-- _modelica:///fullclass…_ — Class given by its fully qualified name, without leading period.
+- _modelica:///fullclass…_ — Class given by its fully qualified name, without leading period.  It is an error if _fullclass_ does not refer to an existing class.
   * Example: _modelica:///Modelica.Electrical.Analog/media/foo.png_
-- _modelica:///./relclass…_ — Class given by lookup of _relclass_ in the class tree — requires class tree context.
+- _modelica:///./relclass…_ — Class given by lookup of _relclass_ in the class tree — requires class tree context, and it is an error if _relclass_ doesn't resolve to an existing class.
   * Example: _modelica:///./Examples/media/foo.png_
   * Example: _modelica:///.//media/foo.png_ (empty _relclass_)
   * Example: _modelica:///.?figure=Disturbances&plot=Wind_ (empty _relclass_)
-- _modelica:///~/relclass…_ — This is a reference with class lookup from the point of the nearest enclosing encapsulated class, or the current top level class in case there is no enclosing encapsulated class.  For the MSL, where class encapsultion is currently not used much at all, this provides a convenient way to access resources organized in a hierarchy which is separate from the package hierarchy.
+- _modelica:///~/relclass…_ — Similar to the form above, but lookup of _relclass_ is made from the point of the nearest enclosing encapsulated class, or the current top level class in case there is no enclosing encapsulated class.  For the MSL, where class encapsultion is currently not used much at all, this provides a convenient way to access resources organized in a hierarchy which is separate from the package hierarchy.
   * Example: _modelica:///~//media/foo.png_ (empty _relclass_)
   * Example: _modelica:///~/Documentation?view=info#introduction_
 
@@ -35,14 +35,7 @@ This section is divided into one subsection for each type of resource being refe
 An _external resource_ is a file stored in a structure reflecting the Modelica class hierarchy of the current class.  The resource is specified using the rest of the URI path part, for example:
 - _modelica:///Modelica.Electrical.Analog/media/foo.png_
 
-Here, the _media/foo.png_ is a relative file system path that is resolved within a resource directory associated with the current class.  The details of this mapping for the deprecated _host_ form of a Modelica URI are omitted here; the following only applies to the non-deprecated forms, when the current Modelica package is stored in a file system hierarchy:
-- The fully qualified class name (after resolving any _relclass_ with respect to the class tree context) is mapped to a nested directory structure, with the constant directory name _resources.d_ (alternatively _package-resources_) appended.
-- The relative file system path is relative to _resources.d_ and may not resolve to a location outside _resources.d_.
-
-In the example Modelica URI above, assume `Modelica` is stored in _/Users/jdoe/modelica-packages/Modelica-4.0/Modelica_.  Then, the resolved external resource is:
-- _/Users/jdoe/modelica-packages/Modelica-4.0/Modelica/Electrical/Analog/resources.d/media/foo.png_
-
-Note that the mapping of the fully qualified class name to a directory is the same regardless of whether the package itself uses a directory hierarchy for storage — the directory hierarchy for external resoruces is fixed, and it is only one of several options for the package itself to be stored in the same hierarchy.
+This is currently the only form of (non-deprecated) Modelica URI with a path that continues after the class reference part, and this form is currently not combined with neither a query or a fragment specifier.  For further details see, [resoruce-directory.md].
 
 ### Class view
 
@@ -67,4 +60,4 @@ Note that inheritance of figures means that the `figure` identifier is not neces
 While the example above was using the _fullclass_ form of a Modelica URI, the most common place where a figure is references is probably in the documentation or other figures of the current class.  Then, using a lookup-based form makes the class more self-contained.
   * Example: _modelica:///.?figure=voltcurr&plot=sumc1c2_ (appearing in the `Documentation.info` of the current class)
 
-**It would be great if the path could be omitted with it's just a period.**
+**It would be great if the path could be omitted when it's just a period.**
