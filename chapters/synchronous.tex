@@ -1,16 +1,11 @@
 \chapter{Synchronous Language Elements}\label{synchronous-language-elements}
 
-This section presents language elements for describing synchronous
+This chapter defines synchronous
 behavior suited for implementation of control systems.
-
-\section{Introduction}\label{introduction2}
-
-\subsection{Overview}\label{overview}
-
-\begin{nonnormative}
-This chapter defines additional kinds of discrete-time
-variables and equations, as well as an additional kind of when-clause,
-in order to define sampled data systems in a safe way, so that the
+The synchronous behavior relies on an additional kind of discrete-time
+variables and equations, as well as an additional kind of when-clause.
+The benefits of synchronous behavior is that it allows a model to define large
+sampled data systems in a safe way, so that the
 translator can provide good diagnostics in case of a modeling error.
 
 The following small example shows the most important elements:
@@ -83,9 +78,7 @@ E * xd = A * previous(xd) + B * yd;
   extension of the Lucid Synchrone semantics. These approaches belong to
   the class of synchronous languages (Benveniste et.~al.\ 2002).
 \end{itemize}
-\end{nonnormative}
-
-\subsection{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
+\section{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
 
 \begin{nonnormative}
 Periodically sampled control systems could also be defined with
@@ -104,14 +97,16 @@ assigned a value when the when-condition becomes true and otherwise hold
 their value, (b) variables not assigned in the when-clause are directly
 accessed (= automatic \lstinline!sample! semantics), and (c) the variables
 assigned in the when-clause can be directly accessed outside of the
-when-clause (= automatic \lstinline!hold! semantics). This approach to define
-periodically sample data systems has the following drawbacks that are
-not present with the solution in this chapter using clocks and clocked
-equations:
+when-clause (= automatic \lstinline!hold! semantics).
+
+Using standard when-clauses works well for individual simple sampled blocks,
+but the synchronous approach
+using clocks and clocked equations provide the following benefits
+(especially for large sampled systems):
 \begin{enumerate}
 \item
-  It is not possible to detect sampling errors due to the
-  automatic sample and hold semantics. Examples:
+  Possibility to detect inconsistent sampling rate, since clock partitioning (see \cref{clock-partitioning}),
+  replaces the automatic sample and hold semantics. Examples:
   \begin{enumerate}
   \def\labelenumii{\alph{enumii}.}
   \item
@@ -126,30 +121,32 @@ equations:
     controller part, and different integer multiples are given, then the
     translator has to accept this (no error is detected).
   \end{enumerate}
+  Note: Clocked systems can mix different sampling rates
+  in well-defined ways when needed.
 \item
-  Due to the automatic sample and hold semantics, all variables
-  assigned in a when-clause of the above kind must have an initial value
+  Fewer initial conditions are needed, as only a subset of clocked
+  variables need initial conditions -- the clocked state variables (see \cref{clocked-state-variables}).
+  For a standard when-clause all variables
+  assigned in a when-clause must have an initial value
   because they might be used, before they are assigned a value the first
   time. As a result, all these variables are ``discrete-time states''
-  although in reality only a small subset of them need an initial
+  although in reality only a subset of them need an initial
   value.
 \item
-  Only a restricted form of equations can be used in a standard
-  when-clause, since the left hand side has to be a variable, in order
-  to identify the variables that are assigned in the when-clause. This
-  is a severe restriction, especially if nonlinear control algorithms
-  shall be defined. This restriction is not present for clocked
-  equations.
+  More general equations can be used, compared to standard when-clauses that require
+  a restricted form of equations where the left hand side has to be a variable, in order
+  to identify the variables that are assigned in the when-clause.
+  This restriction can be circumvented for standard when-clauses, but is
+  absent for clocked equations and make it more convenient to define
+  nonlinear control algorithms.
 \item
-  All equations belonging to a discrete controller must be in a
-  when clause. If the controller is built-up with several building
-  blocks, then the clock condition (sampling) must be explicitly
-  propagated to all blocks. This is tedious and error prone. With
-  clocked equations, the clock condition need to be defined only at one
-  place, and otherwise is automatically propagated by clock inference.
+  Clocked equations allow clock inference,
+  meaning that the sampling need only be given once for a sub-system.
+  For a standard when-clause the condition (sampling) must be explicitly
+  propagated to all blocks, which is tedious and error prone for large systems.
 \item
-  It is not possible to use a continuous-time model in when
-  clauses (e.g.\ some advanced controllers use an inverse model of a
+  Possible to use general continuous-time models in synchronous models
+  (e.g.\ some advanced controllers use an inverse model of a
   plant in the feedforward path of the controller, see (Thümmel et.~al.\ 2005)).
   This powerful feature of Modelica to use a nonlinear plant
   model in a controller would require to export the continuous-time
@@ -158,22 +155,25 @@ equations:
   equations, clocked controllers with continuous-time models can be
   directly defined in Modelica.
 \item
-  At a sample instant, an event iteration occurs (as for any other
-  event). A clocked partition, as well as a when-clause with a
-  \lstinline!sample! is evaluated exactly once at such an event instant.
-  However, the continuous-time model to which the sampled data
-  controller is connected, will be evaluated several times when the
-  overall system is simulated. With when-clauses, the continuous-time
-  part is typically evaluated three times at a sample instant (once,
-  when the sample instant is reached, once to evaluate the continuous
-  equations at the sample instant, and once when an event iteration
-  occurs since a discrete variable \lstinline!v! is changed and \lstinline!pre(v)!
-  appears in the equations). With clocked equations, no event iteration
-  is triggered if a clocked variable \lstinline!v! is changed and
-  \lstinline!previous(v)! appears in the equations, because the event
-  iteration cannot change the value of \lstinline!v!. As a result, typically the
-  simulation model is evaluated twice at a sample instant and therefore
-  the simulation is more efficient with clocked equations.
+  Clocked equations are straightforward to optimize because they are
+  evaluated exactly once at each an event instant.
+  In contrast a standard when-clause with \lstinline!sample! conceptually
+  requires several evaluations of the model (in some cases tools
+  can optimize this to avoid unneeded evaluations).
+  The problem for the standard when-clause is that after \lstinline!v!
+  is changed, \lstinline!pre(v)! shall be updated and the model re-evaluated,
+  since the equations could depend on \lstinline!pre(v)!.
+  For clocked equations this iteration can be omitted
+  since \lstinline!previous(v)! can only occur in the clocked equations
+  that are only run the first event iterations.
+\item
+  Clocked subsystems using arithmetic blocks are straightforward to optimize.
+  When a standard math-block (e.g.\ addition) is part of a clocked sub-system it is automatically
+  clocked and only evaluated when the clocked equations trigger.
+  For standard when-clauses one either needs a separate sampled math-block for each operation, or
+  it will conceputally be evaluated all the time.
+  However, tools may perform a similar optimization for standard when-clauses
+  and it is only relevant in large sampled systems.
 \end{enumerate}
 \end{nonnormative}
 
@@ -550,20 +550,17 @@ Otherwise, the following expressions are allowed:
   \end{example}
 \end{itemize}
 
-\section{Discrete States}\label{discrete-states}
+\section{Clocked State Variables}\label{clocked-state-variables}
 
-The previous value of a clocked variable can be accessed with the
-previous operator. Such a variable is called a clocked state variable.
+The previous value of a clocked variable can be accessed with the \lstinline!previous! operator.  A variable to which \lstinline!previous! has been applied is called a \firstuse{clocked state variable}.
 
 \begin{longtable}[]{|l|p{12cm}|}
 \hline \endhead
-\lstinline!previous(u)! & The input argument is a \emph{component expression} (see
-\cref{argument-restrictions-component-expression}) or a parameter expression. The return argument has the
-same type as the input argument. Input and return arguments are on the
-same clock. At the first tick of the clock of u or after a reset
-transition (see \cref{reset-handling}), the start value of u is returned, see
-\cref{initialization-of-clocked-partitions}. At subsequent activations of the clock of u, the value of
-u from the previous clock activation is returned.\\ \hline
+\lstinline!previous(u)! &
+The input argument is a \emph{component expression} (see \cref{argument-restrictions-component-expression}) or a parameter expression.  The return argument has the same type as the input argument.
+Input and return arguments are on the same clock.  At the first tick of the clock of \lstinline!u! or after a reset transition (see \cref{reset-handling}), the start value of \lstinline!u! is
+returned, see \cref{initialization-of-clocked-partitions}.  At subsequent activations of the clock of \lstinline!u!, the value of \lstinline!u! from the previous clock activation is returned.\\
+\hline
 \end{longtable}
 
 \section{Partitioning Operators}\label{partitioning-operators}
@@ -665,7 +662,7 @@ The input argument u is a clocked expression or an expression of type
 Clock.  (The operators can operate on all types of clocks.)  If
 u is a clocked expression, the operator returns a clocked variable that
 has the same type as the expression. If u is an expression of type
-Clock, the operator returns a Clock - except for noClock where it is an error.
+Clock, the operator returns a Clock -- except for noClock where it is an error.
 
 The optional input arguments \lstinline!factor! (default=0, min=0), and \lstinline!resolution!
 (default=1, min=1) are parameter expressions of type Integer.
