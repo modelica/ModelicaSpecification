@@ -1,4 +1,4 @@
-# Modelica Change Proposal MCP-0037<br/>Generalized Modelica URIs for external resources
+# Modelica Change Proposal MCP-0037<br/>Generalized Modelica URIs
 Henrik Tidefelt
 
 **(In Development)**
