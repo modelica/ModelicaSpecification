@@ -6,7 +6,7 @@ The result of `resolveURI(uri)` is a `String` giving the absolute filename of th
 
 `resolveURI` accepts two kinds of URIs:
 - _file:///…_ — only allowing absolute _file_ URIs
-- _modelica:///…_ — any Modelica URI except the deprecated _host_ form
+- _modelica:…_ — any Modelica URI except the deprecated _host_ form
 
 The reason that relative file URIs are not supported by `resolveURI` is that the base URI would most naturally be the file in which the Modelica source code of the `resolveURI` expression is stored, but a Modelica tool is not required to store classes in a file system, so this also encourages the use of Modelica URIs to handle resources attached to a Modelica class.
 
@@ -23,7 +23,7 @@ package P
   model A
   end A;
 
-  M m(uri = "modelica:///./A/table.mat");
+  M m(uri = "modelica:A?resource=table.mat");
 end P;
 ```
 Here, the lookup of `uri` doesn't take place where the string literal appears (namely `P`, which would have resulted in _…/P/A/resources.d/table.mat_).  Instead, the lookup happens in the context `P.M`, resulting in `m.filename` being _…/P/M/A/resources.d/table.mat_.
