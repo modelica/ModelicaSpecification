@@ -7,6 +7,8 @@ The design originates from the structure of a general URI.  Quoting [Wikipedia](
 URI = scheme:[//authority]path[?query][#fragment]
 ```
 
+Users that are unsure about the details of the general URI syntax are recommended to try one of the many freely available online tools for URI parsing, such as: https://www.freeformatter.com/url-parser-query-string-splitter.html
+
 The _path_ part of a Modelica URI is denoted the Modelice URI's _class reference_, and unlike the old Modelica URI format, qualified Modelica class names use the normal URI path segment separator `/` instead of `.`.
 
 The new format takes advantage of the _authority_ being optional.  The meaning of a non-empty _authority_ is not defined except for in the deprecated form of a Modelica URI.  A tool should be able to interpret Modelica URIs both without _authority_ and with an empty _authority_.  When _authority_ is present, any `/` separator following the _authority_ is just the separator between the _authority_ and the class reference, and not part of the class reference.
