@@ -26,12 +26,13 @@ Before going into the alternative new designs, let us first mention the current 
 - _modelica://host/…_ (non-empty host) — This is the form defined today, becoming deprecated as of this MCP.  In this MCP, this is referred to as the _deprecated form_ (of a Modelica URI).
   * Example: _modelica://Modelica.Electrical.Analog/media/foo.png_
 
-### Modelica URI class tree context
+### Relative Modelica URIs and the class tree context
 
 Among the proposed forms of class references below, there are some that are only meaningful relative to a context given by a position in the Modelica class tree.  These forms can only be used where a _class tree context_ is given.  It is an error if class reference relative to the class tree context doesn't resolve to a class within the same top level package as that of the context — references to resources in a different top level package must use the fully qualified form.  The class tree context can be given in one of two ways:
 - A string literal (or a substring thereof) appearing in a Modelica class definition, and in a position where a Modelica URI is given special meaning.  This generally excludes Modelica string literals denoting normal Modelica `String` values — a Modelica tool does not need to keep track of the origin of all string values in the form of Modelica URIs in order to preserve the class tree context.  Instead, it is in the context of certain annotations that a string literal can be in a position where a Modelica URI is expected, as in the `href` of an `a` tag in the `Documentation` annotation.
 - The [`resolveURI` operator](resolve-uri.md), also introduced by this MCP.
 
+A [separate rationale](relative-class-references.md) is given for the inclusion of relative class references in this MCP.
 
 ### Base proposal: No authority, slash-separation, and Modelica lookup
 
