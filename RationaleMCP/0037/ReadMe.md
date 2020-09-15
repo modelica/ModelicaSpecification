@@ -22,7 +22,7 @@ This MCP consists of three parts:
 
 See [#2387](https://github.com/modelica/ModelicaSpecification/pull/2387) for an extensive early discussion about the goals for this MCP.  Since then, the [MCP for figure annotations](https://github.com/modelica/ModelicaSpecification/pull/2482) has matured, adding new use cases for referencing resource within and across classes.
 
-Having `resolveURI` in the Modelica Language Specification instead of `loadResource` in the Modelica Stanard Library is the natural place for the basic utility for dealing with a concept entirely defined in the Modelica Language Specification.  In addition, making it an operator with function syntax means we can use it to resolve Modelica URIs in ways that aren't possible with a normal function.
+Having `resolveURI` in the Modelica Language Specification instead of `loadResource` in the Modelica Standard Library is the natural place for the basic utility for dealing with a concept entirely defined in the Modelica Language Specification.  In addition, making it an operator with function syntax means we can use it to resolve Modelica URIs in ways that aren't possible with a normal function.
 
 Besides addressing the problem with case insensitivity of the _host_ part of a URI, the new forms are designed to address two major shortcomings of the current forms of Modelica URIs:
 - A class should be able to refer to its own resources without hard-coding its own fully qualified name.
