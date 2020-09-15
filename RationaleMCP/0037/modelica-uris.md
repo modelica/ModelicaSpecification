@@ -9,9 +9,14 @@ URI = scheme:[//authority]path[?query][#fragment]
 
 Users that are unsure about the details of the general URI syntax are recommended to try one of the many freely available online tools for URI parsing, such as: https://www.freeformatter.com/url-parser-query-string-splitter.html
 
+## Basic structure
+
 The _path_ part of a Modelica URI is denoted the Modelice URI's _class reference_, and unlike the old Modelica URI format, qualified Modelica class names use the normal URI path segment separator `/` instead of `.`.
 
-The new format takes advantage of the _authority_ being optional.  The meaning of a non-empty _authority_ is not defined except for in the deprecated form of a Modelica URI.  A tool should be able to interpret Modelica URIs both without _authority_ and with an empty _authority_.  When _authority_ is present, any `/` separator following the _authority_ is just the separator between the _authority_ and the class reference, and not part of the class reference.
+The new format takes advantage of the _authority_ being optional.  The meaning of a non-empty _authority_ is currently reserved for the deprecated form of a Modelica URI.  An empty _authority_ cannot be mistaken for the deprecated form, and is allowed in the new form as an alternative to not specifying the _authority_ at all.
+
+As usual, some characters need to be URL encoded when put in a URI.  For instance, the Modelica class `.Slashy.'Foo/Bar'.Baz` is referenced like so:
+- _modelica:/Slashy/'Foo%2FBar'/Baz_
 
 ## Class reference
 
@@ -33,13 +38,16 @@ Among the proposed forms of class references below, there are some that are only
 These are the different ways of referencing a class, where the _host_, _fullclass_, and _relclass_ represent a slash-separated Modelica class reference (that is, Modelica identifiers, separated by the forward slash (`/`) charater):
 - _modelica:/fullclass_ — Class given by its fully qualified name.  It is an error if _fullclass_ does not refer to an existing class.
   * Example: _modelica:/Modelica/Electrical/Analog_
+  * Example: _modelica:///Modelica/Electrical/Analog_ (empty _authority_; the _fullclass_ form is the only possible form of class reference when _authority_ is present)
 - _modelica:relclass_ — Class given by lookup of _relclass_ in the class tree.  Requires class tree context, and it is an error if _relclass_ doesn't resolve to an existing class.
   * Example: _modelica:Examples_
   * Example: _modelica:_ (empty _relclass_)
   * Example: _modelica:?figure=Disturbances&plot=Wind_ (empty _relclass_)
 - _modelica:./relclass_ — Same as _modelica:./relclass_, possibly useful to add clarity.
+  * Example: _modelica:./Examples_
   * Example: _modelica:._ (empty _relclass_)
-  * Example: _modelica:///._ (empty _relclass_ with _authority_ present)
+  * Wrong: _modelica:///._ (malformed absolute reference with _fullclass_ `/.`)
+  * Wrong: _modelica:///./Examples_ (malformed absolute reference with _fullclass_ `/./Examples`)
 - _modelica:~/relclass_ — Similar to the form above, but lookup of _relclass_ is made from the point of the nearest enclosing encapsulated class, or the current top level class in case there is no enclosing encapsulated class.  For the MSL, where class encapsultion is currently not used much at all, this provides a convenient way to access resources organized in a hierarchy which is separate from the package hierarchy.
   * Example: _modelica:~/Icons_
   * Example: _modelica:~?resource=images/logo.png_ (empty _relclass_)
