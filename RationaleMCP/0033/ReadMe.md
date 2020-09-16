@@ -1,7 +1,7 @@
 # Modelica Change Proposal MCP-0033<br/>Annotations for Predefined Plots
 Henrik Tidefelt, Otto Tronarp
 
-**(In Development)**
+**(Under Evaluation)**
 
 ![Example generated with the prototype implementation](example-figure.png)
 
