@@ -162,23 +162,26 @@ Properties may be defined for each \lstinline!Plot! axis:
 record Axis
   Real min "Axis lower bound";
   Real max "Axis upper bound";
-  String unit "Unit of min and max";
+  String unit = "" "Unit of min and max";
   String label "Axis label";
 end Axis;
 \end{lstlisting}
 
 When an axis bound isn't provided, the tool computes one automatically.
 
-The Modelica tool is responsible for showing the unit used for values at the
-axis tick marks, so the axis \lstinline!label! shall not contain the unit.
+An empty \lstinline!unit! means that the axis is unitless, and each expression plotted against it may use its own unit determined by the tool.  The tool is responsible for conveying the information
+about choice of unit for the different variables, for instance by attaching this information to curve legends.
 
-If a tool does not recognize the \lstinline!unit!, it is recommended to issue a
-warning and treat the \lstinline!unit! as if it was not specified.
+\begin{nonnormative}
+When \lstinline!unit! is empty, and axis bounds are to be determined automatically, a natural choice of unit could be the variable's \lstinline!displayUnit!.  When axis bounds are specified by the
+user, on the other hand, a tool may choose a unit for the variable such that the range of the variable values (expressed in the chosen unit) fit nicely with the range of the unitless axis.
+\end{nonnormative}
 
-When an axis label isn't provided, the tool produces a default label. Providing
-the empty string as axis label means that no label should be shown. Variable
-replacements, as described in \cref{variable-replacements}, can be used in
-the \lstinline!label! of \lstinline!Axis!
+If a tool does not recognize the \lstinline!unit!, it is recommended to issue a warning and treat the \lstinline!unit! as if it was empty, as well as ignore any setting for \lstinline!min! and \lstinline!max!.
+
+When an axis label isn't provided, the tool produces a default label.  Providing the empty string as axis label means that no label should be shown.  Variable replacements, as described in
+\cref{variable-replacements}, can be used in the \lstinline!label! of \lstinline!Axis!  The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis
+\lstinline!label! shall not contain the unit.
 
 \subsubsection{Plot Curves}\label{plot-curves}
 The actual data to plot is specified in the \lstinline!curves! of a \lstinline!Plot!:
@@ -193,9 +196,8 @@ end Curve;
 The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be
 component references refering to a scalar variable or \lstinline!time!. It
 is an error if \lstinline!x! or \lstinline!y! does not designate a scalar variable.
-It is an error if the unit of an expression (i.e., a variable's \lstinline!unit!,
-or second for \lstinline!time!) is incompatible with the \lstinline!unit! of the
-corresponding axis.
+When the \lstinline!unit! of an \lstinline!Axis! is non-empty, it is an error if the unit of the corresponding \lstinline!Curve! expression (i.e., a variable's \lstinline!unit!,
+or second for \lstinline!time!) is incompatible with the axis unit.
 
 When \lstinline!legend! isn't provided, the tool produces a default based on
 \lstinline!x! and/or \lstinline!y!.  Providing the empty string as
