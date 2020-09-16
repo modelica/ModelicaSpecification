@@ -70,17 +70,16 @@ This leads to the alternative approach of making class references only through t
 
 ### Class references with '.' separator
 
-While not following the structure of a general URI, it would also be possible to define the new Modelica URIs with the class reference using `.` as separator rahter than `/`.  The advantage of doing this is that the URI path can then also be used to specify a relative file path to an external resource of the class, just like in the old Modelica URI format:
-* _modelica:/Modelica.Electrical.Analog/media/foo.png_
+While not following the structure of a general URI, it would also be possible to define the new Modelica URIs with the class reference using `.` as separator rahter than `/`.  A [separate rationale](class-reference-separator.md) is given for the current proposal of not using `.`.
+
+By sacrificing the ability to include a relative file path at the end of the URI path, one could also allow a mix of `/` and `.` separators.  The following would all be equivalent:
+- _modelica:/Modelica/Electrical/Analog/Examples/ChuaCircuit_
+- _modelica:.Modelica.Electrical.Analog.Examples.ChuaCircuit_
+- _modelica:/Modelica.Electrical.Analog/Examples.ChuaCircuit_
 
 Variations of the class reference can still be made by prepending the same special leading segments to the path, for example:
 * _modelica:./Examples/media/foo.png_
 * _modelica:~//media/foo.png_ (empty _relclass_)
-
-One has to watch out for the pitfal of just leaving the _relclass_ empty when there are additional path segments:
-  * Wrong: _modelica://media/foo.png_ (deprecated form where _media_ would be the class reference)
-  * Wrong: _modelica:/media/foo.png_ (fully qualified form — not the intention)
-  * Correct: _modelica:.//media/foo.png_ (empty _relclass_)
 
 ### Further generalizations
 
