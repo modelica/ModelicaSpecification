@@ -97,167 +97,152 @@ of the class names, and if no icon is defined, a special information default ico
 \end{nonnormative}
 
 \section{Annotations for Code Generation}\label{annotations-for-code-generation}
-\begin{lstlisting}[language=grammar]
-code-annotation:
-   annotation"(" codeGenerationFlag "=" ( false | true ) ")"
 
-codeGenerationFlag :
-   "Evaluate" | "HideResult" | "Inline" | "LateInline" | "GenerateEvents"
-\end{lstlisting}
-These annotations can influence the code generation. The details are
-defined in the next table:
-\begin{longtable}[]{|p{4.2cm}|p{10cm}|}
-\hline \endhead
-\lstinline!Evaluate!&
-The annotation Evaluate can occur in the component declaration, its type
-declaration, or a base-class of the type-declaration. In the case of
-multiple conflicting annotations it is handled similarly to modifiers
-(e.g., an Evaluate-annotation on the component declaration takes
-precedence). The annotation Evaluate only has effect for a component
-declared with the prefix \lstinline!parameter!.
+The annotations listed below, appearing directly inside \lstinline!annotation($\ldots$)!, can influence the code generation.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline[language=grammar]!"Evaluate"! & Use parameter value for symbolic processing & \Cref{modelica:Evaluate}\\
+\lstinline[language=grammar]!"HideResult"! & Don't show component's simulator result & \Cref{modelica:HideResult}\\
+\lstinline[language=grammar]!"Inline"! & Inline function & \Cref{modelica:Inline}\\
+\lstinline[language=grammar]!"LateInline"! & Inline after all symbolic transformations & \Cref{modelica:LateInline}\\
+\lstinline[language=grammar]!"InlineAfterIndexReduction"! & Inline after index reduction & \Cref{modelica:InlineAfterIndexReduction}\\
+\lstinline[language=grammar]!"GenerateEvents"! & Generate events for zero crossings in function & \Cref{modelica:GenerateEvents}\\
+\lstinline[language=grammar]!"smoothOrder"! & Function smoothness guarantee & \Cref{modelica:smoothOrder}\\
+\hline
+\end{tabular}
+\end{center}
 
-If \lstinline!Evaluate = true!, the model developer proposes to utilize the value
-for the symbolic processing. In that case, it is not possible to change
-the parameter value after symbolic pre-processing.
+\begin{annotationdefinition}[Evaluate]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"Evaluate" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base-class of the type-declaration.  In the case of multiple conflicting annotations it is handled similarly to modifiers (e.g., an \lstinline!Evaluate! annotation on the component declaration takes precedence).  The annotation \lstinline!Evaluate! only has effect for a component declared with the prefix \lstinline!parameter!.
 
-If \lstinline!Evaluate = false!, the model developer proposes to not utilize the
-value of the corresponding parameter for the symbolic processing.
+If \lstinline!Evaluate = true!, the model developer proposes to utilize the value for the symbolic processing. In that case, it is not possible to change the parameter value after symbolic pre-processing.
 
-\begin{nonnormative}
-\lstinline!Evaluate! is for example used for axis of rotation parameters in
-the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the
-efficiency of the generated code.
-\end{nonnormative}
-\\ \hline
-\lstinline!HideResult! &
-\lstinline!HideResult = true! defines that the model developer proposes to not show
-the simulator results of the corresponding component.
-
-\lstinline!HideResult = false! defines that the developer proposes to show the
-corresponding component.
+If \lstinline!Evaluate = false!, the model developer proposes to not utilize the value of the corresponding parameter for the symbolic processing.
 
 \begin{nonnormative}
-For example, a tool is not expected to provide means to plot a variable with \lstinline!HideResult = true!.
-If a variable is declared in a protected section, a tool might not include it in a simulation result.
-By setting \lstinline!HideResult = false!, the modeler would like to have the variable in the simulation
-result, even if in the protected section.
-
-\lstinline!HideResult! is for example used in the connectors of the
-\lstinline!Modelica.StateGraph! library to not show variables to the modeler
-that are of no interest to him and would confuse him.
+\lstinline!Evaluate! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
 \end{nonnormative}
-\\ \hline
-\lstinline!Inline! &
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[HideResult]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"HideResult" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!HideResult = true! defines that the model developer proposes to not show the simulator results of the corresponding component.
+
+\lstinline!HideResult = false! defines that the developer proposes to show the corresponding component.
+
+\begin{nonnormative}
+For example, a tool is not expected to provide means to plot a variable with \lstinline!HideResult = true!.  If a variable is declared in a protected section, a tool might not include it in a simulation result. By setting \lstinline!HideResult = false!, the modeler would like to have the variable in the simulation result, even if in the protected section.
+
+\lstinline!HideResult! is for example used in the connectors of the \lstinline!Modelica.StateGraph! library to not show variables to the modeler that are of no interest to him and would confuse him.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[Inline]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"Inline" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Has only an effect within a function declaration.
 
-If \lstinline!Inline = true!, the model developer proposes to inline the
-function. This means, that the body of the function is included at all
-places where the function is called.
+If \lstinline!Inline = true!, the model developer proposes to inline the function.  This means, that the body of the function is included at all places where the function is called.
 
-If \lstinline!Inline = true!, the model developer proposes to not inline the
-function.
+If \lstinline!Inline = true!, the model developer proposes to not inline the function.
 
-% Added "The annotation" to avoid bad formatting.
 \begin{nonnormative}
-The annotation \lstinline!Inline = true! is for example used in
-Modelica\allowbreak{}.Mechanics\allowbreak{}.MultiBody\allowbreak{}.Frames and in functions of
-Modelica\allowbreak{}.Media to have no overhead for function calls such as
-resolving a vector in a different coordinate system and at the same time
-the function can be analytically differentiated, e.g., for index
-reduction needed for mechanical systems.
+\lstinline!Inline = true! is for example used in \lstinline!Modelica.Mechanics.MultiBody.Frames! and in functions of \lstinline!Modelica.Media! to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
 \end{nonnormative}
-\\ \hline
-\lstinline!LateInline!
-&
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[LateInline]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"LateInline" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Has only an effect within a function declaration.
 
-If \lstinline!LateInline = true!, the model developer proposes to inline the
-function after all symbolic transformations have been performed.
+If \lstinline!LateInline = true!, the model developer proposes to inline the function after all symbolic transformations have been performed.
 
 \begin{nonnormative}
-Late inlining is especially useful for differentiation and inversion of functions;
-for efficiency reasons it is then useful to replace all function calls with
-identical input arguments by one function call, before the inlining.
+Late inlining is especially useful for differentiation and inversion of functions; for efficiency reasons it is then useful to replace all function calls with identical input arguments by one function call, before the inlining.
 \end{nonnormative}
 
-If \lstinline!LateInline = false!, the model developer proposes to not inline
-the function after symbolic transformations have been performed.
+If \lstinline!LateInline = false!, the model developer proposes to not inline the function after symbolic transformations have been performed.
 
-\lstinline!Inline=true, LateInline=false! is identical to \lstinline!Inline=true!.
+\lstinline!Inline = true, LateInline = false! is identical to \lstinline!Inline = true!.
 
-\lstinline!Inline=true, LateInline=true! is identical to \lstinline!LateInline=true!.
+\lstinline!Inline = true, LateInline = true! is identical to \lstinline!LateInline = true!.
 
-\lstinline!Inline=false, LateInline=true! is identical to \lstinline!LateInline=true!.
+\lstinline!Inline = false, LateInline = true! is identical to \lstinline!LateInline = true!.
 
 \begin{nonnormative}
-This annotation is for example used in
-Modelica\allowbreak{}.Media\allowbreak{}.Water\allowbreak{}.IF97\_Utilities\allowbreak{}.T\_props\_ph to provide in
-combination with common subexpression elimination the automatic caching
-of function calls. Furthermore, it is used in order that a tool is able
-to propagate specific enthalpy over connectors in the \lstinline!Modelica_Fluid!
-library.
+This annotation is for example used in \lstinline!Modelica.Media.Water.IF97_Utilities.T_props_ph! to provide in combination with common subexpression elimination the automatic caching of function calls.  Furthermore, it is used in order that a tool is able to propagate specific enthalpy over connectors in the \lstinline!Modelica.Fluid! library.
 \end{nonnormative}
-\\ \hline
-\lstinline!InlineAfterIndexReduction!\strut
-&
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[InlineAfterIndexReduction]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"InlineAfterIndexReduction" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Has only an effect within a function declaration.
 
-If \lstinline!true!, the model developer proposes to inline the function after the
-function is differentiated for index reduction, and before any other
-symbolic transformations are performed. This annotation cannot be
-combined with annotations \lstinline!Inline! and \lstinline!LateInline!.
-\\ \hline
-\lstinline!GenerateEvents!\strut
-&
+If \lstinline!true!, the model developer proposes to inline the function after the function is differentiated for index reduction, and before any other symbolic transformations are performed.  This annotation cannot be combined with annotations \lstinline!Inline! and \lstinline!LateInline!.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[GenerateEvents]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"GenerateEvents" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Has only an effect within a function declaration
 
-If \lstinline!GenerateEvents = true!, the model developer proposes that crossing
-functions in the function should generate events (one possibility of
-doing this is to inline the function and generate events for the inlined
-function).
+If \lstinline!GenerateEvents = true!, the model developer proposes that crossing functions in the function should generate events (one possibility of doing this is to inline the function and generate events for the inlined function).
 
 \begin{nonnormative}
-This annotation is for example used in
-Modelica\allowbreak{}.Media\allowbreak{}.Water\allowbreak{}.IF97\_Utilities.phase\_dT to indicate that
-the output should generate an event when it changes.
+This annotation is for example used in \lstinline!Modelica.Media.Water.IF97_Utilities.phase_dT! to indicate that the output should generate an event when it changes.
 \end{nonnormative}
-\\ \hline
-\end{longtable}
-\begin{lstlisting}[language=grammar]
-smoothOrder-annotation:
-   annotation"(" smoothOrder "=" UNSIGNED-NUMBER ")" |
-   annotation"(" smoothOrder "(" normallyConstant "=" NAME
-  ["," normallyConstant "=" NAME] ")"
-  "=" UNSIGNED-NUMBER ")"
-\end{lstlisting}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[smoothOrder]
+\begin{synopsis}[grammar]\begin{lstlisting}
+smoothOrder "=" UNSIGNED-NUMBER ")"
+smoothOrder "(" normallyConstant "=" IDENT [ "," normallyConstant "=" IDENT ] ")" "=" UNSIGNED-NUMBER ")"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 This annotation has only an effect within a function declaration.
-\lstinline!smoothOrder! defines the number of differentiations of the function, in
-order that all of the differentiated outputs are continuous provided all
-input arguments and their derivatives up to order \lstinline!smoothOrder! are
-continuous.
+
+\lstinline!smoothOrder! defines the number of differentiations of the function, in order that all of the differentiated outputs are continuous provided all input arguments and their derivatives up to order \lstinline!smoothOrder! are continuous.
 
 \begin{nonnormative}
-This means that the function is at least C\textsuperscript{smoothOrder}.  \lstinline!smoothOrder = 1! means that
-the function can be differentiated at least once in order that all output arguments are still continuous, provided
-the input arguments are continuous.  If a tool needs the derivative of a function, e.g.\ for index reduction or to
-compute an analytic Jacobian, the function can be differentiated analytically at least \lstinline!smoothOrder! times.
+This means that the function is at least C\textsuperscript{smoothOrder}.  \lstinline!smoothOrder = 1! means that the function can be differentiated at least once in order that all output arguments are still continuous, provided the input arguments are continuous.  If a tool needs the derivative of a function, e.g.\ for index reduction or to compute an analytic Jacobian, the function can be differentiated analytically at least \lstinline!smoothOrder! times.
 \end{nonnormative}
 
-The optional argument \lstinline!normallyConstant! of \lstinline!smoothOrder! defines that the
-function argument \lstinline!NAME! is usually constant.
+The optional argument \lstinline!normallyConstant! of \lstinline!smoothOrder! defines that the function argument \lstinline!IDENT! is usually constant.
 
 \begin{nonnormative}
-A tool might check whether the actual argument to \lstinline!NAME! is a parameter expression at the place where the
-function is called. If this is the case, the derivative of the function might be constructed under the assumption that
-the corresponding argument is constant, to enhance efficiency.  Typically, a tool would generate at most two different
-derivative functions of a function: One, under the assumption that all \lstinline!normallyConstant! arguments are
-actually constant. And one, under the assumption that all input arguments are time varying.  Based on the actual
-arguments of the function call either of the two derivative functions is used.
+A tool might check whether the actual argument to \lstinline!IDENT! is a parameter expression at the place where the function is called.  If this is the case, the derivative of the function might be constructed under the assumption that the corresponding argument is constant, to enhance efficiency.  Typically, a tool would generate at most two different derivative functions of a function: One, under the assumption that all \lstinline!normallyConstant! arguments are actually constant.  And one, under the assumption that all input arguments are time varying.  Based on the actual arguments of the function call either of the two derivative functions is used.
 
-This annotation is used by many functions of the \lstinline!Modelica.Fluid! library, such as\\
-\lstinline!Modelica.Fluid.Dissipation.PressureLoss.StraightPipe.dp_laminar_DP!, since geometric
-arguments to these functions are usually constant.
+This annotation is used by many functions of the \lstinline!Modelica.Fluid! library, such as\linebreak[4] \lstinline!Modelica.Fluid.Dissipation.PressureLoss.StraightPipe.dp_laminar_DP!, since geometric arguments to these functions are usually constant.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
 \section{Annotations for Simulation Experiments}\label{annotations-for-simulation-experiments}
 \begin{lstlisting}[language=grammar]
