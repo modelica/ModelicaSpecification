@@ -232,3 +232,70 @@ The Flat Modelica for `M` should only preserve input for `r`, `a`, `c.x` and out
 and thus not preserve it for protected variables and for variables in `msub`.
 
 ## Simplify modifications
+
+Flat Modelica has different rules for modifications applied to types and modifications applied to top level component declarations.
+
+### Common restrictions
+
+Some restrictions compared to full Modelica apply to both modifications in types and in top level component declarations:
+- Flat Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
+- At each level, all identifiers must be unique, so that conflicting modifications are trivially detected.
+
+### Top level component declarations
+
+Aside from the common restrictions, there are no other restrictions on the modifications in top level component declarations.
+
+### Modifications in types
+
+Named types can be introduced in two different ways in flat modelica, where both make use of modifications:
+- When defining `record` types.  For example:
+```
+record 'PosPoint'
+  'Length' 'x'(min = 0);
+  'Length' 'y'(min = 0);
+end 'PosPoint';
+```
+- When defining type aliases (also known as _short class declarations_).  For example:
+  - ```type 'Length' = Real(unit = "m");``` (just modify existing scalar type)
+  - ```type 'Cube' = 'Length`[3](min = 0, max = 1);``` (make array type)
+  - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
+
+The following restriction apply to modifications in types, making types in Flat Modelica easier to represent and reason about compared to types in full Modelica:
+- Modifiers must have constant variability.
+- Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
+
+The modifications that are not allowed in types must be applied to the top level component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
+
+**What about modifications applied to component declarations in functions?  At least the public components (input and outputs) bear resemblance to type definitions, as they become part of the function's type signature.**
+
+#### Single array element type
+
+As stated above, an array in a type must have the same type for all its elements, which is to be expressed somehow using only scalar modifiers.  Exactly how this shall be enforced is left to depend on a clarification regarding the use of `each` in full Modelica, see https://github.com/modelica/ModelicaSpecification/issues/2630#issuecomment-669868185 and related comments.
+
+The two variants in `'LineA'` and `'LineB'` below are considered, with the aim of expressing the same thing that would be expressed as `FullModelicaLine` in full Modelica:
+```
+type 'P' = Real[3];
+
+record FullModelicaLine
+  /* Basic way of setting all 'start' attributes is to provide an array with all values:
+   */
+  'P' q[2](start = fill(4, 2, 3), fixed = fill(false, 2, 3));
+
+  /* Alternatively, one can (no full Modelica controversy here) use 'each' to
+   * propagate the same modifier to all elements of the surrounding array:
+   */
+  'P' p[2](each start = fill(4, 3), each fixed = fill(false, 3));
+end FullModelicaLine;
+
+record 'LineA'
+  /* Unclear whether or not valid Modelica. */
+  'P' 'p'[2](each start = 4, each fixed = false);
+end 'LineA';
+
+record 'LineB'
+  /* Do not use 'each' at all in Flat Modelica types. */
+  'P' 'p'[2](start = 4, fixed = false);
+end 'LineB';
+```
+
+If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
