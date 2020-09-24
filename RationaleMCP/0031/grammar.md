@@ -197,7 +197,7 @@ end _F;
 > &emsp; ~~| _element-redeclaration_~~
 
 > _element-modification-or-replaceable_ →\
-> &emsp; **each**?\
+> &emsp; ~~**each**?~~\
 > &emsp; **final**?\
 > &emsp; ( _element-modification_\
 > &emsp; ~~| _element-replaceable_~~\

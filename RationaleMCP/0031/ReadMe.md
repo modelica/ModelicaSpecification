@@ -53,17 +53,16 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Handle array dimensions with parameter variability. [Design](differences.md#array-size), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2471)
 - [ ] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
 - [ ] Define allowed forms of type aliases (related to _one way to specify array dimensions_). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btype-aliases/RationaleMCP/0031/type-aliases.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2555)
-- [ ] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
+- [x] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
 - [ ] Handling of parameters treated as constants.
 - [ ] Investigate need for `final`.
 - [ ] Origin of modifications (for start value prioritization).
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
 - [ ] Simplify modifications.
-- [ ] Handling of `each`.
+- [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
 - [ ] Investigate need for `for`-equations.
-- [ ] Marking of top level inputs and outputs.
-- [ ] Get rid of higher order functions.
+- [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
 - [ ] Figure out what to do with synchronous features.
 - [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
@@ -74,9 +73,11 @@ In future minor versions of Flat Modelica 1, we could improve the language by in
 - [ ] Primitive operations for triggering of events, to which the current event generating functions can be reduced.
 - [ ] Get rid of function calls with named arguments.
 - [ ] Get rid of function argument defaults.
+- [ ] Get rid of higher order functions.
 - [ ] Get rid of record constructors.
 - [ ] Allow to identify connector variables.
 - [ ] Handle equations and algorithms derived from arrays of components efficiently.
+- [ ] Reintroduce `each` for efficiency and to avoid code duplication.
 
 ### Flat Modelica 2.0 (future MCPs)
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
