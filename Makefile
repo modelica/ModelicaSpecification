@@ -1,4 +1,4 @@
-# Note: You should really repeat pdflatex run 1-3 times depending on status, I did not manage to make that conditional for nmake
+# Note: Using latexmk, since it automatically runs pdflatex as many times as needed.
 #
 # If you have latexml source (preferably with UseLabal patch) set:
 #    LATEXMLPREFIX=perl <latexmlinstallation/bin>
@@ -18,7 +18,7 @@ clean-html:
 clean: clean-pdf clean-html
 
 MLS.pdf: *.tex chapters/*.tex
-	pdflatex MLS.tex
+	latexmk -pdf MLS.tex
 
 # Seems to be some issue with graphicpath, so set path here as well
 # Not using %.html since nmake does not support it (instead using old-style suffix rules)

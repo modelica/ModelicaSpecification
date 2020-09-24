@@ -23,7 +23,7 @@ RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirro
  && $INSTALL/install-tl --profile texlive.profile \
  && rm texlive.profile \
  && tlmgr update --self --all --reinstall-forcibly-removed \
- && tlmgr install latexmk listings xcolor float multirow tocloft parskip etoolbox \
+ && tlmgr install latexmk listings caption cleveref xcolor float multirow tocloft parskip etoolbox \
  && cpanm JSON \
  && cpanm LaTeXML \
  && apt-get autoremove -qy make gcc curl wget git cpanminus libxml2-dev libxslt-dev \

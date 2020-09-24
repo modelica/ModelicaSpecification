@@ -1,4 +1,4 @@
-\chapter{Modelica DAE Representation}\doublelabel{modelica-dae-representation}
+\chapter{Modelica DAE Representation}\label{modelica-dae-representation}
 
 In this appendix, the mapping of a Modelica model into an appropriate
 mathematical description form is discussed.
@@ -14,11 +14,11 @@ used components by:
   for every instance of the model.
 \item
   Replacing all connect-equations by the corresponding equations of the
-  connection set (see \autoref{generation-of-connection-equations}).
+  connection set (see \cref{generation-of-connection-equations}).
 \item
   Mapping all algorithm sections to equation sets.
 \item
-  Mapping all when-clauses to equation sets (see \autoref{when-equations}).
+  Mapping all when-clauses to equation sets (see \cref{when-equations}).
 \end{itemize}
 
 As a result of this transformation process, a set of equations is
@@ -50,7 +50,7 @@ These variables change their value only at event instants t\textsubscript{e}. \l
 \hline
 $y(t)$ & Modelica variables of type \lstinline!Real! which do not fall into any other category (= algebraic variables).\\
 \hline
-$c(t_{\mathrm{e}})$ & The conditions of all if-expressions generated including when-clauses after conversion, see \autoref{when-equations}).\\
+$c(t_{\mathrm{e}})$ & The conditions of all if-expressions generated including when-clauses after conversion, see \cref{when-equations}).\\
 \hline
 $\mathit{relation}(v)$ & A relation containing variables $v_{i}$, e.g.\ $v_{1} > v_{2}$, $v_{3} \geq 0$.\\
 \hline
@@ -61,27 +61,27 @@ above and are not discussed below.
 
 The generated set of equations is used for simulation and other analysis
 activities. Simulation means that an initial value problem is solved,
-i.e., initial values have to be provided for the states $x$, \autoref{initialization-initial-equation-and-initial-algorithm}.
+i.e., initial values have to be provided for the states $x$, \cref{initialization-initial-equation-and-initial-algorithm}.
 The equations define a DAE (Differential Algebraic Equations) which may
 have discontinuities, a variable structure and/or which are controlled
 by a discrete-event system. Such types of systems are called
 \emph{hybrid DAEs}. Simulation is performed in the following way:
 \begin{enumerate}
 \item
-  The DAE (\ref{eq:dae}) is solved by a numerical integration method. In this
+  The DAE \eqref{eq:dae} is solved by a numerical integration method. In this
   phase the conditions $c$ of the if- and when-clauses, as well as the
-  discrete variables $m$ are kept constant. Therefore, (\ref{eq:dae}) is a
+  discrete-time variables $m$ are kept constant. Therefore, \eqref{eq:dae} is a
   continuous function of continuous variables and the most basic
   requirement of numerical integrators is fulfilled.
 \item
-  During integration, all relations from (\ref{eq:crossing}) are monitored. If one of
+  During integration, all relations from \eqref{eq:crossing} are monitored. If one of
   the relations changes its value an event is triggered, i.e., the exact
   time instant of the change is determined and the integration is
-  halted. As discussed in \autoref{events-and-synchronization}, relations which depend only on
+  halted. As discussed in \cref{events-and-synchronization}, relations which depend only on
   time are usually treated in a special way, because this allows to
   determine the time instant of the next event in advance.
 \item
-  At an event instant, (\ref{eq:hydrid-dae}) is a mixed set of algebraic equations which
+  At an event instant, \eqref{eq:hydrid-dae} is a mixed set of algebraic equations which
   is solved for the Real, Boolean and Integer unknowns.
 \item
   After an event is processed, the integration is restarted with 1.
@@ -91,14 +91,14 @@ Note, that both the values of the conditions $c$ as well as the values of
 $m$ (all \lstinline!discrete Real!, \lstinline!Boolean! and \lstinline!Integer! variables) are only changed at
 an event instant and that these variables remain constant during
 continuous integration. At every event instant, new values of the
-discrete variables $m$ and of new initial values for the states $x$ are
-determined. The change of discrete variables may characterize a new
+discrete-time variables $m$ and of new initial values for the states $x$ are
+determined. The change of discrete-time variables may characterize a new
 structure of a DAE where elements of the state vector $x$ are
 \emph{disabled}. In other words, the number of state variables,
 algebraic variables and residue equations of a DAE may change at event
 instants by disabling the appropriate part of the DAE. For clarity of
 the equations, this is not explicitly shown by an additional index in
-(\ref{eq:hydrid-dae}).
+\eqref{eq:hydrid-dae}.
 
 At an event instant, including the initial event, the model equations
 are reinitialized according to the following iteration procedure:
@@ -113,7 +113,7 @@ loop
   pre(m) := m
 end loop
 \end{lstlisting}
-Solving (\ref{eq:hydrid-dae}) for the unknowns is non-trivial, because this set of
+Solving \eqref{eq:hydrid-dae} for the unknowns is non-trivial, because this set of
 equations contains not only Real, but also Boolean and Integer unknowns.
 Usually, in a first step these equations are sorted and in many cases
 the Boolean and Integer unknowns can be just computed by a forward
@@ -122,8 +122,8 @@ evaluation sequence. In some cases, there remain systems of equations
 algorithms have to be used to solve them.
 
 Due to the construction of the equations by \emph{flattening} a Modelica
-model, the hybrid DAE (\ref{eq:hydrid-dae}) contains a huge number of sparse equations.
-Therefore, direct simulation of (\ref{eq:hydrid-dae}) requires sparse matrix methods.
+model, the hybrid DAE \eqref{eq:hydrid-dae} contains a huge number of sparse equations.
+Therefore, direct simulation of \eqref{eq:hydrid-dae} requires sparse matrix methods.
 However, solving this initial set of equations directly with a numerical
 method is both unreliable and inefficient. One reason is that many
 Modelica models, like the mechanical ones, have a DAE index of 2 or 3,
@@ -141,13 +141,13 @@ To summarize, symbolic transformation techniques are needed to transform
 important, the algorithm of Pantelides should to be applied to
 differentiate certain parts of the equations in order to reduce the
 index. Note, that also explicit integration methods, such as Runge-Kutta
-algorithms, can be used to solve (\ref{eq:dae}), after the index of (\ref{eq:dae}) has been
+algorithms, can be used to solve \eqref{eq:dae}, after the index of \eqref{eq:dae} has been
 reduced by the Pantelides algorithm: During continuous integration, the
-integrator provides $x$ and $t$. Then, (\ref{eq:dae}) is a linear or nonlinear system
+integrator provides $x$ and $t$. Then, \eqref{eq:dae} is a linear or nonlinear system
 of equations to compute the algebraic variables $y$ and the state
 % TODO: Structured formatting of inline "upright 'd' fraction".
 derivatives $\mathrm{d}x/\mathrm{d}t$ and the model returns $\mathrm{d}x/\mathrm{d}t$ to the integrator by
-solving these systems of equations. Often, (\ref{eq:dae}) is just a linear system
+solving these systems of equations. Often, \eqref{eq:dae} is just a linear system
 of equations in these unknowns, so that the solution is straightforward.
 This procedure is especially useful for real-time simulation where
 usually explicit one-step methods are used.
