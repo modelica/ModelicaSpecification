@@ -94,7 +94,7 @@ This section is divided into one subsection for each type of resource being refe
 An _external resource_ is a file stored in a structure reflecting the Modelica class hierarchy of the current class.  The resource is specified using the _resource_ query (the name is chosen to remind of the special directory name [_resources.d_](resource-directory.md)), for example:
 - _modelica:/Modelica/Electrical/Analog?resource=media/foo.png_
 
-For further details see, [resoruce-directory.md].
+For further details see, [resource-directory.md].
 
 ### Class view
 
