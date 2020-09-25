@@ -15,3 +15,19 @@ In the example Modelica URI above, assume `Modelica` is stored in _/Users/jdoe/m
 - _/Users/jdoe/modelica-packages/Modelica-4.3.2/Modelica/Electrical/Analog/resources.d/media/foo.png_
 
 Note that the mapping of the fully qualified class name to a directory is the same regardless of whether the package itself uses a directory hierarchy for storage — the directory hierarchy for external resources is fixed, and it is only one of several options for the package itself to be stored in the same hierarchy.
+
+## Special resource directories
+
+The specification is currently giving special meaning to two external resource directores, specified using the deprecated form of Modelica URIs:
+- _modelica://ModelicaLibraryName/Resources/Include_
+- _modelica://ModelicaLibraryName/Resources/Library_
+
+As these get deprecated with this MCP, the following replacements are suggested:
+- _modelica:~?resource=Include_
+- _modelica:~?resource=Library_
+
+To use _Include_ and _Library_ directories associated with the top level package instead of the encapsulation barrier, there are at least two natural possibilities:
+- Introduce something like a double tilde for reference to the current top level package:
+  - _modelica:~~?resource=Include
+- Revert to the old strategy of a symbolically package-dependent URI:
+  - _modelica:/ModelicaLibraryName?resource=Include
