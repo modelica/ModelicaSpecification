@@ -14,4 +14,4 @@ Note that the period (".") in the name _resources.d_ makes it distinguishable fr
 In the example Modelica URI above, assume `Modelica` is stored in _/Users/jdoe/modelica-packages/Modelica-4.3.2/Modelica_.  Then, the resolved external resource is:
 - _/Users/jdoe/modelica-packages/Modelica-4.3.2/Modelica/Electrical/Analog/resources.d/media/foo.png_
 
-Note that the mapping of the fully qualified class name to a directory is the same regardless of whether the package itself uses a directory hierarchy for storage — the directory hierarchy for external resoruces is fixed, and it is only one of several options for the package itself to be stored in the same hierarchy.
+Note that the mapping of the fully qualified class name to a directory is the same regardless of whether the package itself uses a directory hierarchy for storage — the directory hierarchy for external resources is fixed, and it is only one of several options for the package itself to be stored in the same hierarchy.
