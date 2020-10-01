@@ -233,17 +233,17 @@ and thus not preserve it for protected variables and for variables in `msub`.
 
 ## Simplify modifications
 
-Flat Modelica has different rules for modifications applied to types and modifications applied to top level component declarations.
+Flat Modelica has different rules for modifications applied to types and modifications applied to model component declarations.
 
 ### Common restrictions
 
-Some restrictions compared to full Modelica apply to both modifications in types and in top level component declarations:
+Some restrictions compared to full Modelica apply to both modifications in types and in model component declarations:
 - Flat Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
 - At each level, all identifiers must be unique, so that conflicting modifications are trivially detected.
 
-### Top level component declarations
+### Model component declarations
 
-Aside from the common restrictions, there are no other restrictions on the modifications in top level component declarations.
+Aside from the common restrictions, there are no other restrictions on the modifications in model component declarations.
 
 ### Modifications in types
 
@@ -264,7 +264,7 @@ The following restriction apply to modifications in types, making types in Flat 
 - Modifiers must have constant variability.
 - Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
 
-The modifications that are not allowed in types must be applied to the top level component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
+The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
 
 **What about modifications applied to component declarations in functions?  At least the public components (input and outputs) bear resemblance to type definitions, as they become part of the function's type signature.**
 
