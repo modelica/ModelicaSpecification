@@ -261,7 +261,7 @@ end 'PosPoint';
 ```
 - When defining type aliases (also known as _short class declarations_).  For example:
   - ```type 'Length' = Real(unit = "m");``` (just modify existing scalar type)
-  - ```type 'Cube' = 'Length`[3](min = 0, max = 1);``` (make array type)
+  - ```type 'Cube' = 'Length'[3](min = 0, max = 1);``` (make array type)
   - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
 
 The following restriction apply to modifications in types, making types in Flat Modelica easier to represent and reason about compared to types in full Modelica:
