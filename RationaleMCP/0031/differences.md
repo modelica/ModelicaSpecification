@@ -235,7 +235,7 @@ and thus not preserve it for protected variables and for variables in `msub`.
 
 Flat Modelica has different rules for modifications applied to:
 - Model component declarations
-- Types (record and function definitions, as well as short class declarations)
+- Types (records and short class declarations) and functions (function component declarations)
 
 ### Common restrictions
 
@@ -249,10 +249,10 @@ A _model component declaration_ is a component declaration belonging to the sing
 
 Aside from the common restrictions, there are no other restrictions on the modifications in model component declarations.
 
-### Restrictions for types
+### Restrictions for types and functions
 
 Named types can be introduced in two different ways in flat modelica, where both make use of modifications:
-- When defining `record` types.  For example:
+- When defining `record` types, each _record component declaration_ can have modifications.  For example:
 ```
 record 'PosPoint'
   'Length' 'x'(min = 0);
@@ -264,13 +264,26 @@ end 'PosPoint';
   - ```type 'Cube' = 'Length'[3](min = 0, max = 1);``` (make array type)
   - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
 
-The following restriction apply to modifications in types, making types in Flat Modelica easier to represent and reason about compared to types in full Modelica:
+The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, have the same restrictions as record component declarations, see below.  This includes both public and protected function component declarations.  For example:
+```
+function 'fun'
+  input Real 'u'(min = 0); /* Public function component declaration. */
+  output Real 'y'(min = 0); /* Public function component declaration. */
+protected
+  Real 'x'(min = 0); /* Protected function component declaration. */
+  …
+end 'fun';
+```
+
+The following restriction apply to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
 - Modifiers must have constant variability.
 - Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
 
 The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
 
-**What about modifications applied to component declarations in functions?  At least the public components (input and outputs) bear resemblance to type definitions, as they become part of the function's type signature.**
+The reason for placing the same restrictions on protected function component declarations as on public function component declarations is that the handling of types inside functions gets significantly simplified without much loss of generality.  To see the kind of loss of generlity, one needs to consider that many attributes have no use in functions at all: `start`, `fixed`, `nominal`, `unbounded`, `stateSelect`, and `displayUnit`.  This leaves two goups of attributes with minor loss of generality:
+- The strings `unit` and `quantity` can be used to enable more static checking of units and quantities in the function body.  Since such checks are performed during static analysis, the constant variability requirement should hold in general, not just inside functions.  Regarding the other requirement, it is hard to come up with realistic examples where `unit` and `quantity` would not be equal for all elements of an array.
+- Outside functions, `min` and `max` both provide information that may be useful for symbolic manipulations and define conditions that shall be monitored at runtime.  While the symbolic manipulations benefit greatly from constant variability of the limits, the runtime checking is more easily applicable to other variabilities, and different limits for different array elements is not as inconceivable as having different units.  Inside functions, on the other hand, limits on protected variables is not going to provide important information for symbolic manipulations, since function body evaluation does not involve equation solving.  If one would like to have non-constant limits, or limits that are different for different elements of an array, this is possible to express using `assert` statements instead of `min` and `max` attributes.
 
 #### Single array element type
 
