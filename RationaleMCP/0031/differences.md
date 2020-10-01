@@ -243,11 +243,13 @@ Some restrictions compared to full Modelica apply to both modifications in types
 - Flat Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
 - At each level, all identifiers must be unique, so that conflicting modifications are trivially detected.
 
-### Model component declarations
+### Restrictions for model component declarations
+
+A _model component declaration_ is a component declaration belonging to the single `model` of a Flat Modelica source.
 
 Aside from the common restrictions, there are no other restrictions on the modifications in model component declarations.
 
-### Modifications in types
+### Restrictions for types
 
 Named types can be introduced in two different ways in flat modelica, where both make use of modifications:
 - When defining `record` types.  For example:
