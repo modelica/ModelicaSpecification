@@ -233,7 +233,9 @@ and thus not preserve it for protected variables and for variables in `msub`.
 
 ## Simplify modifications
 
-Flat Modelica has different rules for modifications applied to types and modifications applied to model component declarations.
+Flat Modelica has different rules for modifications applied to:
+- Types
+- Model component declarations
 
 ### Common restrictions
 
