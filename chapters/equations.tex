@@ -279,7 +279,7 @@ variable.  The start-value of the special functions \lstinline!initial!, \lstinl
 
 \begin{itemize}
 \item
-  When-statements may not occur inside initial equations.
+  When-equations may not occur inside initial equations.
 \item
   When-equations cannot be nested.
 \end{itemize}
@@ -555,7 +555,7 @@ See \cref{equation-operators-for-overconstrained-connection-based-equation-syste
 Modelica is based on the synchronous data flow principle and the single
 assignment rule, which are defined in the following way:
 \begin{enumerate}
-\item Discrete variables keep their actual values until these variables are explicitly changed.
+\item Discrete-time variables keep their values until these variables are explicitly changed.
 Differentiated variables have \lstinline!der(x)! corresponding to the time-derivative of \lstinline!x!,
 and \lstinline!x! is continuous, except when \lstinline!reinit! is triggered, see \cref{reinit}.
 Variable values can be accessed at any time instant during continuous integration and at event instants.
@@ -748,7 +748,7 @@ all equations and algorithms that are utilized in the intended operation
 (such as simulation or linearization).
 
 The equations of a when-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
-\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for algorithms see below).  In this case, the when-clause equations remain active during the
+\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).  In this case, the when-clause equations remain active during the
 whole initialization phase.  In case of a \lstinline!reinit(x, expr)! being active during initialization (due to being inside \lstinline!when initial()!) this is interpreted as adding
 \lstinline!x = expr! (the \lstinline!reinit!-equation) as an initial equation.
 
@@ -761,6 +761,15 @@ but not in one of the specific forms, the when-clause is not active during initi
 The algorithmic statements within a when-statement are active during initialization, if and only they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
 \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!. In this case, the algorithmic statements within the when-statement remain active during the whole
 initialization phase.
+
+An active when-clause inactivates the following \lstinline!elsewhen! (similarly as for when-clauses during simulation), but apart from that
+the first \lstinline!elsewhen initial() then! or \lstinline!elsewhen {$\ldots$, initial(), $\ldots$} then! is similarly active during initialization as
+\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
+
+\begin{nonnormative}
+That means that any subsequent \lstinline!elsewhen initial()! has no effect,
+similarly as \lstinline!when false then!.
+\end{nonnormative}
 
 \begin{nonnormative}
 There is no special handling of inactive when-statements during initialization, instead
@@ -787,9 +796,9 @@ variables, can be defined in the following ways:
   Implicitly by using the \lstinline!start! attribute for variables with \lstinline!fixed = true!.  With \lstinline!start! given by \lstinline!startExpression!:
   \begin{itemize}
   \item
-    For a non-discrete (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
+    For a non-discrete-time (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
   \item
-    For a discrete variables \lstinline!vd!, the equation \lstinline!pre(vd) = startExpression! is added to the initialization equations.
+    For a discrete-time variables \lstinline!vd!, the equation \lstinline!pre(vd) = startExpression! is added to the initialization equations.
   \item
     For a variable declared as \lstinline!constant! or \lstinline!parameter!, no equation is added to the initialization equations.
   \end{itemize}
@@ -834,7 +843,7 @@ variables) is equal.  Often, this is a nonlinear system of equations and therefo
 
 It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index. A tool may add or remove initial equations
 automatically such that the resulting system is structurally nonsingular.  In these cases diagnostics are appropriate since the result is not unique and may not be what the user
-expects.  A missing initial value of a discrete variable which does not influence the simulation result, may be automatically set to the \lstinline!start! value or its default without
+expects.  A missing initial value of a discrete-time variable which does not influence the simulation result, may be automatically set to the \lstinline!start! value or its default without
 informing the user.  For example, variables assigned in a when-clause which are not accessed outside of the when-clause and where \lstinline!pre! is not explicitly
 used on these variables, do not have an effect on the simulation.
 \end{nonnormative}
