@@ -19,8 +19,8 @@ with
 \begin{equation*}
 \tilde{H}_j=\tilde{m}_j
 \begin{cases}
-h_{mix}&\text{if $\tilde{m}_j>0$}\\
-h_{outflow,j}&\text{if $\tilde{m}_j<=0$}
+h_{\mathrm{mix}}&\text{if $\tilde{m}_j>0$}\\
+h_{\mathrm{outflow},j}&\text{if $\tilde{m}_j<=0$}
 \end{cases}
 \end{equation*}
 Herein, mass flow rates are positive when entering models (exiting the
@@ -28,10 +28,10 @@ connection set). The specific enthalpy represents the specific enthalpy
 inside the component, close to the connector, for the case of outflow.
 Expressed with variables used in the balance equations we arrive at:
 \begin{equation*}
-h_{outflow,j}=
+h_{\mathrm{outflow},j}=
 \begin{cases}
 \frac{\tilde{H}_j}{\tilde{m}_j}&\text{if $\tilde{m}_j<0$}\\
-\textrm{arbitrary}&\text{if $\tilde{m}_j>=0$}
+\textrm{arbitrary}&\text{if $\tilde{m}_j \geq 0$}
 \end{cases}
 \end{equation*}
 While these equations are suitable for device-oriented modeling, the
@@ -42,10 +42,10 @@ the actual mixing enthalpy is not modelled directly in the model
 equations. The stream connectors provide a suitable alternative.
 
 \begin{figure}[H]
-\caption{Exemplary connection set with three connected components and a common mixing enthalpy}
-\begin{center}
-\includegraphics[width=3in,height=3in]{fluidmix}
-\end{center}
+  \begin{center}
+    \includegraphics{fluidmix}
+  \end{center}
+  \caption{Exemplary connection set with three connected components and a common mixing enthalpy.}
 \end{figure}
 
 \section{Rationale for the formulation of inStream}\label{rationale-for-the-formulation-of-the-instream-operator}
@@ -60,18 +60,18 @@ components are (see above):
 \begin{split}
 0=&\tilde{m}_1\cdot
 \begin{cases}
-h_{mix}&\text{if $\tilde{m}_1>0$}\\
-h_{outflow,1}&\text{if $\tilde{m}_1<=0$}
+h_{\mathrm{mix}}&\text{if $\tilde{m}_1>0$}\\
+h_{\mathrm{outflow},1}&\text{if $\tilde{m}_1 \leq 0$}
 \end{cases}\\
 +&\tilde{m}_2\cdot
 \begin{cases}
-h_{mix}&\text{if $\tilde{m}_2>0$}\\
-h_{outflow,2}&\text{if $\tilde{m}_2<=0$}
+h_{\mathrm{mix}}&\text{if $\tilde{m}_2>0$}\\
+h_{\mathrm{outflow},2}&\text{if $\tilde{m}_2 \leq 0$}
 \end{cases}\\
 +&\tilde{m}_3\cdot
 \begin{cases}
-h_{mix}&\text{if $\tilde{m}_3>0$}\\
-h_{outflow,3}&\text{if $\tilde{m}_3<=0$}
+h_{\mathrm{mix}}&\text{if $\tilde{m}_3>0$}\\
+h_{\mathrm{outflow},3}&\text{if $\tilde{m}_3 \leq $}
 \end{cases}
 \end{split}
 \label{eq:D1a}
@@ -83,38 +83,38 @@ h_{outflow,3}&\text{if $\tilde{m}_3<=0$}
 \label{eq:D1}
 \end{subequations}
 
-The balance equations are implemented using a max() operator in place of
+The balance equations are implemented using a $\operatorname{max}$ operator in place of
 the piecewise expressions, taking care of the different flow directions:
 \begin{subequations}
 \begin{equation}
 \begin{split}
-0=&\text{max}(\tilde{m}_1,0)h_{mix}-\text{max}(-\tilde{m}_1,0)h_{outflow,1}\\
-+&\text{max}(\tilde{m}_2,0)h_{mix}-\text{max}(-\tilde{m}_2,0)h_{outflow,2}\\
-+&\text{max}(\tilde{m}_3,0)h_{mix}-\text{max}(-\tilde{m}_3,0)h_{outflow,3}
+0=&\operatorname{max}(\tilde{m}_1,0)h_{\mathrm{mix}}-\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}\\
++&\operatorname{max}(\tilde{m}_2,0)h_{\mathrm{mix}}-\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}\\
++&\operatorname{max}(\tilde{m}_3,0)h_{\mathrm{mix}}-\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}
 \end{split}
 \label{eq:D2a}
 \end{equation}
 
 \begin{equation}
 \begin{split}
-0=&\text{max}(\tilde{m}_1,0)-\text{max}(-\tilde{m}_1,0)\\
-+&\text{max}(\tilde{m}_2,0)-\text{max}(-\tilde{m}_2,0)\\
-+&\text{max}(\tilde{m}_3,0)-\text{max}(-\tilde{m}_3,0)
+0=&\operatorname{max}(\tilde{m}_1,0)-\operatorname{max}(-\tilde{m}_1,0)\\
++&\operatorname{max}(\tilde{m}_2,0)-\operatorname{max}(-\tilde{m}_2,0)\\
++&\operatorname{max}(\tilde{m}_3,0)-\operatorname{max}(-\tilde{m}_3,0)
 \end{split}
 \label{eq:D2b}
 \end{equation}
 \label{eq:D2}
 \end{subequations}
 
-Equation \eqref{eq:D2a} is solved for $h_{mix}$
+Equation \eqref{eq:D2a} is solved for $h_{\mathrm{mix}}$
 \begin{equation*}
-h_{mix}=\frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_2,0)h_{outflow,2}+\text{max}(-\tilde{m}_3,0)h_{outflow,3}}
-{\text{max}(\tilde{m}_1,0)+\text{max}(\tilde{m}_2,0)+\text{max}(\tilde{m}_3,0)}
+h_{\mathrm{mix}}=\frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}
+{\operatorname{max}(\tilde{m}_1,0)+\operatorname{max}(\tilde{m}_2,0)+\operatorname{max}(\tilde{m}_3,0)}
 \end{equation*}
 Using \eqref{eq:D2b}, the denominator can be changed to:
 \begin{equation*}
-h_{mix}=\frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_2,0)h_{outflow,2}+\text{max}(-\tilde{m}_3,0)h_{outflow,3}}
-{\text{max}(-\tilde{m}_1,0)+\text{max}(-\tilde{m}_2,0)+\text{max}(-\tilde{m}_3,0)}
+h_{\mathrm{mix}}=\frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}
+{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_2,0)+\operatorname{max}(-\tilde{m}_3,0)}
 \end{equation*}
 Above it was shown that an equation of this type does not yield properly
 formulated model equations. In the streams concept we therefore decide
@@ -128,26 +128,26 @@ flowing into it. Whenever the mixing enthalpy is \emph{used} in a model
 it is therefore the mixing enthalpy under the assumption of fluid
 flowing into said model.
 
-We establish this quantity using a dedicated operator $\text{\lstinline!inStream!}(h_{outflow,i})=h_{mix}$ assuming that $\tilde{m}_{i} >= 0$. This leads to
-three different incarnations of (n in the general case). This is
+We establish this quantity using a dedicated operator $\text{\lstinline!inStream!}(h_{\mathrm{outflow},i})=h_{\mathrm{mix}}$ assuming that $\tilde{m}_{i} \geq 0$. This leads to
+three different incarnations of ($n$ in the general case). This is
 illustrated in the figure below. For the present example of three
 components in a connection set, this means the following.
 \begin{align*}
-\text{\lstinline!inStream!}(h_{outflow,1}) &= \frac{\text{max}(-\tilde{m}_2,0)h_{outflow,2}+\text{max}(-\tilde{m}_3,0)h_{outflow,3}}{\text{max}(-\tilde{m}_2,0)+\text{max}(-\tilde{m}_3,0)}\\
-\text{\lstinline!inStream!}(h_{outflow,2}) &= \frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_3,0)h_{outflow,3}}{\text{max}(-\tilde{m}_1,0)+\text{max}(-\tilde{m}_3,0)}\\
-\text{\lstinline!inStream!}(h_{outflow,3}) &= \frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_2,0)h_{outflow,2}}{\text{max}(-\tilde{m}_1,0)+\text{max}(-\tilde{m}_2,0)}
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},1}) &= \frac{\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_2,0)+\operatorname{max}(-\tilde{m}_3,0)}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},2}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_3,0)}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},3}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}}{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_2,0)}
 \end{align*}
 \begin{figure}[H]
-\caption{Exemplary connection set with three connected components}
-\begin{center}
-\includegraphics[width=3in,height=3in]{fluidmix3}
-\end{center}
+  \begin{center}
+    \includegraphics{fluidmix3}
+  \end{center}
+  \caption{Exemplary connection set with three connected components.}
 \end{figure}
 
 In the general case of a connection set with \emph{n} components,
 similar considerations lead to the following.
 \begin{equation*}
-\text{\lstinline!inStream!}(h_{outflow,i})=\frac{\sum_{j=1,...,n;j\neq i}\text{max}(-\tilde{m}_j,0)h_{outflow,j}}{\sum_{j=1,...,n;j\neq i}\text{max}(-\tilde{m}_j,0)}
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},i})=\frac{\sum_{j=1,...,n;j\neq i}\operatorname{max}(-\tilde{m}_j,0)h_{\mathrm{outflow},j}}{\sum_{j=1,...,n;j\neq i}\operatorname{max}(-\tilde{m}_j,0)}
 \end{equation*}
 
 \section{Special cases covered by inStream definition}\label{special-cases-covered-by-the-instream-operator-definition}
@@ -158,19 +158,19 @@ Therefore, it is set to the outflow value.
 \subsection{Connection of 2 stream connectors, one to one connections (N = 2)}\label{connection-of-2-stream-connectors-one-to-one-connections-n-2}
 
 \begin{align*}
-\text{\lstinline!inStream!}(h_{outflow,1}) &= \frac{\text{max}(-\tilde{m}_2,0)h_{outflow,2}}{\text{max}(-\tilde{m}_2,0)}=h_{outflow,2}\\
-\text{\lstinline!inStream!}(h_{outflow,2}) &= \frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}}{\text{max}(-\tilde{m}_1,0)}=h_{outflow,1}
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},1}) &= \frac{\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}}{\operatorname{max}(-\tilde{m}_2,0)}=h_{\mathrm{outflow},2}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},2}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}}{\operatorname{max}(-\tilde{m}_1,0)}=h_{\mathrm{outflow},1}
 \end{align*}
 
-In this case, \lstinline!inStream! is continuous (contrary to $h_{mix}$) and does not
+In this case, \lstinline!inStream! is continuous (contrary to $h_{\mathrm{mix}}$) and does not
 depend on flow rates. The latter result means that this transformation
 may remove nonlinear systems of equations, which requires that either
 simplifications of the form $a * b / a = b$ must be provided, or that this
 case is treated directly.
 
 \subsection{Connection of 3 stream connectors where one mass flow rate is identical to zero}\label{connection-of-3-stream-connectors-where-one-mass-flow-rate-is-identical-to-zero-n-3-and}
-The case where N=3 and $\tilde{m}_3=0$ occurs when a one-port sensor (like a temperature sensor) is
-connected to two connected components. For the sensor, the min attribute
+The case where $N=3$ and $\tilde{m}_3=0$ occurs when a one-port sensor (like a temperature sensor) is
+connected to two connected components. For the sensor, the \lstinline!min! attribute
 of the mass flow rate should be set to zero (no fluid exiting the
 component via this connector).
 This simplification (and similar ones) can also be used if a tool determines that a mass flow rate is zero or non-negative.
@@ -179,20 +179,20 @@ The suggested implementation results in
 the following equations, and as indicated the last formula can be
 simplified further by using $\tilde{m}_3=0$:
 \begin{align*}
-\text{\lstinline!inStream!}(h_{outflow,1}) &= h_{outflow,2}\\
-\text{\lstinline!inStream!}(h_{outflow,2}) &= h_{outflow,1}\\
-\text{\lstinline!inStream!}(h_{outflow,3}) &= \frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_2,0)h_{outflow,2}}{\text{max}(-\tilde{m}_1,0)+\text{max}(-\tilde{m}_2,0)}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},1}) &= h_{\mathrm{outflow},2}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},2}) &= h_{\mathrm{outflow},1}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},3}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}}{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_2,0)}\\
 &=
 \begin{cases}
-h_{outflow,2}&\text{if $\tilde{m}_1>=0$}\\
-h_{outflow,1}&\text{if $\tilde{m}_1<0$ and $\tilde{m}_3=0$}
+h_{\mathrm{outflow},2}&\text{if $\tilde{m}_1 \geq 0$}\\
+h_{\mathrm{outflow},1}&\text{if $\tilde{m}_1 < 0$ and $\tilde{m}_3 = 0$}
 \end{cases}
 \end{align*}
 \begin{figure}[H]
-\caption{Example series connection of multiple models with stream connectors }
-\begin{center}
-\includegraphics[width=6in,height=3in]{fluidmix4}
-\end{center}
+  \begin{center}
+    \includegraphics{fluidmix4}
+  \end{center}
+  \caption{Example series connection of multiple models with stream connectors.}
 \end{figure}
 
 For the two components with finite mass flow rates (not the sensor), the
@@ -229,21 +229,21 @@ m3.c.m_flow.min = 0; // max(-m3.c.m_flow,0) = 0
 \end{lstlisting}
 results in the following equation:
 \begin{equation*}
-\text{\lstinline!inStream!}(h_{outflow,1})=\frac{\text{max}(-\tilde{m}_2,0)h_{outflow,2}+\text{max}(-\tilde{m}_3,0)h_{outflow,3}}{\text{max}(-\tilde{m}_2,0)+\text{max}(-\tilde{m}_3,0)}=\frac{0}{0}
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},1})=\frac{\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_2,0)+\operatorname{max}(-\tilde{m}_3,0)}=\frac{0}{0}
 \end{equation*}
 
 \lstinline!inStream! cannot be evaluated for a connector, on which
 the mass flow rate has to be negative by definition. The reason is that
 the value is arbitrary, which is why it is defined as follows.
 \begin{equation*}
-\text{\lstinline!inStream!}(h_{outflow,1}):=h_{outflow,1}
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},1}):=h_{\mathrm{outflow},1}
 \end{equation*}
 For the remaining connectors, \lstinline!inStream! reduces to a simple result.
 \begin{align*}
-\text{\lstinline!inStream!}(h_{outflow,2}) &= \frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_3,0)h_{outflow,3}}{\text{max}(-\tilde{m}_1,0)+\text{max}(-\tilde{m}_3,0)}
-  = h_{outflow,1}\\
-\text{\lstinline!inStream!}(h_{outflow,3}) &= \frac{\text{max}(-\tilde{m}_1,0)h_{outflow,1}+\text{max}(-\tilde{m}_2,0)h_{outflow,2}}{\text{max}(-\tilde{m}_1,0)+\text{max}(-\tilde{m}_2,0)}
-  = h_{outflow,1}
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},2}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_3,0)}
+  = h_{\mathrm{outflow},1}\\
+\text{\lstinline!inStream!}(h_{\mathrm{outflow},3}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}}{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_2,0)}
+  = h_{\mathrm{outflow},1}
 \end{align*}
 Again, the previous non-linear algebraic system of equations is removed.
 This means that utilizing the information about uni-directional flow is
@@ -251,7 +251,7 @@ very important.
 
 To summarize, if all mass flow rates are zero, the balance equations for
 stream variables \eqref{eq:D1} and for flows \eqref{eq:D2} are identically fulfilled. In
-such a case, any value of h\_mix fulfills \eqref{eq:D1}, i.e., a unique
+such a case, any value of $h_{\mathrm{mix}}$ fulfills \eqref{eq:D1}, i.e., a unique
 mathematical solution does not exist. This specification only requires
 that a solution fulfills the balance equations. Additionally, a
 recommendation is given to compute all unknowns in a unique way, by

@@ -1,25 +1,19 @@
 \chapter{Synchronous Language Elements}\label{synchronous-language-elements}
 
-This section presents language elements for describing synchronous
+This chapter defines synchronous
 behavior suited for implementation of control systems.
-
-\section{Introduction}\label{introduction2}
-
-\subsection{Overview}\label{overview}
-
-\begin{nonnormative}
-This chapter defines additional kinds of discrete-time
-variables and equations, as well as an additional kind of when-clause,
-in order to define sampled data systems in a safe way, so that the
+The synchronous behavior relies on an additional kind of discrete-time
+variables and equations, as well as an additional kind of when-clause.
+The benefits of synchronous behavior is that it allows a model to define large
+sampled data systems in a safe way, so that the
 translator can provide good diagnostics in case of a modeling error.
 
 The following small example shows the most important elements:
 \begin{figure}[H]
-\caption{A continuous plant and a sampled data controller connected
-together with sample and (zero-order) hold elements}
-\begin{center}
-\includegraphics[width=7in,height=4in]{plantmodel}
-\end{center}
+  \begin{center}
+    \includegraphics{plantmodel}
+  \end{center}
+  \caption{A continuous plant and a sampled data controller connected together with sample and (zero-order) hold elements.}
 \end{figure}
 
 \begin{itemize}
@@ -27,7 +21,7 @@ together with sample and (zero-order) hold elements}
   A periodic clock is defined with \lstinline!Clock(3)!. The argument
   of \lstinline!Clock! defines the sampling interval (for details see \cref{clock-constructors}).
 \item
-  Clocked variables (such as yd, xd, ud) are associated uniquely
+  Clocked variables (such as \lstinline!yd!, \lstinline!xd!, \lstinline!ud!) are associated uniquely
   with a clock and can only be directly accessed when the associated
   clock is active. Since all variables in a clocked equation must belong
   to the same clock, clocking errors can be detected at compile time. If
@@ -57,16 +51,16 @@ together with sample and (zero-order) hold elements}
   The \lstinline!when!-clause in the controller could also be removed
   and the controller could just be defined by the equations:
 \begin{lstlisting}[language=modelica]
-// discrete controller
-E*xd = A*previous(xd) + B*yd;
-ud = C*previous(xd) + D*yd;
+/* Discrete controller */
+E * xd = A * previous(xd) + B * yd;
+    ud = C * previous(xd) + D * yd;
 \end{lstlisting}
 \item
   \lstinline!previous(xd)! returns the value of \lstinline!xd! at
   the previous clock tick. At the first sample instant, the start value
   of \lstinline!xd! is returned.
 \item
-  A discrete-time signal (such as ud) is converted to a continuous-time signal with \lstinline!hold!.
+  A discrete-time signal (such as \lstinline!ud!) is converted to a continuous-time signal with \lstinline!hold!.
 \item
   If a variable belongs to a particular clock, then all other
   equations where this variable is used, with the exception of as
@@ -84,9 +78,7 @@ ud = C*previous(xd) + D*yd;
   extension of the Lucid Synchrone semantics. These approaches belong to
   the class of synchronous languages (Benveniste et.~al.\ 2002).
 \end{itemize}
-\end{nonnormative}
-
-\subsection{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
+\section{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
 
 \begin{nonnormative}
 Periodically sampled control systems could also be defined with
@@ -105,14 +97,16 @@ assigned a value when the when-condition becomes true and otherwise hold
 their value, (b) variables not assigned in the when-clause are directly
 accessed (= automatic \lstinline!sample! semantics), and (c) the variables
 assigned in the when-clause can be directly accessed outside of the
-when-clause (= automatic \lstinline!hold! semantics). This approach to define
-periodically sample data systems has the following drawbacks that are
-not present with the solution in this chapter using clocks and clocked
-equations:
+when-clause (= automatic \lstinline!hold! semantics).
+
+Using standard when-clauses works well for individual simple sampled blocks,
+but the synchronous approach
+using clocks and clocked equations provide the following benefits
+(especially for large sampled systems):
 \begin{enumerate}
 \item
-  It is not possible to detect sampling errors due to the
-  automatic sample and hold semantics. Examples:
+  Possibility to detect inconsistent sampling rate, since clock partitioning (see \cref{clock-partitioning}),
+  replaces the automatic sample and hold semantics. Examples:
   \begin{enumerate}
   \def\labelenumii{\alph{enumii}.}
   \item
@@ -127,30 +121,32 @@ equations:
     controller part, and different integer multiples are given, then the
     translator has to accept this (no error is detected).
   \end{enumerate}
+  Note: Clocked systems can mix different sampling rates
+  in well-defined ways when needed.
 \item
-  Due to the automatic sample and hold semantics, all variables
-  assigned in a when-clause of the above kind must have an initial value
+  Fewer initial conditions are needed, as only a subset of clocked
+  variables need initial conditions -- the clocked state variables (see \cref{clocked-state-variables}).
+  For a standard when-clause all variables
+  assigned in a when-clause must have an initial value
   because they might be used, before they are assigned a value the first
   time. As a result, all these variables are ``discrete-time states''
-  although in reality only a small subset of them need an initial
+  although in reality only a subset of them need an initial
   value.
 \item
-  Only a restricted form of equations can be used in a standard
-  when-clause, since the left hand side has to be a variable, in order
-  to identify the variables that are assigned in the when-clause. This
-  is a severe restriction, especially if nonlinear control algorithms
-  shall be defined. This restriction is not present for clocked
-  equations.
+  More general equations can be used, compared to standard when-clauses that require
+  a restricted form of equations where the left hand side has to be a variable, in order
+  to identify the variables that are assigned in the when-clause.
+  This restriction can be circumvented for standard when-clauses, but is
+  absent for clocked equations and make it more convenient to define
+  nonlinear control algorithms.
 \item
-  All equations belonging to a discrete controller must be in a
-  when clause. If the controller is built-up with several building
-  blocks, then the clock condition (sampling) must be explicitly
-  propagated to all blocks. This is tedious and error prone. With
-  clocked equations, the clock condition need to be defined only at one
-  place, and otherwise is automatically propagated by clock inference.
+  Clocked equations allow clock inference,
+  meaning that the sampling need only be given once for a sub-system.
+  For a standard when-clause the condition (sampling) must be explicitly
+  propagated to all blocks, which is tedious and error prone for large systems.
 \item
-  It is not possible to use a continuous-time model in when
-  clauses (e.g.\ some advanced controllers use an inverse model of a
+  Possible to use general continuous-time models in synchronous models
+  (e.g.\ some advanced controllers use an inverse model of a
   plant in the feedforward path of the controller, see (Thümmel et.~al.\ 2005)).
   This powerful feature of Modelica to use a nonlinear plant
   model in a controller would require to export the continuous-time
@@ -159,22 +155,25 @@ equations:
   equations, clocked controllers with continuous-time models can be
   directly defined in Modelica.
 \item
-  At a sample instant, an event iteration occurs (as for any other
-  event). A clocked partition, as well as a when-clause with a
-  \lstinline!sample! is evaluated exactly once at such an event instant.
-  However, the continuous-time model to which the sampled data
-  controller is connected, will be evaluated several times when the
-  overall system is simulated. With when-clauses, the continuous-time
-  part is typically evaluated three times at a sample instant (once,
-  when the sample instant is reached, once to evaluate the continuous
-  equations at the sample instant, and once when an event iteration
-  occurs since a discrete variable \lstinline!v! is changed and \lstinline!pre(v)!
-  appears in the equations). With clocked equations, no event iteration
-  is triggered if a clocked variable \lstinline!v! is changed and
-  \lstinline!previous(v)! appears in the equations, because the event
-  iteration cannot change the value of \lstinline!v!. As a result, typically the
-  simulation model is evaluated twice at a sample instant and therefore
-  the simulation is more efficient with clocked equations.
+  Clocked equations are straightforward to optimize because they are
+  evaluated exactly once at each an event instant.
+  In contrast a standard when-clause with \lstinline!sample! conceptually
+  requires several evaluations of the model (in some cases tools
+  can optimize this to avoid unneeded evaluations).
+  The problem for the standard when-clause is that after \lstinline!v!
+  is changed, \lstinline!pre(v)! shall be updated and the model re-evaluated,
+  since the equations could depend on \lstinline!pre(v)!.
+  For clocked equations this iteration can be omitted
+  since \lstinline!previous(v)! can only occur in the clocked equations
+  that are only run the first event iterations.
+\item
+  Clocked subsystems using arithmetic blocks are straightforward to optimize.
+  When a standard math-block (e.g.\ addition) is part of a clocked sub-system it is automatically
+  clocked and only evaluated when the clocked equations trigger.
+  For standard when-clauses one either needs a separate sampled math-block for each operation, or
+  it will conceputally be evaluated all the time.
+  However, tools may perform a similar optimization for standard when-clauses
+  and it is only relevant in large sampled systems.
 \end{enumerate}
 \end{nonnormative}
 
@@ -184,7 +183,7 @@ In this section various terms are defined.
 
 \subsection{Clocks and Clocked Variables}\label{clocks-and-clocked-variables}
 
-% We can't use \subfloat just yet due to LaTeXML issue:
+% We can't use \subfloat just yet due to LaTeXML issue (fixed on master 2020-06-27):
 %   https://github.com/brucemiller/LaTeXML/issues/1292 (marked as fixed as of commit 9f5c893b)
 %\begin{figure}[tb]
 %  \centering
@@ -199,21 +198,21 @@ In this chapter, two additional kinds of discrete-time expressions/variables are
 different kinds of discrete-time variables in Modelica are defined below.
 
 \begin{definition}[Piecewise-constant variable]
-(See \cref{discrete-time-expressions}.)  Variables \lstinline!m(t)! of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, and \lstinline!String! that are
-\emph{constant} inside each interval t\textsubscript{i} $\le$ t \textless{} t\textsubscript{i+1} (= piecewise constant continuous-time variables).  In other words, \lstinline!m(t)! \emph{changes}
-value \emph{only at events}.  This means, \lstinline!m($t$)! = \lstinline!m($t_{i}$)!, for $t_{i} \leq t < t_{i+1}$.  Such variables depend continuously on time and they are discrete-time variables.
+(See \cref{discrete-time-expressions}.)  Variables $m(t)$ of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, and \lstinline!String! that are
+\emph{constant} inside each interval $t_{i} \leq t < t_{i+1}$ (i.e., piecewise constant continuous-time variables).  In other words, $m(t)$ changes
+value only at events: $m(t) = m(t_{i})$, for $t_{i} \leq t < t_{i+1}$.  Such variables depend continuously on time and they are discrete-time variables.
 See \cref{fig:piecewise-constant-variable}.
 \end{definition}
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=3in]{piecewise}
+    \includegraphics{piecewise-constant}
   \end{center}
   \caption{A piecewise-constant variable.}\label{fig:piecewise-constant-variable}
 \end{figure}
 
 \begin{definition}[Clock variable]
-Clock variables \lstinline!c($t_{i}$)! are of base type \lstinline!Clock!.  A clock is either defined by a constructor (such as \lstinline!Clock(3)!) that defines when the clock ticks (is active) at
+Clock variables $c(t_{i})$ are of base type \lstinline!Clock!.  A clock is either defined by a constructor (such as \lstinline!Clock(3)!) that defines when the clock ticks (is active) at
 a particular time instant, or it is defined with clock operators relatively to other clocks, see \cref{base-clock-conversion-operators}.  See \cref{fig:clock-variable}.
 \end{definition}
 
@@ -228,14 +227,14 @@ Clock c3 = subSample(c2, 4);
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=3in]{clock}
+    \includegraphics{clock}
   \end{center}
-  \caption{A clock variable.}\label{fig:clock-variable}
+  \caption{A clock variable.  The value of a clock variable is not defined -- the plot marks only indicate \emph{when} the clock is active.}\label{fig:clock-variable}
 \end{figure}
 
 \begin{definition}[Clocked variable]
-The elements of clocked variables \lstinline!r($t_{i}$)! are of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, \lstinline!String! that are associated uniquely with
-a clock \lstinline!c($t_{i}$)!.  A clocked variable can only be directly accessed at the event instant where the associated clock is active.  A constant and a parameter can always be used at a place
+The elements of clocked variables $r(t_{i})$ are of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, \lstinline!String! that are associated uniquely with
+a clock $c(t_{i})$.  A clocked variable can only be directly accessed at the event instant where the associated clock is active.  A constant and a parameter can always be used at a place
 where a clocked variable is required.
 
 At time instants where the associated clock is not active, the value of a clocked variable can be inquired by using an explicit cast operator, see below.  In such a case \lstinline!hold! semantics is
@@ -244,7 +243,7 @@ used, in other words the value of the clocked variable from the last event insta
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=3in]{clocked}
+    \includegraphics{clocked}
   \end{center}
   \caption{A clocked variable.  The \lstinline!hold! extrapolation of the value at the last event instant is illustrated with dashed green lines.}\label{fig:clocked-variable}
 \end{figure}
@@ -551,20 +550,17 @@ Otherwise, the following expressions are allowed:
   \end{example}
 \end{itemize}
 
-\section{Discrete States}\label{discrete-states}
+\section{Clocked State Variables}\label{clocked-state-variables}
 
-The previous value of a clocked variable can be accessed with the
-previous operator. Such a variable is called a clocked state variable.
+The previous value of a clocked variable can be accessed with the \lstinline!previous! operator.  A variable to which \lstinline!previous! has been applied is called a \firstuse{clocked state variable}.
 
 \begin{longtable}[]{|l|p{12cm}|}
 \hline \endhead
-\lstinline!previous(u)! & The input argument is a \emph{component expression} (see
-\cref{argument-restrictions-component-expression}) or a parameter expression. The return argument has the
-same type as the input argument. Input and return arguments are on the
-same clock. At the first tick of the clock of u or after a reset
-transition (see \cref{reset-handling}), the start value of u is returned, see
-\cref{initialization-of-clocked-partitions}. At subsequent activations of the clock of u, the value of
-u from the previous clock activation is returned.\\ \hline
+\lstinline!previous(u)! &
+The input argument is a \emph{component expression} (see \cref{argument-restrictions-component-expression}) or a parameter expression.  The return argument has the same type as the input argument.
+Input and return arguments are on the same clock.  At the first tick of the clock of \lstinline!u! or after a reset transition (see \cref{reset-handling}), the start value of \lstinline!u! is
+returned, see \cref{initialization-of-clocked-partitions}.  At subsequent activations of the clock of \lstinline!u!, the value of \lstinline!u! from the previous clock activation is returned.\\
+\hline
 \end{longtable}
 
 \section{Partitioning Operators}\label{partitioning-operators}
@@ -782,7 +778,7 @@ Clock y2 = backSample(y1,2); // ticks: 1.0, 2.0, ...
 \\ \hline
 \lstinline!noClock(u)!
 &
-The clock of \lstinline!y = noClock(u)! is always inferred. At every tick
+The clock of \lstinline!y = noClock(u)! is always inferred, and \lstinline!u! must be part of the same base-clock as \lstinline!y!. At every tick
 of the clock of \lstinline!y!, the operator returns the value of \lstinline!u! from the last
 tick of the clock of \lstinline!u!. If \lstinline!noClock(u)! is called before the
 first tick of the clock of \lstinline!u!, the start value of \lstinline!u! is returned.\\ \hline
@@ -1016,6 +1012,9 @@ The resulting set of connected components, is the partitioning of the
 equations and variables, S\textsubscript{ij} =
 \textless{}E\textsubscript{ij}, V\textsubscript{ij}\textgreater{},
 according to sub-clocks.
+
+The resulting sets of equations and variables shall be possible to solve separately,
+meaning that systems of equations cannot involve different sub-clocks.
 
 It can be noted that:
 
