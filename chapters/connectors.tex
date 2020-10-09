@@ -118,12 +118,10 @@ instances of that connector are referred to as expandable connectors.
 Instances of connectors that do not possess this qualifier will be
 referred to as non-expandable connectors.
 
-Before generating connection equations non-parameter scalar variables
-and non-parameter array elements declared in expandable connectors are
-marked as only being potentially present. A non-parameter array element
-may be declared with array dimensions \lstinline!:! indicating that the size is
-unknown. This applies to both variables of simple types, and variables
-of structured types.
+Before generating connection equations non-parameter scalar variables and non-parameter array elements declared in expandable connectors are marked as only being
+potentially present.  A non-parameter array element may be declared with array dimensions \lstinline!:! indicating that the size is unknown (note that the size of
+such a dimension cannot be determined using \lstinline!size!, see \cref{array-dimension-and-size-functions}).  This applies to both variables of simple types,
+and variables of structured types.
 
 Then connections containing expandable connectors are elaborated:
 \begin{itemize}
@@ -138,7 +136,8 @@ Then connections containing expandable connectors are elaborated:
     new component having the used name and corresponding type.
   \item
     If the undeclared component is subscripted, an array variable is created, and a connection to the specific array element is performed.  Introducing elements in an
-    array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e.\ as if they were only potentially present).
+    array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e.\ as if they were only potentially present,
+    and the same note regarding the use of `size` also applies here).
   \item
     If the variable on the other side of the connect-equation is input or output the new component will be either input or output to satisfy the restrictions in
     \cref{restrictions-of-connections-and-connectors} for a non-expandable connector.
@@ -265,6 +264,35 @@ equation
   connect(bus1.pressure, bus2.pressure); // Error; both undeclared.
   connect(speed, bus2.speed[2]); // Introduces speed array (with element [2]).
 end Controller;
+\end{lstlisting}
+\end{example}
+
+An expandable connector array component for which \lstinline!size! is not defined (see \cref{array-dimension-and-size-functions}) is referred to as a \emph{sizeless array component}.  Such a
+component may not be used without subscripts, and the subscripts must slice the array so that the sizeless dimensions are removed.
+
+\begin{example}
+Valid and invalid uses of sizeless array components:
+\begin{lstlisting}[language=modelica]
+expandable connector EngineBus
+end EngineBus;
+
+block Sensor
+  RealOutput speed;
+end Sensor;
+
+model Engine
+  parameter Integer n = 1;
+  EngineBus bus;
+  Sensor sensor;
+  RealOutput sensorSpeeds[:];
+equation
+  /* Comments below refer to the use of sizeless array bus.speed. */
+  connect(bus.speed[n], sensor.speed) ; // OK; subscript to scalar component.
+  connect(bus.speed, sensorSpeeds); // Error; missing subscripts.
+public
+  Real s[:] = bus.speed; // Error; missing subscripts.
+  Real s[2] = bus.speed[{1, 3}]; // OK; subscript selects fixed size sub-array.
+end Engine;
 \end{lstlisting}
 \end{example}
 
