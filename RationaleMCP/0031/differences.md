@@ -264,7 +264,7 @@ end 'PosPoint';
   - ```type 'Cube' = 'Length'[3](min = 0, max = 1);``` (make array type)
   - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
 
-The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, have the same restrictions as record component declarations, see below.  This includes both public and protected function component declarations.  For example:
+The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, has the same restrictions as record component declarations, see below.  This includes both public and protected function component declarations.  For example:
 ```
 function 'fun'
   input Real 'u'(min = 0); /* Public function component declaration. */
