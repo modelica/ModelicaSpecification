@@ -275,7 +275,7 @@ protected
 end 'fun';
 ```
 
-The following restriction apply to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
+The following restriction applies to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
 - Modifiers must have constant variability.
 - Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
 
