@@ -1,6 +1,5 @@
 \chapter{State Machines}\label{state-machines}
 
-\begin{nonnormative}
 This chapter defines language elements to define clocked state
 machines. These state machines have a similar modeling power as
 Statecharts (Harel 1987) and have the important feature that at one
@@ -44,7 +43,6 @@ properties are different to Lucid Synchrone 3.0:
   latter case, the equations are integrated between the previous and the
   next clock tick, if the corresponding state is active).
 \end{itemize}
-\end{nonnormative}
 
 \section{Transitions}\label{transitions}
 
@@ -54,75 +52,90 @@ instances which are coupled by \lstinline!transition! statements makes a
 state machine. All parts of a state machine must have the same clock.
 All transitions leaving one state must have different priorities. One
 and only one instance in each state machine must be marked as initial by
-appearing in an \lstinline!initialState! statement. The following special
-kinds of connect-statements are used to define transitions between
-states and to define the initial state:
-\begin{longtable}[]{|p{4cm}|p{10cm}|}
-\hline \endhead
-\multicolumn{2}{|p{12cm}|}{\tablehead{Statements to define a state machine}}\\ \hline
-\begin{tabular}{@{}p{4cm}@{}}
-\lstinline!transition!(from, to,\\
-condition,\\
-immediate, reset,\\
-synchronize, priority)
+appearing in an \lstinline!initialState! statement.
+
+The special kinds of connect-statements listed below are used to define define a state machine.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!transition($\mathit{from}$, $\mathit{to}$, $\mathit{condition}$, $\ldots$)! & State machine transition between states & \Cref{modelica:transition}\\
+\lstinline!initialState($\mathit{state}$)! & State machine initial state & \Cref{modelica:initialState}\\
+\hline
 \end{tabular}
-&
-Arguments \lstinline!from! and \lstinline!to! are block instances and \lstinline!condition! is a
-\lstinline!Boolean! argument. The optional arguments \lstinline!immediate!, \lstinline!reset!, and
-\lstinline!synchronize! are of type \lstinline!Boolean!, have parametric variability and a
-default of \lstinline!true!, \lstinline!true!, \lstinline!false! respectively. The optional
-argument \lstinline!priority! is of type \lstinline!Integer!, has parametric variability and
-a default of 1.
+\end{center}
 
-This operator defines a transition from instance \lstinline!from! to instance
-\lstinline!to!. The \lstinline!from! and \lstinline!to! instances become states of a state
-machine. The transition fires when \lstinline!condition = true! if
-\lstinline!immediate = true! (this is called an \firstuse{immediate transition})
-or \lstinline!previous(condition)! when \lstinline!immediate = false! (this is
-called a \firstuse{delayed transition}). Argument \lstinline!priority! defines the
-priority of firing when several transitions could fire. In this case the
-transition with the smallest value of \lstinline!priority! fires. It is required
-that $\textrm{priority}\ge 1$ and that for all transitions from the same state, the
-priorities are different. If \lstinline!reset = true!, the states of the
-target state are reinitialized, i.e.\ state machines are restarted in
-initial state and state variables are reset to their start values. If
-synchronize=true, any transition is disabled until all state machines of
-the from-state have reached final states, i.e.\ states without outgoing
-transitions. For the precise details about firing a transition, see
-\cref{state-machine-semantics}.\\ \hline
-\lstinline!initialState(state)! & Argument \lstinline!state! is the block instance
-that is defined to be the initial state of a state machine. At the first
-clock tick of the state machine, this state becomes active.\\ \hline
-\end{longtable}
+The \lstinline!transition! and \lstinline!initialState! equations may only be used in equations and may not be used inside if-equations with non-parametric condition, or in when-equations.
 
-The transition-, and initialState-equations may only be used in
-equations and may not be used inside if-equations with non-parametric
-condition, or in when-equations.
+The operators listed below are used to query the status of the state machine.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!activeState($\mathit{state}$)! & Predicate for active state & \Cref{modelica:activeState}\\
+\lstinline!ticksInState()! & Ticks since activation & \Cref{modelica:ticksInState}\\
+\lstinline!timeInState()! & Time since activation & \Cref{modelica:timeInState}\\
+\hline
+\end{tabular}
+\end{center}
 
-It is possible to query the status of the state machine by using the
-following operators:
-\begin{longtable}[]{|p{4cm}|p{10cm}|}
-\hline \endhead
-\lstinline!activeState(state)!&
-Argument \lstinline!state! is a block instance. The operator returns
-\lstinline!true!, if this instance is a state of a state machine and this
-state is active at the actual clock tick. If it is not active, the
-operator returns \lstinline!false!.
+\begin{operatordefinition}[transition]
+\begin{synopsis}\begin{lstlisting}
+transition($\mathit{from}$, $\mathit{to}$, $\mathit{condition}$,
+  immediate=$\mathit{imm}$, reset=$\mathit{reset}$, synchronize=$\mathit{synch}$, priority=$\mathit{prio}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Arguments $\mathit{from}$ and $\mathit{to}$ are block instances, and $\mathit{condition}$ is a \lstinline!Boolean! argument.  The optional arguments \lstinline!immediate!, \lstinline!reset!, and \lstinline!synchronize! are of type \lstinline!Boolean!, have parametric variability and a default of \lstinline!true!, \lstinline!true!, \lstinline!false! respectively.  The optional argument \lstinline!priority! is of type \lstinline!Integer!, has parametric variability and a default of 1.
 
-It is an error if the instance is not a state of a state machine.\\ \hline
-\lstinline!ticksInState()! & Returns the number of ticks of the clock of the state machine
-for which the currently active state has maintained its active state without interruption,
-i.e.\ without local or hierarchical transitions from this state.
-In the case of a self-transition to the currently active state or to an active enclosing state,
-the number is reset to one.
-This function can only be used in state machines.\\ \hline
-\lstinline!timeInState()! & Returns the time duration as \lstinline!Real! in {[}s{]}
-for which the currently active state has maintained its active state without interruption,
-i.e.\ without local or hierarchical transitions from this state.
-In the case of a self-transition to the currently active state or to an active enclosing state,
-the time is reset to zero.
-This function can only be used in state machines.\\ \hline
-\end{longtable}
+This operator defines a transition from instance $\mathit{from}$ to instance $\mathit{to}$.  The $\mathit{from}$ and $\mathit{to}$ instances become states of a state machine.  The transition fires when $\mathit{condition} = \text{\lstinline!true!}$ if $\mathit{imm} = \text{\lstinline!true!}$ (this is called an \firstuse{immediate transition}) or \lstinline!previous($\mathit{condition}$)! when $\mathit{imm} = \text{\lstinline!false!}$ (this is called a \firstuse{delayed transition}).  Argument \lstinline!priority! defines the priority of firing when several transitions could fire.  In this case the transition with the smallest value of \lstinline!priority! fires.  It is required that $\mathit{prio} \geq 1$ and that for all transitions from the same state, the priorities are different. If $\mathit{reset} = \text{\lstinline!true!}$, the states of the target state are reinitialized, i.e.\ state machines are restarted in initial state and state variables are reset to their start values.  If $\mathit{synch} = \text{\lstinline!true!}$, any transition is disabled until all state machines of the from-state have reached final states, i.e.\ states without outgoing transitions.  For the precise details about firing a transition, see \cref{state-machine-semantics}.
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[initialState]
+\begin{synopsis}\begin{lstlisting}
+initialState($\mathit{state}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Argument $\mathit{state}$ is the block instance that is defined to be the initial state of a state machine.  At the first clock tick of the state machine, this state becomes active.
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[activeState]
+\begin{synopsis}\begin{lstlisting}
+activeState($\mathit{state}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Argument $\mathit{state}$ is a block instance.  The operator returns \lstinline!true! if this instance is a state of a state machine and this state is active at the actual clock tick.  If it is not active, the operator returns \lstinline!false!.
+
+It is an error if the instance is not a state of a state machine.
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[ticksInState]
+\begin{synopsis}\begin{lstlisting}
+ticksInState()
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Returns the number of ticks of the clock of the state machine for which the currently active state has maintained its active state without interruption, i.e.\ without local or hierarchical transitions from this state.  In the case of a self-transition to the currently active state or to an active enclosing state, the number is reset to one.
+
+This function can only be used in state machines.
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[timeInState]
+\begin{synopsis}\begin{lstlisting}
+timeInState()
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Returns the time duration as \lstinline!Real! in {[}s{]} for which the currently active state has maintained its active state without interruption, i.e.\ without local or hierarchical transitions from this state. In the case of a self-transition to the currently active state or to an active enclosing state, the time is reset to zero.
+
+This function can only be used in state machines.
+\end{semantics}
+\end{operatordefinition}
 
 \begin{example}
 If there is a transition with \lstinline!immediate=false! from
@@ -136,7 +149,7 @@ active at 10ms, and the clock period is 1ms, then \lstinline!A1! will be active 
   State A2;
 equation
   initialState(A0);
-  transition(A0, A1, sample(time,Clock(1,1000)) > 0.0095);
+  transition(A0, A1, sample(time, Clock(1, 1000)) > 0.0095);
   transition(A1, A2, ticksInState() >= 5, immediate=false);
 \end{lstlisting}
 \end{example}
@@ -144,18 +157,19 @@ equation
 \section{State Machine Graphics}\label{state-machine-graphics}
 
 \begin{nonnormative}
-The recommended layout of state machines is shown below for a
-simple state machine with 5 transitions.
+\Cref{fig:state-machine-layout} shows the recommended layout of a state machine.
 
-\includegraphics[width=4.85417in,height=3.42708in]{statemachine}
-
-For the 5 transitions above, the settings are as follows, from left to
-right: immediate = true, false, true, false, true; reset = true, true,
-false, false, true; synchronize = false, false, false, false, true;
-priority = 1, 2, 3, 4, 5. The recommended color is \{95, 95, 95\} for
-states and for transition text and \{175,175,175\} for transition
-lines.
+The recommended color is \{95, 95, 95\} for states and for transition text, and \{175,175,175\} for transition lines.
 \end{nonnormative}
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics{statemachine}
+  \end{center}
+  % Avoid placing non-normative content in the caption.
+  \caption{Recommended layout of a simple state machine.  For the 5 transitions, the settings are as follows, from left to right: \lstinline!immediate! = true, false, true, false, true; \lstinline!reset! = true, true, false, false, true; \lstinline!synchronize! = false, false, false, false, true; \lstinline!priority! = 1, 2, 3, 4, 5.}
+  \label{fig:state-machine-layout}
+\end{figure}
 
 The annotation for graphics of \lstinline!transition! has the following
 structure: \lstinline!annotation(Line($\ldots$), Text($\ldots$))!; and for
@@ -467,12 +481,16 @@ u!\textsubscript{2}! = v
 
 \subsection{Example}\label{example}
 
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics{hierarchical-statemachine}
+  \end{center}
+  \caption{Example of a hierarchical state machine.}
+  \label{fig:hierarchical-statemachine}
+\end{figure}
+
 \begin{example}
-Consider the following hierarchical state machine:
-
-\includegraphics[width=5.34375in,height=5.72917in]{statemachine2}
-
-The model demonstrates the following properties:
+Consider the hierarchical state machine in \cref{fig:hierarchical-statemachine}.  The model demonstrates the following properties:
 \begin{itemize}
 \item
   \lstinline!state1! is a meta state with two parallel state machines in it.
@@ -483,19 +501,19 @@ The model demonstrates the following properties:
   \lstinline!outer!. The top level declares \lstinline!v! as \lstinline!inner! and gives the start value.
 \item
   \lstinline!count! is defined with a start value in \lstinline!state1!. It is reset when
-  a reset transition (v\textgreater{}=20) is made to \lstinline!state1!.
+  a reset transition (\lstinline!v >= 20!) is made to \lstinline!state1!.
 \item
   \lstinline!stateX! declares the local variable \lstinline!w! to be equal to \lstinline!v! declared
   as \lstinline!inner input!.
 \item
   \lstinline!stateY! declares a local counter \lstinline!j!. It is reset at start and as a
-  consequence of the reset transition (v\textgreater{}=20) to \lstinline!state1!:
-  When the reset transition ($v\ge 20$) fires, then the variables of the
+  consequence of the reset transition (\lstinline!v >= 20!) to \lstinline!state1!:
+  When the reset transition (\lstinline!v >= 20!) fires, then the variables of the
   active states are reset immediately (so \lstinline!count! from \lstinline!state1!, and \lstinline!i!
   from \lstinline!stateX!). The variables of other states are only reset at the time
   instants when these states become active. So \lstinline!j! in \lstinline!StateY! is reset to
-  0, when the transition \lstinline!stateX.i! \textgreater{} 20 fires (after \lstinline!state1!
-  became active again, so after the reset transition $v\ge 20$).
+  0, when the transition \lstinline!stateX.i > 20! fires (after \lstinline!state1!
+  became active again, so after the reset transition \lstinline!v >= 20!).
 \item
   Synchronizing the exit from the two parallel state machines of
   \lstinline!state1! is done by checking that \lstinline!stated! and \lstinline!stateY! are active using the
@@ -584,9 +602,13 @@ public
 end HierarchicalAndParallelStateMachine;
 \end{lstlisting}
 
-The behavior of the state machine can be seen in the plots of \lstinline!v!:
+\Cref{fig:state-machine-behavior} shows the behavior of the state machine.
 \begin{figure}[H]
-\includegraphics[width=4.16667in,height=2.91667in]{statemachineplot}
+  \begin{center}
+    \includegraphics{statemachineplot}
+  \end{center}
+  \caption{State machine behavior, as reflected by the variable \lstinline!v!.}
+  \label{fig:state-machine-behavior}
 \end{figure}
 
 The transition from \lstinline!state1! to \lstinline!state2! could have been done with a

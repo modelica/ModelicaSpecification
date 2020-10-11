@@ -1,4 +1,4 @@
-﻿% This suppresses warnings about most overfull hboxes.
+% This suppresses warnings about most overfull hboxes.
 % Clearly it would be better to fix them, but if we anyway want to
 % change the layout that can wait
 \hfuzz=50pt
@@ -38,10 +38,25 @@
 \usepackage{graphicx}
 \graphicspath{{media/}{../media/}} % so that chapter files can also find the images
 
-% Don't use subfig.sty until this LaTeXML issue has been fixed:
+% Don't use subfig.sty due to this LaTeXML issue (fixed on master 2020-06-27):
 % - https://github.com/brucemiller/LaTeXML/issues/1292 (marked as fixed as of commit 9f5c893b)
 % Leaving commented-out code as a hint to anyone who considers using subfig.
 %\usepackage{subfig}
+
+\RequirePackage[margin=1em, labelfont=bf,
+                singlelinecheck=true, font=sl,
+                compatibility=false% Unsupported feature that suppresses the incompatibility checks...
+                ]{caption}
+\captionsetup[figure]{position=bottom}
+\captionsetup[table]{position=top}
+\ifpdf
+\DeclareCaptionOption{parskip}[]{}% Unclear workaround for conflict between captions, subfig, and parskip.
+\else
+% The \DeclareCaptionOption leaves a ']' behind in the LaTeXML build, see:
+% - https://github.com/brucemiller/LaTeXML/issues/1352
+% Since we are currently not using subfig, we work around this issue by simply removing the problematic
+% \DeclareCaptionOption call.
+\fi
 
 \usepackage{verbatim}
 % The fixltx2e that was used for textsubscript is no longer needed for pdf, but is needed by latexml
@@ -67,13 +82,6 @@
 % The bookmarks are used as table-of-contents in Acrobat
 % The default (magenta for urls and red for internal links) isn't nice
 \hypersetup{bookmarksnumbered=true, colorlinks=true, urlcolor=blue, linkcolor=blue}
-% Using longtable to have tables split across pages
-% Most starting with \hline \endhead to avoid underfull vbox and not have first part duplicated on new pages
-%
-% But in some cases there are actual headings that are copied to next page.
-% Note that this can often lead to overfull vbox
-% See https://tex.stackexchange.com/questions/71096/underfull-vbox-in-each-longtable-can-it-be-fixed-or-must-it-be-ignored
-\usepackage{longtable}
 \usepackage{multirow} % for multirow entries in tables
 \usepackage{listings}
 %\usepackage{enumitem} % Package not available for continuous integration builds.
@@ -151,7 +159,7 @@
   {\bfseries} % HEADFONT
   {.}         % HEADPUNCT
   {.75em}     % HEADSPACE
-  {Definition~#2. \firstuse{#3}}        % CUSTOM-HEAD-SPEC
+  {#1~#2. \firstuse{#3}}        % CUSTOM-HEAD-SPEC
 \theoremstyle{mlsdefinition}
 % In order to show where the definition ends, we put a \qed at the end.  This can't be done using \newtheoremstyle,
 % so instead we make the 'definition' environment a wrapper around the amsthm-base environment.
@@ -168,6 +176,15 @@
 \definecolor{keywordcolor1}{rgb}{0,0,.4}
 \definecolor{keywordcolor2}{rgb}{.90,0,0}
 
+% When producing PDF, the ttfamily looks better in size \small, but with LaTeXML this becomes too small,
+% and the size is applied deep down on the HTML elements, making it hard to adjust using CSS.
+% Thus, the problem has to be addressed already when a listings language's 'basicstyle' is defined.
+\ifpdf
+\let\smallifpdf\small
+\else
+\let\smallifpdf\normalsize
+\fi
+
 % See https://github.com/modelica-tools/listings-modelica/blob/master/listings-modelica.cfg
 % Note: Changed comment color from green to [rgb]{0,0.4,0} - since the other variant was too distracting
 % And added pure,impure,stream as keywords
@@ -182,26 +199,27 @@
 % Note that Integer is both a predefined type and a function; we cannot treat them differently.
 % Another solution would be to remove this completely.
 \lstdefinelanguage{modelica}{% Language for use with the lstlisting environment.
-    basicstyle=\upshape\small\ttfamily,        % Font size for displayed code listings.
-    alsoletter={...},%
-    %otherkeywords={-, =, +, [, ], (, ), \{, \}, :, *, !},%
-    morekeywords=[1]{},% blue Keywords
+    basicstyle=\upshape\smallifpdf\ttfamily, % Font size for displayed code listings.
+    alsoletter={},
+%   otherkeywords={-, =, +, [, ], (, ), \{, \}, :, *, !},%
+    morekeywords=[1]{}, % blue Keywords
     morekeywords=[2]{% blue + bold keywords
         annotation,assert,block,break,class,connector,constant,constrainedby,discrete,%
-        each,encapsulated,else,elseif,elsewhen,end,exit,expandable,extends,external,final,flow,for,%
+        each,encapsulated,enumeration,else,elseif,elsewhen,end,exit,expandable,extends,external,final,flow,for,%
         function,if,in,inner,initial,input,import,loop,model,nondiscrete,operator,outer,%
         output,package,parameter,partial,record,redeclare,replaceable,return,%
-        size,stream,terminate,then,type,when,while,algorithm,equation,%
+        size,stream,terminate,then,type,when,while,within,algorithm,equation,%
         protected,public,and,false,not,or,true,pure,impure,transition,initialState},%
     % Note: initial is in both variants - depending on context, use first variant
     morekeywords=[3]{% red keywords - only special functions and classes: 3.7.2 #derivative-and-special-purpose-operators-with-function-syntax
     % 3.7.3 #event-related-operators-with-function-syntax (except initial) and 4.8 #predefined-types-and-classes
-        connect,der,delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName%
+        connect,der,delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName,%
         terminal,noEvent,smooth,sample,pre,edge,change,reinit,%
+        previous,hold,subSample,superSample,shiftSample,backSample,noClock,firstTick,interval,%
         Real,Integer,Boolean,String},%
     comment=[l]{//}, % comment lines
     morecomment=[s]{/*}{*/}, % comment blocs
-    morestring=[b]{'}, %
+    morestring=[b]{'},
     morestring=[b]{"},
 }[keywords,comments,strings]
 
@@ -211,8 +229,8 @@
 
 % Note: within only a keyword in grammar
 \lstdefinelanguage{grammar}{%
-    basicstyle=\upshape\small\ttfamily,        % size of fonts used for the code
-    alsoletter={...},
+    basicstyle=\upshape\smallifpdf\ttfamily, % size of fonts used for the code
+    alsoletter={},
     alsodigit={-},
     breaklines=true,
     breakatwhitespace=true,
@@ -241,15 +259,15 @@
   stringstyle=\color{black},     % string literal style
   language=[short]modelica,     % Language that will be used by default, in particluar by plain \lstinline.
   showstringspaces=false,
-  frame=lrtb, %
-  xleftmargin=\fboxsep, %
-  xrightmargin=-\fboxsep, %
-  belowskip=0pt, %
+  frame=lrtb,
+  xleftmargin=\fboxsep,
+  xrightmargin=-\fboxsep,
+  belowskip=0pt,
 }
 
 % Duplicate this definition here to avoid issue - and name it "fortran77" to avoid problem in LatexML
 \lstdefinelanguage{fortran77}{%
-    basicstyle=\upshape\small\ttfamily,        % size of fonts used for the code
+    basicstyle=\upshape\smallifpdf\ttfamily, % size of fonts used for the code
     morekeywords={%
         ASSIGN,BACKSPACE,CALL,CHARACTER,%
         CLOSE,COMMON,COMPLEX,CONTINUE,DATA,DIMENSION,DO,DOUBLE,%
@@ -258,44 +276,122 @@
         INQUIRE,INTEGER,INTRINSIC,LOGICAL,%
         OPEN,PARAMETER,PAUSE,PRECISION,PRINT,PROGRAM,READ,REAL,%
         RETURN,REWIND,STOP,SUBROUTINE,THEN,%
-        WRITE,SAVE},%
+        WRITE,SAVE},
     morekeywords=[2]{%
         ACCESS,BLANK,BLOCK,DIRECT,EOF,ERR,EXIST,%
         FMT,FORM,FORMATTED,IOSTAT,NAMED,NEXTREC,NUMBER,OPENED,%
-        REC,RECL,SEQUENTIAL,STATUS,TYPE,UNFORMATTED,UNIT},%
+        REC,RECL,SEQUENTIAL,STATUS,TYPE,UNFORMATTED,UNIT},
     morekeywords=[3]{%
         INT,DBLE,CMPLX,ICHAR,CHAR,AINT,ANINT,% left out real
         NINT,ABS,MOD,SIGN,DIM,DPROD,MAX,MIN,AIMAG,CONJG,SQRT,EXP,LOG,%
         LOG10,SIN,COS,TAN,ASIN,ACOS,ATAN,ATAN2,SINH,COSH,TANH,LGE,LLE,LLT,%
-        LEN,INDEX},%
+        LEN,INDEX},
     morekeywords=[4]{AND,EQ,EQV,FALSE,GE,GT,OR,LE,LT,NE,NEQV,NOT,TRUE},%
-    sensitive=f,%% not Fortran-77 standard, but allowed in Fortran-95 %%
-    morecomment=[f]*,%
-    morecomment=[f]C,%
-    morecomment=[f]c,%
-    morestring=[d]",%% not Fortran-77 standard, but allowed in Fortran-95 %%
-    morestring=[d]'%
+    sensitive=f, % not Fortran-77 standard, but allowed in Fortran-95 %%
+    morecomment=[f]*,
+    morecomment=[f]C,
+    morecomment=[f]c,
+    morestring=[d]", % not Fortran-77 standard, but allowed in Fortran-95 %%
+    morestring=[d]'
 }[keywords,comments,strings]
 
 \lstdefinelanguage{C}{%
-    basicstyle=\upshape\small\ttfamily,        % size of fonts used for the code
+    basicstyle=\upshape\smallifpdf\ttfamily, % size of fonts used for the code
     morekeywords={%
         auto,break,case,char,const,continue,default,do,double,%
         else,enum,extern,float,for,goto,if,int,long,register,return,%
         short,signed,sizeof,static,struct,switch,typedef,union,unsigned,%
-        void,volatile,while},%
-    sensitive,%
-    morecomment=[s]{/*}{*/},%
-    morecomment=[l]//,% nonstandard
-    morestring=[b]",%
-    morestring=[b]',%
-    moredelim=*[directive]\#,%
+        void,volatile,while},
+    sensitive,
+    morecomment=[s]{/*}{*/},
+    morecomment=[l]//, % nonstandard
+    morestring=[b]",
+    morestring=[b]',
+    moredelim=*[directive]\#,
     moredirectives={%
         define,elif,else,endif,error,if,ifdef,ifndef,line,%
-        include,pragma,undef,warning}%
+        include,pragma,undef,warning}
 }[keywords,comments,strings,directives]
 
 % Note: \lstinline!...! used for inline Modelica using [short]modelica
+
+% Warning: The way of adding \label inside the theoremstyle below is currently working
+% at LaTeXML version 0.8.4, but doesn't work on their master branch, see
+% - https://github.com/brucemiller/LaTeXML/issues/1351
+\newtheoremstyle{modelicadefinition}
+  {\topsep}   % ABOVESPACE
+  {\topsep}   % BELOWSPACE
+  {}          % BODYFONT
+  {}          % INDENT (empty value is the same as 0pt)
+  {\bfseries} % HEADFONT
+  {\\}        % HEADPUNCT
+  {.75em}     % HEADSPACE
+  {#1~#2 \texttt{#3}\label{modelica:#3}} % CUSTOM-HEAD-SPEC {#1~#2. \texttt{#3}}
+\theoremstyle{modelicadefinition}
+\newtheorem{operatordefinition}{Operator}[chapter]
+\crefname{operatordefinition}{operator}{operators}
+\Crefname{operatordefinition}{Operator}{Operators}
+\newtheorem{functiondefinition}{Function}[chapter]
+\crefname{functiondefinition}{function}{functions}
+\Crefname{functiondefinition}{Function}{Functions}
+\newtheorem{annotationdefinition}{Annotation}[chapter]
+\crefname{annotationdefinition}{annotation}{annotations}
+\Crefname{annotationdefinition}{Annotation}{Annotations}
+
+\newtheoremstyle{modelicadefinition*}
+  {\topsep}   % ABOVESPACE
+  {\topsep}   % BELOWSPACE
+  {}          % BODYFONT
+  {}          % INDENT (empty value is the same as 0pt)
+  {\bfseries} % HEADFONT
+  {\\}        % HEADPUNCT
+  {.75em}     % HEADSPACE
+  {#1~#2 \texttt{#3}} % CUSTOM-HEAD-SPEC {#1~#2. \texttt{#3}}
+\theoremstyle{modelicadefinition*}
+\newtheorem{operatordefinition*}[operatordefinition]{Operator} % Note: Not using \theoremstyle*, only difference is not adding \label.
+\crefname{operatordefinition*}{operator}{operators}
+\Crefname{operatordefinition*}{Operator}{Operators}
+\newtheorem{functiondefinition*}[functiondefinition]{Function}
+\crefname{functiondefinition*}{function}{functions}
+\Crefname{functiondefinition*}{Function}{Functions}
+\newtheorem{annotationdefinition*}{Annotation}[chapter]
+\crefname{annotationdefinition*}{annotation}{annotations}
+\Crefname{annotationdefinition*}{Annotation}{Annotations}
+
+\lstdefinelanguage[synopsis]{modelica}[]{modelica}{% Language for use inside the 'synopsis' environment.
+  basicstyle=\upshape\ttfamily,              % Same size as \lstinline
+  frame=none,
+  aboveskip=0pt,
+  xleftmargin=2em
+}
+
+\lstdefinelanguage[synopsis]{grammar}[]{grammar}{% Language for use inside the 'synopsis[grammar]' environment.
+  basicstyle=\upshape\ttfamily,              % Same size as \lstinline
+  frame=none,
+  aboveskip=0pt,
+  xleftmargin=2em
+}
+
+\lstdefinelanguage[synopsis]{C}[]{C}{% Language for use inside the 'synopsis[C]' environment.
+  basicstyle=\upshape\ttfamily,              % Same size as \lstinline
+  frame=none,
+  aboveskip=0pt,
+  xleftmargin=2em
+}
+
+\newenvironment{synopsis}[1][modelica]{%
+\lstset{language=[synopsis]#1}%
+~\vspace*{-\parskip}\par
+}{%
+}
+\newenvironment{semantics}{%
+\list{}{%
+\setlength{\leftmargin}{1.5em}%
+\setlength{\rightmargin}{1.5em}%
+}\item[]%
+}{%
+\endlist
+}
 
 % Misc math
 \makeatletter
@@ -325,13 +421,24 @@
 \Crefname{subparagraph}{Section}{Sections}
 
 % We can't use cleveref.sty the way we want for equations until this LaTeXML has been fixed:
-% - https://github.com/brucemiller/LaTeXML/issues/1306
+% - https://github.com/brucemiller/LaTeXML/issues/1306 -- fixed on 'master'
 % In the meantime, we use \eqref to achieve the same result.
 %\crefname{equation}{}{}
 %\Crefname{equation}{}{}
 
+\ifpdf
 \newcommand{\crefnameref}[1]{\cref{#1}~\emph{\nameref*{#1}}}
 \newcommand{\Crefnameref}[1]{\Cref{#1}~\emph{\nameref*{#1}}}
+\else
+% Don't use \nameref* while waiting for LaTeXML issue to get fixed:
+% - https://github.com/brucemiller/LaTeXML/issues/1348
+% At the same time, there are also problems with the normal \nameref:
+% - https://github.com/brucemiller/LaTeXML/issues/1350
+% Since the excessive output of \nameref only replaces the need for \cref for some labels,
+% we can't rely on just \nameref, meaning we can't use it at all.
+\let\crefnameref\cref
+\let\Crefnameref\Cref
+\fi
 
 % Make all description lists break the line after each key.
 % henrikt-ma: Commenting out use of the enumitem package, see above.
@@ -341,6 +448,16 @@
 %  leftmargin=15pt,
 %  itemindent=\dimexpr-5pt-\labelsep\relax,
 %}
+
+\newenvironment{contributors}{%
+\list{}{%
+\setlength{\leftmargin}{1.5em}%
+\setlength{\itemsep}{-\parskip}%
+\addtolength{\itemsep}{2pt}%
+}%
+}{%
+\endlist
+}
 
 \title{
 \ifpdf

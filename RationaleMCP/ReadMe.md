@@ -17,7 +17,7 @@ New MCP should be added to the following list - on the main branch to keep track
 but the rest of the development on a branch/pull-request before being accepted.
 
 ## List of existing MCPs
-- MCP0037 Generalized Modelica URIs for external resources
+- MCP0037 Generalized Modelica URIs ([MCP/0037])(https://github.com/modelica/ModelicaSpecification/tree/MCP/0037/RationaleMCP/0037))
 - MCP0036 Setting states ([MCP/0036]) (https://github.com/modelica/ModelicaSpecification/tree/MCP/0036/RationaleMCP/0036))
 - MCP0035 Multilingual support of Modelica([MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035))
 - MCP0034 Ternary ([MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034))
