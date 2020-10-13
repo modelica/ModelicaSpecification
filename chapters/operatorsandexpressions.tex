@@ -251,10 +251,7 @@ The following holds for relational operators:
   In relations of the form \lstinline!v1 == v2 or v1 <> v2!,
   \lstinline!v1! or \lstinline!v2! shall, unless used in a function, not be a subtype of \lstinline!Real!.
   \begin{nonnormative}
-  The reason for this rule is that relations with \lstinline!Real! arguments are transformed to state events (see Events, \cref{events-and-synchronization})
-  and this transformation becomes unnecessarily complicated for the \lstinline!==! and \lstinline!<>! relational operators (e.g.\ two crossing functions instead
-  of one crossing function needed, epsilon strategy needed even at event instants). Furthermore, testing on equality of Real variables is questionable on machines
-  where the number length in registers is different to number length in main memory.
+  The reason for this rule is that relations with \lstinline!Real! arguments are transformed to state events (see Events, \cref{events-and-synchronization}) and this transformation becomes unnecessarily complicated for the \lstinline!==! and \lstinline!<>! relational operators (e.g.\ two crossing functions instead of one crossing function needed, epsilon strategy needed even at event instants).  Furthermore, testing on equality of \lstinline!Real! variables is questionable on machines where the number length in registers is different to number length in main memory.
   \end{nonnormative}
 \item
   Relational operators can generate events, see \cref{discrete-time-expressions}.
@@ -821,28 +818,14 @@ The calling syntax is:
                                    initialPoints = {0.0, 1.0},
                                    initialValues = {0.0, 0.0});
 \end{lstlisting}
-where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, \lstinline!x!, \lstinline!v! are all subtypes of Real,
-\lstinline!positiveVelocity! is a Boolean, \lstinline!initialPoints! and \lstinline!initialValues! are
-arrays of subtypes of Real of equal size, containing the y coordinates
-and the $z$ values of a finite set of points describing the initial
-distribution of $z(y, \mathit{t0})$. The \lstinline!out0! and \lstinline!out1! are given by
-the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1!
-are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at
-each point in time only one of in0 and in1 is used). Elements in the
-initialPoints array must be sorted in non-descending order. The operator
-can not be vectorized according to the vectorization rules described in
-\cref{scalar-functions-applied-to-array-arguments}. The operator can be vectorized only with respect to the
-arguments in0 and in1 (which must have the same size), returning
-vectorized outputs out0 and out1 of the same size; the arguments
-initialPoints and initialValues are vectorized accordingly.
+where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, \lstinline!x!, \lstinline!v! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real! of equal size, containing the y coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(y, \mathit{t0})$.  The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at each point in time only one of in0 and in1 is used).  Elements in the initialPoints array must be sorted in non-descending order.  The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.  The operator can be vectorized only with respect to the arguments in0 and in1 (which must have the same size), returning vectorized outputs out0 and out1 of the same size; the arguments initialPoints and initialValues are vectorized accordingly.
 
 The solution, $z$, can be described in terms of characteristics:
 \begin{equation*}
 z(y+\int_{t}^{t+\beta} v(\alpha) \mathrm{d}\alpha, t+\beta) = z(y, t),\quad\text{for all $\beta$ as long as staying inside the domain}
 \end{equation*}
 
-This allows the direct computation of the solution based on interpolating the
-boundary conditions.
+This allows the direct computation of the solution based on interpolating the boundary conditions.
 
 \lstinline!spatialDistribution! can be described in terms of the pseudo-code given as a block:
 \begin{lstlisting}[language=modelica]
@@ -862,65 +845,54 @@ protected
   Integer m;
 algorithm
   if positiveVelocity then
-    out1:=interpolate(points, values, 1-(x-x0));
-    out0:=values[1]; // similar to in0 but avoiding algebraic loop
+    out1 := interpolate(points, values, 1-(x-x0));
+    out0 := values[1]; // similar to in0 but avoiding algebraic loop
   else
-    out0:=interpolate(points, values, 0-(x-x0));
-    out1:=values[end]; // similar to in1 but avoiding algebraic loop
+    out0 := interpolate(points, values, 0-(x-x0));
+    out1 := values[end]; // similar to in1 but avoiding algebraic loop
   end if;
   when <acceptedStep> then
     if x>x0 then
-      m:=size(points,1);
+      m := size(points, 1);
       while (if m>0 then points[m]+(x-x0)>=1 else false) then
-        m:=m-1;
+        m := m-1;
       end while;
-      values:=cat(1, {in0}, values[1:m], {interpolate(points, values,1-(x-x0))} );
-      points:=cat(1, {0}, points[1:m] .+ (x-x0), {1} );
+      values := cat(1, {in0}, values[1:m], {interpolate(points, values,1-(x-x0))});
+      points := cat(1, {0}, points[1:m] .+ (x-x0), {1});
     elseif x<x0 then
-      m:=1;
-      while (if m<size(points,1) then points[m]+(x-x0)<=0 else false) then
-        m:=m+1;
+      m := 1;
+      while (if m < size(points, 1) then points[m] + (x - x0) <= 0 else false) then
+        m := m+1;
       end while;
-      values:=cat(1, {interpolate(points, values, 0-(x-x0))},values[m:end],{in1});
-      points:=cat(1, {0}, points[m:end] .+ (x-x0), {1});
+      values := cat(1, {interpolate(points, values, 0 - (x - x0))}, values[m:end], {in1});
+      points := cat(1, {0}, points[m:end] .+ (x-x0), {1});
     end if;
-    x0:=x;
+    x0 := x;
   end when;
 initial algorithm
-  x0:=x;
-  points:=initialPoints;
-  values:=initialValues;
+  x0 := x;
+  points := initialPoints;
+  values := initialValues;
 end spatialDistribution;
 \end{lstlisting}
 
 \begin{nonnormative}
-Note that the implementation has an internal state and thus
-cannot be described as a function in Modelica; initialPoints and
-initialValues are declared as parameters to indicate that they are only
-used during initialization.
+Note that the implementation has an internal state and thus cannot be described as a function in Modelica; \lstinline!initialPoints! and \lstinline!initialValues! are declared as parameters to indicate that they are only used during initialization.
 
 The infinite-dimensional problem stated above can then be formulated in the following way:
 \begin{lstlisting}[language=modelica]
 der(x) = v;
-(out0, out1) = spatialDistribution(in0, in1, x, v >=0, initialPoints, initialValues);
+(out0, out1) = spatialDistribution(in0, in1, x, v >= 0, initialPoints, initialValues);
 \end{lstlisting}
 
-Events are generated at the exact instants when the velocity
-changes sign -- if this is not needed, \lstinline!noEvent! can be used to
-suppress event generation.
+Events are generated at the exact instants when the velocity changes sign -- if this is not needed, \lstinline!noEvent! can be used to suppress event generation.
 
 If the velocity is known to be always positive, then \lstinline!out0! can be omitted, e.g.:
 \begin{lstlisting}[language=modelica]
 der(x) = v;
 (,out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
 \end{lstlisting}
-Technically relevant use cases for the use of
-\lstinline!spatialDistribution! are modeling of electrical
-transmission lines, pipelines and pipeline networks for gas, water and
-district heating, sprinkler systems, impulse propagation in elongated
-bodies, conveyor belts, and hydraulic systems. Vectorization is needed
-for pipelines where more than one quantity is transported with velocity
-v in the example above.
+Technically relevant use cases for the use of \lstinline!spatialDistribution! are modeling of electrical transmission lines, pipelines and pipeline networks for gas, water and district heating, sprinkler systems, impulse propagation in elongated bodies, conveyor belts, and hydraulic systems.  Vectorization is needed for pipelines where more than one quantity is transported with velocity \lstinline!v! in the example above.
 \end{nonnormative}
 
 \subsubsection{cardinality (deprecated)}\label{cardinality-deprecated}
@@ -1254,7 +1226,7 @@ Hereby, \lstinline!terminal()! ensures an event at the end of successful simulat
 noEvent($\mathit{expr}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Real elementary relations within $\mathit{expr}$ are taken literally, i.e., no state or time event is triggered.  No zero crossing functions shall be used to monitor any of the normally event-generating subexpressions inside $\mathit{expr}$.  See also \crefnameref{modelica:smooth} and \cref{events-and-synchronization}.
+\lstinline!Real! elementary relations within $\mathit{expr}$ are taken literally, i.e., no state or time event is triggered.  No zero crossing functions shall be used to monitor any of the normally event-generating subexpressions inside $\mathit{expr}$.  See also \crefnameref{modelica:smooth} and \cref{events-and-synchronization}.
 \end{semantics}
 \end{operatordefinition}
 
