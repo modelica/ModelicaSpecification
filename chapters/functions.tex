@@ -113,7 +113,7 @@ It is allowed for a function to inherit and/or modify another function
 following the usual rules for inheritance of classes (\cref{inheritance-modification-and-redeclaration}).
 
 \begin{nonnormative}
-For example, it is possible to modify and extend a function class to add default values for input variables.
+For example, it is possible to modify and extend a \lstinline!function! class to add default values for input variables.
 \end{nonnormative}
 
 \section{Function as a Specialized Class}\label{function-as-a-specialized-class}
@@ -199,8 +199,7 @@ Modelica \lstinline!class!:
   \item
     Instances of functions have a special meaning, see \cref{functional-input-arguments-to-functions}.
   \item
-    The lookup of the function class to be called is extended, see
-    \cref{composite-name-lookup}.
+    The lookup of the \lstinline!function! class to be called is extended, see \cref{composite-name-lookup}.
   \end{itemize}
 \item
   A function can be \emph{recursive}.
@@ -828,29 +827,20 @@ end collectPositive;
 
 \subsection{Scalar Functions Applied to Array Arguments}\label{scalar-functions-applied-to-array-arguments}
 
-Functions with one scalar return value can be applied to arrays
-element-wise, e.g.\ if \lstinline!A! is a vector of reals, then \lstinline!sin(A)! is a vector
-where each element is the result of applying the function \lstinline!sin! to the
-corresponding element in \lstinline!A!. Only function classes that are transitively
-non-replaceable (\cref{transitively-non-replaceable} and \cref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}) may be called vectorized.
+Functions with one scalar return value can be applied to arrays element-wise, e.g.\ if \lstinline!A! is a vector of reals, then \lstinline!sin(A)! is a vector where each element is the result of applying the function \lstinline!sin! to the corresponding element in \lstinline!A!.  Only \lstinline!function! classes that are transitively non-replaceable (\cref{transitively-non-replaceable} and \cref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}) may be called vectorized.
 
-Consider the expression \lstinline!f(arg1,...,argn)!, an application of the function
-\lstinline!f! to the arguments \lstinline!arg1,..., argn! is defined.
+Consider the expression \lstinline!f(arg1, $\ldots$, argn)!, an application of the function \lstinline!f! to the arguments \lstinline!arg1!, \ldots, \lstinline!argn! is defined.
 
 For each passed argument, the type of the argument is checked against
 the type of the corresponding formal parameter of the function.
-
 \begin{enumerate}
-\item
+\item\label{argument-type-check-match}
   If the types match, nothing is done.
 \item
   If the types do not match, and a type conversion can be applied, it is
-  applied. Continue with step 1.
+  applied. Continue with step~\ref{argument-type-check-match}.
 \item
-  If the types do not match, and no type conversion is applicable, the
-  passed argument type is checked to see if it is an n-dimensional array
-  of the formal parameter type. If it is not, the function call is
-  invalid. If it is, we call this a foreach argument.
+  If the types do not match, and no type conversion is applicable, the passed argument type is checked to see if it is an $n$-dimensional array of the formal parameter type.  If it is not, the function call is invalid.  If it is, we call this a \emph{foreach argument}.
 \item
   For all foreach arguments, the number and sizes of dimensions must
   match. If they do not match, the function call is invalid.
@@ -859,16 +849,12 @@ the type of the corresponding formal parameter of the function.
   fashion, and the result has the type specified by the function
   definition.
 \item
-  The result of the function call expression is an n-dimensional array
-  with the same dimension sizes as the foreach arguments. Each element
-  ei,..,j is the result of applying f to arguments constructed from the
-  original arguments in the following way:
+  The result of the function call expression is an $n$-dimensional array with the same dimension sizes as the foreach arguments.  Each element \lstinline!ei!, \ldots, \lstinline!j! is the result of applying \lstinline!f! to arguments constructed from the original arguments in the following way:
 \begin{itemize}
 \item
   If the argument is not a foreach argument, it is used as-is.
 \item
-  If the argument is a foreach argument, the element at index
-  \lstinline![i, $\ldots$, j]! is used.
+  If the argument is a foreach argument, the element at index \lstinline![i, $\ldots$, j]! is used.
 \end{itemize}
 \end{enumerate}
 
@@ -878,8 +864,8 @@ size, and they are traversed in parallel.
 \begin{example}
 \begin{lstlisting}[language=modelica]
 sin({a, b, c}) = {sin(a), sin(b), sin(c)} // argument is a vector
-sin([a,b,c]) = [sin(a),sin(b),sin(c)] // argument may be a matrix
-atan({a,b,c},{d,e,f}) = {atan(a,d), atan(b,e), atan(c,f)}
+sin([a, b, c]) = [sin(a), sin(b), sin(c)] // argument may be a matrix
+atan({a, b, c}, {d, e, f}) = {atan(a, d), atan(b, e), atan(c, f)}
 \end{lstlisting}
 This works even if the function is declared to take an array as
 one of its arguments. If \lstinline!pval! is defined as a function that takes
