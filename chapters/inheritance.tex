@@ -44,11 +44,11 @@ class A
 end A;
 
 class B
-  extends A(b=2);
+  extends A(b = 2);
 end B;
 
 class C
-  extends B(a=1);
+  extends B(a = 1);
 end C;
 \end{lstlisting}
 \end{example}
@@ -59,16 +59,15 @@ The elements of the flattened base class become elements of the flattened enclos
 From the example above we get the following flattened class:
 \begin{lstlisting}[language=modelica]
 class Cinstance
-  parameter Real a=1;
-  parameter Real b=2;
+  parameter Real a = 1;
+  parameter Real b = 2;
 end Cinstance;
 \end{lstlisting}
 
-The ordering of the merging rules ensures that, given classes \lstinline!A!
-and \lstinline!B! defined above,
+The ordering of the merging rules ensures that, given classes \lstinline!A! and \lstinline!B! defined above,
 \begin{lstlisting}[language=modelica]
 class C2
-  B bcomp(b=3);
+  B bcomp(b = 3);
 end C2;
 \end{lstlisting}
 yields an instance with \lstinline!bcomp.b = 3!, which overrides \lstinline!b = 2!.
@@ -299,23 +298,23 @@ Scope for modifiers:
 \begin{lstlisting}[language=modelica]
 model B
   parameter Real x;
-  package Medium=Modelica.Media.PartialMedium;
+  package Medium = Modelica.Media.PartialMedium;
 end B;
 
 model C
-  parameter Real x=2;
-  package Medium=Modelica.Media.PartialMedium;
-  B b(x=x, redeclare package Medium=Medium);
+  parameter Real x = 2;
+  package Medium = Modelica.Media.PartialMedium;
+  B b(x = x, redeclare package Medium = Medium);
   // The 'x' and 'Medium' being modified are declared in the model B.
-  // The modifiers '=x' and '=Medium' are found in the model C.
+  // The modifiers '= x' and '= Medium' are found in the model C.
 end C;
 
 model D
-  parameter Real x=3;
-  package Medium=Modelica.Media.PartialMedium;
-  C c(b(x=x, redeclare package Medium=Medium));
+  parameter Real x = 3;
+  package Medium = Modelica.Media.PartialMedium;
+  C c(b(x = x, redeclare package Medium = Medium));
   // The 'x' and 'Medium' being modified are declared in the model B.
-  // The modifiers '=x' and '=Medium' are found in the model D.
+  // The modifiers '= x' and '= Medium' are found in the model D.
 end D;
 \end{lstlisting}
 \end{example}
@@ -441,31 +440,32 @@ Two arguments of a modification shall not modify the same element, attribute, or
 class C1
   Real x[3];
 end C1;
-class C2 = C1(x=ones(3), x=ones(3)); // Error: x designated twice
+class C2 = C1(x = ones(3), x = ones(3)); // Error: x designated twice
 class C3
   class C4
     Real x;
   end C4;
-  C4 a(final x.unit = "V", x.displayUnit="mV", x=5.0);
+  C4 a(final x.unit = "V", x.displayUnit = "mV", x = 5.0);
   // Ok, different attributes designated (unit, displayUnit and value)
   // identical to:
-  C4 b(x(final unit = "V", displayUnit="mV") = 5.0));
+  C4 b(x(final unit = "V", displayUnit = "mV") = 5.0));
 end C3;
 \end{lstlisting}
 
 The following examples are incorrect:
 \begin{lstlisting}[language=modelica]
-m1(r=1.5, r=1.6) // Multiple modifier for r (its value)
-m1(r=1.5, r=1.5) // Multiple modifier for r (its value) - even if identical
-m1(r.start=2, r(start=3)) // Multiple modifier for r.start
-m1(x.r=1.5 "x", x.r(start=2.0) "y")) // Multiple description-string for x.r
-m1(r=R(), r(y=2)) // Multiple modifier for r.y - both direct value and part of record
+m1(r = 1.5, r = 1.6) // Multiple modifier for r (its value)
+m1(r = 1.5, r = 1.5) // Multiple modifier for r (its value) - even if identical
+m1(r.start = 2, r(start = 3)) // Multiple modifier for r.start
+m1(x.r = 1.5 "x", x.r(start = 2.0) "y")) // Multiple description-string for x.r
+m1(r = R(), r(y = 2)) // Multiple modifier for r.y - both direct value and
+                      // part of record
 \end{lstlisting}
 The following examples are correct:
 \begin{lstlisting}[language=modelica]
-m1(r=1.5, r(start=2.0))
-m1(r=1.6, r "x")
-m1(r=R(), r(y(min=2)))
+m1(r = 1.5, r(start = 2.0))
+m1(r = 1.6, r "x")
+m1(r = R(), r(y(min = 2)))
 \end{lstlisting}
 \end{example}
 
@@ -503,37 +503,36 @@ model C
 end C;
 
 model B
-  C c[5](each a ={1,2,3}, d={1,2,3,4,5});
-  parameter Real b=0;
+  C c[5](each a = {1, 2, 3}, d = {1, 2, 3, 4, 5});
+  parameter Real b = 0;
 end B;
 \end{lstlisting}
 This implies \lstinline!c[i].a[j] = j! and \lstinline!c[i].d = i!.
 
 \begin{lstlisting}[language=modelica]
 model D
-  B b(each c.a={3,4,5}, c.d={2,3,4,5,6});
+  B b(each c.a = {3, 4, 5}, c.d = {2, 3, 4, 5, 6});
   // Equivalent to:
-  B b2(c(each a={3,4,5}, d={2,3,4,5,6}));
+  B b2(c(each a = {3, 4, 5}, d = {2, 3, 4, 5, 6}));
 end D;
 \end{lstlisting}
 This implies \lstinline!b.c[i].a[j] = 2+j! and \lstinline!b.c[i].d = 1+i!.
 \begin{lstlisting}[language=modelica]
 model E
-  B b[2](each c(each a={1,2,3}, d={1,2,3,4,5}), p={1,2});
+  B b[2](each c(each a = {1, 2, 3}, d = {1, 2, 3, 4, 5}), p = {1, 2});
   // Without the first each one would have to use:
-  B b2[2](c(each a={1,2,3}, d=fill({1,2,3,4,5},2)), p={1,2});
+  B b2[2](c(each a = {1, 2, 3}, d = fill({1, 2, 3, 4, 5}, 2)), p = {1, 2});
 end E;
 \end{lstlisting}
-This implies \lstinline!b[k].c[i].a[j] = j!, \lstinline!b[k].c[i].d = i!, and \lstinline!b[k].p = k!.  For \lstinline!c.a! the additional (outer) \lstinline!each! has no effect,
-but it is necessary for \lstinline!c.d!.
+This implies \lstinline!b[k].c[i].a[j] = j!, \lstinline!b[k].c[i].d = i!, and \lstinline!b[k].p = k!.  For \lstinline!c.a! the additional (outer) \lstinline!each! has no effect, but it is necessary for \lstinline!c.d!.
 
 Specifying array dimensions after the type works the same as specifying them after the variable name.
 \begin{lstlisting}[language=modelica]
 model F
-  Real fail1[2](each start={1,2}); // Illegal
-  Real work1[2](each start=1);     // Legal
-  Real[2] fail2(each start={1,2}); // Illegal
-  Real[2] work2(each start=2);     // Legal
+  Real fail1[2](each start = {1, 2}); // Illegal
+  Real work1[2](each start = 1);      // Legal
+  Real[2] fail2(each start = {1, 2}); // Illegal
+  Real[2] work2(each start = 2);      // Legal
 end F;
 \end{lstlisting}
 \end{example}
@@ -549,25 +548,24 @@ of a parameter cannot be changed in a simulation environment.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-type Angle = Real (final quantity="Angle",final unit="rad",displayUnit="deg");
+type Angle =
+  Real(final quantity = "Angle", final unit = "rad", displayUnit = "deg");
 
 model TransferFunction
-  parameter Real b[:]={1} "numerator coefficient vector";
-  parameter Real a[:]={1,1} "denominator coefficient vector";
+  parameter Real b[:] = {1} "numerator coefficient vector";
+  parameter Real a[:] = {1, 1} "denominator coefficient vector";
   ...
 end TransferFunction;
 
 model PI "PI controller"
-  parameter Real k=1 "gain";
-  parameter Real T=1 "time constant";
-  TransferFunction tf(final b=k*{T,1}, final a={T,0});
+  parameter Real k = 1 "gain";
+  parameter Real T = 1 "time constant";
+  TransferFunction tf(final b = k * {T, 1}, final a = {T, 0});
 end PI;
 
 model Test
-  PI c1(k=2, T=3);
-  // fine, will indirectly change tf.b to 2*{3,1}
-  PI c2(tf(b={1}));
-  // error, b is declared as final
+  PI c1(k = 2, T = 3); // fine, will indirectly change tf.b to 2 * {3, 1}
+  PI c2(tf(b = {1}));  // error, b is declared as final
 end Test;
 \end{lstlisting}
 \end{example}
@@ -635,9 +633,9 @@ model HeatExchanger
 end HeatExchanger;
 
   HeatExchanger(
-    /*redeclare*/ replaceable /*parameter */ GeoHorizontal geometry,
-    redeclare /* input */ Modelica.Units.SI.Angle u /*[2]*/);
-  // The semantics ensure that parts in /*.*/ are automatically added
+    /*redeclare*/ replaceable /*parameter*/ GeoHorizontal geometry,
+    redeclare /*input*/ Modelica.Units.SI.Angle u /*[2]*/);
+   // The semantics ensure that parts in /*.*/ are automatically added
    // from the declarations in HeatExchanger.
 \end{lstlisting}
 
@@ -645,10 +643,10 @@ Example of arrays on the left of the component name:
 \begin{lstlisting}[language=modelica]
 model M
   replaceable Real [4] x[2];
-  // Seen as syntactic sugar for "replaceable Real x[2,4];"
+  // Seen as syntactic sugar for "replaceable Real x[2, 4];"
   // Note the order.
 end M;
-M m(redeclare Modelica.Units.SI.Length x[2,4]); // Valid redeclare of the type
+M m(redeclare Modelica.Units.SI.Length x[2, 4]); // Valid redeclare of the type
 \end{lstlisting}
 \end{nonnormative}
 
@@ -678,7 +676,8 @@ class-definition :
 class-specifier : long-class-specifier | ...
 
 long-class-specifier : ...
-    | extends IDENT [ class-modification ] description-string composition end IDENT
+    | extends IDENT [ class-modification ] description-string
+      composition end IDENT
 \end{lstlisting}
 The nonterminal \lstinline!class-definition! is referenced in several places in the
 grammar, including the following case which is used in some examples
@@ -730,11 +729,12 @@ end PartialMedium;
 package MoistAir "Special type of medium"
   extends PartialMedium(nX=2);
 
-  redeclare model extends BaseProperties(T(stateSelect=StateSelect.prefer))
-    // replaces BaseProperties by a new implementation and // extends from Baseproperties with modification
+  redeclare model extends BaseProperties(T(stateSelect = StateSelect.prefer))
+    // replaces BaseProperties by a new implementation and
+    // extends from Baseproperties with modification
     // note, nX = 2 (!)
   equation
-    X = {0,1};
+    X = {0, 1};
     ...
   end BaseProperties;
 
@@ -742,7 +742,7 @@ package MoistAir "Special type of medium"
     // replaces dynamicViscosity by a new implementation and
     // extends from dynamicViscosity
   algorithm
-    eta := 2*p;
+    eta := 2 * p;
   end dynamicViscosity;
 end MoistAir;
 \end{lstlisting}
@@ -771,7 +771,7 @@ package MoistAir2 "Alternative definition that does not work"
     // wrong model since nX has no value
     extends PartialMedium.BaseProperties;
   equation
-    X = {1,0};
+    X = {1, 0};
   end MoistAir_BaseProperties;
 
   model MoistAir_dynamicViscosity
@@ -821,21 +821,21 @@ class A
 end A;
 
 class B
-  parameter Real x=3.14, y; // B is a subtype of A
+  parameter Real x = 3.14, y; // B is a subtype of A
 end B;
 
 class C
-  replaceable A a(x=1);
+  replaceable A a(x = 1);
 end C;
 
 class D
-  extends C(redeclare B a(y=2));
+  extends C(redeclare B a(y = 2));
 end D;
 \end{lstlisting}
 which is equivalent to defining \lstinline!D! as
 \begin{lstlisting}[language=modelica]
 class D
-  B a(x=1, y=2);
+  B a(x = 1, y = 2);
 end D;
 \end{lstlisting}
 
@@ -864,7 +864,7 @@ end Circuit;
 model Circuit2
   extends Circuit(
     redeclare replaceable model NonlinearResistor
-                           = ThermoResistor(T0=300));
+                           = ThermoResistor(T0 = 300));
       // As a result of the modification on the base type,
       // the default value of R is 100
 end Circuit2;
@@ -872,7 +872,7 @@ end Circuit2;
 model Circuit3
   extends Circuit2(
    redeclare replaceable model NonlinearResistor
-                           = Resistor(R=200));
+                           = Resistor(R = 200));
   // The T0 modification is not applied because it did not
   // appear in the original declaration
 end Circuit3;
@@ -944,13 +944,19 @@ The intent is that the description and/or annotation are at the end of the decla
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-replaceable model Load1=Resistor constrainedby TwoPin "The Load"; //Recommended
-replaceable model Load2=Resistor "The Load" constrainedby TwoPin; //Identical to Load1
-replaceable model Load3=Resistor "The Load" constrainedby TwoPin "The Load"; //Error
+replaceable model Load1 =
+  Resistor constrainedby TwoPin "The Load"; // Recommended
+replaceable model Load2 =
+  Resistor "The Load" constrainedby TwoPin; // Identical to Load1
+replaceable model Load3 =
+  Resistor "The Load" constrainedby TwoPin "The Load"; // Error
 
-replaceable Resistor load1 constrainedby TwoPin "The Load"; //Recommended
-replaceable Resistor load2 "The Load" constrainedby TwoPin; //Identical to load1
-replaceable Resistor load3 "The Load" constrainedby TwoPin "The Load!"; //Error
+replaceable Resistor load1
+  constrainedby TwoPin "The Load"; // Recommended
+replaceable Resistor load2
+  "The Load" constrainedby TwoPin; // Identical to load1
+replaceable Resistor load3
+  "The Load" constrainedby TwoPin "The Load!"; // Error
 \end{lstlisting}
 \end{example}
 
@@ -999,44 +1005,43 @@ The behavior when \lstinline!choicesAllMatching! is not specified; ideally it sh
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-replaceable model MyResistor=Resistor
+replaceable model MyResistor = Resistor
   annotation(choices(
                choice(redeclare model MyResistor=lib2.Resistor(a={2}) "..."),
                choice(redeclare model MyResistor=lib2.Resistor2 "...")));
 
-replaceable Resistor Load(R=2) constrainedby TwoPin
+replaceable Resistor Load(R = 2) constrainedby TwoPin
   annotation(choices(
                choice(redeclare lib2.Resistor Load(a={2}) "..."),
                choice(redeclare Capacitor Load(L=3) "...")));
 
-replaceable FrictionFunction a(func=exp) constrainedby Friction
+replaceable FrictionFunction a(func = exp) constrainedby Friction
   annotation(choices(
                choice(redeclare ConstantFriction a(c=1) "..."),
                choice(redeclare TableFriction a(table="...") "..."),
                choice(redeclare FunctionFriction a(func=exp) "...")));
 
 replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
-          constrainedby Modelica.Media.Interfaces.PartialMedium
-	     annotation (choicesAllMatching=true);
+  constrainedby Modelica.Media.Interfaces.PartialMedium
+  annotation (choicesAllMatching = true);
 \end{lstlisting}
 
-It can also be applied to nonreplaceable declarations, e.g.\ to
-describe enumerations.
+It can also be applied to nonreplaceable declarations, e.g.\ to describe enumerations.
 \begin{lstlisting}[language=modelica]
-type KindOfController=Integer(min=1,max=3)
+type KindOfController = Integer(min = 1, max = 3)
   annotation(choices(
-              choice=1 "P",
-              choice=2 "PI",
-              choice=3 "PID"));
+              choice = 1 "P",
+              choice = 2 "PI",
+              choice = 3 "PID"));
 
 model A
   parameter KindOfController x;
 end A;
-A a(x=3 "PID");
+A a(x = 3 "PID");
 \end{lstlisting}
 
 It can also be applied to \lstinline!Boolean! variables to define a check box.
 \begin{lstlisting}[language=modelica]
-parameter Boolean useHeatPort=false annotation(choices(checkBox=true));
+parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
 \end{lstlisting}
 \end{example}
