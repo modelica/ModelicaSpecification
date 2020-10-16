@@ -136,11 +136,11 @@ Modelica \lstinline!class!:
   All public variables are formal parameters.
 \item
   Input formal parameters are read-only after being bound to the actual
-  arguments or default values, i.e., they may not be assigned values in
+  arguments or default values, i.e., they shall not be assigned values in
   the body of the function.
 \item
-  A function may \emph{not be used in connections}, may not have
-  \emph{equations}, may not have \emph{initial algorithms}.
+  A function shall \emph{not be used in connections}, shall not have
+  \emph{equations}, shall not have \emph{initial algorithms}.
 \item
   A function can have at most \emph{one algorithm} section or \emph{one
   external function interface} (not both), which, if present, is the
@@ -152,12 +152,12 @@ Modelica \lstinline!class!:
   \lstinline!model!, \lstinline!block!, \lstinline!operator! or \lstinline!connector!
   components.
 \item
-  The elements of a function may not have prefixes \lstinline!inner!, or \lstinline!outer!.
+  The elements of a function shall not have prefixes \lstinline!inner!, or \lstinline!outer!.
 \item
   A function may have zero or one external function interface, which, if
   present, is the external definition of the function.
 \item
-  For a function to be called in a simulation model, the function may
+  For a function to be called in a simulation model, the function shall
   not be partial, and the output variables must be assigned inside the
   function either in binding equations or in an algorithm section,
   or have an external function interface as its body, or be defined as a
@@ -243,8 +243,8 @@ functions, and possible for compilers to optimize.
   errors for the same input values and only the output values influence
   the simulation result, i.e.\ is seen as equivalent to a mathematical
   map from input values to output values. Some input values may map to
-  errors. Pure functions are thus allowed to fail by calling assert, or
-  ModelicaError in C-code, or dividing by zero. Such errors will only be
+  errors. Pure functions are thus allowed to fail by calling \lstinline!assert!, or
+  \lstinline[language=C]!ModelicaError! in C code, or dividing by zero. Such errors will only be
   reported when and if the function is called.  \emph{Pure} Modelica
   functions are not assumed to be thread-safe.
 \item
@@ -265,12 +265,8 @@ The declaration of functions follow these rules:
 \item
   External functions must be explicitly declared with pure or impure.
 \item
-  A deprecated semantics is that external functions (and functions
-  defined in Modelica directly or indirectly calling them) without pure
-  or impure keyword are assumed to be impure -- but without any
-  restriction on calling them. Except for the function
-  Modelica.Utilities.Streams.print diagnostics must be given if called
-  in a simulation model.
+  A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be
+  impure, but without any restriction on calling them.  Except for the function \lstinline!Modelica.Utilities.Streams.print!, diagnostics must be given if called in a simulation model.
 \end{itemize}
 
 Calls of pure functions used inside expression may be skipped if the
@@ -312,26 +308,23 @@ function is \emph{impure} and it is only allowed to call such a function
 from within:
 \begin{itemize}
 \item
-  another function marked with the prefix \lstinline!impure!
+  Another function marked with the prefix \lstinline!impure!.
 \item
-  a when-equation,
+  A when-equation.
 \item
-  a when-statement,
+  A when-statement.
 \item
-  \lstinline!pure(impureFunctionCall($\ldots$))! --- which allows calling impure
-  functions in any pure context,
+  \lstinline!pure(impureFunctionCall($\ldots$))! -- which allows calling impure functions in any pure context.
 \item
-  in initial equations and initial algorithms,
+  Initial equations and initial algorithms.
 \item
-  in binding equations for components declared as parameter -- which is seen as
-  syntactic sugar for having a parameter with \lstinline!fixed=false! and the
-  binding as an initial equation.
+  Binding equations for components declared as parameter -- which is seen as syntactic sugar for having a parameter with \lstinline!fixed=false! and the binding as an initial equation.
   \begin{nonnormative}
   Thus, evaluation of the same function call at a later time during simulation is not guaranteed to result in the same value as when the parameter
   was initialized, seemingly breaking the declaration equation.
   \end{nonnormative}
 \item
-  in binding equations for external objects.
+  Binding equations for external objects.
 \end{itemize}
 
 For initial equations, initial algorithms, and bindings it is an error
@@ -377,19 +370,17 @@ Examples of allowed optimizations of pure functions:
 model M // Assume sin, cos, asin are pure functions with normal derivatives.
   input Real x[2];
   input Real w;
-  Real y[2]=[cos(w),sin(w);-sin(w),cos(w)]*x;
-  Real z[2]=der (y);
-  Real a=0*asin(w);
+  Real y[2] = [cos(w), sin(w); -sin(w), cos(w)] * x;
+  Real z[2] = der(y);
+  Real a = 0 * asin(w);
 end M;
 \end{lstlisting}
-A tool only needs to generate one call of the pure function \lstinline!cos(w)!
-in the model \lstinline!M! -- to handle the two elements of the matrix above, and
-for the derivative of that matrix. A tool may also skip the possible
-error for \lstinline!asin(w)! and assume that \lstinline!a! is zero.
+A tool only needs to generate one call of the pure function \lstinline!cos(w)! in the model \lstinline!M! -- a single call used for both the two elements of the matrix, as well as for the derivative
+of that matrix.  A tool may also skip the possible error for \lstinline!asin(w)! and assume that \lstinline!a! is zero.
 
 Examples of restrictions on optimizing pure functions:
 \begin{lstlisting}[language=modelica]
-  Real x=if noEvent(abs(x))<1 then asin(x)  else 0; // May not move asin(x) out of then
+  Real x=if noEvent(abs(x))<1 then asin(x)  else 0; // Cannot move asin(x) out of then
 algorithm
   assertCheck(p, T); // Must call function
 algorithm
@@ -398,7 +389,7 @@ algorithm
   end if;
   y:=y+asin(x);
   y:=y+someOtherFunction(x);
-  // May not evaluate someOtherFunction(x) before asin(x) - unless b is true
+  // Cannot evaluate someOtherFunction(x) before asin(x) - unless b is true
   // The reason is that asin(x) may fail and someOtherFunction may hang,
   // and it might be possible to recover from this error.
 \end{lstlisting}
@@ -438,24 +429,15 @@ named-argument: IDENT "=" function-argument
 function-argument : function-partial-application | expression
 \end{lstlisting}
 
-The interpretation of a function call is as follows: First, a list of
-unfilled slots is created for all formal input parameters. If there are
-N positional arguments, they are placed in the first N slots, where the
-order of the parameters is given by the order of the component
-declarations in the function definition. Next, for each named argument
-\lstinline!identifier = expression!, the \lstinline!identifier! is used to determine the
-corresponding slot.  The value of the argument is placed in the slot,
-filling it (it is an error if this slot is already filled).  When all arguments have been processed, the slots that are
-still unfilled are filled with the corresponding default value of the
-function definition. The default values may depend on other inputs
-(these dependencies must be acyclical in the function) -- the values for
-those other inputs will then be substituted into the default values
-(this process may be repeated if the default value for that input depend
-on another input). The default values for inputs may not depend on
-non-input variables in the function.  The list of filled slots is used as the argument list for the call (it is an error if any unfilled slots still remain).
+The interpretation of a function call is as follows: First, a list of unfilled slots is created for all formal input parameters.  If there are $N$ positional arguments, they are placed in the first
+$N$ slots, where the order of the parameters is given by the order of the component declarations in the function definition.  Next, for each named argument \lstinline!identifier = expression!, the
+\lstinline!identifier! is used to determine the corresponding slot.  The value of the argument is placed in the slot, filling it (it is an error if this slot is already filled).  When all arguments
+have been processed, the slots that are still unfilled are filled with the corresponding default value of the function definition.  The default values may depend on other inputs (these dependencies
+must be acyclical in the function) -- the values for those other inputs will then be substituted into the default values (this process may be repeated if the default value for that input depend on another input).  The default values for inputs shall not depend on non-input variables in the function.  The list of filled slots is used as the argument list for the call (it is an error if any
+unfilled slots still remain).
 
 Special purpose operators with function syntax defined in the
-specification may not be called with named arguments, unless otherwise
+specification shall not be called with named arguments, unless otherwise
 noted.
 
 The type of each argument must agree with the type of the corresponding
@@ -636,8 +618,7 @@ algorithm
 end Sine2;
 area = quadrature(0, 1, integrand = function  Sine2(A=2, w=3));
 \end{lstlisting}
-The partially evaluated \lstinline!Sine2! has only one argument: \lstinline!x! ---
-and is thus type compatible with \lstinline!Integrand!.
+The partially evaluated \lstinline!Sine2! has only one argument: \lstinline!x! -- and is thus type compatible with \lstinline!Integrand!.
 \end{example}
 
 \begin{example}
@@ -786,7 +767,7 @@ formal parameters are interpreted as default arguments, as described in
 \cref{positional-or-named-input-arguments-of-functions}.
 
 \begin{nonnormative}
-It is recommended to check for use of uninitialized variables statically --- if this is not possible a warning is recommended
+It is recommended to check for use of uninitialized variables statically -- if this is not possible a warning is recommended
 combined with a run-time check.
 \end{nonnormative}
 
@@ -932,8 +913,8 @@ operators are more restrictive.
 An \emph{empty} function call is a call that does not return any results.
 
 \begin{nonnormative}
-An empty call is of limited use in Modelica since a function call without results does not contribute to the simulation, and is not
-allowed to have side-effects that influence the simulation state.
+An empty call is of limited use in Modelica since a function call without results does not contribute to the simulation,
+but it is useful to check assertions and in certain cases for desired side-effects, see \cref{pure-modelica-functions}.
 \end{nonnormative}
 
 An empty call can occur either as a kind of ``null equation'' or ``null statement''.
@@ -1008,7 +989,7 @@ A record constructor can only be called if the referenced record class
 is found in the global scope, and thus cannot be modified.
 
 \begin{nonnormative}
-This allows to construct an instance of a record, with an
+This allows constructing an instance of a record, with an
 optional modification, at all places where a function call is allowed.
 
 Examples:
@@ -1143,7 +1124,7 @@ each component defined in \lstinline!R! (that do not have a default value) there
 also a public component defined in \lstinline!M! with identical name and type. A
 nested record component of \lstinline!R! is handled as follows, if the corresponding
 component of \lstinline!M! is a \lstinline!model!/\lstinline!block!/\lstinline!connector! a nested record constructor is
-called --- otherwise the component is used directly; and the resulting
+called -- otherwise the component is used directly; and the resulting
 call/component is used as argument to the record constructor \lstinline!R!. If the
 corresponding component of \lstinline!R! in \lstinline!M! is a conditional component, it is an
 error. The instance \lstinline!m! is given as single (un-named)
@@ -1367,7 +1348,7 @@ record, that only contain the real-predefined types and sub-records
 containing reals (handled recursively) from the original record. When
 using smoothOrder, then the derivative record is automatically
 constructed. The function must have at least one input containing reals.
-The output list of the derivative function may not be empty.
+The output list of the derivative function shall not be empty.
 
 \begin{example}
 Here is one example use case with records mixing \lstinline!Real! and
@@ -1449,7 +1430,7 @@ Since the matrix argument is usually a parameter expression it is then
 useful to define the function as follows (the additional derivative =
 \lstinline!f_general_der! is optional and can be used when the derivative of
 the matrix or offset is non-zero). Note that \lstinline!f_der! must have
-\lstinline!zeroDerivative! for both \lstinline!y! and \lstinline!offset!, but \lstinline!f_general_der! may not have
+\lstinline!zeroDerivative! for both \lstinline!y! and \lstinline!offset!, but \lstinline!f_general_der! shall not have
 \lstinline!zeroDerivative! for either of them (it may \lstinline!zeroDerivative! for \lstinline!x_der!,
 \lstinline!y_der!, or \lstinline!offset_der!).
 
@@ -1558,14 +1539,13 @@ A class defined as:
 \begin{lstlisting}[language=grammar]
 IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
 \end{lstlisting}
-
 is the partial derivative of a function, and may only be used as
 declarations of functions.
 
 The semantics is that a function (and only a function) can be
 specified in this form, defining that it is the partial derivative of
 the function to the right of the equal sign (looked up in the same way
-as a short class definition - the looked up name must be a function),
+as a short class definition, and the looked up name must be a function),
 and partially differentiated with respect to each \lstinline!IDENT! in order
 (starting from the first one). The \lstinline!IDENT! must be Real inputs to the
 function.
@@ -1732,11 +1712,8 @@ be declared either as input or output.
 This is just as for any other function.  The components in the protected part allow local variables for temporary storage to be declared.
 \end{nonnormative}
 
-The \lstinline!language-specification! must currently be one of \lstinline!"builtin"!,
-\lstinline!"C"!, \lstinline!"C..."! (for one of the specific C-standards like C89, C99, and C11
--- which specifies that it relies on the C standard library of that
-version) or \lstinline!"FORTRAN 77"!. Unless the external language is specified, it
-is assumed to be \lstinline!"C"!.
+The \lstinline!language-specification! must currently be one of \lstinline!"builtin"!, \lstinline!"C"!, \lstinline!"C..."! (for one of the specific C standards like C89, C99, and C11 -- specifying
+that it relies on the C standard library of that version) or \lstinline!"FORTRAN 77"!.  Unless the external language is specified, it is assumed to be \lstinline!"C"!.
 
 \begin{nonnormative}
 The intended use of e.g.\ C99 is to detect if the user tries to link with a C99-function using a C89 compiler.
@@ -1747,7 +1724,7 @@ to be built-in in Modelica. The external-function call mechanism for
 \lstinline!"builtin"! functions is implementation-defined.
 
 \begin{nonnormative}
-Typically, for functions from the standard C-library, the prototype of the function is provided but no library annotation. Currently, there are
+Typically, for functions from the standard C library, the prototype of the function is provided but no library annotation. Currently, there are
 no other builtin functions defined in Modelica.
 \end{nonnormative}
 
@@ -1801,55 +1778,62 @@ are passed as inputs.
 \subsubsection{Simple Types}\label{simple-types}
 
 Arguments of \emph{simple} types are by default mapped as follows for C:
-\begin{longtable}[]{|l|l|l|}
+\begin{center}
+\begin{tabular}{l|l|l}
 \hline
-\tablehead{Modelica} & \multicolumn{2}{c|}{\tablehead{C}}\\
-& \tablehead{Input} & \tablehead{Output}\\ \hline
-\endhead
-\lstinline!Real! & \lstinline!double! & \lstinline!double *!\\ \hline
-\lstinline!Integer! & \lstinline!int! & \lstinline!int *!\\ \hline
-\lstinline!Boolean! & \lstinline!int! & \lstinline!int *!\\ \hline
-\lstinline!String! & \lstinline!const char *! & \lstinline!const char **!\\ \hline
-\lstinline!Enumeration type! & \lstinline!int! & \lstinline!int *!\\ \hline
-\end{longtable}
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{2}{c}{\tablehead{C}}\\
+                                         & \multicolumn{1}{c}{\tablehead{Input}} & \multicolumn{1}{c}{\tablehead{Output}}\\
+\hline
+\hline
+\lstinline!Real! & \lstinline[language=C]!double! & \lstinline[language=C]!double *!\\
+\lstinline!Integer! & \lstinline[language=C]!int! & \lstinline[language=C]!int *!\\
+\lstinline!Boolean! & \lstinline[language=C]!int! & \lstinline[language=C]!int *!\\
+\lstinline!String! & \lstinline[language=C]!const char *! & \lstinline[language=C]!const char **!\\
+Enumeration type & \lstinline[language=C]!int! & \lstinline[language=C]!int *!\\
+\hline
+\end{tabular}
+\end{center}
 
-An exception is made when the argument is of the form \lstinline!size!(\ldots{},
-\ldots{}). In this case the corresponding C-type is \lstinline!size_t!.
+An exception is made when the argument is of the form \lstinline!size($\ldots$, $\ldots$)!. In this case the corresponding C type is \lstinline!size_t!.
 
-Strings are NUL-terminated (i.e., terminated by '\lstinline!\0!') to
+Strings are \textsc{nul}-terminated (i.e., terminated by \lstinline[language=C]!'\0'!) to
 facilitate calling of C functions. When returning a non-literal string,
 see \cref{utility-functions-for-allocating-strings} for details on memory allocation.
 
-Boolean values are mapped to C such that false in Modelica is 0 in C and
-true in Modelica is 1 in C.  If the returned value from C
-is 0 it is treated as false in Modelica; otherwise as true.
+Boolean values are mapped to C such that \lstinline!false! in Modelica is 0 in C and
+\lstinline!true! in Modelica is 1 in C.  If the returned value from C
+is 0 it is treated as \lstinline!false! in Modelica; otherwise as \lstinline!true!.
 
 \begin{nonnormative}
-It is recommended that the C-function should interpret any non-zero value as true.
+It is recommended that the C function should interpret any non-zero value as true.
 \end{nonnormative}
 
 Arguments of simple types are by default mapped as follows for FORTRAN~77:
-\begin{longtable}[]{|l|l|l|}
+\begin{center}
+\begin{tabular}{l|l|l}
 \hline
-\tablehead{Modelica} & \multicolumn{2}{c|}{FORTRAN~77}\\
-& \tablehead{Input} & \tablehead{Output}\\ \hline
-\endhead
-\lstinline!Real! & \lstinline!DOUBLE PRECISION! & \lstinline!DOUBLE PRECISION!\\ \hline
-\lstinline!Integer! & \lstinline!INTEGER! & \lstinline!INTEGER!\\ \hline
-\lstinline!Boolean! & \lstinline!LOGICAL! & \lstinline!LOGICAL!\\ \hline
-\lstinline!Enumeration type! & \lstinline!INTEGER! & \lstinline!INTEGER!\\ \hline
-\lstinline!String! & \lstinline!Special! & \lstinline!Not Available!\\ \hline
-\end{longtable}
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{2}{c}{\tablehead{FORTRAN~77}}\\
+                                         & \multicolumn{1}{c}{\tablehead{Input}} & \multicolumn{1}{c}{\tablehead{Output}}\\
+\hline
+\hline
+\lstinline!Real! & \lstinline[language=FORTRAN77]!DOUBLE PRECISION! & \lstinline[language=FORTRAN77]!DOUBLE PRECISION!\\
+\lstinline!Integer! & \lstinline[language=FORTRAN77]!INTEGER! & \lstinline[language=FORTRAN77]!INTEGER!\\
+\lstinline!Boolean! & \lstinline[language=FORTRAN77]!LOGICAL! & \lstinline[language=FORTRAN77]!LOGICAL!\\
+\lstinline!String! & \emph{Special} & \emph{Not available}\\
+Enumeration type & \lstinline[language=FORTRAN77]!INTEGER! & \lstinline[language=FORTRAN77]!INTEGER!\\
+\hline
+\end{tabular}
+\end{center}
 
 Sending string literals to FORTRAN~77 subroutines/functions is supported
-for Lapack/Blas-routines, and the strings are NUL-terminated for
+for Lapack/Blas-routines, and the strings are \textsc{nul}-terminated for
 compatibility with C. Returning strings from FORTRAN~77
 subroutines/functions is currently not supported.
 
 Enumeration types used as arguments are mapped to type int when calling
 an external C function, and to type \lstinline!INTEGER! when calling an external
-FORTRAN function. The i:th enumeration literal is mapped to integer
-value i, starting at one.
+FORTRAN function. The $i$:th enumeration literal is mapped to integer
+value $i$, starting at 1.
 
 Return values are mapped to enumeration types analogously: integer value
 1 is mapped to the first enumeration literal, 2 to the second, etc.
@@ -1879,21 +1863,25 @@ defined in \cref{simple-types} or a record type as defined in
 \cref{records} and it is mapped to the type \lstinline!T'! as defined in these sections
 for input arguments.
 
-\begin{longtable}[]{|l|l|}
+\begin{center}
+\begin{tabular}{l|l}
 \hline
-\tablehead{Modelica} & \tablehead{C}\\ \hline
-& \tablehead{Input and Output}\\ \hline
-\endhead
-\lstinline!T[$\textit{dim}_{1}$]! &
-\lstinline[language=C]!T' *, size_t $\textit{dim}_{1}$!
-\\ \hline
-\lstinline!T[$\textit{dim}_{1}$, $\textit{dim}_{2}$]! &
-\lstinline[language=C]!T' *, size_t $\textit{dim}_{1}$, size_t$\textit{dim}_{2}$!
-\\ \hline
-\lstinline!T[$\textit{dim}_{1}$, $\ldots$, $\textit{dim}_{n}$]! &
-\lstinline[language=C]!T' *, size_t $\textit{dim}_{1}$, $\ldots$, size_t $\textit{dim}_{n}$!
-\\ \hline
-\end{longtable}
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{1}{c}{\tablehead{C}}\\
+                                          & \multicolumn{1}{c}{\tablehead{Input and output}}\\
+\hline
+\hline
+\lstinline!T[$\mathit{dim}_{1}$]! &
+\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$!
+\\
+\lstinline!T[$\mathit{dim}_{1}$, $\mathit{dim}_{2}$]! &
+\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$!
+\\
+\lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! &
+\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, $\ldots$, size_t $\mathit{dim}_{n}$!
+\\
+\hline
+\end{tabular}
+\end{center}
 
 The method used to pass array arguments to FORTRAN~77 functions in the
 absence of an explicit external function call is similar to the one
@@ -1903,21 +1891,25 @@ of the simple types which can be passed to FORTRAN~77 as defined in
 \cref{simple-types} and it is mapped to the type T' as defined in that
 section.
 
-\begin{longtable}[]{|l|l|}
+\begin{center}
+\begin{tabular}{l|l}
 \hline
-\tablehead{Modelica} & \tablehead{FORTRAN~77}\\ \hline
-& \tablehead{Input and Output}\\ \hline
-\endhead
-\lstinline!T[$\textit{dim}_{1}$]! &
-\lstinline[language=FORTRAN77]!T', INTEGER $\textit{dim}_{1}$!
-\\ \hline
-\lstinline!T[$\textit{dim}_{1}$, $\textit{dim}_{2}$]! &
-\lstinline[language=FORTRAN77]!T', INTEGER $\textit{dim}_{1}$, INTEGER $\textit{dim}_{2}$!
-\\ \hline
-\lstinline!T[$\textit{dim}_{1}$, $\ldots$, $\textit{dim}_{n}$]! &
-\lstinline[language=FORTRAN77]!T', INTEGER $\textit{dim}_{1}$, $\ldots$, INTEGER $\textit{dim}_{n}$!
-\\ \hline
-\end{longtable}
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{1}{c}{\tablehead{FORTRAN~77}}\\
+                                          & \multicolumn{1}{c}{\tablehead{Input and output}}\\
+\hline
+\hline
+\lstinline!T[$\mathit{dim}_{1}$]! &
+\lstinline[language=FORTRAN77]!T', INTEGER $\mathit{dim}_{1}$!
+\\
+\lstinline!T[$\mathit{dim}_{1}$, $\mathit{dim}_{2}$]! &
+\lstinline[language=FORTRAN77]!T', INTEGER $\mathit{dim}_{1}$, INTEGER $\mathit{dim}_{2}$!
+\\
+\lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! &
+\lstinline[language=FORTRAN77]!T', INTEGER $\mathit{dim}_{1}$, $\ldots$, INTEGER $\mathit{dim}_{n}$!
+\\
+\hline
+\end{tabular}
+\end{center}
 
 \begin{example}
 The following two examples illustrate the default mapping of
@@ -1999,7 +1991,7 @@ function fie
   annotation(arrayLayout = "columnMajor");
 end fie;
 \end{lstlisting}
-This corresponds to the following C-prototype:
+This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
 double fie(double *, size\_t, size\_t);
 \end{lstlisting}
@@ -2060,18 +2052,22 @@ of any explicit external function call.
 \end{nonnormative}
 
 Return types are by default mapped as follows for C and FORTRAN~77:
-\begin{longtable}[]{|l|l|l|}
+\begin{center}
+\begin{tabular}{l|l|l}
 \hline
-\tablehead{Modelica} & \tablehead{C} & \tablehead{FORTRAN~77}\\ \hline
-\endhead
-\lstinline!Real! & \lstinline!double! & \lstinline!DOUBLE PRECISION!\\ \hline
-\lstinline!Integer! & \lstinline!int! & \lstinline!INTEGER!\\ \hline
-\lstinline!Boolean! & \lstinline!int! & \lstinline!LOGICAL!\\ \hline
-\lstinline!String! & \lstinline!const char*! & Not allowed.\\ \hline
-\lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! & Not allowed. & Not allowed.\\ \hline
-Enumeration type & \lstinline!int! & \lstinline!INTEGER!\\ \hline
-Record & See \cref{records}. & Not allowed.\\ \hline
-\end{longtable}
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{1}{c|}{\tablehead{C}} & \multicolumn{1}{c}{\tablehead{FORTRAN~77}}\\
+\hline
+\hline
+\lstinline!Real!    & \lstinline[language=C]!double!      & \lstinline[language=FORTRAN77]!DOUBLE PRECISION!\\
+\lstinline!Integer! & \lstinline[language=C]!int!         & \lstinline[language=FORTRAN77]!INTEGER!\\
+\lstinline!Boolean! & \lstinline[language=C]!int!         & \lstinline[language=FORTRAN77]!LOGICAL!\\
+\lstinline!String!  & \lstinline[language=C]!const char*! & \emph{Not allowed}\\
+\lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! & \emph{Not allowed} & \emph{Not allowed} \\
+Enumeration type    & \lstinline[language=C]!int!         & \lstinline[language=FORTRAN77]!INTEGER!\\
+Record              & See \cref{records}                  & \emph{Not allowed}\\
+\hline
+\end{tabular}
+\end{center}
 
 The element type \lstinline!T! of an array can be any simple type as defined in
 \cref{simple-types} or, for C, a record type is returned as a value of the
@@ -2211,7 +2207,7 @@ the general \filename{win32} or \filename{win64} directories, and similarly for 
 platforms.
 
 The library on Windows may refer to a lib-file (static library), both a lib- and dll-file (in this case the lib-file is an import-library),
-or just a dll-file. It may not refer to an obj-file.
+or just a dll-file. It shall not refer to an obj-file.
 
 If the directory for the specific compiler version is missing the
 platform specific directory is used.
@@ -2247,13 +2243,15 @@ package ExternalFunctions
     input Real x;
     output Real y;
     external "C"
-    y=ExternalFunc1_ext(x) annotation(Library="ExternalLib1",Include="#include \"ExternalFunc1.h\"");
+    y=ExternalFunc1_ext(x) annotation(Library="ExternalLib1",
+      Include="#include \"ExternalFunc1.h\"");
   end ExternalFunc1;
 
   function ExternalFunc2
     input Real x;
     output Real y;
-    external "C" annotation(Library="ExternalLib2", Include="#include \"ExternalFunc2.h\"");
+    external "C" annotation(Library="ExternalLib2",
+      Include="#include \"ExternalFunc2.h\"");
   end ExternalFunc2;
 
   function ExternalFunc3
@@ -2273,9 +2271,9 @@ ExternalFunctions
   package.mo  // contains the Modelica code from above
   Resources
     Include        // contains the include files
-      ExternalFunc1.h // C-header file
-      ExternalFunc2.h // C-header file
-      ExternalFunc3.c // C-source file
+      ExternalFunc1.h // C header file
+      ExternalFunc2.h // C header file
+      ExternalFunc3.c // C source file
     Library       // contains the object libraries for different
      platforms
        win32
@@ -2294,7 +2292,7 @@ and one library file may contain multiple functions.
 
 Header file for the function in the dynamic link / shared library
 \filename{ExternalLib2} so that the desired functions are defined to be exported
-for Microsoft VisualStudio and for GNU C-compiler (note, for Linux it is
+for Microsoft VisualStudio and for GNU C compiler (note, for Linux it is
 recommended to use the compiler option \lstinline!-fPIC! to build shared
 libraries or object libraries that are later transformed to a shared
 library):
@@ -2346,7 +2344,7 @@ function foo
   external;
 end foo;
 \end{lstlisting}
-This corresponds to the following C-prototype:
+This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
 double foo(double, int);
 \end{lstlisting}
@@ -2376,7 +2374,7 @@ function foo
   external "C" myfoo(x, u1, y, u2);
 end foo;
 \end{lstlisting}
-This corresponds to the following C-prototype:
+This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
 void myfoo(double, double *, int, int *);
 \end{lstlisting}
@@ -2405,7 +2403,7 @@ function foo
   external "C" funcvalue = myfoo(x, y, out1);
 end foo;
 \end{lstlisting}
-This corresponds to the following C-prototype:
+This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
 double myfoo(double, int, int *);
 \end{lstlisting}
@@ -2421,84 +2419,129 @@ z1 = myfoo(2.4, 3, \&i2);
 
 \subsection{Utility Functions}\label{utility-functions}
 
-The following utility functions can be called in external Modelica
-functions written in C. These functions are defined in file
-\lstinline!ModelicaUtilities.h!:
+This section describes the utility functions declared in \filename{ModelicaUtilities.h}, which can be called in external Modelica functions written in C.
 
 \subsubsection{Utility Functions for Reporting Errors}\label{utility-functions-for-reporting-errors}
-The following functions produce a message in different ways. The
-Message-functions only produce the message, but the Warning- and
-Error-functions combine this with error handling as follows.
 
-The Warning-functions view the message as a warning and can skip
-duplicated messages similarly as an assert with
-level=AssertionLevel.Warning in the Modelica code.
+The functions listed below produce a message in different ways.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline[language=C]!ModelicaMessage($\mathit{string}$)! & Message with fixed string & \multirow{3}{*}{\Cref{modelica:ModelicaMessage-et-al}} \\
+\lstinline[language=C]!ModelicaWarning($\mathit{string}$)! & Warning with fixed string & \\
+\lstinline[language=C]!ModelicaError($\mathit{string}$)! & Error with fixed string & \\
+\hline
+\lstinline[language=C]!ModelicaFormatMessage($\mathit{format}$, $\ldots$)! & Message with \lstinline[language=C]!printf! style formatting & \multirow{3}{*}{\Cref{modelica:ModelicaFormatMessage-et-al}} \\
+\lstinline[language=C]!ModelicaFormatWarning($\mathit{format}$, $\ldots$)! & Warning with \lstinline[language=C]!printf! style formatting & \\
+\lstinline[language=C]!ModelicaFormatError($\mathit{format}$, $\ldots$)! & Error with \lstinline[language=C]!printf! style formatting & \\
+\hline
+\lstinline[language=C]!ModelicaVFormatMessage($\mathit{format}$, $\mathit{ap}$)! & Message with \lstinline[language=C]!vprintf! style formatting & \multirow{3}{*}{\Cref{modelica:ModelicaVFormatMessage-et-al}} \\
+\lstinline[language=C]!ModelicaVFormatWarning($\mathit{format}$, $\mathit{ap}$)! & Warning with \lstinline[language=C]!vprintf! style formatting & \\
+\lstinline[language=C]!ModelicaVFormatError($\mathit{format}$, $\mathit{ap}$)! & Error with \lstinline[language=C]!vprintf! style formatting & \\
+\hline
+\end{tabular}
+\end{center}
 
-The Error-functions never return to the calling function, but handle the
-error similarly to an assert with level=AssertionLevel.Error in the
+The \emph{Message}-functions only produce the message, but the \emph{Warning}- and \emph{Error}-functions combine this with error handling as follows.
+
+The \emph{Warning}-functions view the message as a warning and can skip
+duplicated messages similarly as an \lstinline!assert! with
+\lstinline!level = AssertionLevel.Warning! in the Modelica code.
+
+The \emph{Error}-functions never return to the calling function, but handle the
+error similarly to an \lstinline!assert! with \lstinline!level = AssertionLevel.Error! in the
 Modelica code.
 
-\begin{longtable}[]{|l|l|}
-\hline \endhead
-\vtop{\hbox{\strut \lstinline!ModelicaMessage!}\hbox{\strut \lstinline!ModelicaWarning!}\hbox{\strut
-\lstinline!ModelicaError!}}
-& \vtop{\hbox{\strut \emph{void Modelica\{Message,Warning,Error\}\newline
-(const char* string)}}\hbox{\strut Output the message string (no format
-control).}}\\ \hline
-\vtop{\hbox{\strut \lstinline!ModelicaFormatMessage!}\hbox{\strut \lstinline!ModelicaFormatWarning!}\hbox{\strut
-\lstinline!ModelicaFormatError!}}
-& \vtop{\hbox{\strut \emph{void
-ModelicaFormat\{Message,Warning,Error\}\newline
-(const char* string,...)}}\hbox{\strut Output the message under the same
-format control as the C-function \lstinline!printf!.}}\\ \hline
-\vtop{\hbox{\strut \lstinline!ModelicaVFormatMessage!}\hbox{\strut \lstinline!ModelicaVFormatWarning!}\hbox{\strut
-\lstinline!ModelicaVFormatError!}}
-& \vtop{\hbox{\strut \emph{void
-ModelicaVFormat\{Message,Warning,Error\}\newline
-(const char*string, va\_list)}}\hbox{\strut Output the message under the
-same format control as the C-function \lstinline!vprintf!.}}\\ \hline
-\end{longtable}
+\begin{functiondefinition*}[ModelicaMessage, ModelicaWarning, ModelicaError]\label{modelica:ModelicaMessage-et-al}
+\begin{synopsis}[C]\begin{lstlisting}
+void ModelicaMessage(const char* $\mathit{string}$)
+void ModelicaWarning(const char* $\mathit{string}$)
+void ModelicaError(const char* $\mathit{string}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Output the fixed message string (no format control).
+\end{semantics}
+\end{functiondefinition*}
+
+\begin{functiondefinition*}[ModelicaFormatMessage, ModelicaFormatWarning, ModelicaFormatError]\label{modelica:ModelicaFormatMessage-et-al}
+\begin{synopsis}[C]
+% Note that the "..." below are actual C code, and shouldn't be typeset as \ldots.
+\begin{lstlisting}
+void ModelicaFormatMessage(const char* $\mathit{format}$, ...)
+void ModelicaFormatWarning(const char* $\mathit{format}$, ...)
+void ModelicaFormatError(const char* $\mathit{format}$, ...)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Output the message under the same format control as the C function \lstinline[language=C]!printf!.
+\end{semantics}
+\end{functiondefinition*}
+
+\begin{functiondefinition*}[ModelicaVFormatMessage, ModelicaVFormatWarning, ModelicaVFormatError]\label{modelica:ModelicaVFormatMessage-et-al}
+\begin{synopsis}[C]\begin{lstlisting}
+void ModelicaVFormatMessage(const char* $\mathit{format}$, va_list $\mathit{ap}$)
+void ModelicaVFormatWarning(const char* $\mathit{format}$, va_list $\mathit{ap}$)
+void ModelicaVFormatError(const char* $\mathit{format}$, va_list $\mathit{ap}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Output the message under the same format control as the C function \lstinline[language=C]!vprintf!.
+\end{semantics}
+\end{functiondefinition*}
 
 \subsubsection{Utility Functions for Allocating Strings}\label{utility-functions-for-allocating-strings}
-And then the string handling functions:
-\begin{longtable}[]{|p{7cm}|p{8.2cm}|}
-\hline \endhead
-\lstinline!ModelicaAllocateString! &
-\begin{tabular}{@{}p{8.cm}@{}}
-\emph{char* ModelicaAllocateString(size\_t len)} \\
-Allocate memory for a writeable non-literal string which is used as a return argument of an external Modelica function.
-It allocates \lstinline!len+1! characters and the last one is set to NUL.
-If an error occurs, this function does
-not return, but calls \lstinline!ModelicaError!.
-\end{tabular}\\ \hline
-\lstinline!ModelicaAllocateStringWithErrorReturn! &
-\begin{tabular}{@{}p{8.cm}@{}}
-\emph{char*\newline ModelicaAllocateStringWithErrorReturn(size\_t len)}\\
-Same as
-\lstinline!ModelicaAllocateString!, except that in case of error, the function
-returns 0. This allows the external function to close files and free
-other open resources in case of error. After cleaning up resources use
-\lstinline!ModelicaError! or \lstinline!ModelicaFormatError! to signal the
-error.
-\end{tabular}\\ \hline
-\lstinline!ModelicaDuplicateString! &
-\begin{tabular}{@{}p{8.cm}@{}}
-\emph{char* ModelicaDuplicateString(const char*str)} \\
-Returns a writeable duplicate of the NUL-terminated string \lstinline!str!.
-If an error occurs, this function does
-not return, but calls \lstinline!ModelicaError!.
-\end{tabular}\\ \hline
-\lstinline!ModelicaDuplicateStringWithErrorReturn! &
-\begin{tabular}{@{}p{8.cm}@{}}
-\emph{char*\newline ModelicaDuplicateStringWithErrorReturn(const char*str)}\\
-Same as
-\lstinline!ModelicaDuplicateString!, except that in case of error, the function
-returns 0. This allows the external function to close files and free
-other open resources in case of error. After cleaning up resources use
-\lstinline!ModelicaError! or \lstinline!ModelicaFormatError! to signal the
-error.
-\end{tabular}\\ \hline
-\end{longtable}
+
+The functions listed below are related to string allocation.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline[language=C]!ModelicaAllocateString($\mathit{len}$)! & Allocate or error & \Cref{modelica:ModelicaAllocateString} \\
+\lstinline[language=C]!ModelicaAllocateStringWithErrorReturn($\mathit{len}$)! & Allocate or null& \Cref{modelica:ModelicaAllocateStringWithErrorReturn} \\
+\lstinline[language=C]!ModelicaDuplicateString($\mathit{str}$)! & Duplicate or error & \Cref{modelica:ModelicaDuplicateString} \\
+\lstinline[language=C]!ModelicaDuplicateStringWithErrorReturn($\mathit{str}$)! & Duplicate or null& \Cref{modelica:ModelicaDuplicateStringWithErrorReturn} \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{functiondefinition}[ModelicaAllocateString]
+\begin{synopsis}[C]\begin{lstlisting}
+char* ModelicaAllocateString(size_t $\mathit{len}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allocate memory for a writeable non-literal string which is used as a return argument of an external Modelica function.  It allocates $\mathit{len}+1$ characters and the last one is set to \textsc{nul}.  If an error occurs, this function does not return, but calls \lstinline[language=C]!ModelicaError!.
+\end{semantics}
+\end{functiondefinition}
+
+\begin{functiondefinition}[ModelicaAllocateStringWithErrorReturn]
+\begin{synopsis}[C]\begin{lstlisting}
+char* ModelicaAllocateStringWithErrorReturn(size_t $\mathit{len}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Same as \lstinline[language=C]!ModelicaAllocateString!, except that in case of error, the function returns 0.  This allows the external function to close files and free other open resources in case of error.  After cleaning up resources, use \lstinline[language=C]!ModelicaError! or \lstinline[language=C]!ModelicaFormatError! to signal the error.
+\end{semantics}
+\end{functiondefinition}
+
+\begin{functiondefinition}[ModelicaDuplicateString]
+\begin{synopsis}[C]\begin{lstlisting}
+char* ModelicaDuplicateString(const char* $\mathit{str}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Returns a writeable duplicate of the \textsc{nul}-terminated string $\mathit{str}$.  If an error occurs, this function does not return, but calls \lstinline[language=C]!ModelicaError!.
+\end{semantics}
+\end{functiondefinition}
+
+\begin{functiondefinition}[ModelicaDuplicateStringWithErrorReturn]
+\begin{synopsis}[C]\begin{lstlisting}
+char* ModelicaDuplicateStringWithErrorReturn(const char* $\mathit{str}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Same as \lstinline[language=C]!ModelicaDuplicateString!, except that in case of error, the function returns 0.  This allows the external function to close files and free other open resources in case of error. After cleaning up resources, use \lstinline[language=C]!ModelicaError! or \lstinline[language=C]!ModelicaFormatError! to signal the error.
+\end{semantics}
+\end{functiondefinition}
 
 The valid return values for an external function returning a \lstinline!String! are:
 \begin{itemize}
@@ -2507,21 +2550,15 @@ The valid return values for an external function returning a \lstinline!String! 
 \item A string pointer returned by one the functions in the table above.
 \end{itemize}
 
-Thus if an external wants to create a non-literal string it must be allocated with one of the functions in
-this section, e.g., \lstinline!ModelicaAllocateString!.
-After return of the external function, the Modelica
-environment is responsible for the memory allocated with
-ModelicaAllocateString (e.g., to free this memory, when appropriate). It
-is not allowed to access memory that was allocated with
-\lstinline!ModelicaAllocateString! in a previous call of this external function.
+Thus if an external wants to create a non-literal string it must be allocated with one of the functions in this section, e.g., \lstinline[language=C]!ModelicaAllocateString!.  After return of the external function, the Modelica environment is responsible for the memory allocated with \lstinline[language=C]!ModelicaAllocateString! (e.g., to free this memory, when appropriate).  It is not allowed to access memory that was allocated with \lstinline[language=C]!ModelicaAllocateString! in a previous call of this external function.
 
 \begin{nonnormative}
 Memory that is not passed to the Modelica simulation environment, such as memory that is freed before leaving the function, or in an \lstinline!ExternalObject!,
-see~\cref{external-objects}, should be allocated with the standard C-mechanisms, like \lstinline[language=C]!calloc!.
+see~\cref{external-objects}, should be allocated with the standard C mechanisms, like \lstinline[language=C]!calloc!.
 \end{nonnormative}
 
 \begin{nonnormative}
-The reason why one may not use, for instance, \lstinline[language=C]!malloc! for string allocation is that a Modelica simulation environment may have
+The reason why one should avoid, for instance, \lstinline[language=C]!malloc! for string allocation is that a Modelica simulation environment may have
 its own allocation scheme, e.g., a special stack for local variables of a function.
 \end{nonnormative}
 
@@ -2554,7 +2591,7 @@ predefined class \lstinline!ExternalObject! according to the following rules:
   must not require any other calls to be made for the initialization to
   be complete (e.g., from an initial algorithm or initial equation). The
   destructor shall delete the object, and must not require any other
-  calls to be made for the deletion to be complete (e.g., from a \lstinline!when terminal()! clause). The constructor may not assume that pointers sent
+  calls to be made for the deletion to be complete (e.g., from a \lstinline!when terminal()! clause). The constructor shall not assume that pointers sent
   to the external object will remain valid for the life-time of the external object.  An exception is that if the pointer to another external object is
   given as argument to the constructor, that pointer will remain valid as long as the other external object lives.
   \begin{nonnormative}
@@ -2564,7 +2601,7 @@ predefined class \lstinline!ExternalObject! according to the following rules:
   \begin{nonnormative}
   External objects may be an input (or part of an input) to a function, in that case the destructor is not called (since the external object is active before
   and after the function call).  Normally this is an external function, but it could be a non-external function as well (e.g.\ calling external functions one
-  or more times).  The function input may not have a default value using the constructor.
+  or more times).  The function input shall not have a default value using the constructor.
   \end{nonnormative}
 \item
   Classes derived from \lstinline!ExternalObject! can neither be used in an
@@ -2579,7 +2616,7 @@ predefined class \lstinline!ExternalObject! according to the following rules:
 \item
   External functions may be defined which operate on the internal memory
   of an \lstinline!ExternalObject!. An \lstinline!ExternalObject! used as input argument or
-  return value of an external C-function is mapped to the C-type
+  return value of an external C function is mapped to the C type
   \lstinline!void*!.
 \end{itemize}
 
@@ -2622,7 +2659,7 @@ function interpolateMyTable "Interpolate in table"
   external "C" y = interpolateMyTable(table, u);
 end interpolateTable;
 \end{lstlisting}
-The external C-functions may be defined in the following way:
+The external C functions may be defined in the following way:
 \begin{lstlisting}[language=C]
 typedef struct { /* User-defined datastructure of the table */
   double* array; /* nrow*ncolumn vector */
