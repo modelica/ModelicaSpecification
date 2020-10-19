@@ -103,18 +103,24 @@ Different views of a class can be specified by using the `view` query:
 - _modelica:classref?view=icon_ — Class icon.
   * Example: `<img src="modelica:?view=icon" alt="class icon"/>` (icon of the current class)
 - _modelica:classref?view=text_ — Textual class source code.
-- _modelica:classref?view=info_ — Class documentation.  The fragment specifier can be used to reference a link anchor (present in the `Documentation.info` of the current class).
+- _modelica:classref?view=info_ — Class documentation.  The fragment specifier can be used to reference an element by `id` or `name` (present in the `Documentation.info` of the current class).
   * Example: _modelica:/Modelica/Electrical/Analog?view=info#overview_
 
 ### Figure and plot
 
-In the event that ([MCP-0033](https://github.com/modelica/ModelicaSpecification/pull/2482)) is accepted before this MCP, a figure is referenced using its `identifier` in the `figure` query.
+In the event that ([MCP-0033](https://github.com/modelica/ModelicaSpecification/pull/2482)) is accepted before this MCP, a `Figure` is referenced using its `identifier` in the `figure` query.
   * Example: _modelica:/Modelica/Electrical/Analog/Examples/Rectifier?figure=voltcurr_
 
-To reference a plot inside a figure, one can also use the `plot` query (note that the `plot` identifier is only meaningful within a given figure).
+In the context of a `Figure`, a `Plot` is uniquely identified by its `identifier`.  One way to reference a plot would therefore be to append a `plot` query:
   * Example: _modelica:/Modelica/Electrical/Analog/Examples/Rectifier?figure=voltcurr&plot=sumc1c2_
+
+However, a more useful way to reference a plot is to make use of the fragmet specifier, which naturally applies to anything with an `identifier` inside the referenced figure:
+  * Example: _modelica:/Modelica/Electrical/Analog/Examples/Rectifier?figure=voltcurr#sumc1c2_
+
+ By using the fragment specifier instead of the `plot` query, it becomes possible to use a URI which is relative to the current figure.  This is useful when referencing a plot from the `caption` of a `Figure` (replacing the old way `caption = "%(plot:sumc1c2) Sum of two connectors."`, where `plot` isn't really a URI scheme, and the `Plot` identifier `sumc1c2` isn't URL encoded):
+   * Example: `caption = "%(#sumc1c2) Sum of two connectors."` (thanks to URL encoding, this also works for nasty identifiers containing parentheses)
 
 Note that inheritance of figures means that the `figure` identifier is not necessarily referring to a figure defined in the current class, but could come from one of its parent classes.
 
 While the example above was using the _fullclass_ form of a Modelica URI, the most common place where a figure is references is probably in the documentation or other figures of the current class.  Then, using a lookup-based form makes the class more self-contained.
-  * Example: _modelica:?figure=voltcurr&plot=sumc1c2_ (appearing in the `Documentation.info` of the current class)
+  * Example: _modelica:?figure=voltcurr#sumc1c2_ (appearing in the `Documentation.info` of the current class)
