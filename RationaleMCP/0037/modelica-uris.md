@@ -64,7 +64,7 @@ While powerful and tightly coupled with the rest of the Modelica language, the l
 
 This leads to the alternative approach of making class references only through the class tree:
 - _modelica:relclass_ — Class given by appending _relclass_ to the class tree context, and it is an error if _relclass_ doesn't resolve to an existing class.
-- _modelica:~/relclass_ — Similar to the form above, but _relclass_ is appended to the nearest enclosing encapsulated class, or the current top level class in case there is no enclosing encapsulated class.  For the MSL, this would just as fine as the lookup-based form.
+- _modelica:~/relclass_ — Similar to the form above, but _relclass_ is appended to the nearest enclosing encapsulated class, or the current top level class in case there is no enclosing encapsulated class.  For the MSL, this would work just as fine as the lookup-based form.
 - _modelica:{../}relclass_ (one or more leading '..' path segments) — Similar to the '.' form, but moving one level up the class tree with each '..' segment, and then appending _relclass_.  This is useful for locating sibling classes in a relative manner without depending on class encapsulation.
   * Example: _modelica:../Resistor_
 
