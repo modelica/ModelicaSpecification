@@ -29,5 +29,6 @@ As these get deprecated with this MCP, the following replacements are suggested:
 To use _Include_ and _Library_ directories associated with the top level package instead of the encapsulation barrier, there are at least two natural possibilities:
 - Introduce something like a double tilde for reference to the current top level package:
   - _modelica:~~?resource=Include
+- Redefine the single tilde to reference the top level package rather than the encapsulation barrier.
 - Revert to the old strategy of a symbolically package-dependent URI:
   - _modelica:/ModelicaLibraryName?resource=Include
