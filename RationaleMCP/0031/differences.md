@@ -79,6 +79,14 @@ Seen this way, the rules about which functions may be called in the body of a fu
 
 This covers what one can currently express in full Modelica.  In the future, one might also introduce _pure discrete_ functions that don't have side effects, but that must be re-evaluated at events, even if the arguments are constant.
 
+## Variability in record member declaration
+
+This section is work in progress.  The goal is to get rid of one or both of the variability prefixes `constant` and `parameter` from record member declarations.
+
+For `constant`, this is of particular interest due to the way we have restricted the attribute modifiers to only allow constant modifiers.  For value modification, this would make the most sense for — again — constant modifiers, but that seems to be mostly useful for record members declared `constant`.  If we would get rid of the `constant` modifier inside record definitions, this might allow us to conclude that we don't really need value modifiers in records at all.
+
+For `parameter`, we should keep in mind that many of the members declared `parameter` in full Modelica are actually structural parameters that will turn into `constant` in Flat Modelica.  Hence, we need to keep those structural parameters in mind when thinking about getting rid of `constant`.  Then, we must also consider the impact of removing the possibility to declara non-structural members with `parameter` variability.
+
 ## Array size
 
 ### Array types
