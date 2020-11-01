@@ -217,13 +217,13 @@ The percent character `\%' shall be encoded \lstinline!%%!.  The following are a
 \hline
 \hline
 \lstinline!%%! & `\%' & Only way to encode character. \\
-\lstinline!%]! & `]'  & Escape sequence only needed in link text. \\
+\lstinline!%]! & `]'  & Prevents termination of markup delimited by \lstinline![$\ldots$]!. \\
 \hline
 \end{tabular}
 \end{center}
 
 \begin{nonnormative}
-With the percent character being encoded as \lstinline!%%!, the behavior of \lstinline!%! appearing in any other way than the escape sequences above, for variable replacement (\cref{variable-replacements}), or for link markup (\cref{text-markup-in-captions}) is undefined, and thus possible to define in the future without breaking backward compatibility.
+With the percent character being encoded as \lstinline!%%!, the behavior of \lstinline!%! appearing in any other way than the escape sequences above, for variable replacement (\cref{variable-replacements}), or for the text markup (\cref{text-markup-in-captions}) is undefined, and thus possible to define in the future without breaking backward compatibility.
 \end{nonnormative}
 
 \subsubsection{Variable Replacements}\label{variable-replacements}
@@ -270,21 +270,16 @@ By design, neither \lstinline!%class! nor \lstinline!%name! is supported in this
 
 In addition to variable replacements, a very restricted form of text markup is used for the \lstinline!caption!.  Note that the text markup escape sequences described in \cref{text-markup-escape-sequences} generally apply inside \lstinline!caption!, with one exception given below for links.
 
-Links take the form \lstinline!%[$\mathit{text}$]($\mathit{link}$)!, where the \lstinline![$\mathit{text}$]! part is optional except for vendor-specific links, and text markup escape sequences don't apply inside the $\mathit{link}$.  The $\mathit{link}$ can be in either of the following forms, where the interpretation is given by the first matching form:
+Links take the form \lstinline!%[$\mathit{text}$]($\mathit{link}$)!, where the \lstinline![$\mathit{text}$]! part is optional, and text markup escape sequences don't apply inside the $\mathit{link}$.  The $\mathit{link}$ can be in either of the following forms, where the interpretation is given by the first matching form:
 \begin{itemize}
 \item A \lstinline!variable:$\mathit{id}$!, where $\mathit{id}$ is a component reference in the form of \lstinline[language=grammar]!component-reference! in the grammar, such as \lstinline!inertia1.w!.
 % The 'plot:id' form below should be deprecated in favor of using an improved form of Modelica URI reference in the future, making 'variable:id' the only non-URI reference.
 \item A \lstinline!plot:$\mathit{id}$!, where $\mathit{id}$ is the identifier of a \lstinline!Plot! in the current \lstinline!Figure!.
-\item A vendor-specific URI expressed using a URI with scheme \lstinline!__$\mathit{nameOfVendor}$!, where $\mathit{nameOfVendor}$ is in the form of a valid URI scheme, conveying the name of the vendor defining the meaning of the link.  A tool which does not understand the vendor-specific meaning of the link shall not send the URI to the operating system for interpretation, but only display the $\mathit{text}$ (which is mandatory for this form of link).  A tool which understands the vendor-specific meaning is not required to use the $\mathit{text}$.  A link with vendor-specific URI is denoted a \firstuse{vendor-specific link}.
 % Use very short Modelica URI combined with carefull chosen wording below to deal with difficult line breaking.
-\item A normal URI.  Well established schemes such as \lstinline[language={[nocomment]modelica}]!https://github.com/modelica! or \lstinline[language={[nocomment]modelica}]!modelica://Modelica!, as well as lesser known schemes may be used.  (A tool that has no special recognition of a scheme can try sending the URI to the operating system for interpretation.)
+\item A URI.  Well established schemes such as \lstinline[language={[nocomment]modelica}]!https://github.com/modelica! or \lstinline[language={[nocomment]modelica}]!modelica://Modelica!, as well as lesser known schemes may be used.  (A tool that has no special recognition of a scheme can try sending the URI to the operating system for interpretation.)
 \end{itemize}
 
 When \lstinline![$\mathit{text}$]! is omitted, a Modelica tool is free to derive a default based on the $\mathit{link}$.
-
-\begin{example}
-One application of a vendor-specific link is to prototype a feature that can later be turned into standardized markup.  For example, say that the tool AVendor wants to generalize the variable replacements such that the duration of a simulation can be substituted into a caption.  During the development, this could be represented as the vendor-specific link \lstinline!%[10 s](__AVendor:?duration)!, if the simulation has a duration of 10~seconds at the time of writing the caption.  When AVendor renders this ``link'', it ignores the link text \lstinline!10 s! and just displays the actual duration instead, not linked to anything.  Later, if this would become supported by standard markup, it might take the form of something like \lstinline!%{experiment:duration}! instead (note that \lstinline!experiment:duration! is not in the form of a component reference, avoiding conflict with current use of variable replacements).
-\end{example}
 
 \begin{nonnormative}
 Note that for the character `]' to appear in $\mathit{text}$, it needs to be encoded as the escape sequence \lstinline!%]!, or it would be interpreted as the terminating delimiter of the \lstinline![$\mathit{text}$]!.
@@ -312,7 +307,7 @@ about it being linked.
 \end{nonnormative}
 
 \begin{nonnormative}
-% This non-normative text explains why we don't want to assume that the 'link' must have a scheme, which has to be considered in the design of the vendor-specific link format.
+% This non-normative text explains why we don't want to assume that the 'link' must have a scheme.
 Note that $\mathit{link}$ is currently not allowed to be a \emph{URI reference}, i.e., a URI or a \emph{relative reference} such as \lstinline!#foo!.  This is due to to the current inability to define a base URI referencing the current figure.  Once this becomes possible, the URI form of $\mathit{link}$ may be changed into a URI reference.
 \end{nonnormative}
 
@@ -320,6 +315,14 @@ A sequence of one or more newlines (encoded either literally or using the \lstin
 escape sequence) means a paragraph break.  (A line break within a paragraph is
 not supported, and any paragraph break before the first paragraph or after the last
 paragraph has no impact.)
+
+Vendor-specific markup takes the form \lstinline!%__$\mathit{nameOfVendor}_{1}$($\mathit{data}_{1}$)$\ldots$__$\mathit{nameOfVendor}_{n}$($\mathit{data}_{n}$)[$\mathit{text}$]!, where $n \geq 1$.  The $\mathit{nameOfVendor}$ consists of only digits and letters, and shall only convey the name of the vendor defining the meaning of the associated $\mathit{data}$.  Text markup escape sequences don't apply inside the $\mathit{data}$, implying that it cannot contain the closing parenthesis, `)'.  A tool which does not understand any of the vendor-specific meanings shall only display the mandatory $\mathit{text}$, but the $\mathit{text}$ may also be used together with the vendor-specific $\mathit{data}$.
+
+\begin{example}
+One application of vendor-specific markup is to prototype a feature that can later be turned into standardized markup.  For example, say that the tool AVendor wants to generalize the variable replacements such that the duration of a simulation can be substituted into a caption.  During the development, this could be represented as the vendor-specific markup \lstinline!%__AVendor(?duration)[10 s]!, if the simulation has a duration of 10~seconds at the time of writing the caption.  When AVendor renders this, it ignores the text \lstinline!10 s! and just displays the actual duration instead.  Later, if this would become supported by standard markup, it might take the form of something like \lstinline!%{experiment:duration}! instead (note that \lstinline!experiment:duration! is not in the form of a component reference, avoiding conflict with current use of variable replacements).
+
+In a similar way, vendor-specific markup can be used to prototype a link for future inclusion in the link markup (either by extending the meaning of Modelica URIs, or by introducing another pseudo-scheme similar to \lstinline!variable:!).  This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
+\end{example}
 
 \section{Annotations for Code Generation}\label{annotations-for-code-generation}
 
