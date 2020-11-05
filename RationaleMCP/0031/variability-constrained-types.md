@@ -78,3 +78,7 @@ end 'M';
 ## Record including its own array dimension
 
 TODO: Example with time-varying polynomial.
+
+## Connector with parameter
+
+TODO: Describe what happens to a full Modelica connector with a parameter inside.  In particular, what is the corresponding Flat Modelica record?
