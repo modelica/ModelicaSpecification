@@ -45,7 +45,7 @@ For this use of a variability-constrained Flat Modelica record, there is typcail
 ```
 To start with each occurrence of `'comp1'` (which has variability-constrained type) is in the form of a component reference.  The first of these, `'comp1'.'i'` is a continuous-time expression of type `Real`.  The other, `'comp1'.'r'` is a parameter expression of type `Real`.  That is, `'comp1'.'r'` does not have variability-constrained type; it is just a normal expression having parameter variability.  Hence, there are no illegal occurrences of sub-expressions of variability-constrained type.
 
-## Records with the same constrain on all members
+## Records with the same constraint on all members
 
 An easy example to start with is a record that is only meant to be used for parameters (such records can be found, for example, in `Modelica.Electrical.Batteries.ParameterRecords`):
 ```
