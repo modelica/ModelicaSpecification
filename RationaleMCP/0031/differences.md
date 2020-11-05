@@ -79,13 +79,25 @@ Seen this way, the rules about which functions may be called in the body of a fu
 
 This covers what one can currently express in full Modelica.  In the future, one might also introduce _pure discrete_ functions that don't have side effects, but that must be re-evaluated at events, even if the arguments are constant.
 
-## Variability in record member declaration
+## Variability specification inside types
 
-This section is work in progress.  The goal is to get rid of one or both of the variability prefixes `constant` and `parameter` from record member declarations.
+In a record definition it is possible to have variability prefixes (`parameter` or `constant`) on the record member component declarations.  This results in a type containing variability specification, referred to as a _variability-constrained type_.  Unless clear from context, types that are not variability-constrained should be referred to as _variability-free types_.
 
-For `constant`, this is of particular interest due to the way we have restricted the attribute modifiers to only allow constant modifiers.  For value modification, this would make the most sense for — again — constant modifiers, but that seems to be mostly useful for record members declared `constant`.  If we would get rid of the `constant` modifier inside record definitions, this might allow us to conclude that we don't really need value modifiers in records at all.
+Variability-constrained types may only be used in the following restrictive ways:
+- Definition of new types (that will also be variability-constrained).
+- Model component declaration.
+- A (sub-) expression of variability-constrained type (such as a reference to a model component declared with such type) may only be used in one of the following ways:
+  - Component references.  That is, accessing a member of a record, application of array subscripts, and combinations thereof.  Note that the resulting expression might again be of variability-constrained type, in which case these restrictions must also be met recursively.
+  - Passing as argument to a function.  It is possible for a variability-constrained record member to be received by a record member without variability constraint, and structural subtyping also allows the receiving record type to not have members corresponding to the variability-constrained members of the passed record.
+  - Alone on one side of an equation in solved form, or as left hand side of an assignment statement.  In this case a variability-constrained record member (at any depth) that does not have a corresponding record member on the other side of the equation (right side of assignment) is not considered part of the equation or assignment.
 
-For `parameter`, we should keep in mind that many of the members declared `parameter` in full Modelica are actually structural parameters that will turn into `constant` in Flat Modelica.  Hence, we need to keep those structural parameters in mind when thinking about getting rid of `constant`.  Then, we must also consider the impact of removing the possibility to declara non-structural members with `parameter` variability.
+The restrictions above should be considered preliminary, as we have yet to find out in more details how these restrictions can be met in real world applications.
+
+It is expected that the restrictions on variability-constrained types will sometime require a type to exist in both a variability-constrained and variability-free variant.  It remains to find out whether the most useful variability-free variants are such that the variability-constrained members of records have been removed, or such that just the variability-constraints have been removed.
+
+The last of the ways that an expression of variability-constrained type may be used – that is, in a solved equation or assignment – is an extension of full Modelica that is provided to mitigate potential problems caused by needing to have two Flat Modelica variants of the same full Modelica type.
+
+Examples of how variability-constrained full Modelica types can be handled in Flat Modelica are collected in variability-constrained-types.md.
 
 ## Array size
 
