@@ -97,7 +97,7 @@ It is expected that the restrictions on variability-constrained types will somet
 
 The last of the ways that an expression of variability-constrained type may be used – that is, in a solved equation or assignment – is an extension of full Modelica that is provided to mitigate potential problems caused by needing to have two Flat Modelica variants of the same full Modelica type.
 
-Examples of how variability-constrained full Modelica types can be handled in Flat Modelica are collected in variability-constrained-types.md.
+A [separate document](variability-constrained-types.md) gives examples of how variability-constrained types may arise in Flat Modelica, and how their constraints can be handled.
 
 ## Array size
 

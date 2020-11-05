@@ -1,6 +1,6 @@
 # Veriability-constrained types by example
 
-As described in differences.md, a variability-constrained type is one where some record members have been declared with variability prefix (`parameter` or `constant` – `discrete` is currently _not_ an actual variability prefix in Modelica, but implies being discrete-time in a way that makes it impossible to use in a type).  In Flat Modelica, such types are only allowed in model component declarations, and this document gives examples of how this constraint be handled.
+[As described elsewhere](differences.md), a variability-constrained type is one where some record members have been declared with variability prefix (`parameter` or `constant` – `discrete` is currently _not_ an actual variability prefix in Modelica, but implies being discrete-time in a way that makes it impossible to use in a type).  In Flat Modelica, such types are only allowed in model component declarations, and this document gives examples of how this constraint be handled.
 
 ## Hierarchical representation of model structure
 
