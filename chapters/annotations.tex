@@ -74,6 +74,7 @@ Example:
 \end{lstlisting}
 
 \subsection{Annotations for Figures}\label{annotations-for-figures}
+
 Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
 \begin{lstlisting}[language=modelica]
 record Figure
@@ -98,9 +99,7 @@ record Plot
 end Plot;
 \end{lstlisting}
 
-A \lstinline!Plot! can contain several \lstinline!curves!, see
-\cref{plot-curves}, that all share a common x and y axis with properties
-described in \cref{axis-properties}.
+A \lstinline!Plot! can contain several \lstinline!curves!, see \cref{plot-curves}, that all share a common \lstinline!x! and \lstinline!y! axis with properties described in \cref{axis-properties}.
 
 Both \lstinline!Figure! and \lstinline!Plot! can have an optional title. When
 the \lstinline!Figure! \lstinline!title! is the empty string (the default), the
@@ -154,6 +153,7 @@ form of text markup described in \cref{text-markup-in-captions} as well as
 the variable replacements described in \cref{variable-replacements}.
 
 \subsubsection{Axis Properties}\label{axis-properties}
+
 Properties may be defined for each \lstinline!Plot! axis:
 \begin{lstlisting}[language=modelica]
 record Axis
@@ -183,6 +183,7 @@ When an axis label isn't provided, the tool produces a default label.  Providing
 \lstinline!label! shall not contain the unit.
 
 \subsubsection{Plot Curves}\label{plot-curves}
+
 The actual data to plot is specified in the \lstinline!curves! of a \lstinline!Plot!:
 \begin{lstlisting}[language=modelica]
 record Curve
@@ -204,14 +205,34 @@ When \lstinline!legend! isn't provided, the tool produces a default based on
 Variable replacements, as described in \cref{variable-replacements}, can be
 used in the \lstinline!legend! of \lstinline!Curve!
 
+\subsubsection{Escape sequences}\label{text-markup-escape-sequences}
+
+In an attribute inside a figure where the variable replacements of \cref{variable-replacements} or the text markup of \cref{text-markup-in-captions} can be used, the following use of \firstuse{text markup escape sequences} applies.  These escape sequences are applied after the application of other markup, and is not applied at all inside some of the other markup, see details for the respective markup.
+
+The percent character `\%' shall be encoded \lstinline!%%!.  The following are all the recognized escape sequences:
+\begin{center}
+\begin{tabular}{c c l}
+\hline
+\tablehead{Sequence} & \tablehead{Encoded character} & \tablehead{Comment}\\
+\hline
+\hline
+\lstinline!%%! & `\%' & Only way to encode character. \\
+\lstinline!%]! & `]'  & Escape sequence only needed in link text. \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{nonnormative}
+With the percent character being encoded as \lstinline!%%!, the behavior of \lstinline!%! appearing in any other way than the escape sequences above, for variable replacement (\cref{variable-replacements}), or for link markup (\cref{text-markup-in-captions}) is undefined, and thus possible to define in the future without breaking backward compatibility.
+\end{nonnormative}
+
 \subsubsection{Variable Replacements}\label{variable-replacements}
-In most places where text for display is defined the final value of a result
-variable can be embedded by refering to the variable as
-\lstinline!%{inertia1.w}!.  This is similar to the \lstinline!Text! graphical primitive
-in \cref{text}.
+
+In the places listed in \cref{attributes-with-variable-replacements} where text for display is defined, the final value of a result variable can be embedded by refering to the variable as \lstinline!%{inertia1.w}!.  This is similar to the \lstinline!Text! graphical primitive in \cref{text}.
 
 \begin{table}[H]
 \caption{Attributes that can use variable replacements.}
+\label{attributes-with-variable-replacements}
 \begin{center}
 \begin{tabular}{l l}
 \hline
@@ -227,35 +248,49 @@ in \cref{text}.
 \end{center}
 \end{table}
 
+In \lstinline!%{$\mathit{variable}$}!, text markup escape sequences don't apply inside the $\mathit{variable}$, which has the form of \lstinline[language=grammar]!component-reference! in the grammar (\cref{expressions1}).  This means that a complete \lstinline[language=grammar]!component-reference! shall be scanned before looking for the terminating closing brace.
+
+\begin{example}
+The variable replacement \lstinline!%{'%%'}! references the variable \lstinline!'%%'!, not the variable \lstinline!'%'!.
+\end{example}
+
+\begin{example}
+The variable replacement \lstinline!%{foo . '}bar{'}! makes a valid reference to the variable\linebreak[4] \lstinline!foo.'}bar{'!.
+\end{example}
+
 Note that expansion to the final value means that expansion is not restricted to
 parameters and constants, so that values to be shown in a caption can be
 determined during simulation.
 
-The percent character is encoded \lstinline!%%!.  Neither \lstinline!%class! nor
-\lstinline!%name! is supported in this context, as this information is expected
-to already be easily accessible (when applicable) in tool-specific ways. (Titles
-making use of \lstinline!%class! or \lstinline!%name! would then only lead to
-ugly duplication of this information.)
+\begin{nonnormative}
+By design, neither \lstinline!%class! nor \lstinline!%name! is supported in this context, as this information is expected to already be easily accessible (when applicable) in tool-specific ways.  (Titles making use of \lstinline!%class! or \lstinline!%name! would then only lead to ugly duplication of this information.)
+\end{nonnormative}
 
 \subsubsection{Text Markup in Captions}\label{text-markup-in-captions}
-In addition to variable replacements, a very restricted form of text markup is
-used for the \lstinline!caption!.
 
-Links take the form \lstinline!%[<text>](<link>)!, where the
-\lstinline![<text>]! part is optional. The \lstinline!<link>! can be in either
-of the following forms:
+In addition to variable replacements, a very restricted form of text markup is used for the \lstinline!caption!.  Note that the text markup escape sequences described in \cref{text-markup-escape-sequences} generally apply inside \lstinline!caption!, with one exception given below for links.
+
+Links take the form \lstinline!%[$\mathit{text}$]($\mathit{link}$)!, where the \lstinline![$\mathit{text}$]! part is optional.  Text markup escape sequences don't apply inside the $\mathit{link}$, which can be in either of the following forms:
 \begin{itemize}
-\item A URI, such as
-\lstinline!https://github.com/modelica/ModelicaSpecification! or
-\lstinline!modelica://Modelica.Blocks!.
-\item A \lstinline!variable:<id>!, where \lstinline!<id>! is a component
-reference such as \lstinline!inertia1.w!.
-\item A \lstinline!plot:<id>!, where \lstinline!<id>! is the identifier of a
-\lstinline!Plot! in the current \lstinline!Figure!.
+% Use very short Modelica URI combined with carefully chosen wording below to deal with difficult line breaking.
+\item A URI.  Well established schemes such as \lstinline[language={[nocomment]modelica}]!https://github.com/modelica/ModelicaSpecification! or \lstinline[language={[nocomment]modelica}]!modelica://Modelica!, as well as lesser known schemes may be used.  (A tool that has no special recognition of a scheme can try sending the URI to the operating system for interpretation.)
+\item A \lstinline!variable:$\mathit{id}$!, where $\mathit{id}$ is a component reference in the form of \lstinline[language=grammar]!component-reference! in the grammar, such as \lstinline!inertia1.w!.
+\item A \lstinline!plot:$\mathit{id}$!, where $\mathit{id}$ is the identifier of a \lstinline!Plot! in the current \lstinline!Figure!.
 \end{itemize}
 
-When \lstinline![<text>]! is omitted, a Modelica tool is free to derive a default based on
-the \lstinline!<link>!.
+When \lstinline![$\mathit{text}$]! is omitted, a Modelica tool is free to derive a default based on the $\mathit{link}$.
+
+\begin{nonnormative}
+Note that for the character `]' to appear in $\mathit{text}$, it needs to be encoded as the escape sequence \lstinline!%]!, or it would be interpreted as the terminating delimiter of the \lstinline![$\mathit{text}$]!.
+
+Similarly, the closing parenthesis `)' must be handled with care in $\mathit{link}$ in order to not be interpreted as the terminating delimiter of the \lstinline!($\mathit{link}$)!.
+\begin{itemize}
+\item For a URI, a closing parenthesis must be URL encoded in order to not be interpreted as the end of the \lstinline!($\mathit{link}$)!.  For example, the URL in \lstinline[language={[nocomment]modelica}]!%(http://example.org/(tryme))! is just \filename{http://example.org/(tryme}, and the entire link is followed by a stray closing parenthesis.  To make it work, one has to use URL encoding: \lstinline[language={[nocomment]modelica}]!%(http://example.org/%28tryme%29)! (using URL encoding of the opening parenthesis just for symmetry, and note that the \lstinline!%! of the percent-encoded sequences are not subject to text markup escape sequences).
+\item For a \lstinline!variable:!, no special treatment is needed, as the component reference syntax of the \lstinline!<id>! allows parentheses to appear without risk of misinterpretation inside a quoted identifier.  For example, \lstinline"%(variable:'try)me!')" has a parenthesis in \lstinline"'try)me!'" that must not be mistaken for the end of the \lstinline!($\mathit{link}$)!.
+% The following shortcoming is planned to be addressed by applying URI interpretation of the 'plot:' form.
+\item For a \lstinline!plot:!, there is currently no way to reference a plot with `)' in its \lstinline!identifier!.
+\end{itemize}
+\end{nonnormative}
 
 The styling of the link text, as well as the link action, is left for each Modelica
 tool to decide.
@@ -1169,6 +1204,7 @@ record OnMouseMoveYSetReal
   Real maxValue;
 end OnMouseMoveYSetReal;
 \end{lstlisting}
+
 \subsubsection{Edit input}\label{edit-input}
 
 The \lstinline!OnMouseDownEditInteger! interaction object presents an input field
