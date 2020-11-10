@@ -1,4 +1,3 @@
-
 \chapter{Annotations}\label{annotations}
 
 Annotations are intended for storing extra information about a model,
@@ -42,31 +41,29 @@ vendor-specific annotations.
 
 \section{Annotations for Documentation}\label{annotations-for-documentation}
 
-\begin{lstlisting}[language=grammar]
-documentation-annotation:
-   annotation "(" Documentation "(" "info" "=" STRING
-                               ["," "revisions" "=" STRING ] ")" ")"
-\end{lstlisting}
-The \lstinline!Documentation! annotation can contain the \lstinline!info! annotation
-giving a textual description, the \lstinline!revisions! annotation giving a list
-of revisions and other annotations defined by a tool.
-How the tool interprets the information in \lstinline!Documentation! is
-unspecified. If the string starts with the tag
-\lstinline!<html>! or \lstinline!<HTML>! the entire string is HTML encoded
-(and is assumed to end with \lstinline!</html>! or \lstinline!</HTML>! and shall
-be rendered as HTML even if the end-tags are missing),
-otherwise the entire string is rendered as is.
-The HTML encoded content may contain links. For external
-links see \cref{external-resources}. Links to Modelica classes may be defined with
-the HTML link command using scheme \lstinline!Modelica!
-(using its lower case form in the URI, see \cref{external-resources}), e.g.,
+The \lstinline!Documentation! annotation has the following contents, where the \lstinline!info! and \lstinline!revisions! annotations are described in \cref{annotation-info-revisions}, and the \lstinline!figures! annotation is described in \cref{annotations-for-figures}:
 \begin{lstlisting}[language=modelica]
-<a href="modelica://MultiBody.Tutorial">MultiBody.Tutorial</a>
+record Documentation
+  String info = "" "Description of the class";
+  String revisions = "" "Revision history";
+  Figure[:] figures = {}; "Simulation result figures";
+end Documentation;
 \end{lstlisting}
+
+How the tool interprets the information in \lstinline!Documentation! is unspecified.
+
+\subsection{Class Description and Revision History}\label{annotation-info-revisions}
+
+Inside the \lstinline!Documentation! annotation, the \lstinline!info! annotation gives a textual description of the class, and the \lstinline!revisions! annotation gives a revision history.
 
 \begin{nonnormative}
 The \lstinline!revisions! documentation may be omitted in printed documentation.
 \end{nonnormative}
+
+If the string starts with the tag \lstinline!<html>! or \lstinline!<HTML>! the entire string is HTML encoded (and is assumed to end with \lstinline!</html>! or \lstinline!</HTML>! and shall be rendered as HTML even if the end-tags are missing), otherwise the entire string is rendered as is.  The HTML encoded content may contain links.  For external links, see \cref{external-resources}.  Links to Modelica classes may be defined with the HTML link command using scheme \lstinline!Modelica! (using its lower case form in the URI, see \cref{external-resources}), e.g.,
+\begin{lstlisting}[language=modelica]
+<a href="modelica://MultiBody.Tutorial">MultiBody.Tutorial</a>
+\end{lstlisting}
 
 Together with scheme \lstinline!Modelica! the (URI) fragment specifiers
 \lstinline!#diagram!, \lstinline!#info!, \lstinline!#text!, \lstinline!#icon! may be used to reference different
@@ -76,25 +73,243 @@ Example:
 \begin{lstlisting}[language=modelica]
 <a href="modelica://MultiBody.Joints.Revolute#info">Revolute</a>
 \end{lstlisting}
-\begin{lstlisting}[language=grammar]
-preferred-view-annotation:
-   annotation "(" preferredView "=" ("info" | "diagram" | "text") ")"
+
+\subsection{Annotations for Figures}\label{annotations-for-figures}
+
+Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
+\begin{lstlisting}[language=modelica]
+record Figure
+  String title = "" "Title meant for display";
+  String identifier "Identifier meant for programmatic access";
+  String group = "" "Name of plot group";
+  Boolean preferred = false "Automatically display figure after simulation";
+  Plot[:] plots "Plots";
+  String caption "Figure caption";
+end Figure;
 \end{lstlisting}
 
-The \lstinline!preferredView! annotation defines the default view when selecting the
-class. \lstinline!info! means info layer, i.e., the documentation of the class,
-\lstinline!diagram! means diagram layer and \lstinline!text! means the Modelica text layer.
-\begin{lstlisting}[language=grammar]
-documentation-class-annotation:
-   annotation "(" DocumentationClass "=" true ")"
+A \lstinline!Figure! is a graphical container that can contain several
+\lstinline!plots! described by \lstinline!Plot! annotations:
+\begin{lstlisting}[language=modelica]
+record Plot
+  String title "Title meant for display";
+  String identifier "Identifier meant for programmatic access";
+  Curve[:] curves "Plot curves";
+  Axis x "X axis properties";
+  Axis y "Y axis properties";
+end Plot;
 \end{lstlisting}
 
-Only allowed as class annotation on any kind of class and implies that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.  If the annotation \lstinline!preferredView! is explicitly set for a class, it has precedence over a \lstinline!DocumentationClass! annotation.
+A \lstinline!Plot! can contain several \lstinline!curves!, see \cref{plot-curves}, that all share a common \lstinline!x! and \lstinline!y! axis with properties described in \cref{axis-properties}.
+
+Both \lstinline!Figure! and \lstinline!Plot! can have an optional title. When
+the \lstinline!Figure! \lstinline!title! is the empty string (the default), the
+tool must produce a non-empty title based on the figure content.  On the other
+hand, the \lstinline!Plot! \lstinline!title! has a tool-dependent default, but
+the default may be the empty string.  When the \lstinline!Plot! \lstinline!title! is the empty string, no
+title should be shown. The plot title is not to be confused with the plot
+\emph{label} which is never empty, see below. Variable replacements, as
+described in \cref{variable-replacements}, can be used in the
+\lstinline!title! of \lstinline!Figure! and \lstinline!Plot!.
+
+The \lstinline!identifier! in \lstinline!Figure! and \lstinline!Plot! is an optional \lstinline!String! identifier, and is intended to identify the
+\lstinline!Figure! and \lstinline!Plot! for programmatic access.  The \lstinline!figures! annotation is inherited in the sense that each class has
+a collection of figures comprised by the contents of the \lstinline!figures! annotation in the class itself, as well as the \lstinline!figures! annotations
+from any base classes.  A \lstinline!Figure! must be uniquely identified by its \lstinline!identifier! and a class having it in its collection.  This
+means that a \lstinline!Figure! \lstinline!identifier! must be unique among all \lstinline!Figure! annotations within the same \lstinline!figures!
+annotation as well as among all \lstinline!figures! annotations from inherited classes.  A \lstinline!Plot! \lstinline!identifier! on the other hand
+is only required to be unique among the \lstinline!plots! in the the same \lstinline!Figure! annotation.
 
 \begin{nonnormative}
-A tool may display such classes in special ways.  For example, the description texts of the classes might be displayed instead
-of the class names, and if no icon is defined, a special information default icon may be displayed in the package browser.
+For \lstinline!Figure!, this makes it possible to reference the plot from a
+tool-specific scripting environment. For \lstinline!Plot!, this makes it
+possible to reference the plot in the figure caption, which becomes useful when
+the \lstinline!Figure! contains more than one \lstinline!Plot!.
 \end{nonnormative}
+
+% henrikt-ma 2020-06: Once there is Modelica URI support for referring to a figure in the collection of a class, it will be easier to explain
+% the following statement...
+Even though a \lstinline!Figure! annotation can be shared through inheritance between classes in a class hierarchy, note that each simulated class provides
+its own data to be displayed in the figure.
+
+Every \lstinline!Plot! has an automatically generated \emph{label} which is
+required to be shown as soon as at least one \lstinline!Plot! in the
+\lstinline!Figure! has an \lstinline!identifier!.  A tool is free to choose both
+labeling scheme (such as \emph{a}, \emph{b}, \dots, or \emph{i}, \emph{ii}, \dots), placement in the plot,
+and styling in the plot itself as well as in other contexts.
+
+When a \lstinline!Figure! defines a non-empty \lstinline!group!, it is used to
+organize figures similar to how \lstinline!group! is used in the
+\lstinline!Dialog! annotation (see \cref{annotations-for-the-graphical-user-interface}).  However, leaving \lstinline!group! at
+the default of an empty string does not mean that a group will be created
+automatically, but that the figure resides outside of any group. The
+\lstinline!group! is both the key used for grouping, and the name of the group
+for display purposes.
+
+The \lstinline!preferred! attribute of \lstinline!Figure! indicates whether the figure should be given preference when automatically determining which figures to show,
+and a class may define any number of \lstinline!preferred! figures.  For example, a tool might choose to automatically show all preferred figures when the class is simulated.
+
+The \lstinline!caption! attribute of \lstinline!Figure! can use the restricted
+form of text markup described in \cref{text-markup-in-captions} as well as
+the variable replacements described in \cref{variable-replacements}.
+
+\subsubsection{Axis Properties}\label{axis-properties}
+
+Properties may be defined for each \lstinline!Plot! axis:
+\begin{lstlisting}[language=modelica]
+record Axis
+  Real min "Axis lower bound, in 'unit'";
+  Real max "Axis upper bound, in 'unit'";
+  String unit = "" "Unit of axis tick labels";
+  String label "Axis label";
+end Axis;
+\end{lstlisting}
+
+When an axis bound isn't provided, the tool computes one automatically.
+
+An empty \lstinline!unit! means that the axis is unitless, and each expression plotted against it may use its own unit determined by the tool.  The tool is responsible for conveying the information
+about choice of unit for the different variables, for instance by attaching this information to curve legends.
+
+The Modelica tool is responsible for showing that values at the axis tick marks are expressed in \lstinline!unit!, so the axis \lstinline!label! shall not contain this information.
+
+\begin{nonnormative}
+When \lstinline!unit! is empty, and axis bounds are to be determined automatically, a natural choice of unit could be the variable's \lstinline!displayUnit!.  When axis bounds are specified by the
+user, on the other hand, a tool may choose a unit for the variable such that the range of the variable values (expressed in the chosen unit) fit nicely with the range of the unitless axis.
+\end{nonnormative}
+
+If a tool does not recognize the \lstinline!unit!, it is recommended to issue a warning and treat the \lstinline!unit! as if it was empty, as well as ignore any setting for \lstinline!min! and \lstinline!max!.
+
+When an axis label isn't provided, the tool produces a default label.  Providing the empty string as axis label means that no label should be shown.  Variable replacements, as described in
+\cref{variable-replacements}, can be used in the \lstinline!label! of \lstinline!Axis!  The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis
+\lstinline!label! shall not contain the unit.
+
+\subsubsection{Plot Curves}\label{plot-curves}
+
+The actual data to plot is specified in the \lstinline!curves! of a \lstinline!Plot!:
+\begin{lstlisting}[language=modelica]
+record Curve
+  expression x = time "X coordinate values";
+  expression y "Y coordinate values";
+  String legend "Legend";
+end Curve;
+\end{lstlisting}
+
+The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be
+component references refering to a scalar variable or \lstinline!time!. It
+is an error if \lstinline!x! or \lstinline!y! does not designate a scalar variable.
+When the \lstinline!unit! of an \lstinline!Axis! is non-empty, it is an error if the unit of the corresponding \lstinline!Curve! expression (i.e., a variable's \lstinline!unit!,
+or second for \lstinline!time!) is incompatible with the axis unit.
+
+When \lstinline!legend! isn't provided, the tool produces a default based on
+\lstinline!x! and/or \lstinline!y!.  Providing the empty string as
+\lstinline!legend! means that the curve shall be omitted from the plot legend.
+Variable replacements, as described in \cref{variable-replacements}, can be
+used in the \lstinline!legend! of \lstinline!Curve!
+
+\subsubsection{Escape sequences}\label{text-markup-escape-sequences}
+
+In an attribute inside a figure where the variable replacements of \cref{variable-replacements} or the text markup of \cref{text-markup-in-captions} can be used, the following use of \firstuse{text markup escape sequences} applies.  These escape sequences are applied after the application of other markup, and is not applied at all inside some of the other markup, see details for the respective markup.
+
+The percent character `\%' shall be encoded \lstinline!%%!.  The following are all the recognized escape sequences:
+\begin{center}
+\begin{tabular}{c c l}
+\hline
+\tablehead{Sequence} & \tablehead{Encoded character} & \tablehead{Comment}\\
+\hline
+\hline
+\lstinline!%%! & `\%' & Only way to encode character. \\
+\lstinline!%]! & `]'  & Escape sequence only needed in link text. \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{nonnormative}
+With the percent character being encoded as \lstinline!%%!, the behavior of \lstinline!%! appearing in any other way than the escape sequences above, for variable replacement (\cref{variable-replacements}), or for link markup (\cref{text-markup-in-captions}) is undefined, and thus possible to define in the future without breaking backward compatibility.
+\end{nonnormative}
+
+\subsubsection{Variable Replacements}\label{variable-replacements}
+
+In the places listed in \cref{attributes-with-variable-replacements} where text for display is defined, the final value of a result variable can be embedded by refering to the variable as \lstinline!%{inertia1.w}!.  This is similar to the \lstinline!Text! graphical primitive in \cref{text}.
+
+\begin{table}[H]
+\caption{Attributes that can use variable replacements.}
+\label{attributes-with-variable-replacements}
+\begin{center}
+\begin{tabular}{l l}
+\hline
+\tablehead{Attribute} & \tablehead{Annotation}\\
+\hline
+\hline
+\lstinline!title! & \lstinline!Figure! and \lstinline!Plot! \\
+\lstinline!caption! & \lstinline!Figure! \\
+\lstinline!legend! & \lstinline!Curve! \\
+\lstinline!label! & \lstinline!Axis! \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+In \lstinline!%{$\mathit{variable}$}!, text markup escape sequences don't apply inside the $\mathit{variable}$, which has the form of \lstinline[language=grammar]!component-reference! in the grammar (\cref{expressions1}).  This means that a complete \lstinline[language=grammar]!component-reference! shall be scanned before looking for the terminating closing brace.
+
+\begin{example}
+The variable replacement \lstinline!%{'%%'}! references the variable \lstinline!'%%'!, not the variable \lstinline!'%'!.
+\end{example}
+
+\begin{example}
+The variable replacement \lstinline!%{foo . '}bar{'}! makes a valid reference to the variable\linebreak[4] \lstinline!foo.'}bar{'!.
+\end{example}
+
+Note that expansion to the final value means that expansion is not restricted to
+parameters and constants, so that values to be shown in a caption can be
+determined during simulation.
+
+\begin{nonnormative}
+By design, neither \lstinline!%class! nor \lstinline!%name! is supported in this context, as this information is expected to already be easily accessible (when applicable) in tool-specific ways.  (Titles making use of \lstinline!%class! or \lstinline!%name! would then only lead to ugly duplication of this information.)
+\end{nonnormative}
+
+\subsubsection{Text Markup in Captions}\label{text-markup-in-captions}
+
+In addition to variable replacements, a very restricted form of text markup is used for the \lstinline!caption!.  Note that the text markup escape sequences described in \cref{text-markup-escape-sequences} generally apply inside \lstinline!caption!, with one exception given below for links.
+
+Links take the form \lstinline!%[$\mathit{text}$]($\mathit{link}$)!, where the \lstinline![$\mathit{text}$]! part is optional.  Text markup escape sequences don't apply inside the $\mathit{link}$, which can be in either of the following forms:
+\begin{itemize}
+% Use very short Modelica URI combined with carefully chosen wording below to deal with difficult line breaking.
+\item A URI.  Well established schemes such as \lstinline[language={[nocomment]modelica}]!https://github.com/modelica/ModelicaSpecification! or \lstinline[language={[nocomment]modelica}]!modelica://Modelica!, as well as lesser known schemes may be used.  (A tool that has no special recognition of a scheme can try sending the URI to the operating system for interpretation.)
+\item A \lstinline!variable:$\mathit{id}$!, where $\mathit{id}$ is a component reference in the form of \lstinline[language=grammar]!component-reference! in the grammar, such as \lstinline!inertia1.w!.
+\item A \lstinline!plot:$\mathit{id}$!, where $\mathit{id}$ is the identifier of a \lstinline!Plot! in the current \lstinline!Figure!.
+\end{itemize}
+
+When \lstinline![$\mathit{text}$]! is omitted, a Modelica tool is free to derive a default based on the $\mathit{link}$.
+
+\begin{nonnormative}
+Note that for the character `]' to appear in $\mathit{text}$, it needs to be encoded as the escape sequence \lstinline!%]!, or it would be interpreted as the terminating delimiter of the \lstinline![$\mathit{text}$]!.
+
+Similarly, the closing parenthesis `)' must be handled with care in $\mathit{link}$ in order to not be interpreted as the terminating delimiter of the \lstinline!($\mathit{link}$)!.
+\begin{itemize}
+\item For a URI, a closing parenthesis must be URL encoded in order to not be interpreted as the end of the \lstinline!($\mathit{link}$)!.  For example, the URL in \lstinline[language={[nocomment]modelica}]!%(http://example.org/(tryme))! is just \filename{http://example.org/(tryme}, and the entire link is followed by a stray closing parenthesis.  To make it work, one has to use URL encoding: \lstinline[language={[nocomment]modelica}]!%(http://example.org/%28tryme%29)! (using URL encoding of the opening parenthesis just for symmetry, and note that the \lstinline!%! of the percent-encoded sequences are not subject to text markup escape sequences).
+\item For a \lstinline!variable:!, no special treatment is needed, as the component reference syntax of the \lstinline!<id>! allows parentheses to appear without risk of misinterpretation inside a quoted identifier.  For example, \lstinline"%(variable:'try)me!')" has a parenthesis in \lstinline"'try)me!'" that must not be mistaken for the end of the \lstinline!($\mathit{link}$)!.
+% The following shortcoming is planned to be addressed by applying URI interpretation of the 'plot:' form.
+\item For a \lstinline!plot:!, there is currently no way to reference a plot with `)' in its \lstinline!identifier!.
+\end{itemize}
+\end{nonnormative}
+
+The styling of the link text, as well as the link action, is left for each Modelica
+tool to decide.
+
+\begin{nonnormative}
+For example, \lstinline!%(inertia1.w)! could be displayed as the text
+\lstinline!inertia1.w! formatted with upright monospaced font, and have a pop-up
+menu attached with menu items for plotting the variable, setting its start
+value, or investigating the equation system from which it is solved.  On the
+other hand, \lstinline!%[angular velocity](inertia1.w)! could be formatted in
+the same style as the surrounding text, except some non-intrusive visual clue
+about it being linked.
+\end{nonnormative}
+
+A sequence of one or more newlines (encoded either literally or using the \lstinline!\n!
+escape sequence) means a paragraph break.  (A line break within a paragraph is
+not supported, and any paragraph break before the first paragraph or after the last
+paragraph has no impact.)
 
 \section{Annotations for Code Generation}\label{annotations-for-code-generation}
 
@@ -965,10 +1180,33 @@ record OnMouseDownEditString
   String variable "Name of variable to change";
 end OnMouseDownEditString;
 \end{lstlisting}
-\section{Annotations for the Graphical User Interface}\label{annotations-for-the-graphical-user-interface}
 
-A class may have the following annotations to define properties of the
-graphical user interface:
+\section{Annotations for the Graphical User Interface}\label{annotations-for-the-graphical-user-interface}
+This section describes the annotations that are used to define properties of the
+graphical user interface.
+
+\begin{lstlisting}[language=grammar]
+  preferred-view-annotation:
+     annotation "(" preferredView "=" ("info" | "diagram" | "text") ")"
+\end{lstlisting}
+
+The \lstinline!preferredView! annotation defines the default view when selecting the
+class. \lstinline!info! means info layer, i.e., the documentation of the class,
+\lstinline!diagram! means diagram layer and \lstinline!text! means the Modelica text layer.
+
+\begin{lstlisting}[language=grammar]
+  documentation-class-annotation:
+     annotation "(" DocumentationClass "=" true ")"
+\end{lstlisting}
+
+Only allowed as class annotation on any kind of class and implies that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
+If the annotation \lstinline!preferredView! is explicitly set for a class, it has precedence over a \lstinline!DocumentationClass! annotation.
+
+\begin{nonnormative}
+A tool may display such classes in special ways.  For example, the description texts of the classes might be displayed instead
+of the class names, and if no icon is defined, a special information default icon may be displayed in the package browser.
+\end{nonnormative}
+
 \begin{lstlisting}[language=modelica]
  annotation(defaultComponentName = "name")
 \end{lstlisting}
@@ -1856,7 +2094,7 @@ The items of the \lstinline!Access! enumeration have the following meanings:
 \end{enumerate}
 
 The \lstinline!access! annotation holds for the respective class and all classes
-that are hierarchically on a lower level, unless overriden by a
+that are hierarchically on a lower level, unless overridden by a
 \lstinline!Protection! annotation with \lstinline!access!.
 Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate!
 has no effect.

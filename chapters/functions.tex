@@ -348,7 +348,8 @@ end evaluateLinear;
 impure function receiveRealSignal // impure function
   input HardwareDriverID id;
   output Real y;
-  external "C" y = receiveSignal(id);
+external "C"
+  y = receiveSignal(id);
 end receiveRealSignal;
 \end{lstlisting}
 Examples of allowed optimizations of pure functions:
@@ -1638,8 +1639,9 @@ The format of an external function declaration is as follows.
 function IDENT description-string
   { component-clause ";" }
   [ protected { component-clause ";" } ]
-  external [ language-specification ] [
-  external-function-call ] [annotation ] ";"
+external [ language-specification ]
+  [ external-function-call ]
+    [annotation ] ";"
   [ annotation ";" ]
 end IDENT;
 \end{lstlisting}
@@ -1670,13 +1672,14 @@ package Modelica
     function sin
       input Real x;
       output Real y;
-      external "builtin" y=sin(x);
+    external "builtin"
+      y = sin(x);
     end sin;
   end Math;
 end Modelica;
 
 model UserModel
-  parameter Real p=Modelica.Math.sin(2);
+  parameter Real p = Modelica.Math.sin(2);
 end UserModel;
 \end{lstlisting}
 \end{example}
@@ -1851,7 +1854,7 @@ If the external function is written in FORTRAN~77, i.e.:
 function foo
   input Real a[:,:,:];
   output Real x;
-  external "FORTRAN 77";
+external "FORTRAN 77";
 end foo;
 \end{lstlisting}
 the default assumptions correspond to a FORTRAN~77 function
@@ -1883,7 +1886,8 @@ function foo
   input Integer i;
   output Real u1[size(y,1)];
   output Integer u2[size(y,2)];
-  external "FORTRAN 77" myfoo(x, y, size(x,1), size(y,2), u1, i, u2);
+external "FORTRAN 77"
+  myfoo(x, y, size(x,1), size(y,2), u1, i, u2);
 end foo;
 \end{lstlisting}
 The corresponding FORTRAN~77 subroutine would be declared as follows:
@@ -1912,7 +1916,7 @@ end fie;
 \end{lstlisting}
 This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
-double fie(double *, size\_t, size\_t);
+double fie(double *, size_t, size_t);
 \end{lstlisting}
 \end{example}
 
@@ -2004,8 +2008,9 @@ of the function).
 function foo
   input Real x;
   input Real y;
-  output Real z=x;
-  external "FORTRAN 77" myfoo(x,y,z);
+  output Real z = x;
+external "FORTRAN 77"
+  myfoo(x, y, z);
 end foo;
 \end{lstlisting}
 The following Modelica function:
@@ -2014,20 +2019,20 @@ function f
   input Real a;
   output Real b;
 algorithm
-  b:=foo(a,a);
-  b:=foo(b,2*b);
+  b := foo(a, a);
+  b := foo(b, 2 * b);
 end f;
 \end{lstlisting}
 can on most systems be transformed into the following C function:
 \begin{lstlisting}[language=C]
 double f(double a) {
-  extern void myfoo_(double*,double*,double*);
-  double b,temp1,temp2;
+  extern void myfoo_(double*, double*, double*);
+  double b, temp1, temp2;
 
-  myfoo_(&a,&a,&b);
-  temp1=2*b;
-  temp2=b;
-  myfoo_(&b,&temp1,&temp2);
+  myfoo_(&a, &a, &b);
+  temp1 = 2 * b;
+  temp2 = b;
+  myfoo_(&b, &temp1, &temp2);
 
   return temp2;
 }
@@ -2045,10 +2050,11 @@ would have to change the interface function \lstinline!foo! to:
 \begin{lstlisting}[language=modelica]
 function foo
   input Real x;
-  protected Real xtemp=x; // Temporary used because myfoo changes its input
+  protected Real xtemp = x; // Temporary used because myfoo changes its input
   public input Real y;
   output Real z;
-  external "FORTRAN 77" myfoo(xtemp,y,z);
+external "FORTRAN 77"
+  myfoo(xtemp, y, z);
 end foo;
 \end{lstlisting}
 
@@ -2059,8 +2065,8 @@ of X3J3/90.4). For the few (if any) FORTRAN~77 compilers that strictly
 follow the standard and are unable to handle aliasing between input
 variables the tool must transform the first call of \lstinline!foo! into:
 \begin{lstlisting}[language=C]
-temp1=a; /* Temporary to avoid aliasing */
-myfoo_(&a,&temp1,&b);
+temp1 = a; /* Temporary to avoid aliasing */
+myfoo_(&a, &temp1, &b);
 \end{lstlisting}
 
 The use of the function \lstinline!foo! in Modelica is uninfluenced by these considerations.
@@ -2141,37 +2147,40 @@ Use of external functions and of object libraries:
 \begin{lstlisting}[language=modelica]
 package ExternalFunctions
   model Example
-    Real x(start=1.0),y(start=2.0);
+    Real x(start = 1.0), y(start = 2.0);
   equation
-    der(x)=-ExternalFunc1(x);
-    der(y)=-ExternalFunc2(y);
+    der(x) = -ExternalFunc1(x);
+    der(y) = -ExternalFunc2(y);
   end Example;
 
   model OtherExample
-    Real x(start=1.0);
+    Real x(start = 1.0);
   equation
-    der(x)=-ExternalFunc3(x);
+    der(x) = -ExternalFunc3(x);
   end OtherExample;
 
   function ExternalFunc1
     input Real x;
     output Real y;
-    external "C"
-    y=ExternalFunc1_ext(x) annotation(Library="ExternalLib1",
-      Include="#include \"ExternalFunc1.h\"");
+  external "C"
+    y = ExternalFunc1_ext(x)
+      annotation(Library = "ExternalLib1",
+                 Include = "#include \"ExternalFunc1.h\"");
   end ExternalFunc1;
 
   function ExternalFunc2
     input Real x;
     output Real y;
-    external "C" annotation(Library="ExternalLib2",
-      Include="#include \"ExternalFunc2.h\"");
+  external "C"
+      annotation(Library = "ExternalLib2",
+                 Include = "#include \"ExternalFunc2.h\"");
   end ExternalFunc2;
 
   function ExternalFunc3
     input Real x;
     output Real y;
-    external "C" annotation(Include="#include \"ExternalFunc3.c\"");
+  external "C"
+      annotation(Include = "#include \"ExternalFunc3.c\"");
   end ExternalFunc3;
 end ExternalFunctions;
 
@@ -2282,7 +2291,8 @@ function foo
   input Integer y;
   output Real u1;
   output Integer u2;
-  external "C" myfoo(x, u1, y, u2);
+external "C"
+  myfoo(x, u1, y, u2);
 end foo;
 \end{lstlisting}
 This corresponds to the following C prototype:
@@ -2311,7 +2321,8 @@ function foo
   input Integer y;
   output Real funcvalue;
   output Integer out1;
-  external "C" funcvalue = myfoo(x, y, out1);
+external "C"
+  funcvalue = myfoo(x, y, out1);
 end foo;
 \end{lstlisting}
 This corresponds to the following C prototype:
@@ -2541,12 +2552,14 @@ class MyTable
     input String fileName = "";
     input String tableName = "";
     output MyTable table;
-    external "C" table = initMyTable(fileName, tableName);
+  external "C"
+    table = initMyTable(fileName, tableName);
   end constructor;
 
   function destructor "Release storage of table"
     input MyTable table;
-    external "C" closeMyTable(table);
+  external "C"
+    closeMyTable(table);
   end destructor;
 end MyTable;
 \end{lstlisting}
@@ -2567,7 +2580,8 @@ function interpolateMyTable "Interpolate in table"
   input MyTable table;
   input Real u;
   output Real y;
-  external "C" y = interpolateMyTable(table, u);
+external "C"
+  y = interpolateMyTable(table, u);
 end interpolateTable;
 \end{lstlisting}
 The external C functions may be defined in the following way:

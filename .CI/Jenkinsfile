@@ -30,7 +30,7 @@ pipeline {
       sh 'mkdir -p /tmp/jenkins'
       sh 'latexmk -pdf MLS.tex'
       sh 'latexml --path=media MLS.tex --dest MLS.xml'
-      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/MLS.css --css=css/LaTeXML-navbar-left.css --dest MLS.html'
+      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/LaTeXML-navbar-left.css --dest MLS.html'
       sh 'ln -s preface.html Chx1.html'
       sh 'ln -s lexical-structure.html Ch2.html'
       sh 'ln -s operators-and-expressions.html Ch3.html'
@@ -58,10 +58,10 @@ pipeline {
       sh 'ln -s modelica-revision-history.html A5.html'
       sh 'ln -s literature.html A6.html'
       sh script: '! (find . -type l -xtype l | egrep \'.*\')', label: 'Verify symbolic links work'
-      sh 'tar czf MLS.tar.gz *.html *.css media css/'
+      sh 'tar czf MLS.tar.gz *.html *.css *.js media/ css/'
       archiveArtifacts artifacts: 'MLS.tar.gz', fingerprint: true
       archiveArtifacts artifacts: 'MLS.pdf', fingerprint: true
-      stash name: 'MLS', includes: '*.html,*.css,MLS.pdf,media/**,css/**,MLS.tar.gz'
+      stash name: 'MLS', includes: '*.html,*.css,*.js,MLS.pdf,media/**,css/**,MLS.tar.gz'
     }
   }
   stage('upload') {
@@ -85,7 +85,7 @@ pipeline {
     steps {
       unstash name: 'MLS'
       sh "test ! -z ${env.GIT_BRANCH}"
-      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(remoteDirectory: "${env.GIT_BRANCH}", sourceFiles: '*.html,*.css,MLS.pdf,media/**,css/**')])])
+      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(remoteDirectory: "${env.GIT_BRANCH}", sourceFiles: '*.html,*.css,*.js,MLS.pdf,media/**,css/**')])])
     }
   }
   stage('index') {
