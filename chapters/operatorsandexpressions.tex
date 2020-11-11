@@ -850,6 +850,12 @@ protected
   Real x0;
   Integer m;
 algorithm
+  /* The notation
+   *   x <and then> y
+   * is used below as a shorthand for
+   *   if x then y else false
+   * also known as "short-circuit evaluation of x and y".
+   */
   if positiveVelocity then
     out1 := interpolate(points, values, 1-(x-x0));
     out0 := values[1]; // similar to in0 but avoiding algebraic loop
@@ -860,14 +866,14 @@ algorithm
   when <acceptedStep> then
     if x>x0 then
       m := size(points, 1);
-      while (if m>0 then points[m]+(x-x0)>=1 else false) then
+      while m > 0 <and then> points[m] + (x - x0) >= 1 loop
         m := m-1;
       end while;
       values := cat(1, {in0}, values[1:m], {interpolate(points, values,1-(x-x0))});
       points := cat(1, {0}, points[1:m] .+ (x-x0), {1});
     elseif x<x0 then
       m := 1;
-      while (if m < size(points, 1) then points[m] + (x - x0) <= 0 else false) then
+      while m < size(points, 1) <and then> points[m] + (x - x0) <= 0 loop
         m := m+1;
       end while;
       values := cat(1, {interpolate(points, values, 0 - (x - x0))}, values[m:end], {in1});
