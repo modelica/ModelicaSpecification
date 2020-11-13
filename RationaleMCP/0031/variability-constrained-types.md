@@ -14,7 +14,7 @@ model M
     i = 1 / r;
   end Resistor;
 
-  parameter Real r1
+  parameter Real r1;
   Resistor comp1(r = r1);
   Resistor comp2;
   Real i1 = comp1.i;
@@ -29,7 +29,7 @@ record 'M.Resistor' /* Variability-constrained type */
 end 'M.Resistor';
 
 model 'M'
-  parameter Real 'r1'
+  parameter Real 'r1';
   'M.Resistor' 'comp1'('r' = 'r1');
   'M.Resistor' 'comp2';
   Real 'i1' = 'comp1'.'i';
