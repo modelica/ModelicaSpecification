@@ -50,7 +50,7 @@ To start with each occurrence of `'comp1'` (which has variability-constrained ty
 An easy example to start with is a record that is only meant to be used for parameters (such records can be found, for example, in `Modelica.Electrical.Batteries.ParameterRecords`):
 ```
 model M
-  model Parameters
+  record Parameters
     parameter Real x;
     parameter Real y;
   end Parameters;
@@ -65,8 +65,8 @@ end M;
 In this case, there seems to be no need to preserve the variability-constraints in the Flat Modelica type:
 ```
 record 'M.Parameters'
-    Real 'x';
-    Real 'y';
+  Real 'x';
+  Real 'y';
 end 'M.Parameters';
 
 model 'M'
