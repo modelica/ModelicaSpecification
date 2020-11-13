@@ -29,7 +29,7 @@ record 'M.Resistor' /* Variability-constrained type */
 end 'M.Resistor';
 
 model 'M'
-  parameter Real 'r1';
+  parameter Real 'r1'; /* Parameter declared with variability-free type Real. */
   'M.Resistor' 'comp1'('r' = 'r1');
   'M.Resistor' 'comp2';
   Real 'i1' = 'comp1'.'i';
