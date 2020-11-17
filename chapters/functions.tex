@@ -82,15 +82,13 @@ end !\emph{\textless{}functionname\textgreater{}}!;
 
 \subsection{Function return-statements}\label{function-return-statements}
 
-The return-statement terminates the current function call, see \cref{function-call}.
-It can only be used in an algorithm section of a function. It has
-the following form:
+The return-statement terminates the current function call, see \cref{function-call}.  It can only be used in an algorithm section of a function.  It has the following form:
 \begin{lstlisting}[language=modelica]
 return;
 \end{lstlisting}
 
 \begin{example}
-(Note that this could alternatively use break:)
+(Note that this could alternatively use \lstinline!break!:)
 \begin{lstlisting}[language=modelica]
 function findValue "Returns position of val or 0 if not found"
   input Integer x[:];
@@ -115,7 +113,7 @@ It is allowed for a function to inherit and/or modify another function
 following the usual rules for inheritance of classes (\cref{inheritance-modification-and-redeclaration}).
 
 \begin{nonnormative}
-For example, it is possible to modify and extend a function class to add default values for input variables.
+For example, it is possible to modify and extend a \lstinline!function! class to add default values for input variables.
 \end{nonnormative}
 
 \section{Function as a Specialized Class}\label{function-as-a-specialized-class}
@@ -166,15 +164,7 @@ Modelica \lstinline!class!:
   \begin{nonnormative}
   It is a quality of implementation how much analysis a tool performs in order to determine if the output variables are computed.
   \end{nonnormative}
-  A function \emph{cannot contain} calls to the
-  Modelica \emph{built-in operators} \lstinline!der!, \lstinline!initial!,
-	\lstinline!terminal!, \lstinline!sample!,
-  \lstinline!pre!, \lstinline!edge!, \lstinline!change!,
-	\lstinline!reinit!, \lstinline!delay!, \lstinline!cardinality!,
-	\lstinline!inStream!, \lstinline!actualStream!,
-  to the operators of the built-in package \lstinline!Connections!, to the operators
-  defined in \cref{synchronous-language-elements} and \cref{state-machines}, and is not allowed to contain
-  when-statements.
+  A function \emph{cannot contain} calls to the Modelica \emph{built-in operators} \lstinline!der!, \lstinline!initial!, \lstinline!terminal!, \lstinline!sample!, \lstinline!pre!, \lstinline!edge!, \lstinline!change!, \lstinline!reinit!, \lstinline!delay!, \lstinline!cardinality!, \lstinline!inStream!, \lstinline!actualStream!, to the operators of the built-in package \lstinline!Connections!, to the operators defined in \cref{synchronous-language-elements} and \cref{state-machines}, and is not allowed to contain when-statements.
 \item
   The dimension \emph{sizes} not declared with (:) of each array result
   or array local variable (i.e., a non-input components) of a
@@ -201,8 +191,7 @@ Modelica \lstinline!class!:
   \item
     Instances of functions have a special meaning, see \cref{functional-input-arguments-to-functions}.
   \item
-    The lookup of the function class to be called is extended, see
-    \cref{composite-name-lookup}.
+    The lookup of the \lstinline!function! class to be called is extended, see \cref{composite-name-lookup}.
   \end{itemize}
 \item
   A function can be \emph{recursive}.
@@ -222,7 +211,7 @@ Modelica \lstinline!class!:
   A function may have an external function interface specifier as its
   body.
 \item
-  A function may have a return statement in its algorithm section body.
+  A function may have a \lstinline!return! statement in its algorithm section body.
 \item
   A function allows dimension sizes declared with (:) to be resized for
   non-input array variables, see \cref{flexible-array-sizes-and-resizing-of-arrays-in-functions}.
@@ -255,15 +244,12 @@ functions, and possible for compilers to optimize.
 The declaration of functions follow these rules:
 \begin{itemize}
 \item
-  Functions defined in Modelica (non-external) are \emph{normally}
-  assumed to be pure (the exception is the deprecated case below), if
-  they are impure they shall be marked with the impure keyword. They can
-  be explicitly marked as pure.
+  Functions defined in Modelica (non-external) are \emph{normally} assumed to be pure (the exception is the deprecated case below), if they are impure they shall be marked with the \lstinline!impure! keyword.  They can be explicitly marked as \lstinline!pure!.
   \begin{nonnormative}
-  However, since functions as default are pure it is not recommended to explicitly declare them as pure.
+  However, since functions as default are pure it is not recommended to explicitly declare them as \lstinline!pure!.
   \end{nonnormative}
 \item
-  External functions must be explicitly declared with pure or impure.
+  External functions must be explicitly declared with \lstinline!pure! or \lstinline!impure!.
 \item
   A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be
   impure, but without any restriction on calling them.  Except for the function \lstinline!Modelica.Utilities.Streams.print!, diagnostics must be given if called in a simulation model.
@@ -381,15 +367,19 @@ of that matrix.  A tool may also skip the possible error for \lstinline!asin(w)!
 
 Examples of restrictions on optimizing pure functions:
 \begin{lstlisting}[language=modelica]
-  Real x=if noEvent(abs(x))<1 then asin(x)  else 0; // Cannot move asin(x) out of then
+  Real x =
+    if noEvent(abs(x)) < 1 then
+      asin(x) // Cannot move asin(x) out of if-branch.
+    else
+      0;
 algorithm
   assertCheck(p, T); // Must call function
 algorithm
   if b then
-    y:=2*someOtherFunction(x);
+    y := 2 * someOtherFunction(x);
   end if;
-  y:=y+asin(x);
-  y:=y+someOtherFunction(x);
+  y := y + asin(x);
+  y := y + someOtherFunction(x);
   // Cannot evaluate someOtherFunction(x) before asin(x) - unless b is true
   // The reason is that asin(x) may fail and someOtherFunction may hang,
   // and it might be possible to recover from this error.
@@ -831,29 +821,19 @@ end collectPositive;
 
 \subsection{Scalar Functions Applied to Array Arguments}\label{scalar-functions-applied-to-array-arguments}
 
-Functions with one scalar return value can be applied to arrays
-element-wise, e.g.\ if \lstinline!A! is a vector of reals, then \lstinline!sin(A)! is a vector
-where each element is the result of applying the function \lstinline!sin! to the
-corresponding element in \lstinline!A!. Only function classes that are transitively
-non-replaceable (\cref{transitively-non-replaceable} and \cref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}) may be called vectorized.
+Functions with one scalar return value can be applied to arrays element-wise, e.g.\ if \lstinline!A! is a vector of reals, then \lstinline!sin(A)! is a vector where each element is the result of applying the function \lstinline!sin! to the corresponding element in \lstinline!A!.  Only \lstinline!function! classes that are transitively non-replaceable (\cref{transitively-non-replaceable} and \cref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}) may be called vectorized.
 
-Consider the expression \lstinline!f(arg1,...,argn)!, an application of the function
-\lstinline!f! to the arguments \lstinline!arg1,..., argn! is defined.
-
-For each passed argument, the type of the argument is checked against
-the type of the corresponding formal parameter of the function.
-
+Consider the expression \lstinline!f(arg1, $\ldots$, argn)!, an application of the function \lstinline!f! to the arguments \lstinline!arg1!, \ldots, \lstinline!argn!.
+Potential vectorization of this call is defined as follows.
+For each passed argument, the type of the argument is checked against the type of the corresponding formal parameter of the function:
 \begin{enumerate}
-\item
+\item\label{argument-type-check-match}
   If the types match, nothing is done.
 \item
   If the types do not match, and a type conversion can be applied, it is
-  applied. Continue with step 1.
+  applied. Continue with step~\ref{argument-type-check-match}.
 \item
-  If the types do not match, and no type conversion is applicable, the
-  passed argument type is checked to see if it is an n-dimensional array
-  of the formal parameter type. If it is not, the function call is
-  invalid. If it is, we call this a foreach argument.
+  If the types do not match, and no type conversion is applicable, the passed argument type is checked to see if it is an $n$-dimensional array of the formal parameter type.  If it is not, the function call is invalid.  If it is, we call this a \emph{foreach argument}.
 \item
   For all foreach arguments, the number and sizes of dimensions must
   match. If they do not match, the function call is invalid.
@@ -862,16 +842,13 @@ the type of the corresponding formal parameter of the function.
   fashion, and the result has the type specified by the function
   definition.
 \item
-  The result of the function call expression is an n-dimensional array
-  with the same dimension sizes as the foreach arguments. Each element
-  ei,..,j is the result of applying f to arguments constructed from the
-  original arguments in the following way:
+  The result of the function call expression is an $n$-dimensional array \lstinline!e! with the same dimension sizes as the foreach arguments.
+  Each element \lstinline!e[$i$, $\ldots$, $j$]! is the result of applying \lstinline!f! to arguments constructed from the original arguments in the following way:
 \begin{itemize}
 \item
   If the argument is not a foreach argument, it is used as-is.
 \item
-  If the argument is a foreach argument, the element at index
-  \lstinline![i, $\ldots$, j]! is used.
+  If the argument is a foreach argument, the element at index \lstinline![$i$, $\ldots$, $j$]! is used.
 \end{itemize}
 \end{enumerate}
 
@@ -881,8 +858,8 @@ size, and they are traversed in parallel.
 \begin{example}
 \begin{lstlisting}[language=modelica]
 sin({a, b, c}) = {sin(a), sin(b), sin(c)} // argument is a vector
-sin([a,b,c]) = [sin(a),sin(b),sin(c)] // argument may be a matrix
-atan({a,b,c},{d,e,f}) = {atan(a,d), atan(b,e), atan(c,f)}
+sin([a, b, c]) = [sin(a), sin(b), sin(c)] // argument may be a matrix
+atan({a, b, c}, {d, e, f}) = {atan(a, d), atan(b, e), atan(c, f)}
 \end{lstlisting}
 This works even if the function is declared to take an array as
 one of its arguments. If \lstinline!pval! is defined as a function that takes
@@ -961,7 +938,7 @@ referring to declarations outside of the scope of the record to their
 fully qualified names.
 
 \begin{nonnormative}
-The partial flattening is performed in order to remove potentially conflicting import statements in the record constructor function due to flattening the inheritance tree.
+The partial flattening is performed in order to remove potentially conflicting import-clauses in the record constructor function due to flattening the inheritance tree.
 \end{nonnormative}
 
 All record elements (i.e., components and local class
@@ -1218,25 +1195,7 @@ function definition, see \cref{partial-derivatives-of-functions}.
 
 \subsection{Using the Derivative Annotation}\label{using-the-derivative-annotation}
 
-A function declaration can have an annotation \lstinline!derivative! specifying the
-derivative function or preferably, for a function written in Modelica,
-use the smoothOrder annotation to indicate that the tool can construct
-the derivative function automatically, \cref{annotations-for-code-generation}. The derivative
-annotation can influence simulation time and accuracy and can be applied
-to both functions written in Modelica and to external functions. A
-derivative annotation can state that it is only valid under certain
-restrictions on the input arguments. These restrictions are defined
-using the following optional attributes: \lstinline!order! (only a restriction if
-\lstinline!order>1!, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and
-\lstinline!zeroDerivative!. The given derivative-function can only be used to
-compute the derivative of a function call if these restrictions are
-satisfied. There may be multiple restrictions on the derivative, in
-which case they must all be satisfied. The restrictions also imply that
-some derivatives of some inputs are excluded from the call of the
-derivative (since they are not necessary). A function may supply
-multiple derivative functions subject to different restrictions, the
-first one that can be used (i.e.\ satisfying the restrictions) will be
-used for each call.
+A function declaration can have an annotation \lstinline!derivative! specifying the derivative function or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically, \cref{annotations-for-code-generation}.  The \lstinline!derivative! annotation can influence simulation time and accuracy and can be applied to both functions written in Modelica and to external functions.  A \lstinline!derivative! annotation can state that it is only valid under certain restrictions on the input arguments.  These restrictions are defined using the following optional attributes: \lstinline!order! (only a restriction if \lstinline!order>1!, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and \lstinline!zeroDerivative!.  The given derivative-function can only be used to compute the derivative of a function call if these restrictions are satisfied.  There may be multiple restrictions on the derivative, in which case they must all be satisfied. The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).  A function may supply multiple derivative functions subject to different restrictions, the first one that can be used (i.e.\ satisfying the restrictions) will be used for each call.
 
 \begin{nonnormative}
 This means that the most restrictive derivatives should be written first.
@@ -1342,14 +1301,7 @@ the equation
 \end{align*}
 \end{example}
 
-An input or output to the function may be any simple type (Real,
-Boolean, Integer, String and enumeration types) or a record. For a
-record containing Reals the corresponding derivative uses a derivative
-record, that only contain the real-predefined types and sub-records
-containing reals (handled recursively) from the original record. When
-using smoothOrder, then the derivative record is automatically
-constructed. The function must have at least one input containing reals.
-The output list of the derivative function shall not be empty.
+An input or output to the function may be any simple type (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types) or a record.  For a record containing Reals the corresponding derivative uses a derivative record, that only contain the real-predefined types and sub-records containing reals (handled recursively) from the original record.  When using \lstinline!smoothOrder!, then the derivative record is automatically constructed.  The function must have at least one input containing reals.  The output list of the derivative function shall not be empty.
 
 \begin{example}
 Here is one example use case with records mixing \lstinline!Real! and
@@ -1414,7 +1366,7 @@ DensityDerivative d_rho2=der (rho2);
 
 \begin{itemize}
 \item
-  \lstinline!zeroDerivative=inputVar1 {, zeroDerivative=inputVar2 }!
+  \lstinline[language=grammar]!zeroDerivative = inputVar1 { , zeroDerivative = inputVar2 }!
 \end{itemize}
 
 The derivative function is only valid if \lstinline!inputVar1! (and \lstinline!inputVar2! etc.)
@@ -1487,7 +1439,7 @@ end f_general_der;
 
 \begin{itemize}
 \item
-  \lstinline!noDerivative=inputVar1!
+  \lstinline!noDerivative = inputVar1!
 \end{itemize}
 
 The derivative of inputVar1 is excluded from the argument list of the
@@ -1497,8 +1449,7 @@ always straightforward to verify them). In many cases even the
 undifferentiated function will only behave correctly under these
 assumptions.
 
-The inputs excluded using zeroDerivative or noDerivative may be of any
-type (including types not containing reals).
+The inputs excluded using \lstinline!zeroDerivative! or \lstinline!noDerivative! may be of any type (including types not containing reals).
 
 \begin{nonnormative}
 Assume that function \lstinline!fg! is defined as a composition \lstinline!f(x, g(x))!.
@@ -1518,7 +1469,7 @@ function f
   output Real z;
 algorithm
   ...
-  annotation(derivative(noDerivative=y) = f_der);
+  annotation(derivative(noDerivative = y) = f_der);
 end f;
 
 function f_der
@@ -1540,35 +1491,27 @@ A class defined as:
 \begin{lstlisting}[language=grammar]
 IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
 \end{lstlisting}
-is the partial derivative of a function, and may only be used as
-declarations of functions.
+is the partial derivative of a function, and may only be used as declarations of functions.
 
-The semantics is that a function (and only a function) can be
-specified in this form, defining that it is the partial derivative of
-the function to the right of the equal sign (looked up in the same way
-as a short class definition, and the looked up name must be a function),
-and partially differentiated with respect to each \lstinline!IDENT! in order
-(starting from the first one). The \lstinline!IDENT! must be Real inputs to the
-function.
+The semantics is that a function (and only a function) can be specified in this form, defining that it is the partial derivative of the function to the right of the equal sign (looked up in the same way as a short class definition, and the looked up name must be a function), and partially differentiated with respect to each \lstinline!IDENT! in order (starting from the first one).  The \lstinline!IDENT! must be \lstinline!Real! inputs to the function.
 
-The comment allows a user to comment the function (in the info-layer and
-as one-line description, and as icon).
+The comment allows a user to comment the function (in the info-layer and as one-line description, and as icon).
 
 \begin{example}
 The specific enthalpy can be computed from a Gibbs-function as follows:
 \begin{lstlisting}[language=modelica]
 function Gibbs
-  input Real p,T;
+  input Real p, T;
   output Real g;
 algorithm
   ...
 end Gibbs;
-function Gibbs_T=der(Gibbs, T);
+function Gibbs_T = der(Gibbs, T);
 function specificEnthalpy
-  input Real p,T;
+  input Real p, T;
   output Real h;
 algorithm
-  h:=Gibbs(p,T)-T*Gibbs_T(p,T);
+  h := Gibbs(p, T) - T * Gibbs_T(p, T);
 end specificEnthalpy;
 \end{lstlisting}
 \end{example}
@@ -1593,11 +1536,7 @@ algorithm
 end $f_1$;
 \end{lstlisting}
 
-The meaning is that function $f_2$ is one inverse to
-function $f_1$ where the previous output \lstinline!y! is now an
-input and the previous input $u_k$ is now an output. More
-than one inverse can be defined within the same inverse annotation.
-Several inverses are separated by commas.
+The meaning is that function $f_2$ is one inverse to function $f_1$ where the previous output \lstinline!y! is now an input and the previous input $u_k$ is now an output.  More than one inverse can be defined within the same \lstinline!inverse! annotation.  Several inverses are separated by commas.
 
 \begin{nonnormative}
 The inverse requires that for all valid values of the input arguments of \lstinline!$f_2$(..., y, ...)! and $u_k$ being calculated as \lstinline!$u_k$ := $f_2$(..., y, ...)! implies
@@ -1648,17 +1587,17 @@ function inv_sine
   input Real x;
   input Real angleOrig;
   output Real angle;
-  // Finds sine(angle)=x with angle closest to angleOrig.
+  // Finds sine(angle) = x with angle closest to angleOrig.
 algorithm
   ...
-  annotation(inverse(x=sine(angle)));
+  annotation(inverse(x = sine(angle)));
 end inv_sine;
 
 function sine
   input Real angle;
   output Real x;
 algorithm
-  x:=sin(angle);
+  x := sin(angle);
   // Note: No inverse.
 end sine;
 \end{lstlisting}
@@ -1707,27 +1646,23 @@ external [ language-specification ]
 end IDENT;
 \end{lstlisting}
 
-Components in the public part of an external function declaration shall
-be declared either as input or output.
+Components in the public part of an external function declaration shall be declared either as \lstinline!input! or \lstinline!output!.
 
 \begin{nonnormative}
 This is just as for any other function.  The components in the protected part allow local variables for temporary storage to be declared.
 \end{nonnormative}
 
-The \lstinline!language-specification! must currently be one of \lstinline!"builtin"!, \lstinline!"C"!, \lstinline!"C..."! (for one of the specific C standards like C89, C99, and C11 -- specifying
+The \lstinline[language=grammar]!language-specification! must currently be one of \lstinline!"builtin"!, \lstinline!"C"!, \lstinline!"C..."! (for one of the specific C standards like C89, C99, and C11 -- specifying
 that it relies on the C standard library of that version) or \lstinline!"FORTRAN 77"!.  Unless the external language is specified, it is assumed to be \lstinline!"C"!.
 
 \begin{nonnormative}
 The intended use of e.g.\ C99 is to detect if the user tries to link with a C99-function using a C89 compiler.
 \end{nonnormative}
 
-The \lstinline!"builtin"! specification is only used for functions that are defined
-to be built-in in Modelica. The external-function call mechanism for
-\lstinline!"builtin"! functions is implementation-defined.
+The \lstinline!"builtin"! specification is only used for functions that are defined to be built-in in Modelica.  The external function call mechanism for \lstinline!"builtin"! functions is implementation-defined.
 
 \begin{nonnormative}
-Typically, for functions from the standard C library, the prototype of the function is provided but no library annotation. Currently, there are
-no other builtin functions defined in Modelica.
+Typically, for functions from the standard C library, the prototype of the function is provided but no \lstinline!Library! annotation.  Currently, there are no other builtin functions defined in Modelica.
 \end{nonnormative}
 
 \begin{example}
@@ -1749,11 +1684,7 @@ end UserModel;
 \end{lstlisting}
 \end{example}
 
-The external-function-call specification allows functions whose
-prototypes do not match the default assumptions as defined below to be
-called. It also gives the name used to call the external function. If
-the external call is not given explicitly, this name is assumed to be
-the same as the Modelica name.
+The \lstinline[language=grammar]!external-function-call! specification allows functions whose prototypes do not match the default assumptions as defined below to be called.  It also gives the name used to call the external function.  If the external call is not given explicitly, this name is assumed to be the same as the Modelica name.
 
 The only permissible kinds of expressions in the argument list are
 component references, scalar constants, and the function size applied to
@@ -1764,11 +1695,7 @@ A component reference to a component that is part of an input or output
 is treated the same way as a top-level input or output in the external
 call.
 
-If the function has \lstinline!annotation(Include="includeDirective")!, \cref{annotations-for-external-libraries-and-include-files}
-it is assumed that it contains an actual prototype and no prototype shall be automatically generated.
-In that case the input argument pointers shall be const pointers (indicating that they do not modify the inputs),
-and non-const pointers are deprecated.
-The optional external-function-call is still used for determining the name of the function, and order of arguments, as described below.
+If the function has \lstinline!annotation(Include="includeDirective")!, \cref{annotations-for-external-libraries-and-include-files} it is assumed that it contains an actual prototype and no prototype shall be automatically generated.  In that case the input argument pointers shall be const pointers (indicating that they do not modify the inputs), and non-const pointers are deprecated.  The optional \lstinline[language=grammar]!external-function-call! is still used for determining the name of the function, and order of arguments, as described below.
 
 \subsection{Argument type Mapping}\label{argument-type-mapping}
 
@@ -1803,9 +1730,7 @@ Strings are \textsc{nul}-terminated (i.e., terminated by \lstinline[language=C]!
 facilitate calling of C functions. When returning a non-literal string,
 see \cref{utility-functions-for-allocating-strings} for details on memory allocation.
 
-Boolean values are mapped to C such that \lstinline!false! in Modelica is 0 in C and
-\lstinline!true! in Modelica is 1 in C.  If the returned value from C
-is 0 it is treated as \lstinline!false! in Modelica; otherwise as \lstinline!true!.
+\lstinline!Boolean! values are mapped to C such that \lstinline!false! in Modelica is 0 in C and \lstinline!true! in Modelica is 1 in C.  If the returned value from C is 0 it is treated as \lstinline!false! in Modelica; otherwise as \lstinline!true!.
 
 \begin{nonnormative}
 It is recommended that the C function should interpret any non-zero value as true.
@@ -1845,19 +1770,13 @@ for the specified enumeration type is an error.
 
 \subsubsection{Arrays}\label{arrays-1}
 
-Unless an explicit function call is present in the external declaration,
-an array is passed by its address followed by n arguments of type
-\lstinline!size_t! with the corresponding array dimension sizes, where n is the
-number of dimensions.
+Unless an explicit function call is present in the external-clause, an array is passed by its address followed by $n$ arguments of type \lstinline!size_t! with the corresponding array dimension sizes, where $n$ is the number of dimensions.
 
 \begin{nonnormative}
 The type \lstinline!size_t! is a C unsigned integer type.
 \end{nonnormative}
 
-Arrays are by default stored in row-major order when calling C functions
-and in column-major order when calling FORTRAN~77 functions. These
-defaults can be overridden by the array layout annotation. See the
-example below.
+Arrays are by default stored in row-major order when calling C functions and in column-major order when calling FORTRAN~77 functions.  These defaults can be overridden by the \lstinline!arrayLayout! annotation.  See the example below.
 
 The table below shows the mapping of an array argument in the absence of
 an explicit external function call when calling a C function. The type \lstinline!T!
@@ -1942,11 +1861,11 @@ the default assumptions correspond to a FORTRAN~77 function
 defined as follows:
 \begin{lstlisting}[language=fortran77]
 FUNCTION foo(a, d1, d2, d3)
-  DOUBLE PRECISION(d1,d2,d3) a
-  INTEGER                                    d1
-  INTEGER                                    d2
-  INTEGER                                    d3
-  DOUBLE PRECISION                  foo
+  DOUBLE PRECISION(d1, d2, d3) a
+  INTEGER                      d1
+  INTEGER                      d2
+  INTEGER                      d3
+  DOUBLE PRECISION             foo
   ...
 END
 \end{lstlisting}
@@ -2155,17 +2074,14 @@ The use of the function \lstinline!foo! in Modelica is uninfluenced by these con
 
 \subsection{Annotations for External Libraries and Include Files}\label{annotations-for-external-libraries-and-include-files}
 
-The following annotations are useful in the context of calling external
-functions from Modelica, and they should occur on the external clause
-and no other standard annotations should occur on the external-clause.
-They can all specify either a scalar value or an array of values as
-indicated below for annotation (Library=\ldots{}):
+The following annotations are useful in the context of calling external functions from Modelica, and they should occur on the external-clause and no other standard annotations should occur on the external-clause.
+They can all specify either a scalar value or an array of values as indicated below for the \lstinline!Library! annotation:
 \begin{itemize}
 \item
   The \lstinline!annotation(Library="libraryName")!, used by the linker to include
   the library file where the compiled external function is available.
 \item
-  The \lstinline!annotation(Library=("libraryName1","libraryName2"))!, used by the
+  The \lstinline!annotation(Library=("libraryName1", "libraryName2"))!, used by the
   linker to include the library files where the compiled external
   function is available and additional libraries used to implement it.
   For shared libraries it is recommended to include all non-system
@@ -2224,9 +2140,7 @@ a text-file as described below: e.g.\ a text-file \filename{vs2008} containing t
 compatible with vs2005.
 \end{nonnormative}
 
-The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory! and \lstinline!LibraryDirectory!
-indicates the top-level class where the annotation is found in the
-Modelica source code.
+The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory! and \lstinline!LibraryDirectory! indicates the top-level class where the annotation is found in the Modelica source code.
 
 \begin{example}
 Use of external functions and of object libraries:
@@ -2332,10 +2246,7 @@ EXTLIB2_EXPORT void ExternalFunc2(<function arguments>);
 \end{lstlisting}
 \end{example}
 
-The Library name and the LibraryDirectory name in the function
-annotation are mapped to a linkage directive in a compiler-dependent way
-thereby selecting the object library suited for the respective computer
-platform.
+The \lstinline!Library! name and the \lstinline!LibraryDirectory! name in the function annotation are mapped to a linkage directive in a compiler-dependent way thereby selecting the object library suited for the respective computer platform.
 
 \subsection{Examples}\label{examples1}
 
@@ -2557,11 +2468,11 @@ Same as \lstinline[language=C]!ModelicaDuplicateString!, except that in case of 
 The valid return values for an external function returning a \lstinline!String! are:
 \begin{itemize}
 \item A literal \lstinline!String!.
-\item A string given as \lstinline!String! input to the external function
+\item A string given as \lstinline!String! input to the external function.
 \item A string pointer returned by one the functions in the table above.
 \end{itemize}
 
-Thus if an external wants to create a non-literal string it must be allocated with one of the functions in this section, e.g., \lstinline[language=C]!ModelicaAllocateString!.  After return of the external function, the Modelica environment is responsible for the memory allocated with \lstinline[language=C]!ModelicaAllocateString! (e.g., to free this memory, when appropriate).  It is not allowed to access memory that was allocated with \lstinline[language=C]!ModelicaAllocateString! in a previous call of this external function.
+Thus if an external function wants to create a non-literal string it must be allocated with one of the functions in this section, e.g., \lstinline[language=C]!ModelicaAllocateString!.  After return of the external function, the Modelica environment is responsible for the memory allocated with \lstinline[language=C]!ModelicaAllocateString! (e.g., to free this memory, when appropriate).  It is not allowed to access memory that was allocated with \lstinline[language=C]!ModelicaAllocateString! in a previous call of this external function.
 
 \begin{nonnormative}
 Memory that is not passed to the Modelica simulation environment, such as memory that is freed before leaving the function, or in an \lstinline!ExternalObject!,

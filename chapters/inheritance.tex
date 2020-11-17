@@ -44,35 +44,30 @@ class A
 end A;
 
 class B
-  extends A(b=2);
+  extends A(b = 2);
 end B;
 
 class C
-  extends B(a=1);
+  extends B(a = 1);
 end C;
 \end{lstlisting}
 \end{example}
 
-The elements of the flattened base class become elements of the
-flattened enclosing class, and are added at the place of the
-extends-clause: specifically components and classes, the equation
-sections, algorithm sections, optional external clause, and the contents
-of the annotation at the end of the class, but excluding import-clauses.
+The elements of the flattened base class become elements of the flattened enclosing class, and are added at the place of the extends-clause: specifically components and classes, the equation sections, algorithm sections, optional external-clause, and the contents of the annotation at the end of the class, but excluding import-clauses.
 
 \begin{nonnormative}
 From the example above we get the following flattened class:
 \begin{lstlisting}[language=modelica]
 class Cinstance
-  parameter Real a=1;
-  parameter Real b=2;
+  parameter Real a = 1;
+  parameter Real b = 2;
 end Cinstance;
 \end{lstlisting}
 
-The ordering of the merging rules ensures that, given classes \lstinline!A!
-and \lstinline!B! defined above,
+The ordering of the merging rules ensures that, given classes \lstinline!A! and \lstinline!B! defined above,
 \begin{lstlisting}[language=modelica]
 class C2
-  B bcomp(b=3);
+  B bcomp(b = 3);
 end C2;
 \end{lstlisting}
 yields an instance with \lstinline!bcomp.b = 3!, which overrides \lstinline!b = 2!.
@@ -212,7 +207,7 @@ The specialized classes \lstinline!package!, \lstinline!operator!, \lstinline!fu
 own kind and from \lstinline!class!.
 
 \begin{nonnormative}
-E.g.\ a package can only be base class for packages.  All other kinds of classes can use the import statement to use the contents of a package.
+E.g.\ a package can only be base class for packages.  All other kinds of classes can use the import-clause to use the contents of a package.
 \end{nonnormative}
 
 \begin{example}
@@ -241,12 +236,7 @@ end ModelB;
 
 \subsection{Restrictions on Base Classes and Constraining Types to be Transitively Non-Replaceable}\label{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}
 
-The class name used after extends for base-classes and for constraining
-classes must use a class reference considered transitively
-non-replaceable, see definition in \cref{transitively-non-replaceable}.
-For a replaceable component declaration without constraining
-clause the class must use a class reference considered transitively
-non-replaceable.
+The class name used after \lstinline!extends! for base-classes and for constraining classes must use a class reference considered transitively non-replaceable, see definition in \cref{transitively-non-replaceable}.  For a replaceable component declaration without constraining clause the class must use a class reference considered transitively non-replaceable.
 
 \begin{nonnormative}
 The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e.\ \lstinline!redeclare model extends M...! where
@@ -308,23 +298,23 @@ Scope for modifiers:
 \begin{lstlisting}[language=modelica]
 model B
   parameter Real x;
-  package Medium=Modelica.Media.PartialMedium;
+  package Medium = Modelica.Media.PartialMedium;
 end B;
 
 model C
-  parameter Real x=2;
-  package Medium=Modelica.Media.PartialMedium;
-  B b(x=x, redeclare package Medium=Medium);
+  parameter Real x = 2;
+  package Medium = Modelica.Media.PartialMedium;
+  B b(x = x, redeclare package Medium = Medium);
   // The 'x' and 'Medium' being modified are declared in the model B.
-  // The modifiers '=x' and '=Medium' are found in the model C.
+  // The modifiers '= x' and '= Medium' are found in the model C.
 end C;
 
 model D
-  parameter Real x=3;
-  package Medium=Modelica.Media.PartialMedium;
-  C c(b(x=x, redeclare package Medium=Medium));
+  parameter Real x = 3;
+  package Medium = Modelica.Media.PartialMedium;
+  C c(b(x = x, redeclare package Medium = Medium));
   // The 'x' and 'Medium' being modified are declared in the model B.
-  // The modifiers '=x' and '=Medium' are found in the model D.
+  // The modifiers '= x' and '= Medium' are found in the model D.
 end D;
 \end{lstlisting}
 \end{example}
@@ -348,13 +338,7 @@ This should not be confused with \lstinline!inner outer! prefixes described in \
 
 \subsection{Merging of Modifications}\label{merging-of-modifications}
 
-Merging of modifiers means that outer modifiers override inner
-modifiers. The merging is hierarchical, and a value for an entire
-non-simple component overrides value modifiers for all components, and
-it is an error if this overrides a final prefix for a component, or if
-value for a simple component would override part of the value of a
-non-simple component. When merging modifiers each modification keeps its
-own each-prefix.
+Merging of modifiers means that outer modifiers override inner modifiers.  The merging is hierarchical, and a value for an entire non-simple component overrides value modifiers for all components, and it is an error if this overrides a \lstinline!final! prefix for a component, or if value for a simple component would override part of the value of a non-simple component. When merging modifiers each modification keeps its own \lstinline!each! prefix.
 
 \begin{example}
 The following larger example demonstrates several aspects:
@@ -449,43 +433,39 @@ A flattening of class \lstinline!C4! will give an object with the following vari
 
 \subsection{Single Modification}\label{single-modification}
 
-Two arguments of a modification shall not modify the same element,
-attribute, or description-string. When using qualified names the different
-qualified names starting with the same identifier are merged into one
-modifier. If a modifier with a qualified name has the each or
-final-prefix that prefix is only seen as applied to the final part of
-the name.
+Two arguments of a modification shall not modify the same element, attribute, or description-string.  When using qualified names the different qualified names starting with the same identifier are merged into one modifier.  If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
 class C1
   Real x[3];
 end C1;
-class C2 = C1(x=ones(3), x=ones(3)); // Error: x designated twice
+class C2 = C1(x = ones(3), x = ones(3)); // Error: x designated twice
 class C3
   class C4
     Real x;
   end C4;
-  C4 a(final x.unit = "V", x.displayUnit="mV", x=5.0);
+  C4 a(final x.unit = "V", x.displayUnit = "mV", x = 5.0);
   // Ok, different attributes designated (unit, displayUnit and value)
   // identical to:
-  C4 b(x(final unit = "V", displayUnit="mV") = 5.0));
+  C4 b(x(final unit = "V", displayUnit = "mV") = 5.0));
 end C3;
 \end{lstlisting}
 
 The following examples are incorrect:
 \begin{lstlisting}[language=modelica]
-m1(r=1.5, r=1.6) // Multiple modifier for r (its value)
-m1(r=1.5, r=1.5) // Multiple modifier for r (its value) - even if identical
-m1(r.start=2, r(start=3)) // Multiple modifier for r.start
-m1(x.r=1.5 "x", x.r(start=2.0) "y")) // Multiple description-string for x.r
-m1(r=R(), r(y=2)) // Multiple modifier for r.y - both direct value and part of record
+m1(r = 1.5, r = 1.6) // Multiple modifier for r (its value)
+m1(r = 1.5, r = 1.5) // Multiple modifier for r (its value) - even if identical
+m1(r.start = 2, r(start = 3)) // Multiple modifier for r.start
+m1(x.r = 1.5 "x", x.r(start = 2.0) "y")) // Multiple description-string for x.r
+m1(r = R(), r(y = 2)) // Multiple modifier for r.y - both direct value and
+                      // part of record
 \end{lstlisting}
 The following examples are correct:
 \begin{lstlisting}[language=modelica]
-m1(r=1.5, r(start=2.0))
-m1(r=1.6, r "x")
-m1(r=R(), r(y(min=2)))
+m1(r = 1.5, r(start = 2.0))
+m1(r = 1.6, r "x")
+m1(r = R(), r(y(min = 2)))
 \end{lstlisting}
 \end{example}
 
@@ -523,46 +503,43 @@ model C
 end C;
 
 model B
-  C c[5](each a ={1,2,3}, d={1,2,3,4,5});
-  parameter Real b=0;
+  C c[5](each a = {1, 2, 3}, d = {1, 2, 3, 4, 5});
+  parameter Real b = 0;
 end B;
 \end{lstlisting}
 This implies \lstinline!c[i].a[j] = j! and \lstinline!c[i].d = i!.
 
 \begin{lstlisting}[language=modelica]
 model D
-  B b(each c.a={3,4,5}, c.d={2,3,4,5,6});
+  B b(each c.a = {3, 4, 5}, c.d = {2, 3, 4, 5, 6});
   // Equivalent to:
-  B b2(c(each a={3,4,5}, d={2,3,4,5,6}));
+  B b2(c(each a = {3, 4, 5}, d = {2, 3, 4, 5, 6}));
 end D;
 \end{lstlisting}
 This implies \lstinline!b.c[i].a[j] = 2+j! and \lstinline!b.c[i].d = 1+i!.
 \begin{lstlisting}[language=modelica]
 model E
-  B b[2](each c(each a={1,2,3}, d={1,2,3,4,5}), p={1,2});
+  B b[2](each c(each a = {1, 2, 3}, d = {1, 2, 3, 4, 5}), p = {1, 2});
   // Without the first each one would have to use:
-  B b2[2](c(each a={1,2,3}, d=fill({1,2,3,4,5},2)), p={1,2});
+  B b2[2](c(each a = {1, 2, 3}, d = fill({1, 2, 3, 4, 5}, 2)), p = {1, 2});
 end E;
 \end{lstlisting}
-This implies \lstinline!b[k].c[i].a[j] = j!, \lstinline!b[k].c[i].d = i!, and \lstinline!b[k].p = k!.  For \lstinline!c.a! the additional (outer) \lstinline!each! has no effect,
-but it is necessary for \lstinline!c.d!.
+This implies \lstinline!b[k].c[i].a[j] = j!, \lstinline!b[k].c[i].d = i!, and \lstinline!b[k].p = k!.  For \lstinline!c.a! the additional (outer) \lstinline!each! has no effect, but it is necessary for \lstinline!c.d!.
 
 Specifying array dimensions after the type works the same as specifying them after the variable name.
 \begin{lstlisting}[language=modelica]
 model F
-  Real fail1[2](each start={1,2}); // Illegal
-  Real work1[2](each start=1);     // Legal
-  Real[2] fail2(each start={1,2}); // Illegal
-  Real[2] work2(each start=2);     // Legal
+  Real fail1[2](each start = {1, 2}); // Illegal
+  Real work1[2](each start = 1);      // Legal
+  Real[2] fail2(each start = {1, 2}); // Illegal
+  Real[2] work2(each start = 2);      // Legal
 end F;
 \end{lstlisting}
 \end{example}
 
 \subsection{Final Element Modification Prevention}\label{final-element-modification-prevention}
 
-An element defined as final by the \lstinline!final! prefix in an element
-modification or declaration cannot be modified by a modification or by a
-redeclaration. All elements of a final element are also final.
+An element defined as final by the \lstinline!final! prefix in an element modification or declaration cannot be modified by a modification or by a redeclaration.  All elements of a final element are also final.
 
 \begin{nonnormative}
 Setting the value of a parameter in an experiment environment is conceptually treated as a modification.  This implies that a final modification equation
@@ -571,44 +548,33 @@ of a parameter cannot be changed in a simulation environment.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-type Angle = Real (final quantity="Angle",final unit="rad",displayUnit="deg");
+type Angle =
+  Real(final quantity = "Angle", final unit = "rad", displayUnit = "deg");
 
 model TransferFunction
-  parameter Real b[:]={1} "numerator coefficient vector";
-  parameter Real a[:]={1,1} "denominator coefficient vector";
+  parameter Real b[:] = {1} "numerator coefficient vector";
+  parameter Real a[:] = {1, 1} "denominator coefficient vector";
   ...
 end TransferFunction;
 
 model PI "PI controller"
-  parameter Real k=1 "gain";
-  parameter Real T=1 "time constant";
-  TransferFunction tf(final b=k*{T,1}, final a={T,0});
+  parameter Real k = 1 "gain";
+  parameter Real T = 1 "time constant";
+  TransferFunction tf(final b = k * {T, 1}, final a = {T, 0});
 end PI;
 
 model Test
-  PI c1(k=2, T=3);
-  // fine, will indirectly change tf.b to 2*{3,1}
-  PI c2(tf(b={1}));
-  // error, b is declared as final
+  PI c1(k = 2, T = 3); // fine, will indirectly change tf.b to 2 * {3, 1}
+  PI c2(tf(b = {1}));  // error, b is declared as final
 end Test;
 \end{lstlisting}
 \end{example}
 
 \section{Redeclaration}\label{redeclaration}
 
-A redeclare construct in a modifier replaces the declaration of a local
-class or component with another declaration. A redeclare construct as an
-element replaces the declaration of a local class or component with
-another declaration. Both redeclare constructs work in the same way. The
-redeclare construct as an element requires that the element is
-inherited, and cannot be combined with a modifier of the same element in
-the extends-clause. For modifiers the redeclare of classes uses a
-special short-class-definition construct; that is a subset of normal
-class definitions and semantically behave as the corresponding
-class-definition.
+A \lstinline!redeclare! construct in a modifier replaces the declaration of a local class or component with another declaration.  A \lstinline!redeclare! construct as an element replaces the declaration of a local class or component with another declaration.  Both \lstinline!redeclare! constructs work in the same way.  The \lstinline!redeclare! construct as an element requires that the element is inherited, and cannot be combined with a modifier of the same element in the extends-clause.  For modifiers the redeclare of classes uses a special short-class-definition construct; that is a subset of normal class definitions and semantically behave as the corresponding class-definition.
 
-A modifier with the keyword \lstinline!replaceable! is automatically seen as being a
-redeclare.
+A modifier with the keyword \lstinline!replaceable! is automatically seen as being a \lstinline!redeclare!.
 
 In redeclarations some parts of the original declaration is
 automatically inherited by the new declaration. This is intended to make
@@ -624,7 +590,7 @@ preserved.
 The groups that are valid for both classes and components:
 \begin{itemize}
 \item
-  public, protected
+  \lstinline!public!, \lstinline!protected!
 \item
   \lstinline!inner!, \lstinline!outer!
 \item
@@ -634,11 +600,11 @@ The groups that are valid for both classes and components:
 The groups that are only valid for components:
 \begin{itemize}
 \item
-  flow, stream
+  \lstinline!flow!, \lstinline!stream!
 \item
-  discrete, parameter, constant
+  \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant!
 \item
-  input, output
+  \lstinline!input!, \lstinline!output!
 \item
   array dimensions
 \end{itemize}
@@ -667,9 +633,9 @@ model HeatExchanger
 end HeatExchanger;
 
   HeatExchanger(
-    /*redeclare*/ replaceable /*parameter */ GeoHorizontal geometry,
-    redeclare /* input */ Modelica.Units.SI.Angle u /*[2]*/);
-  // The semantics ensure that parts in /*.*/ are automatically added
+    /*redeclare*/ replaceable /*parameter*/ GeoHorizontal geometry,
+    redeclare /*input*/ Modelica.Units.SI.Angle u /*[2]*/);
+   // The semantics ensure that parts in /*.*/ are automatically added
    // from the declarations in HeatExchanger.
 \end{lstlisting}
 
@@ -677,23 +643,16 @@ Example of arrays on the left of the component name:
 \begin{lstlisting}[language=modelica]
 model M
   replaceable Real [4] x[2];
-  // Seen as syntactic sugar for "replaceable Real x[2,4];"
+  // Seen as syntactic sugar for "replaceable Real x[2, 4];"
   // Note the order.
 end M;
-M m(redeclare Modelica.Units.SI.Length x[2,4]); // Valid redeclare of the type
+M m(redeclare Modelica.Units.SI.Length x[2, 4]); // Valid redeclare of the type
 \end{lstlisting}
 \end{nonnormative}
 
 \subsection{The class extends Redeclaration Mechanism}\label{the-class-extends-redeclaration-mechanism}
 
-A class declaration of the type \lstinline!redeclare class extends B($\ldots$)! ,
-where \lstinline!class! as usual can be replaced by any other specialized class,
-replaces the inherited class \lstinline!B! with another declaration that extends the
-inherited class where the optional class-modification is applied to the
-inherited class.  Inherited \lstinline!B! here means that the class
-containing \lstinline!redeclare class extends B($\ldots$)! should also inherit
-another declaration of \lstinline!B! from one of its extends-clauses. The new
-declaration should explicitly include redeclare.
+A class declaration of the type \lstinline!redeclare class extends B($\ldots$)!, where \lstinline!class! as usual can be replaced by any other specialized class, replaces the inherited class \lstinline!B! with another declaration that extends the inherited class where the optional class-modification is applied to the inherited class.  Inherited \lstinline!B! here means that the class containing \lstinline!redeclare class extends B($\ldots$)! should also inherit another declaration of \lstinline!B! from one of its extends-clauses.  The new declaration should explicitly include \lstinline!redeclare!.
 
 \begin{nonnormative}
 Since the rule about applying the optional class-modification implies that all declarations are inherited with modifications applied, there is no need
@@ -717,7 +676,8 @@ class-definition :
 class-specifier : long-class-specifier | ...
 
 long-class-specifier : ...
-    | extends IDENT [ class-modification ] description-string composition end IDENT
+    | extends IDENT [ class-modification ] description-string
+      composition end IDENT
 \end{lstlisting}
 The nonterminal \lstinline!class-definition! is referenced in several places in the
 grammar, including the following case which is used in some examples
@@ -769,11 +729,12 @@ end PartialMedium;
 package MoistAir "Special type of medium"
   extends PartialMedium(nX=2);
 
-  redeclare model extends BaseProperties(T(stateSelect=StateSelect.prefer))
-    // replaces BaseProperties by a new implementation and // extends from Baseproperties with modification
+  redeclare model extends BaseProperties(T(stateSelect = StateSelect.prefer))
+    // replaces BaseProperties by a new implementation and
+    // extends from Baseproperties with modification
     // note, nX = 2 (!)
   equation
-    X = {0,1};
+    X = {0, 1};
     ...
   end BaseProperties;
 
@@ -781,13 +742,13 @@ package MoistAir "Special type of medium"
     // replaces dynamicViscosity by a new implementation and
     // extends from dynamicViscosity
   algorithm
-    eta := 2*p;
+    eta := 2 * p;
   end dynamicViscosity;
 end MoistAir;
 \end{lstlisting}
 
 Note, since \lstinline!MostAir! extends from \lstinline!PartialMedium!,
-constant \lstinline!nX!=2 in package \lstinline!MoistAir! and the model
+constant \lstinline!nX! = 2 in package \lstinline!MoistAir! and the model
 \lstinline!BaseProperties! and the function \lstinline!dynamicViscosity! is present
 in \lstinline!MoistAir!. By the following definitions, the available
 \lstinline!BaseProperties! model is replaced by another implementation which
@@ -810,7 +771,7 @@ package MoistAir2 "Alternative definition that does not work"
     // wrong model since nX has no value
     extends PartialMedium.BaseProperties;
   equation
-    X = {1,0};
+    X = {1, 0};
   end MoistAir_BaseProperties;
 
   model MoistAir_dynamicViscosity
@@ -821,31 +782,9 @@ package MoistAir2 "Alternative definition that does not work"
 end MoistAir2;
 \end{lstlisting}
 
-Here, the usual approach is used to extend (here from \lstinline!PartialMedium!) and
-in the modifier perform all redeclarations. In order to perform these
-redeclarations, corresponding implementations of all elements of \lstinline!PartialMedium!
-have to be given under a different name, such as \lstinline!MoistAir2.MoistAir_BaseProperties!, since the name
-\lstinline!BaseProperties!
-already exists due to \lstinline!extends PartialMedium!. Then it is possible in
-the modifier to redeclare \lstinline!PartialMedium.BaseProperties! to
-\lstinline!MoistAir2.MoistAir_BaseProperties!. Besides the drawback that the
-namespace is polluted by elements that have different names but the same
-implementation (e.g.\ \lstinline!MoistAir2.BaseProperties! is identical to
-\lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work
-if arrays are present that depend on constants in \lstinline!PartialMedium! , such as
-\lstinline!X[nX]!: The problem is that \lstinline!MoistAir_BaseProperties! extends from
-\lstinline!PartialMedium.BaseProperties! where the constant nX does not yet have a value.
-This means that the dimension of array X is undefined and model
-\lstinline!MoistAir_BaseProperties! is wrong. With this construction, all constant
-definitions have to be repeated whenever these constants shall be used,
-especially in \lstinline!MoistAir_BaseProperties! and \lstinline!MoistAir_dynamicViscosity!.
-For larger models this is not practical and therefore the only
-practically useful definition is the complicated construction in the
-previous example with \lstinline!redeclare model extends BaseProperties!.
+Here, the usual approach is used to extend (here from \lstinline!PartialMedium!) and in the modifier perform all redeclarations.  In order to perform these redeclarations, corresponding implementations of all elements of \lstinline!PartialMedium! have to be given under a different name, such as \lstinline!MoistAir2.MoistAir_BaseProperties!, since the name \lstinline!BaseProperties! already exists due to \lstinline!extends PartialMedium!.  Then it is possible in the modifier to redeclare \lstinline!PartialMedium.BaseProperties! to \lstinline!MoistAir2.MoistAir_BaseProperties!. Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g.\ \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!: The problem is that \lstinline!MoistAir_BaseProperties! extends from \lstinline!PartialMedium.BaseProperties! where the constant \lstinline!nX! does not yet have a value.  This means that the dimension of array \lstinline!X! is undefined and model \lstinline!MoistAir_BaseProperties! is wrong.  With this construction, all constant definitions have to be repeated whenever these constants shall be used, especially in \lstinline!MoistAir_BaseProperties! and \lstinline!MoistAir_dynamicViscosity!.  For larger models this is not practical and therefore the only practically useful definition is the complicated construction in the previous example with \lstinline!redeclare model extends BaseProperties!.
 
-To detect this issue the rule on lookup of composite names (\cref{composite-name-lookup})
-ensures that \lstinline!PartialMedium.dynamicViscosity! is incorrect in a
-simulation model.
+To detect this issue the rule on lookup of composite names (\cref{composite-name-lookup}) ensures that \lstinline!PartialMedium.dynamicViscosity! is incorrect in a simulation model.
 \end{nonnormative}
 
 \subsection{Constraining Type}\label{constraining-type}
@@ -882,21 +821,21 @@ class A
 end A;
 
 class B
-  parameter Real x=3.14, y; // B is a subtype of A
+  parameter Real x = 3.14, y; // B is a subtype of A
 end B;
 
 class C
-  replaceable A a(x=1);
+  replaceable A a(x = 1);
 end C;
 
 class D
-  extends C(redeclare B a(y=2));
+  extends C(redeclare B a(y = 2));
 end D;
 \end{lstlisting}
 which is equivalent to defining \lstinline!D! as
 \begin{lstlisting}[language=modelica]
 class D
-  B a(x=1, y=2);
+  B a(x = 1, y = 2);
 end D;
 \end{lstlisting}
 
@@ -925,7 +864,7 @@ end Circuit;
 model Circuit2
   extends Circuit(
     redeclare replaceable model NonlinearResistor
-                           = ThermoResistor(T0=300));
+                           = ThermoResistor(T0 = 300));
       // As a result of the modification on the base type,
       // the default value of R is 100
 end Circuit2;
@@ -933,7 +872,7 @@ end Circuit2;
 model Circuit3
   extends Circuit2(
    redeclare replaceable model NonlinearResistor
-                           = Resistor(R=200));
+                           = Resistor(R = 200));
   // The T0 modification is not applied because it did not
   // appear in the original declaration
 end Circuit3;
@@ -1005,13 +944,19 @@ The intent is that the description and/or annotation are at the end of the decla
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-replaceable model Load1=Resistor constrainedby TwoPin "The Load"; //Recommended
-replaceable model Load2=Resistor "The Load" constrainedby TwoPin; //Identical to Load1
-replaceable model Load3=Resistor "The Load" constrainedby TwoPin "The Load"; //Error
+replaceable model Load1 =
+  Resistor constrainedby TwoPin "The Load"; // Recommended
+replaceable model Load2 =
+  Resistor "The Load" constrainedby TwoPin; // Identical to Load1
+replaceable model Load3 =
+  Resistor "The Load" constrainedby TwoPin "The Load"; // Error
 
-replaceable Resistor load1 constrainedby TwoPin "The Load"; //Recommended
-replaceable Resistor load2 "The Load" constrainedby TwoPin; //Identical to load1
-replaceable Resistor load3 "The Load" constrainedby TwoPin "The Load!"; //Error
+replaceable Resistor load1
+  constrainedby TwoPin "The Load"; // Recommended
+replaceable Resistor load2
+  "The Load" constrainedby TwoPin; // Identical to load1
+replaceable Resistor load3
+  "The Load" constrainedby TwoPin "The Load!"; // Error
 \end{lstlisting}
 \end{example}
 
@@ -1029,18 +974,15 @@ prefixes are inherited, \cref{redeclaration}):
   Redeclaration with the same type can be used to restrict variability and/or change array dimensions.
   \end{nonnormative}
 \item
-  An element declared as constant cannot be redeclared
+  An element declared as \lstinline!constant! cannot be redeclared.
 \item
-  An element declared as final shall not be modified, and thus not
-  redeclared
+  An element declared as \lstinline!final! shall not be modified, and thus not redeclared.
 \item
-  Modelica does not allow a protected element to be redeclared as
-  public, or a public element to be redeclared as protected.
+  Modelica does not allow a protected element to be redeclared as public, or a public element to be redeclared as protected.
 \item
-  Array dimensions may be redeclared; provided the sub-typing rules in
-  \cref{interface-compatibility-or-subtyping} are satisfied.
+  Array dimensions may be redeclared; provided the sub-typing rules in \cref{interface-compatibility-or-subtyping} are satisfied.
   \begin{nonnormative}
-  This is one example of redeclare of non-replaceable elements.
+  This is one example of redeclaration of non-replaceable elements.
   \end{nonnormative}
 \end{itemize}
 
@@ -1050,14 +992,7 @@ A declaration can have an annotation \lstinline!choices! containing modifiers on
 \lstinline!choice!, where each of them indicates a suitable redeclaration or
 modifications of the element.
 
-This is a hint for users of the model, and can also be used by the user
-interface to suggest reasonable redeclaration, where the string comments
-on the choice declaration can be used as textual explanations of the
-choices. The annotation is not restricted to replaceable elements but
-can also be applied to non-replaceable elements, enumeration types, and
-simple variables. For a Boolean variable, a choices annotation may
-contain the definition \lstinline!checkBox = true!, meaning to display a checkbox to
-input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclaration, where the string comments on the choice declaration can be used as textual explanations of the choices. The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.  For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the definition \lstinline!checkBox = true!, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
 
 The annotation \lstinline!choicesAllMatching = true! on a replaceable element indicates that tools
 should automatically construct a menu with choices of elements usable for replacing it.
@@ -1067,54 +1002,48 @@ that are either directly or indirectly derived by inheritance from the constrain
 where \lstinline!A! to \lstinline!X! are non-partial packages, and \lstinline!Z! is non-partial.
 This menu can be disabled using annotation \lstinline!choicesAllMatching = false!.
 \begin{nonnormative}
-The behavior when choicesAllMatching is not specified;
-ideally it should present (at least) the same choices as for
-\lstinline!choicesAllMatching = true;! but if it takes (too long) time to present
-the list it is better to have \lstinline!choicesAllMatching = false!.
+The behavior when \lstinline!choicesAllMatching! is not specified; ideally it should present (at least) the same choices as for \lstinline!choicesAllMatching = true;! but if it takes (too long) time to present the list it is better to have \lstinline!choicesAllMatching = false!.
 \end{nonnormative}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-replaceable model MyResistor=Resistor
+replaceable model MyResistor = Resistor
   annotation(choices(
                choice(redeclare model MyResistor=lib2.Resistor(a={2}) "..."),
                choice(redeclare model MyResistor=lib2.Resistor2 "...")));
 
-replaceable Resistor Load(R=2) constrainedby TwoPin
+replaceable Resistor Load(R = 2) constrainedby TwoPin
   annotation(choices(
                choice(redeclare lib2.Resistor Load(a={2}) "..."),
                choice(redeclare Capacitor Load(L=3) "...")));
 
-replaceable FrictionFunction a(func=exp) constrainedby Friction
+replaceable FrictionFunction a(func = exp) constrainedby Friction
   annotation(choices(
                choice(redeclare ConstantFriction a(c=1) "..."),
                choice(redeclare TableFriction a(table="...") "..."),
                choice(redeclare FunctionFriction a(func=exp) "...")));
 
 replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
-          constrainedby Modelica.Media.Interfaces.PartialMedium
-	     annotation (choicesAllMatching=true);
+  constrainedby Modelica.Media.Interfaces.PartialMedium
+  annotation (choicesAllMatching = true);
 \end{lstlisting}
 
-It can also be applied to nonreplaceable declarations, e.g.\ to
-describe enumerations.
+It can also be applied to nonreplaceable declarations, e.g.\ to describe enumerations.
 \begin{lstlisting}[language=modelica]
-type KindOfController=Integer(min=1,max=3)
+type KindOfController = Integer(min = 1, max = 3)
   annotation(choices(
-              choice=1 "P",
-              choice=2 "PI",
-              choice=3 "PID"));
+              choice = 1 "P",
+              choice = 2 "PI",
+              choice = 3 "PID"));
 
 model A
   parameter KindOfController x;
 end A;
-A a(x=3 "PID");
+A a(x = 3 "PID");
 \end{lstlisting}
 
-It can also be applied to Boolean variables to define a check
-box.
+It can also be applied to \lstinline!Boolean! variables to define a check box.
 \begin{lstlisting}[language=modelica]
-parameter Boolean useHeatPort=false annotation(choices(checkBox=true));
+parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
 \end{lstlisting}
-
 \end{example}
