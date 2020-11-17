@@ -24,7 +24,7 @@ end M;
 The same hierarchical structure can be represented in Flat Modelica:
 ```
 record 'M.Resistor' /* Variability-constrained type */
-  parameter Real 'r';
+  parameter Real 'r'; /* Parameter declared with variability-free type Real. */
   Real 'i';
 end 'M.Resistor';
 
