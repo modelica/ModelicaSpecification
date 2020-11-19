@@ -1,18 +1,6 @@
 \chapter{Stream Connectors}\label{stream-connectors}
 
-The two basic variable types in a connector -- \emph{potential} (or \emph{across})
-variable and \emph{flow} (or \emph{through}) variable -- are not sufficient to
-describe in a numerically sound way the bi-directional flow of matter
-with convective transport of specific quantities, such as specific
-enthalpy and chemical composition. The values of these specific
-quantities are determined from the upstream side of the flow, i.e., they
-depend on the flow direction. When using across and through variables,
-the corresponding models would include nonlinear systems of equations
-with Boolean unknowns for the flow directions and singularities around
-zero flow. Such equation systems cannot be solved reliably in general.
-The model formulations can be simplified when formulating two different
-balance equations for the two possible flow directions. This is not
-possible with across and through variables though.
+The two basic variable types in a connector -- \emph{potential} (or \emph{across}) variable and \emph{flow} (or \emph{through}) variable -- are not sufficient to describe in a numerically sound way the bi-directional flow of matter with convective transport of specific quantities, such as specific enthalpy and chemical composition.  The values of these specific quantities are determined from the upstream side of the flow, i.e., they depend on the flow direction.  When using across and through variables, the corresponding models would include nonlinear systems of equations with \lstinline!Boolean! unknowns for the flow directions and singularities around zero flow.  Such equation systems cannot be solved reliably in general.  The model formulations can be simplified when formulating two different balance equations for the two possible flow directions.  This is not possible with across and through variables though.
 
 This fundamental problem is addressed in Modelica by introducing a third
 type of connector variable, called stream variable, declared with the
@@ -274,32 +262,32 @@ $c_{2}$.h_outflow = inStream($c_{1}$.h_outflow);
 if $m_j$.c.m_flow.min >= 0  for all j = 1:N with j <> i  and
    $c_k$.m_flow.max <= 0 for all k = 1:M
 then
-    inStream($m_i$.c.h_outflow) =  $m_i$.c.h_outflow;
- else
-    si = sum (max(-$m_j$.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) +
-         sum(max( $c_k$.m_flow ,0) for k  in 1:M);
-    inStream($m_i$.c.h_outflow) =
-       (sum(positiveMax(-$m_j$.c.m_flow,$s_i$)*$m_j$.c.h_outflow)
-      +  sum(positiveMax($c_k$.m_flow,s_i)*inStream($c_k$.h_outflow)))/
-     (sum(positiveMax(-$m_j$.c.m_flow,s_i))
-        +  sum(positiveMax($c_k$.m_flow,s_i)))
-                  for j in 1:N and i <> j and $m_j$.c.m_flow.min < 0,
-                  for k in 1:M and $c_k$.m_flow.max > 0
+  inStream($m_i$.c.h_outflow) = $m_i$.c.h_outflow;
+else
+  si = sum (max(-$m_j$.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) +
+       sum(max( $c_k$.m_flow ,0) for k  in 1:M);
+  inStream($m_i$.c.h_outflow) =
+     (sum(positiveMax(-$m_j$.c.m_flow,$s_i$)*$m_j$.c.h_outflow)
+    +  sum(positiveMax($c_k$.m_flow,s_i)*inStream($c_k$.h_outflow)))/
+   (sum(positiveMax(-$m_j$.c.m_flow,s_i))
+      +  sum(positiveMax($c_k$.m_flow,s_i)))
+                for j in 1:N and i <> j and $m_j$.c.m_flow.min < 0,
+                for k in 1:M and $c_k$.m_flow.max > 0
 // Additional equations to be generated
 for q in 1:M loop
-   if $m_j$.c.m_flow.min >= 0 for all j = 1:N and
-       $c_k$.m_flow.max <= 0 for all k = 1:M and k <> q
-   then
-       $c_q$.h_outflow = 0;
-    else
-       $s_q$ =  (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
-                    sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
-       $c_q$.h_outflow = (sum(positiveMax(-$m_j$.c.m_flow,s_q)*$m_j$.c.h_outflow) +
-                 sum(positiveMax($c_k$.m_flow,$s_q$)* inStream($c_k$.h_outflow)))/
-                (sum(positiveMax(-$m_j$.c.m_flow,s_q)) +
-                 sum(positiveMax($c_k$.m_flow,s_q)))
-		  for j in 1:N and $m_j$.c.m_flow.min < 0,
-                  for k in 1:M and k <> q and $c_k$.m_flow.max > 0
+  if $m_j$.c.m_flow.min >= 0 for all j = 1:N and
+    $c_k$.m_flow.max <= 0 for all k = 1:M and k <> q
+  then
+    $c_q$.h_outflow = 0;
+  else
+    $s_q$ = (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
+                  sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+    $c_q$.h_outflow = (sum(positiveMax(-$m_j$.c.m_flow,s_q)*$m_j$.c.h_outflow) +
+               sum(positiveMax($c_k$.m_flow,$s_q$)* inStream($c_k$.h_outflow)))/
+              (sum(positiveMax(-$m_j$.c.m_flow,s_q)) +
+               sum(positiveMax($c_k$.m_flow,s_q)))
+    for j in 1:N and $m_j$.c.m_flow.min < 0,
+                for k in 1:M and k <> q and $c_k$.m_flow.max > 0
 end for;
 \end{lstlisting}
 \end{itemize}
