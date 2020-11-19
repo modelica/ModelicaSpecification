@@ -37,16 +37,7 @@ The following small example shows the most important elements:
   When no argument is defined for \lstinline!Clock!, the clock is
   deduced by clock inference.
 \item
-  For a \lstinline!when!-clause with an associated clock, all
-  equations inside the \lstinline!when!-clause are clocked with the given
-  clock. All equations on an associated clock are treated together and
-  in the same way regardless of whether they are inside a
-  \lstinline!when!-clause or not. This means that automatic sampling and
-  hold of variables inside the \lstinline!when!-clause does not apply
-  (explicit sampling and hold is required) and that general equations
-  can be used in such when-clauses (this is not allowed for
-  \lstinline!when!-clauses with Boolean conditions, that require a variable
-  reference on the left-hand side of an equation).
+  For a \lstinline!when!-clause with an associated clock, all equations inside the \lstinline!when!-clause are clocked with the given clock.  All equations on an associated clock are treated together and in the same way regardless of whether they are inside a \lstinline!when!-clause or not.  This means that automatic sampling and hold of variables inside the \lstinline!when!-clause does not apply (explicit sampling and hold is required) and that general equations can be used in such when-clauses (this is not allowed for \lstinline!when!-clauses with \lstinline!Boolean! conditions, that require a variable reference on the left-hand side of an equation).
 \item
   The \lstinline!when!-clause in the controller could also be removed
   and the controller could just be defined by the equations:
@@ -81,17 +72,15 @@ E * xd = A * previous(xd) + B * yd;
 \section{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
 
 \begin{nonnormative}
-Periodically sampled control systems could also be defined with
-standard when-clauses, see \cref{when-equations}, and the sample operator, see
-\cref{event-related-operators-with-function-syntax}. For example:
+Periodically sampled control systems could also be defined with standard when-clauses, see \cref{when-equations}, and the \lstinline!sample! operator, see \cref{event-related-operators-with-function-syntax}.  For example:
 \begin{lstlisting}[language=modelica]
-when sample(0,3) then
-  xd = A*pre(xd) + B*y;
-  u = C*pre(xd) + D*y;
+when sample(0, 3) then
+  xd = A * pre(xd) + B * y;
+  u  = C * pre(xd) + D * y;
 end when;
 \end{lstlisting}
 
-Equations in a when-clause with a Boolean condition have the
+Equations in a when-clause with a \lstinline!Boolean! condition have the
 property that (a) variables on the left hand side of the equal sign are
 assigned a value when the when-condition becomes true and otherwise hold
 their value, (b) variables not assigned in the when-clause are directly
@@ -99,10 +88,7 @@ accessed (= automatic \lstinline!sample! semantics), and (c) the variables
 assigned in the when-clause can be directly accessed outside of the
 when-clause (= automatic \lstinline!hold! semantics).
 
-Using standard when-clauses works well for individual simple sampled blocks,
-but the synchronous approach
-using clocks and clocked equations provide the following benefits
-(especially for large sampled systems):
+Using standard when-clauses works well for individual simple sampled blocks, but the synchronous approach using clocks and clocked equations provide the following benefits (especially for large sampled systems):
 \begin{enumerate}
 \item
   Possibility to detect inconsistent sampling rate, since clock partitioning (see \cref{clock-partitioning}),
@@ -171,7 +157,7 @@ using clocks and clocked equations provide the following benefits
   When a standard math-block (e.g.\ addition) is part of a clocked sub-system it is automatically
   clocked and only evaluated when the clocked equations trigger.
   For standard when-clauses one either needs a separate sampled math-block for each operation, or
-  it will conceputally be evaluated all the time.
+  it will conceptually be evaluated all the time.
   However, tools may perform a similar optimization for standard when-clauses
   and it is only relevant in large sampled systems.
 \end{enumerate}
@@ -187,9 +173,9 @@ In this section various terms are defined.
 %   https://github.com/brucemiller/LaTeXML/issues/1292 (marked as fixed as of commit 9f5c893b)
 %\begin{figure}[tb]
 %  \centering
-%  \subfloat[A piecewise-constant variable.]{\includegraphics[width=5cm]{piecewise}\label{fig:piecewise-constant-variable}}
-%  \subfloat[A clock variable.]{\includegraphics[width=5cm]{clock}\label{fig:clock-variable}}
-%  \subfloat[A clocked variable.]{\includegraphics[width=5cm]{clocked}\label{fig:clocked-variable}}
+%  \subfloat[A piecewise-constant variable.]{\includegraphics{piecewise}\label{fig:piecewise-constant-variable}}
+%  \subfloat[A clock variable.]{\includegraphics{clock}\label{fig:clock-variable}}
+%  \subfloat[A clocked variable.]{\includegraphics{clocked}\label{fig:clocked-variable}}
 %  \caption{The different kinds of discrete-time variables.  The \lstinline!hold! extrapolation of the clocked variable is illustrated with dashed green lines.}
 %\end{figure}
 
@@ -602,22 +588,7 @@ is first initialized and after initialization \lstinline!y! has the value \lstin
 and therefore \lstinline!yc = 2!.
 
 Sorting of a simulation model:\\
-Since sample(u) returns the left limit of u, and the left limit of u is
-a known value, all inputs to a base-clock partition are treated as known
-during sorting. Since a periodic and interval clock can tick at most
-once at a time instant, and since the left limit of a variable does not
-change during event iteration (i.e., re-evaluating a base-clock
-partition associated with a condition clock always gives the same result
-because the sample(u) inputs do not change and therefore need not to be
-re-evaluated) all base-clock partitions, see \cref{base-clock-partitioning}, need
-not to be sorted with respect to each other. Instead, at an event
-instant, active base-clock partitions can be evaluated first (and once)
-in any order. Afterwards, the continuous-time partition is evaluated.
-Event iteration takes place only over the continuous-time partition. In
-such a scenario, accessing the left limit of u in sample(u) just means
-to pick the latest available value of u when the partition is entered,
-storing it in a local variable of the partition and only using this
-local copy during evaluation of the equations in this partition.
+Since \lstinline!sample(u)! returns the left limit of \lstinline!u!, and the left limit of \lstinline!u! is a known value, all inputs to a base-clock partition are treated as known during sorting.  Since a periodic and interval clock can tick at most once at a time instant, and since the left limit of a variable does not change during event iteration (i.e., re-evaluating a base-clock partition associated with a condition clock always gives the same result because the \lstinline!sample(u)! inputs do not change and therefore need not to be re-evaluated) all base-clock partitions, see \cref{base-clock-partitioning}, need not to be sorted with respect to each other.  Instead, at an event instant, active base-clock partitions can be evaluated first (and once) in any order.  Afterwards, the continuous-time partition is evaluated.  Event iteration takes place only over the continuous-time partition.  In such a scenario, accessing the left limit of \lstinline!u! in \lstinline!sample(u)! just means to pick the latest available value of \lstinline!u! when the partition is entered, storing it in a local variable of the partition and only using this local copy during evaluation of the equations in this partition.
 \end{example}
 
 \subsection{Sub-clock conversion operators}\label{sub-clock-conversion-operators}
@@ -792,7 +763,7 @@ equation
 end NoClockVsSampleHold;
 \end{lstlisting}
 
-Due to the infinitesimal delay of sample; \lstinline!z! will not show the current value of \lstinline!x! as \lstinline!clk2! ticks, but will show its previous value (left limit).  However, \lstinline!y! will show the current value, since it has no infinitesimal delay.
+Due to the infinitesimal delay of \lstinline!sample!, \lstinline!z! will not show the current value of \lstinline!x! as \lstinline!clk2! ticks, but will show its previous value (left limit).  However, \lstinline!y! will show the current value, since it has no infinitesimal delay.
 \end{nonnormative}
 
 Note that it is not legal to compute the derivative of the \lstinline!sample!, \lstinline!subSample!, \lstinline!superSample!, \lstinline!backSample!,
@@ -809,9 +780,7 @@ when !\emph{clock-expression}! then
 end when;
 \end{lstlisting}
 
-The clocked when-clause cannot be nested and does not have any elsewhen
-part. It cannot be used inside an algorithm. General equations are
-allowed in a clocked when-clause.
+The clocked when-clause cannot be nested and does not have any \lstinline!elsewhen! part.  It cannot be used inside an algorithm.  General equations are allowed in a clocked when-clause.
 
 For a clocked when-clause, all equations inside the when-clause are
 clocked with the same clock given by the \emph{clock-expression}.
@@ -980,7 +949,7 @@ which uses the following incidence definition:
 the \emph{unknown} variables, as well as variables \lstinline!x! in \lstinline!der(x)!, \lstinline!pre(x)!, and \lstinline!previous(x)!, which lexically appear in e
 \begin{list}{}{\setlength{\leftmargin}{2em}\setlength{\topsep}{-\parskip}}
 \item
-except as first argument of sub-clock conversion operators: \lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample!, \lstinline!backSample!, \lstinline!noClock!, and \lstinline!Clock! with first argument of \lstinline!Boolean! type.
+except as first argument of sub-clock conversion operators: \lstinline!subSample!, \lstinline!superSample!,\linebreak[4] \lstinline!shiftSample!, \lstinline!backSample!, \lstinline!noClock!, and \lstinline!Clock! with first argument of \lstinline!Boolean! type.
 \end{list}
 \end{list}\vspace{\parskip}% Compensate for removal of \parskip from \topset.
 
@@ -1025,23 +994,17 @@ u = hold (yd2);
 
 \subsection{Sub-clock Inferencing}\label{sub-clock-inferencing}
 
-For each base-clock partition, the base interval needs to be determined
-and for each sub-clock partition, the sub-sampling factors and shift
-need to be determined. For each sub-clock partition, the interval might
-be rational or Real type and known or parametric or being unspecified.
-The sub-clock partition intervals are constrained by subSample and
-superSample factors which might be known (or parametric) or unspecified
-and by shiftSample shiftCounter and resolution or backSample,
-backCounter and resolution. This constraint set is used to solve for all
-intervals and sub-sampling factors and shift of the sub-clock
-partitions. The model is erroneous if no solution exist.
+For each base-clock partition, the base interval needs to be determined and for each sub-clock partition, the sub-sampling factors and shift need to be determined.
+For each sub-clock partition, the interval might be rational or \lstinline!Real! type and known or parametric or being unspecified.
+The sub-clock partition intervals are constrained by \lstinline!subSample! and \lstinline!superSample! factors which might be known (or parametric) or unspecified, as well as by \lstinline!shiftSample!, \lstinline!shiftCounter! and \lstinline!resolution!, or \lstinline!backSample!, \lstinline!backCounter! and \lstinline!resolution!.
+This constraint set is used to solve for all intervals and sub-sampling factors and shift of the sub-clock partitions.
+The model is erroneous if no solution exist.
 
 \begin{nonnormative}
 It must be possible to determine that the constraint set is valid at compile time.  However, in certain cases, it could be possible to defer providing actual numbers until run-time.
 \end{nonnormative}
 
-It is required that accumulated sub- and super sampling factors in the
-range of 1 to 2\textsuperscript{63} can be handled.
+It is required that accumulated sub- and super sampling factors in the range of 1 to 2\textsuperscript{63} can be handled.
 
 \begin{nonnormative}
 64 bit internal representation of numerator and denominator with sign can be used and gives minimum resolution 1.08E-19 seconds and maximum range 9.22E+18 seconds = 2.92E+11 years.
@@ -1147,8 +1110,7 @@ type SolverMethod = String annotation(choices(
    "discretized continuous-time partition."
 \end{lstlisting}
 
-If a tool supports one of the integrators of SolverMethod, it must use
-the solver method name of above.
+If a tool supports one of the integrators of \lstinline!SolverMethod!, it must use the solver method name of above.
 
 \begin{nonnormative}
 A tool may support also other integrators.  Typically, a tool supports at least methods \lstinline!"External"! and \lstinline!"ExplicitEuler"!. If a tool does not support the
@@ -1258,7 +1220,7 @@ Assume the differential equation
 equation
   der(x) = -x + u
 \end{lstlisting}
-shall be transformed to a clocked discretized continuous-time partition with the ExplicitEuler method.  The following model is a manual implementation:
+shall be transformed to a clocked discretized continuous-time partition with the \lstinline!"ExplicitEuler"! method.  The following model is a manual implementation:
 \begin{lstlisting}[language=modelica]
   input Real u;
   parameter Real x_start = 1;
@@ -1292,10 +1254,7 @@ or is given in the simulation environment.
 
 \subsection{Associating a Solver to a Partition}\label{associating-a-solver-to-a-partition}
 
-A \lstinline!solverMethod! can be associated to a clock with the overloaded Clock
-constructor Clock(c, solverMethod), see \cref{clock-constructors}. If a clock is
-associated with a clocked partition and a \lstinline!solverMethod! is associated
-with this clock, then the partition is integrated with it.
+A \lstinline!solverMethod! can be associated to a clock with the overloaded \lstinline!Clock! constructor \lstinline!Clock(c, solverMethod)!, see \cref{clock-constructors}.  If a clock is associated with a clocked partition and a \lstinline!solverMethod! is associated with this clock, then the partition is integrated with it.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1314,24 +1273,18 @@ m*der(x2) = f;
 
 \subsection{Inferencing of solverMethod}\label{inferencing-of-solvermethod}
 
-If a solverMethod is not explicitly associated with a partition, it is
-inferred with a similar mechanism as for sub-clock inferencing, see
-\cref{sub-clock-inferencing}.
+If a \lstinline!solverMethod! is not explicitly associated with a partition, it is inferred with a similar mechanism as for sub-clock inferencing, see \cref{sub-clock-inferencing}.
 
-For each sub-clock partition we build a set corresponding to this sub-clock partition.
-These sets are then merged as follows: for each set without a specified solverMethod we merge it
-with sets connected to it (these may contain a solverMethod); and this is repeated until it is not possible to merge more sets.
-The sets connected in this way should be part of the same base-clock partition and connected through a sub-clock conversion operator
-(\lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample!, \lstinline!backSample!, or \lstinline!noClock!).
+For each sub-clock partition we build a set corresponding to this sub-clock partition.  These sets are then merged as follows: for each set without a specified \lstinline!solverMethod! we merge it with sets connected to it (these may contain a \lstinline!solverMethod!); and this is repeated until it is not possible to merge more sets.  The sets connected in this way should be part of the same base-clock partition and connected through a sub-clock conversion operator (\lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample!, \lstinline!backSample!, or \lstinline!noClock!).
 
 \begin{itemize}
 \item If this set contains multiple different values for \lstinline!solverMethod! it is an error.
 \item If the set contains continuous time-equations:
 \begin{itemize}
 \item If this set contains no \lstinline!solverMethod! it is an error.
-\item Otherwise we use the specified solverMethod.
+\item Otherwise we use the specified \lstinline!solverMethod!.
 \end{itemize}
-\item If the set does not contain continuous time-equations there is no need for a solverMethod.
+\item If the set does not contain continuous time-equations there is no need for a \lstinline!solverMethod!.
 \end{itemize}
 
 \begin{example}
@@ -1466,10 +1419,7 @@ end MixedController;
 
 \section{Semantics}\label{semantics}
 
-The execution of sub partitions requires exact time management for
-proper synchronization. The implication is that testing a Real valued
-time variable to determine sampling instants is not possible. One
-possible method is to use counters to handle sub-sampling scheduling.
+The execution of sub partitions requires exact time management for proper synchronization.  The implication is that testing a \lstinline!Real!-valued time variable to determine sampling instants is not possible.  One possible method is to use counters to handle sub-sampling scheduling.
 
 \begin{lstlisting}[language=modelica]
 Clock_i_j_ticks = if pre(Clock_i_j_ticks)<subSamplingFactor_i_j then 1+pre(Clock_i_j_ticks) else 1;
