@@ -44,7 +44,7 @@ How to edit and generate final documents
 * The pdf-documents are generated with pdflatex, which is part of most LaTeX installations, we used http://miktex.org/download
 * The HTML-documents are generated with LaTeXML. That is more complicated to install - and can optionally be skipped:
 1. First you need perl, we used http://strawberryperl.com/
-2. And then the official LaTeXML package (0.8.4 or later): http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
+2. And then the official LaTeXML package (0.8.5 or later): http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
 3. The exact commands are in the Makefile
 
 It is also possible to get a preview in the pull request.
