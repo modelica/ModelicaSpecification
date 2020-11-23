@@ -1299,8 +1299,9 @@ model InferenceTest
   Real z "Inferred to use ExplicitEuler";
 equation
   der(x) = -x + sample(1, Clock(Clock(1, 10), solverMethod="ExplicitEuler"));
-  der(y) = subSample(x,2) + sample(1, Clock(Clock(2, 10), solverMethod="ImplicitEuler"));
-  der(z) = subSample(x,2) + 1;
+  der(y) = subSample(x, 2) +
+           sample(1, Clock(Clock(2, 10), solverMethod="ImplicitEuler"));
+  der(z) = subSample(x, 2) + 1;
 end InferenceTest;
 
 model IllegalInference
@@ -1309,7 +1310,8 @@ model IllegalInference
   Real z;
 equation
   der(x) = -x + sample(1, Clock(Clock(1, 10), solverMethod="ExplicitEuler"));
-  der(y) = subSample(x, 2) + sample(1, Clock(Clock(2, 10), solverMethod="ImplicitEuler"));
+  der(y) = subSample(x, 2) +
+           sample(1, Clock(Clock(2, 10), solverMethod="ImplicitEuler"));
   der(z) = subSample(x, 4) + 1 + subSample(y);
 end IllegalInference;
 \end{lstlisting}
@@ -1427,11 +1429,16 @@ The execution of sub partitions requires exact time management for proper synchr
 The implication is that testing a \lstinline!Real!-valued time variable to determine sampling instants is not possible.
 One possible method is to use counters to handle sub-sampling scheduling,
 \begin{lstlisting}[language=modelica]
-Clock_$i$_$j$_ticks = if pre(Clock_$i$_$j$_ticks) < subSamplingFactor_$i$_$j$ then 1 + pre(Clock_$i$_$j$_ticks) else 1;
+Clock_$i$_$j$_ticks =
+  if pre(Clock_$i$_$j$_ticks) < subSamplingFactor_$i$_$j$ then
+    1 + pre(Clock_$i$_$j$_ticks)
+  else
+    1;
 \end{lstlisting}
 and to test the counter to determine when the sub-clock is ticking:
 \begin{lstlisting}[language=modelica]
-Clock_$i$_$j$_activated = BaseClock_$i$_activated and Clock_$i$_$j$_ticks >= subSamplingFactor_$i$_$j$;
+Clock_$i$_$j$_activated =
+  BaseClock_$i$_activated and Clock_$i$_$j$_ticks >= subSamplingFactor_$i$_$j$;
 \end{lstlisting}
 The \lstinline!Clock_$i$_$j$_activated! flag is used as the guard for the sub
 partition equations.
@@ -1443,13 +1450,13 @@ model ClockTicks
   Integer second = sample(1, Clock(1));
   Integer seconds(start = -1) = mod(previous(seconds) + second, 60);
   Integer milliSeconds(start = -1) =
-      mod(previous(milliSeconds) + superSample(second, 1000), 1000);
+    mod(previous(milliSeconds) + superSample(second, 1000), 1000);
   Integer minutes(start = -1) =
-      mod(previous(minutes) + subSample(second, 60), 60);
+    mod(previous(minutes) + subSample(second, 60), 60);
 end ClockTicks;
 \end{lstlisting}
 
-A possible implementation model is shown below using Modelica 3.2 semantics.  The base-clock is determined to 0.001 seconds and the sub-sampling factors to 1000 and 60000.
+A possible implementation model is shown below using Modelica~3.2 semantics.  The base-clock is determined to 0.001 seconds and the sub-sampling factors to 1000 and 60000.
 
 \begin{lstlisting}[language=modelica]
 model ClockTicksWithModelica32
@@ -1469,27 +1476,30 @@ equation
   // Prepare clock tick
   BaseClock_1_activated =  sample(0, 0.001);
   when BaseClock_1_activated then
-     Clock_1_1_ticks = if pre(Clock_1_1_ticks) < 60000 then 1+pre(Clock_1_1_ticks) else 1;
-     Clock_1_2_ticks = if pre(Clock_1_2_ticks) < 1 then 1+pre(Clock_1_2_ticks) else 1;
-     Clock_1_3_ticks = if pre(Clock_1_3_ticks) < 1000 then 1+pre(Clock_1_3_ticks) else 1;
+    Clock_1_1_ticks =
+      if pre(Clock_1_1_ticks) < 60000 then 1 + pre(Clock_1_1_ticks) else 1;
+    Clock_1_2_ticks =
+      if pre(Clock_1_2_ticks) < 1 then 1 + pre(Clock_1_2_ticks) else 1;
+    Clock_1_3_ticks =
+      if pre(Clock_1_3_ticks) < 1000 then 1 + pre(Clock_1_3_ticks) else 1;
   end when;
   Clock_1_1_activated =  BaseClock_1_activated and Clock_1_1_ticks >= 60000;
   Clock_1_2_activated =  BaseClock_1_activated and Clock_1_2_ticks >= 1;
   Clock_1_3_activated =  BaseClock_1_activated and Clock_1_3_ticks >= 1000;
 
-  // -----------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Sub partition execution
   when {Clock_1_3_activated} then
-     second = 1;
+    second = 1;
   end when;
   when {Clock_1_1_activated} then
-      minutes = mod(pre(minutes)+second, 60);
+    minutes = mod(pre(minutes) + second, 60);
   end when;
   when {Clock_1_2_activated} then
-     milliSeconds = mod(pre(milliSeconds)+second, 1000);
+    milliSeconds = mod(pre(milliSeconds) + second, 1000);
   end when;
   when {Clock_1_3_activated} then
-     seconds = mod(pre(seconds)+second, 60);
+    seconds = mod(pre(seconds) + second, 60);
   end when;
 end ClockTicksWithModelica32;
 \end{lstlisting}
