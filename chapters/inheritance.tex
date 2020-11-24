@@ -569,24 +569,24 @@ model Test
 end Test;
 \end{lstlisting}
 \end{example}
-If a class is final it means that there cannot be modifiers for its elements when using the class.
+If a class is final it means that there cannot be modifiers for any of its elements when using the class, i.e., it as if all elements were modified to be final.
 \begin{example}
 \begin{lstlisting}[language=modelica]
 model Test2
-  final model MyTransferFunction = TransferFunction(b = {1, 2});
-  MyTransferFunction tf1;              // fine
-  MyTransferFunction tf2(a = {1, 2});  // error, the entire class is final
-  model M=MyTransferFunction(a = {4}); // error, the entire class is final
+  final model MyTF = TransferFunction(b = {1, 2});
+  /* Equivalently:
+  final model MyTF = TransferFunction(final a,final b = {1, 2});
+  */
+  MyTF tf1;                            // fine
+  MyTF tf2(a = {1, 2});                // error, all elements in MyTF are final
+  model M=MyTF(a = {4});               // error, all elements in MyTF are final
   model TFX
-    extends MyTransferFunction;        // fine
+    extends MyTF;                      // fine
     Real foo = 1.0;
   end TFX;
-  TFX tfx(foo = 2.0);                  // fine
-  TFX tfx2(a = {1, 3});                // error, a is still final
-  model TFX3 = TFX(a = {1, 4});        // error, a is still final
-
-  A a(redeclare model X = MyTransferFunction); // fine
-  B b(redeclare MyTransferFunction Y);         // fine
+  TFX tfx(foo = 2.0);                  // fine, foo is not from MyRF
+  TFX tfx2(a = {1, 3});                // error, all elements from MyTF are final
+  model TFX3 = TFX(a = {1, 4});        // error, all elements from MyTF are final
 end Test2;
 \end{lstlisting}
 \end{example}
