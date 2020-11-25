@@ -13,7 +13,7 @@ Modelica® https://modelica.org is a non-proprietary, object-oriented, equation 
 Version | Link                                                              | Published |
 ------- | ----------------------------------------------------------------- | --------|
 3.5-dev | [Master branch](https://github.com/modelica/ModelicaSpecification/tree/master) [HTML](https://specification.modelica.org/master/MLS.html) [PDF](https://specification.modelica.org/master/MLS.pdf)| not yet |
-3.4     | [Tagged release](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4) [HTML](https://specification.modelica.org/v3.4/MLS.html) [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
+3.4     | [3.4 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.4) [HTML](https://specification.modelica.org/maint/3.4/MLS.html) [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
 3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
 3.2rev2 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision2.pdf) | 2013    |
 3.2rev1 | [PDF](https://modelica.org/documents/ModelicaSpec32Revision1.pdf) | 2012    |
