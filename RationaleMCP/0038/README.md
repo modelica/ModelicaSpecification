@@ -36,7 +36,7 @@ For a variable that is part of a continuous time partition discretized with expl
     when Clock() then
       if “firstTick(x)” then
         // first clock tick (initialize system)
-       if x.fixed=true then 
+        if x.fixed=true then 
            x=x.start
          else
            INITIAL EQUATIONS FOR x;
@@ -59,16 +59,16 @@ by:
 
     when clk1 then
       if “firstTick(x)” then
-         if x.fixed=true then 
-           previous_x=x.start
-         else
-           INITIAL EQUATIONS for x;
-         end if;
-       else
-         previous_x = previous(x);
-       end if;
-       // The above is new
-       x = previous_x + hold(u);
+        if x.fixed=true then 
+          previous_x=x.start
+        else
+          INITIAL EQUATIONS for x;
+        end if;
+      else
+        previous_x = previous(x);
+      end if;
+      // The above is new
+      x = previous_x + hold(u);
     end when;
 
 # Backwards Compatibility
