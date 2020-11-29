@@ -244,13 +244,15 @@ are discrete-time expressions.
 The start-values of the introduced \lstinline!Boolean! variables are defined by the taking the start-value of the when-condition, as above where \lstinline!b! is a parameter
 variable.  The start-value of the special functions \lstinline!initial!, \lstinline!terminal!, and \lstinline!sample! is \lstinline!false!.
 
-\subsubsection{Restrictions on Equations within When-Equations}\label{restrictions-on-equations-within-when-equations}
-
+\subsubsection{Restrictions on Where a When-Equation may Occur}\label{restrictions-on-where-a-when-equation-may-occur}
 \begin{itemize}
 \item
   When-equations shall not occur inside initial equations.
 \item
   When-equations cannot be nested.
+\item
+  When-equations can only occur within if-equations and for-equations if
+  the controlling expressions are exclusively parameter expressions.
 \end{itemize}
 
 \begin{example}
@@ -264,6 +266,7 @@ end when;
 \end{lstlisting}
 \end{example}
 
+\subsubsection{Restrictions on Equations within When-Equations}\label{restrictions-on-equations-within-when-equations}
 The equations within the when-equation must have one of the following forms:
 \begin{itemize}
 \item
@@ -284,8 +287,7 @@ Any left hand side reference, (\lstinline!v!, \lstinline!out1!, \ldots), in a wh
 be a component reference, and any indices must be parameter expressions.
 
 \begin{nonnormative}
-The needed restrictions on equations within a when-equation
-becomes apparent with the following example:
+The needed restrictions on equations within a when-equation becomes apparent with the following example:
 \begin{lstlisting}[language=modelica]
   Real x, y;
 equation
@@ -295,8 +297,7 @@ equation
   end when;
 \end{lstlisting}
 
-When the equations of the when-equation are not activated it is
-not clear which variable to hold constant, either \lstinline!x! or \lstinline!y!.
+When the equations of the when-equation are not activated it is not clear which variable to hold constant, either \lstinline!x! or \lstinline!y!.
 A corrected version of this example is:
 \begin{lstlisting}[language=modelica]
   Real x,y;
@@ -310,6 +311,45 @@ Here, variable \lstinline!y! is held constant when the when-equation is
 deactivated and \lstinline!x! is computed from the first equation using the
 value of \lstinline!y! from the previous event instant.
 \end{nonnormative}
+
+\begin{example}
+The restrictions for if-equations mean that both of the following variants are illegal:
+\begin{lstlisting}[language=modelica]
+  Real x, y;
+equation
+  if time < 1 then
+    when sample(1, 2) then
+      x = time;
+    end when;
+  else
+    when sample(1, 3) then
+      y = time;
+    end when;
+  end if;
+
+  when sample(1, 2) then
+    if time < 1 then
+      y = time;
+    else
+      x = time;
+    end if;
+  end when;
+\end{lstlisting}
+whereas the restriction to parameter-expression is intended to allow:
+\begin{lstlisting}[language=modelica]
+  parameter Boolean b = true;
+  parameter Integer n = 3;
+  Real x[n];
+equation
+  if b then
+    for i in 1 : n loop
+      when sample(i, i) then
+        x[i] = time;
+      end when;
+    end for;
+  end if;
+\end{lstlisting}
+\end{example}
 
 \subsubsection{Application of the Single-assignment Rule to When-Equations}\label{application-of-the-single-assignment-rule-to-when-equations}
 
@@ -391,7 +431,7 @@ variables. During simulation, non-state variables should be chosen in
 such a way that variables with an applied \lstinline!reinit! are
 selected as states at least when the corresponding when-clauses become
 active. If this is not possible, an error occurs, since otherwise
-\lstinline!reinit! would be applied on a non-state variable.
+\lstinline!reinit! would be applied to a non-state variable.
 
 Example for the usage of \lstinline!reinit! (bouncing ball):
 \begin{lstlisting}[language=modelica]

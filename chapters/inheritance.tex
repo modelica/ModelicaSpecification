@@ -547,6 +547,7 @@ of a parameter cannot be changed in a simulation environment.
 \end{nonnormative}
 
 \begin{example}
+Final component modification.
 \begin{lstlisting}[language=modelica]
 type Angle =
   Real(final quantity = "Angle", final unit = "rad", displayUnit = "deg");
@@ -567,6 +568,28 @@ model Test
   PI c1(k = 2, T = 3); // fine, will indirectly change tf.b to 2 * {3, 1}
   PI c2(tf(b = {1}));  // error, b is declared as final
 end Test;
+\end{lstlisting}
+\end{example}
+
+\begin{example}
+Final class declaration.
+\begin{lstlisting}[language=modelica]
+model Test2
+  final model MyTF = TransferFunction(b = {1, 2});
+  /* Equivalently:
+  final model MyTF = TransferFunction(final a, final b = {1, 2});
+  */
+  MyTF tf1;                        // fine
+  MyTF tf2(a = {1, 2});            // error, all elements in MyTF are final
+  model M = MyTF(a = {4});         // error, all elements in MyTF are final
+  model TFX
+    extends MyTF;                  // fine
+    Real foo = 1.0;
+  end TFX;
+  TFX tfx(foo = 2.0);              // fine, foo is not from MyRF
+  TFX tfx2(a = {1, 3});            // error, all elements from MyTF are final
+  model TFX3 = TFX(a = {1, 4});    // error, all elements from MyTF are final
+end Test2;
 \end{lstlisting}
 \end{example}
 
