@@ -3,7 +3,7 @@
 Consider the following reference to an external resource:
 - _modelica:/Modelica/Electrical/Analog?resource=media/foo.png_
 
-The URI path part is the class reference, and could take different forms, as described in [modelica-uris.md].  The referenced class is denoted _current class_, here `Modelica.Electrical.Analog`.
+The URI path part is the class reference, and could take different forms, as described in modelica-uris.md.  The referenced class is denoted _current class_, here `Modelica.Electrical.Analog`.
 
 Here, the _media/foo.png_ is a relative file system path that is resolved within a resource directory associated with the current class.  The details of this mapping for the deprecated _host_ form of a Modelica URI are omitted here; the following only applies to the non-deprecated forms, when the current Modelica package is stored in a file system hierarchy:
 - The fully qualified class name of the current class (after resolving any _relclass_ with respect to the class tree context) is mapped to a nested directory structure, with the constant directory name _resources.d_ (alternatively _package-resources_) appended.
