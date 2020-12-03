@@ -194,7 +194,7 @@ So it is easier to forbid this feature for now. If introduced in Modelica, it is
 
 ## Subscripting of general expressions
 In Flat Modelica it is possible to have a subscript on any (parenthesized) expression.
-The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such 
+The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such
 expressions and without the slight generalization we could not generate flat Modelica for them. It does not add any real complication
 to the translator.
 
@@ -206,10 +206,10 @@ record R
 end R;
 R a[3];
 ```
-Here  `a.x[1]` is a slice operation in Modelica generating the array  `{a[1].x[1],a[2].x[1],a[3].x[1]}`, whereas `(a.x)[1]` 
-is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}` 
+Here  `a.x[1]` is a slice operation in Modelica generating the array  `{a[1].x[1],a[2].x[1],a[3].x[1]}`, whereas `(a.x)[1]`
+is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}`
 (assuming trailing subscripts can be skipped, otherwise it is illegal).
-It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`, 
+It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`,
 and `foo()[1]` without causing any similar ambiguity - but it was not deemed necessary at the moment.
 
 ## Input output
@@ -249,4 +249,90 @@ model M
 end M;
 ```
 The Flat Modelica for `M` should only preserve input for `r`, `a`, `c.x` and output for `c.y`, `z`,
-and thus not preserve it for protected variables and for variables in `msub`. 
+and thus not preserve it for protected variables and for variables in `msub`.
+
+## Simplify modifications
+
+Flat Modelica has different rules for modifications applied to:
+- Model component declarations
+- Types (records and short class declarations) and functions (function component declarations)
+
+### Common restrictions
+
+Some restrictions compared to full Modelica apply to both modifications in types and in model component declarations:
+- Flat Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
+- At each level, all identifiers must be unique, so that conflicting modifications are trivially detected.
+
+### Restrictions for model component declarations
+
+A _model component declaration_ is a component declaration belonging to the single `model` of a Flat Modelica source.
+
+Aside from the common restrictions, there are no other restrictions on the modifications in model component declarations.
+
+### Restrictions for types and functions
+
+Named types can be introduced in two different ways in flat modelica, where both make use of modifications:
+- When defining `record` types, each _record component declaration_ can have modifications.  For example:
+```
+record 'PosPoint'
+  'Length' 'x'(min = 0);
+  'Length' 'y'(min = 0);
+end 'PosPoint';
+```
+- When defining type aliases (also known as _short class declarations_).  For example:
+  - ```type 'Length' = Real(unit = "m");``` (just modify existing scalar type)
+  - ```type 'Cube' = 'Length'[3](min = 0, max = 1);``` (make array type)
+  - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
+
+The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, has the same restrictions as record component declarations, see below.  This includes both public and protected function component declarations.  For example:
+```
+function 'fun'
+  input Real 'u'(min = 0); /* Public function component declaration. */
+  output Real 'y'(min = 0); /* Public function component declaration. */
+protected
+  Real 'x'(min = 0); /* Protected function component declaration. */
+  …
+end 'fun';
+```
+
+The following restriction applies to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
+- Modifiers must have constant variability.
+- Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
+
+The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
+
+The reason for placing the same restrictions on protected function component declarations as on public function component declarations is that the handling of types inside functions gets significantly simplified without much loss of generality.  To see the kind of loss of generlity, one needs to consider that many attributes have no use in functions at all: `start`, `fixed`, `nominal`, `unbounded`, `stateSelect`, and `displayUnit`.  This leaves two groups of attributes with minor loss of generality:
+- The strings `unit` and `quantity` can be used to enable more static checking of units and quantities in the function body.  Since such checks are performed during static analysis, the constant variability requirement should hold in general, not just inside functions.  Regarding the other requirement, it is hard to come up with realistic examples where `unit` and `quantity` would not be equal for all elements of an array.
+- Outside functions, `min` and `max` both provide information that may be useful for symbolic manipulations and define conditions that shall be monitored at runtime.  While the symbolic manipulations benefit greatly from constant variability of the limits, the runtime checking is more easily applicable to other variabilities, and different limits for different array elements is not as inconceivable as having different units.  Inside functions, on the other hand, limits on protected variables is not going to provide important information for symbolic manipulations, since function body evaluation does not involve equation solving.  If one would like to have non-constant limits, or limits that are different for different elements of an array, this is possible to express using `assert` statements instead of `min` and `max` attributes.
+
+#### Single array element type
+
+As stated above, an array in a type must have the same type for all its elements, which is to be expressed somehow using only scalar modifiers.  Exactly how this shall be enforced is left to depend on a clarification regarding the use of `each` in full Modelica, see https://github.com/modelica/ModelicaSpecification/issues/2630#issuecomment-669868185 and related comments.
+
+The two variants in `'LineA'` and `'LineB'` below are considered, with the aim of expressing the same thing that would be expressed as `FullModelicaLine` in full Modelica:
+```
+type 'P' = Real[3];
+
+record FullModelicaLine
+  /* Basic way of setting all 'start' attributes is to provide an array with all values:
+   */
+  'P' q[2](start = fill(4, 2, 3), fixed = fill(false, 2, 3));
+
+  /* Alternatively, one can (no full Modelica controversy here) use 'each' to
+   * propagate the same modifier to all elements of the surrounding array:
+   */
+  'P' p[2](each start = fill(4, 3), each fixed = fill(false, 3));
+end FullModelicaLine;
+
+record 'LineA'
+  /* Unclear whether or not valid Modelica. */
+  'P' 'p'[2](each start = 4, each fixed = false);
+end 'LineA';
+
+record 'LineB'
+  /* Do not use 'each' at all in Flat Modelica types. */
+  'P' 'p'[2](start = 4, fixed = false);
+end 'LineB';
+```
+
+If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
