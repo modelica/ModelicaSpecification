@@ -336,3 +336,35 @@ end 'LineB';
 ```
 
 If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
+
+### Final modification
+
+The concept of being final in full Modelica implies two different things:
+- Further modification is not possible.  This can be verified in the reduction from full Modelica to Flat Modelica, and there is no real need to express this constraint also in the Flat Modelica model.  (It could be useful for expressing constraints for hand-written Flat Modelica, but it is a language feature we could add later if requested.)
+- Parameter values and `start` attributes cannot be modified after translation.  This is something that can't just be verified during the reduction from full Modelica to Flat Modelica.
+
+How to deal with the latter is described below.
+
+#### Final modification of `start`
+
+Consider the full Modelica model:
+```
+model M
+  parameter Real x(final start = 1.0);
+initial equation
+  x * x = 2;
+end M;
+```
+
+How should the Flat Modelica model express that `x.start` must not be changed after translation?
+
+#### Final modification of parameter value
+
+Consider the full Modelica model:
+```
+model M
+  final parameter Real p = 1.0;
+end M;
+```
+
+How should the Flat Modelica model express that `p` must not be changed after translation?
