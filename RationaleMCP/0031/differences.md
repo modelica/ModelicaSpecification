@@ -1,6 +1,11 @@
 # Semantical differences between Flat Modelica and Modelica
 This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
 
+## Top level structure
+
+The top level structure (see [grammar](grammar.md#Start-rule)) of a Flat Modelica description can have several top level definitions, with a mandatory `model` definition at the end.
+The definitions before the `model` define types.
+
 ## Unbalanced if-equations
 In Flat Modelica, all branches of an `if`-equation must have the same equation size.
 Absence of an else branch is equivalent to having an empty else branch with equation size 0.
