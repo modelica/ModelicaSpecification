@@ -336,3 +336,7 @@ end 'LineB';
 ```
 
 If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
+
+### Value modification
+
+(Placeholder text to be replaced by PR.)
