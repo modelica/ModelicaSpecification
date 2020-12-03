@@ -1183,7 +1183,13 @@ function definition, see \cref{partial-derivatives-of-functions}.
 
 \subsection{Using the Derivative Annotation}\label{using-the-derivative-annotation}
 
-A function declaration can have an annotation \lstinline!derivative! specifying the derivative function or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically, \cref{annotations-for-code-generation}.  The \lstinline!derivative! annotation can influence simulation time and accuracy and can be applied to both functions written in Modelica and to external functions.  A \lstinline!derivative! annotation can state that it is only valid under certain restrictions on the input arguments.  These restrictions are defined using the following optional attributes: \lstinline!order! (only a restriction if \lstinline!order>1!, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and \lstinline!zeroDerivative!.  The given derivative-function can only be used to compute the derivative of a function call if these restrictions are satisfied.  There may be multiple restrictions on the derivative, in which case they must all be satisfied. The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).  A function may supply multiple derivative functions subject to different restrictions, the first one that can be used (i.e.\ satisfying the restrictions) will be used for each call.
+A function declaration can have an annotation \fmtannotationindex{derivative} specifying the derivative function or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically, \cref{annotations-for-code-generation}.
+The \lstinline!derivative! annotation can influence simulation time and accuracy and can be applied to both functions written in Modelica and to external functions.
+A \lstinline!derivative! annotation can state that it is only valid under certain restrictions on the input arguments.
+These restrictions are defined using the following optional attributes: \lstinline!order! (only a restriction if \lstinline!order>1!, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
+The given derivative-function can only be used to compute the derivative of a function call if these restrictions are satisfied.
+There may be multiple restrictions on the derivative, in which case they must all be satisfied. The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
+A function may supply multiple derivative functions subject to different restrictions, the first one that can be used (i.e.\ satisfying the restrictions) will be used for each call.
 
 \begin{nonnormative}
 This means that the most restrictive derivatives should be written first.
@@ -1289,7 +1295,11 @@ the equation
 \end{align*}
 \end{example}
 
-An input or output to the function may be any simple type (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types) or a record.  For a record containing Reals the corresponding derivative uses a derivative record, that only contain the real-predefined types and sub-records containing reals (handled recursively) from the original record.  When using \lstinline!smoothOrder!, then the derivative record is automatically constructed.  The function must have at least one input containing reals.  The output list of the derivative function shall not be empty.
+An input or output to the function may be any simple type (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types) or a record.
+For a record containing \lstinline!Real! values, the corresponding derivative uses a derivative record that only contains the real-predefined types and sub-records containing reals (handled recursively) from the original record.
+When using \lstinline!smoothOrder!, then the derivative record is automatically constructed.
+The function must have at least one input containing reals.
+The output list of the derivative function shall not be empty.
 
 \begin{example}
 Here is one example use case with records mixing \lstinline!Real! and
@@ -1506,40 +1516,34 @@ end specificEnthalpy;
 
 \section{Declaring Inverses of Functions}\label{declaring-inverses-of-functions}
 
-Every function with one output formal parameter may have one or more
-\lstinline!inverse! annotations to define inverses of this function:
+Every function with one output formal parameter may have one or more \fmtannotationindex{inverse} annotations to define inverses of this function:
 \begin{lstlisting}[language=modelica]
 function $f_1$
   input $A_1$ $u_1$;
-  ...
+  $\ldots$
   input $T_1$ $u_k$;
-  ...
+  $\ldots$
   input $A_m$ $u_m$ = $a_m$;
-  ...
+  $\ldots$
   input $A_n$ $u_n$;
   output $T_2$ y;
 algorithm
-  ...
-  annotation(inverse($u_k$ =$f_2$(..., y, ....), $u_i$ =$f_3$(..., y, ...), ...));
+  $\ldots$
+  annotation(inverse($u_k$ = $f_2$($\ldots$, y, $\ldots$), $u_i$ = $f_3$($\ldots$, y, $\ldots$), $\ldots$));
 end $f_1$;
 \end{lstlisting}
 
-The meaning is that function $f_2$ is one inverse to function $f_1$ where the previous output \lstinline!y! is now an input and the previous input $u_k$ is now an output.  More than one inverse can be defined within the same \lstinline!inverse! annotation.  Several inverses are separated by commas.
+The meaning is that function $f_2$ is one inverse to function $f_1$ where the previous output \lstinline!y! is now an input and the previous input $u_k$ is now an output.
+More than one inverse can be defined within the same \lstinline!inverse! annotation.
+Several inverses are separated by commas.
 
 \begin{nonnormative}
-The inverse requires that for all valid values of the input arguments of \lstinline!$f_2$(..., y, ...)! and $u_k$ being calculated as \lstinline!$u_k$ := $f_2$(..., y, ...)! implies
-the equality \lstinline!y = $f_1$(..., $u_k$, ...,)! up to a certain precision.
+The inverse requires that for all valid values of the input arguments of \lstinline!$f_2$($\ldots$, y, $\ldots$)! and $u_k$ being calculated as \lstinline!$u_k$ := $f_2$($\ldots$, y, $\ldots$)! implies
+the equality \lstinline!y = $f_1$($\ldots$, $u_k$, $\ldots$)! up to a certain precision.
 \end{nonnormative}
 
-Function $f_1$ can have any number and types of formal
-Function $f_1$ can have any number and types of formal
-parameters with and without default value. The restriction is that the
-\emph{number of unknown variables} (see \cref{balanced-models}) in the output formal
-parameter of both $f_1$ and $f_2$ must be
-the same and that $f_2$ should have a union of output and formal
-parameters that is the same or a sub-set of that union for $f_1$, but the order of the formal
-parameters may be permuted.
-
+Function $f_1$ can have any number and types of formal parameters with and without default value.
+The restriction is that the \emph{number of unknown variables} (see \cref{balanced-models}) in the output formal parameter of both $f_1$ and $f_2$ must be the same and that $f_2$ should have a union of output and formal parameters that is the same or a sub-set of that union for $f_1$, but the order of the formal parameters may be permuted.
 
 \begin{example}
 Same union of variables:
@@ -2067,39 +2071,27 @@ The following annotations are useful in the context of calling external function
 They can all specify either a scalar value or an array of values as indicated below for the \lstinline!Library! annotation:
 \begin{itemize}
 \item
-  The \lstinline!annotation(Library="libraryName")!, used by the linker to include
-  the library file where the compiled external function is available.
+  The \lstinline!annotation(Library="libraryName")!\annotationindex{Library}, used by the linker to include the library file where the compiled external function is available.
 \item
-  The \lstinline!annotation(Library=("libraryName1", "libraryName2"))!, used by the
-  linker to include the library files where the compiled external
-  function is available and additional libraries used to implement it.
-  For shared libraries it is recommended to include all non-system
-  libraries in this list.
+  The \lstinline!annotation(Library=("libraryName1", "libraryName2"))!, used by the linker to include the library files where the compiled external function is available and additional libraries used to implement it.
+  For shared libraries it is recommended to include all non-system libraries in this list.
 \item
-  The \lstinline!annotation(Include="includeDirective")!, used to include source files needed for calling the external function in the code
-  generated by the Modelica compiler. The included code should be valid C89 code.
+  The \lstinline!annotation(Include="includeDirective")!\annotationindex{Include}, used to include source files needed for calling the external function in the code generated by the Modelica compiler.
+  The included code should be valid C89 code.
   \begin{nonnormative}
-  Examples of files that can be included are header files or source files that contain the
-  functions referenced in the external function declaration.
+  Examples of files that can be included are header files or source files that contain the functions referenced in the external function declaration.
   \end{nonnormative}
 \item
   The
-  \lstinline!annotation(IncludeDirectory="modelica://ModelicaLibraryName/Resources/Include")!,
-  used to specify a location for header files. The preceding one is the
-  default and need not be specified; but another location could be
-  specified by using an URI name for the include directory, see \cref{external-resources}.
+  \lstinline!annotation(IncludeDirectory="modelica://ModelicaLibraryName/Resources/Include")!\annotationindex{IncludeDirectory}, used to specify a location for header files.
+  The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the include directory, see \cref{external-resources}.
 \item
   The
-  \lstinline!annotation(LibraryDirectory="modelica://ModelicaLibraryName/Resources/Library")!,
-  used to specify a location for library files. The preceding one is the
-  default and need not be specified; but another location could be
-  specified by using an URI name for the library directory, see \cref{external-resources}.
-  Different versions of one object library can be provided
-  (e.g.\ for Windows and for Linux) by providing a
-  \emph{platform} directory below the \lstinline!LibraryDirectory!. If no
-  platform directory is present, the object library must be present
-  in the \lstinline!LibraryDirectory!. The following \emph{platform} names are
-  standardized:
+  \lstinline!annotation(LibraryDirectory="modelica://ModelicaLibraryName/Resources/Library")!\annotationindex{LibraryDirectory}, used to specify a location for library files.
+  The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the library directory, see \cref{external-resources}.
+  Different versions of one object library can be provided (e.g.\ for Windows and for Linux) by providing a \emph{platform} directory below the \lstinline!LibraryDirectory!.
+  If no platform directory is present, the object library must be present in the \lstinline!LibraryDirectory!.
+  The following \emph{platform} names are standardized:
   \begin{itemize}
   \item
     \lstinline!"win32"! (Microsoft Windows 32 bit)
