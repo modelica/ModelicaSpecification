@@ -57,7 +57,6 @@
 % \DeclareCaptionOption call.
 \fi
 
-\usepackage{verbatim}
 % The fixltx2e that was used for textsubscript is no longer needed for pdf, but is needed by latexml
 \ifpdf
 \else
@@ -77,10 +76,33 @@
 \fi
 \setcounter{totalnumber}{1000}
 \raggedbottom
+
+\ifpdf
 \usepackage{hyperref}
+\else
+\usepackage[backref=page]{hyperref} % Need backref, since we can't use biblatex.
+\fi
 % The bookmarks are used as table-of-contents in Acrobat
 % The default (magenta for urls and red for internal links) isn't nice
 \hypersetup{bookmarksnumbered=true, hidelinks, urlcolor=blue, linkcolor=blue}
+
+\ifpdf
+\usepackage[
+  style=authoryear,
+  backref=true,
+  maxnames=6
+]{biblatex}
+\setlength\bibitemsep{0.5\baselineskip}
+\setlength\bibhang{0pt}
+\else
+% Use BibTeX due to LaTeXML problems with biblatex.
+\usepackage[round,authoryear]{natbib}
+\bibliographystyle{plainnat}
+% Define macro aliases with the names used by bibliatex:
+\let\textcite\citet
+\let\parencite\citep
+\fi
+
 \usepackage{multirow} % for multirow entries in tables
 
 % When producing PDF, the ttfamily looks better in size \small, but with LaTeXML this becomes too small,
@@ -93,7 +115,23 @@
 \let\smallifpdf\normalsize
 \fi
 
+\ifpdf
+% Don't load cleveref yet.
+\else
+% The LaTeXML 'listings' support in cleveref is broken, so we need to load cleveref before
+% listings (which is loaded inside mlsshared.sty), so that the broken support doesn't get loaded, see
+% - https://github.com/brucemiller/LaTeXML/issues/1400
+\usepackage[nameinlink,noabbrev]{cleveref}
+\fi
+
 \usepackage{mlsshared}
+
+\ifpdf
+% This is the preferred load order for listings and cleveref, so that cleveref is aware of listings, see above.
+\usepackage[nameinlink,noabbrev]{cleveref}
+\fi
+
+\def\autoref#1{\errmessage{You are not supposed to use \autoref; use \cref or \Cref instead.}}
 
 % Settings in addition to those in mlsshared.sty.
 \lstset{%
@@ -152,11 +190,6 @@
 \newcommand{\tablehead}[1]{\textit{#1}}
 
 \newcommand{\glossaryitem}[1]{\textbf{#1}}
-
-\newcommand{\bibitemtitle}[1]{\emph{#1}}
-
-\usepackage[nameinlink,noabbrev]{cleveref}
-\def\autoref#1{\errmessage{You are not supposed to use \autoref; use \cref or \Cref instead.}}
 
 % Environment for definitions.
 \usepackage{amsthm}
