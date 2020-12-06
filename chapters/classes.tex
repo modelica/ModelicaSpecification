@@ -276,58 +276,18 @@ end UseFirstOrder;
   function.
 \end{itemize}
 
-\subsection{Acyclic Bindings of Constants and Parameters}\label{acyclic-bindings-of-constants-and-parameters}
+\subsection{Acyclic Bindings of Constants and Structural Parameters}\label{acyclic-bindings-of-constants-and-parameters}
 
-The unexpanded binding equations for parameters and constants in the translated model must be acyclic after flattening; except that cycles are allowed if the cycles disappear when evaluating parameters having annotation \lstinline!Evaluate = true! that are not part of the cycle.
-Thus it is not possible to introduce equations for parameters by cyclic dependencies.
+The unexpanded binding equations for constants in the translated model must be acyclic after flattening.
+Thus it is not possible to introduce equations for constants by cyclic dependencies.
 
-\begin{nonnormative}
-There is no exception for parameters with \lstinline!fixed = false!, despite the fact that such parameters are generally allowed to be initialized from systems of dependent equations.
-% Saying "binding equation" below even though it's called a "declaration equation", for consistency with the normative paragraph above.
-However, a parameter with \lstinline!fixed = false! can use an initial equation instead of a binding equation, allowing for cyclic dependencies.
-\end{nonnormative}
+Structural parameters, on the other hand, cannot have cyclic dependencies by definition.
+Since variability rules do not allow constants to depend on structural parameters, this means that constants and structural parameters share the property that their declaration equations can be solved one at a time with the natural causality.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
 constant Real p = 2 * q;
 constant Real q = sin(p); // Illegal since p = 2 * q, q = sin(p) are cyclical
-
-model ABCD
-  parameter Real A[n, n];
-  parameter Integer n = size(A, 1);
-end ABCD;
-
-final ABCD a;
-// Illegal since cyclic dependencies between size(a.A,1) and a.n
-
-ABCD b(redeclare Real A[2, 2] = [1, 2; 3, 4]);
-// Legal since size of A is no longer dependent on n.
-
-ABCD c(n = 2); // Legal since n is no longer dependent on the size of A.
-
-parameter Real r = 2 * sin(r); // Illegal, since r = 2 * sin(r) is cyclic
-
-partial model PartialLumpedVolume
-  parameter Boolean use_T_start = true "= true, use T_start, otherwise h_start"
-    annotation(Dialog(tab = "Initialization"), Evaluate = true);
-  parameter Medium.Temperature T_start=if use_T_start then system.T_start else
-      Medium.temperature_phX(p_start,h_start,X_start)
-    annotation(Dialog(tab = "Initialization", enable = use_T_start));
-  parameter Medium.SpecificEnthalpy h_start=if use_T_start then
-      Medium.specificEnthalpy_pTX(p_start, T_start, X_start) else Medium.h_default
-    annotation(Dialog(tab = "Initialization", enable = not use_T_start));
-end PartialLumpedVolume;
-// Cycle for T_start and h_start, but ok since disappears
-// when evaluating use_T_start
-
-// Illegal since the unexpanded bindings have cycles for both x and y
-// (even if they would disappear if bindings were expanded).
-model HasCycles
-  parameter Integer n = 10;
-  final constant Real A[3, 3] = [0, 0, 0; 1, 0, 0; 2, 3, 0];
-  parameter Real y[3] = A * y + ones(3);
-  parameter Real x[n] = cat(1, {3.4}, x[1:(n-1)]);
-end HasCycles;
 \end{lstlisting}
 \end{example}
 
@@ -340,11 +300,29 @@ variable values of a component are initialized (see \cref{events-and-synchroniza
 of initial value problem of the hybrid DAE):
 \begin{itemize}
 \item
-  A variable \lstinline!vc! declared with \lstinline!constant! prefix remains constant during transient analysis,
-  with a value that is unaffected by the initialization problem.
+  A variable \lstinline!vc! declared with \lstinline!constant! prefix remains constant during transient analysis, with a value that is unaffected by the initialization problem (i.e., determined during translation).
 \item
-  A variable \lstinline!vc! declared with the \lstinline!parameter! prefix remains constant during transient analysis,
-  with a value determined by the initialization problem.
+  % TODO: Add "structural parameter" to index.
+  A variable \lstinline!vc! is called a \firstuse{structural parameter} if all of the following applies:
+  \begin{itemize}
+  \item
+    It is declared with the \lstinline!parameter! prefix.
+  \item
+    It has \lstinline!fixed = true!.
+  \item
+    The expression of its declaration equation does not depend on \lstinline!vc! itself, neither directly nor via cyclic dependency on other parameters.
+    To satisfy this condition, dependencies shall be removed as needed by applying simplifications based on values of constants and other structural parameters that don't depend on \lstinline!vc! with \lstinline!Evaluate = true!.
+    % What about breaking cycles by simplification based on values of other evaluated structural parameters that don't have Evaluate = true?
+    (Note that certain uses of a parameter requires it to be a structural parameter, thereby forcing these simplifications to be made.)
+  \item
+    The declaration equation is given by a structural expression (\cref{structural-expressions}).
+  \end{itemize}
+  A structural parameter remains constant during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!) or by the initialization problem (similar to a \willbedefined{normal parameter}, see item below).
+  At which of these stages the value is determined is tool dependent.
+\item
+  % TODO: Add "normal parameter" to index.
+  A variable \lstinline!vc! declared with the \lstinline!parameter! prefix, is called a \firstuse{normal parameter} unless it is a structural parameter.
+  It remains constant during transient analysis, with a value determined by the initialization problem.
 \item
   A \emph{discrete-time} variable \lstinline!vd! has a vanishing time derivative between events.
   Note that this is not the same as saying that \lstinline!der(vd)=0! almost everywhere,
@@ -359,6 +337,48 @@ of initial value problem of the hybrid DAE):
   (see \cref{events-and-synchronization}). If there are any discontinuities the variable is
   not differentiable.
 \end{itemize}
+
+\begin{example}
+Normal and structural parameters.
+\begin{lstlisting}[language=modelica]
+model ABCD
+  parameter Real A[n, n]; // Requires that n is a structural parameter.
+  parameter Integer n = size(A, 1);
+end ABCD;
+
+final ABCD a;
+// Illegal since cyclic dependencies between size(a.A, 1) and a.n makes n a normal parameter.
+
+ABCD b(redeclare Real A[2, 2] = [1, 2; 3, 4]);
+// Legal since size of A is no longer dependent on n, making n a structural parameter.
+
+ABCD c(n = 2); // Legal since n is no longer dependent on the size of A.
+
+parameter Real r = 2 * sin(r); // Normal parameter, since r = 2 * sin(r) is cyclic.
+
+partial model PartialLumpedVolume
+  parameter Boolean use_T_start = true "= true, use T_start, otherwise h_start"
+    annotation(Dialog(tab = "Initialization"), Evaluate = true);
+  parameter Medium.Temperature T_start=if use_T_start then system.T_start else
+      Medium.temperature_phX(p_start,h_start,X_start)
+    annotation(Dialog(tab = "Initialization", enable = use_T_start));
+  parameter Medium.SpecificEnthalpy h_start=if use_T_start then
+      Medium.specificEnthalpy_pTX(p_start, T_start, X_start) else Medium.h_default
+    annotation(Dialog(tab = "Initialization", enable = not use_T_start));
+end PartialLumpedVolume;
+// Cycle for T_start and h_start, but still strucutral since cycle disappears
+// when evaluating use_T_start
+
+// The unexpanded bindings have cycles for both x and y, making them normal parameters
+// (even if they would disappear if bindings were expanded).
+model HasCycles
+  parameter Integer n = 10;
+  final constant Real A[3, 3] = [0, 0, 0; 1, 0, 0; 2, 3, 0];
+  parameter Real y[3] = A * y + ones(3);
+  parameter Real x[n] = cat(1, {3.4}, x[1:(n-1)]);
+end HasCycles;
+\end{lstlisting}
+\end{example}
 
 If a \lstinline!Real! variable is declared with the prefix \lstinline!discrete! it must in a simulation model be assigned in a when-clause, either by an assignment or an equation.  The variable assigned in a when-clause shall not be defined in a sub-component of \lstinline!model! or \lstinline!block! specialized class.  (This is to keep the property of balanced models.)
 
