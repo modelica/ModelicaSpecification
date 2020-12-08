@@ -344,6 +344,26 @@ of initial value problem of the hybrid DAE):
 For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is a structural or normal parameter, since \lstinline!Evaluate = false! makes it a normal parameter by definition, and \lstinline!Evaluate = true! is only allowed if the parameter is structural.
 \end{nonnormative}
 
+By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that the value of a constant or structural parameter to be used in simplifications is possible to obtain by evaluation of a structural expression where values are available for all component subexpressions.
+
+\begin{example}
+A particularly demanding aspect of this evaluation is the potential presence of external functions.
+Hence, if it is known that a parameter won't be used by a structural expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
+\begin{lstlisting}[language=modelica]
+import length = Modelica.Utilities.Strings.length; /* Pure external function */
+parameter Integer n = length("Hello");             /* Structural parameter */
+parameter Integer p = length("Hello")
+  annotation(Evaluate = false);                    /* Normal parameter */
+parameter Boolean b = false;
+
+/* Variability analysis might cause evaluation of n: */
+parameter Real x = if b and n > 3 then x else 0;
+
+/* Variability analysis cannot cause evaluation of p: */
+parameter Real y = if b and p > 3 then y else 0;
+\end{lstlisting}
+\end{example}
+
 \begin{example}
 Normal and structural parameters.
 \begin{lstlisting}[language=modelica]
