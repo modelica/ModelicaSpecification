@@ -70,15 +70,25 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 > &emsp; )*\
 > &emsp; **model** _long-class-specifier_ **;**
 
+
+> &emsp;&emsp; **model** _IDENT_ _string-comment_\
+> &emsp;&emsp;&emsp; _composition_\
+> &emsp;&emsp; **end** _IDENT_ **;**\
+> &emsp; **end** _IDENT_ **;**
+
 Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
 > _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
 
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
+The four occurrences of _IDENT_ in the _flat-modelica_ rule must be the same identifier.
+
 As an example of the _flat-modelica_ rule, this is a minimal valid Flat Modelica source:
 ```
 //! flat 3.5.0
-model _F
+package _F
+  model _F
+  end _F;
 end _F;
 ```
 
