@@ -5,7 +5,6 @@ This document describes differences between Flat Modelica and Modelica that aren
 
 The top level structure (see [grammar](grammar.md#Start-rule)) of a Flat Modelica description can have several top level definitions, with a mandatory `model` definition at the end.
 The definitions before the `model` either define types or global constants.
-The _component-clause_ of a global constant must use `constant` as its only _type-prefix_.
 
 ## Unbalanced if-equations
 In Flat Modelica, all branches of an `if`-equation must have the same equation size.
