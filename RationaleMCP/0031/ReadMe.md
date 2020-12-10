@@ -63,7 +63,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Simplify modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2BModifications/RationaleMCP/0031/differences.md#simplify-modifications), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2558) (Remaining parts covered by other items.)
 - [ ] Simplify value modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bvalue-modification/RationaleMCP/0031/differences.md#Value-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2747)
 - [ ] Express final modification. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfinal-modification/RationaleMCP/0031/differences.md#Final-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2748)
-- [ ] Make constants available to types. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md#Start-rule), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2746)
+- [x] Make constants available to types. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md#Start-rule), [PR (closed?!)](https://github.com/modelica/ModelicaSpecification/pull/2746)
 - [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
 - [ ] Investigate need for `for`-equations.
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
