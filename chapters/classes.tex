@@ -276,18 +276,71 @@ end UseFirstOrder;
   function.
 \end{itemize}
 
-\subsection{Acyclic Bindings of Constants and Structural Parameters}\label{acyclic-bindings-of-constants-and-parameters}
+\subsection{Acyclic Bindings of Constants and Parameters}\label{acyclic-bindings-of-constants-and-parameters}
 
-The unexpanded binding equations for constants in the translated model must be acyclic after flattening.
-Thus it is not possible to introduce equations for constants by cyclic dependencies.
+For a constant or parameter \lstinline!v! with declaration equation, the unexpanded expression of the declaration equation in the flattended model must not depend on \lstinline!v! itself, neither directly nor indirectly via other variables' declaration equations.
+To satisfy this condition, dependencies shall be removed as needed by applying simplifications based on values of constants (except with \lstinline!Evaluate = false!) and all other \willbedefined{structural parameters} (\cref{component-variability-prefixes-discrete-parameter-constant}) that don't depend on \lstinline!v!.
 
-Structural parameters, on the other hand, cannot have cyclic dependencies by definition (see \cref{component-variability-prefixes-discrete-parameter-constant}).
-Since variability rules do not allow constants to depend on structural parameters, this means that constants and structural parameters share the property that their declaration equations can be solved one at a time with the natural causality.
+That the value of a structural parameter is used for these simplifications does not mean that it has to be determined during translation, but if \lstinline!v! is found to be a structural parameter, then a Modelica tool will be able to break all cycles involving \lstinline!v! by making some (possibly none or all) of the other structural parameters determined during translation.
+Hence, evaluation of a constant or structural parameter can never require solving systems of equations; they can always be sorted so that they can be solved one at a time with the natural causality (i.e., the declaration equation is used to determine the value of the component to which it belongs).
 
 \begin{example}
+Direct and indirect cyclic dependency:
 \begin{lstlisting}[language=modelica]
-constant Real p = 2 * q;
-constant Real q = sin(p); // Illegal since p = 2 * q, q = sin(p) are cyclical
+/* All of the following are illegal: */
+parameter Real r = 2 * sin(r); // Depends directly on r.
+parameter Real p = 2 * q;      // Indirect dependency on p via q = sin(p).
+parameter Real q = sin(p);     // Indirect dependency on q via p = 2 * q.
+\end{lstlisting}
+\end{example}
+
+\begin{example}
+While declaration equations must not be cyclical, the use of initial equations can still introduce valid cyclic dependencies between parameters:
+\begin{lstlisting}[language=modelica]
+  parameter Real p = 2 * q; // This is the only declaration equation.
+  parameter Real q(fixed = false);
+initial equation
+  q = sin(p); // OK, not a declaration equation.
+\end{lstlisting}
+\end{example}
+
+\begin{example}
+Breaking cyclic dependency.
+\begin{lstlisting}[language=modelica]
+model ABCD
+  parameter Real A[n, n];
+  parameter Integer n = size(A, 1);
+end ABCD;
+
+final ABCD a;
+// Illegal cyclic dependency between size(a.A, 1) and a.n.
+
+ABCD b(redeclare Real A[2, 2] = [1, 2; 3, 4]);
+// Legal since size of A is no longer dependent on n.
+
+ABCD c(n = 2); // Legal since n is no longer dependent on the size of A.
+
+partial model PartialLumpedVolume
+  parameter Boolean use_T_start = true "= true, use T_start, otherwise h_start"
+    annotation(Dialog(tab = "Initialization"), Evaluate = true);
+  parameter Medium.Temperature T_start=if use_T_start then system.T_start else
+      Medium.temperature_phX(p_start,h_start,X_start)
+    annotation(Dialog(tab = "Initialization", enable = use_T_start));
+  parameter Medium.SpecificEnthalpy h_start=if use_T_start then
+      Medium.specificEnthalpy_pTX(p_start, T_start, X_start) else Medium.h_default
+    annotation(Dialog(tab = "Initialization", enable = not use_T_start));
+end PartialLumpedVolume;
+// Cycle for T_start and h_start, but still valid since cycle disappears
+// when evaluating use_T_start
+
+// The unexpanded bindings have illegal cycles for both x and y
+// (even if they would disappear if bindings were expanded).
+model HasCycles
+  parameter Integer n = 10;
+  final constant Real A[3, 3] = [0, 0, 0; 1, 0, 0; 2, 3, 0];
+  parameter Real y[3] = A * y + ones(3);
+  parameter Real x[n] = cat(1, {3.4}, x[1:(n-1)]);
+end HasCycles;
 \end{lstlisting}
 \end{example}
 
@@ -312,12 +365,8 @@ of initial value problem of the hybrid DAE):
   \item
     It does not have annotation \lstinline!Evaluate = false!.
   \item
-    The expression of its declaration equation does not depend on \lstinline!vs! itself, neither directly nor via cyclic dependency on other parameters.
-    To satisfy this condition, dependencies shall be removed as needed by applying simplifications based on values of constants (except with \lstinline!Evaluate = false!)  and all other structural parameters that don't depend on \lstinline!vs!.
-    That the value of a structural parameter is used for these simplifications does not mean that it has to be determined during translation, but if \lstinline!vs! is found to be a structural parameter, then a Modelica tool will be able to break all cycles involving \lstinline!vs! by making some (possibly none or all) of the other structural parameters determined during translation.
-    (Note that certain uses of a parameter requires it to be a structural parameter, thereby forcing these simplifications to be made.)
-  \item
-    The declaration equation is given by a structural expression (\cref{structural-expressions}).
+    The declaration equation -- if any -- is given by a structural expression (\cref{structural-expressions}).
+    (Not having a declaration equation is similar to the expression being the default value for the component's type, which is constant.)
   \end{itemize}
   A structural parameter remains constant during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse{evaluated parameter}) or by the initialization problem (similar to a \willbedefined{normal parameter}, see item below).
   At which of these stages the value is determined is tool dependent.
@@ -345,12 +394,14 @@ With every normal parameter, there is at least one reason why it isn't a structu
 This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of structural expression variability is detected.
 For example:
 \begin{lstlisting}[language=modelica]
-parameter Integer n =
-  if b then 1 else 2;        /* Normal parameter due to cycle with 'b'. */
-parameter Boolean b = n > 3; /* Normal parameter due to cycle with 'n'. */
-Real[n] x;                   /* Variability error: 'n' must be structural. */
+  parameter Integer n =
+    if b then 1 else 2;        // Normal parameter due to variability of b.
+  parameter Boolean b(fixed = false); // Normal parameter due to fixed = false.
+  Real[n] x;                   // Variability error: n must be structural.
+initial equation
+  b = n > 3;
 \end{lstlisting}
-Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a normal parameter is that it is in a cycle with \lstinline!b!.
+Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a normal parameter is that it has a dependency on the normal parameter \lstinline!b!.
 
 (Would structural and normal parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the structural component declarations instead.)
 \end{nonnormative}
@@ -377,48 +428,6 @@ parameter Real x = if b and n > 3 then 1 - x else 0;
 
 /* Variability analysis cannot cause evaluation of p: */
 parameter Real y = if b and p > 3 then 1 - y else 0;
-\end{lstlisting}
-\end{example}
-
-\begin{example}
-Normal and structural parameters.
-\begin{lstlisting}[language=modelica]
-model ABCD
-  parameter Real A[n, n]; // Requires that n is a structural parameter.
-  parameter Integer n = size(A, 1);
-end ABCD;
-
-final ABCD a;
-// Illegal since cyclic dependencies between size(a.A, 1) and a.n makes n a normal parameter.
-
-ABCD b(redeclare Real A[2, 2] = [1, 2; 3, 4]);
-// Legal since size of A is no longer dependent on n, making n a structural parameter.
-
-ABCD c(n = 2); // Legal since n is no longer dependent on the size of A.
-
-parameter Real r = 2 * sin(r); // Normal parameter, since r = 2 * sin(r) is cyclic.
-
-partial model PartialLumpedVolume
-  parameter Boolean use_T_start = true "= true, use T_start, otherwise h_start"
-    annotation(Dialog(tab = "Initialization"), Evaluate = true);
-  parameter Medium.Temperature T_start=if use_T_start then system.T_start else
-      Medium.temperature_phX(p_start,h_start,X_start)
-    annotation(Dialog(tab = "Initialization", enable = use_T_start));
-  parameter Medium.SpecificEnthalpy h_start=if use_T_start then
-      Medium.specificEnthalpy_pTX(p_start, T_start, X_start) else Medium.h_default
-    annotation(Dialog(tab = "Initialization", enable = not use_T_start));
-end PartialLumpedVolume;
-// Cycle for T_start and h_start, but still structural since cycle disappears
-// when evaluating use_T_start
-
-// The unexpanded bindings have cycles for both x and y, making them normal parameters
-// (even if they would disappear if bindings were expanded).
-model HasCycles
-  parameter Integer n = 10;
-  final constant Real A[3, 3] = [0, 0, 0; 1, 0, 0; 2, 3, 0];
-  parameter Real y[3] = A * y + ones(3);
-  parameter Real x[n] = cat(1, {3.4}, x[1:(n-1)]);
-end HasCycles;
 \end{lstlisting}
 \end{example}
 
