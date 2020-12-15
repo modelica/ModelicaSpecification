@@ -65,7 +65,7 @@ equations in the following form, so that a well-determined (balanced) system of 
 ```
 (The default equation could also be given as a non-causal equation, as the known existence of a causal equation for `guess('v')` implies that the default equation would only be possible to solve for `'v'`.)
 
-In addition, if `'v'` needs a guess value for initialization, the guess is taken from `guess('v')`.  Hence, any equation where `'v'` occurs has a hidden dependency on the causal equation for `guess('v')`.  Since the causal equation for `guess('v')` will be solved with no other equations in the same equation system, this means that `'v'` is guaranteed to not end up being solved in the same equation system as `guess('v')`, and hence that any guess value will be computed by the time it is needed.
+In addition, if `'v'` needs a guess value for initialization, the guess is taken from `guess('v')`.  Hence, any equation where `'v'` occurs has a hidden dependency on the causal equation for `guess('v')`.  Since the causal equation for `guess('v')` will be solved with no other equations in the same equation system, this means that `'v'` is guaranteed to not end up being solved in the same equation system as `guess('v')`, and hence that any guess value will have been computed by the time it is needed.
 
 Whether the initialization parameters for `'v'` end up being used or not depends on the initializability of `'v'`.  Since the initializability isn't known until after processing the equations of the initialization problem, the actual role of `start('v')` and `guess('v')` cannot be understood without a deeper analysis, and may even be tool-dependent (due to differences in selection of default initialization equations, equation tearing, etc).
 
