@@ -54,7 +54,7 @@ initial equation
 
 Here `userOverridesStart` and `getUserStart` represent tool-specific ways to set parameters of the translated model's initialization problem.
 
-Similar to causal equations for parameters, a causal equations for an initialization parameter may not end up in an equation system together with other equations.  Among other, this means that solving for the initialization parameters will never require guess values for the initialization parameters themselves.
+Similar to causal equations for parameters, a causal equation for an initialization parameter may not end up in an equation system together with other equations.  Among other, this means that solving for the initialization parameters will never require guess values for the initialization parameters themselves.
 
 (Note that providing a non-causal equation that can only be solved for, say, `start('v')` will result in an overdetermined initialization problem, as the addition of the default causal equation will result in two equations that can only be solved for the same variable.)
 
