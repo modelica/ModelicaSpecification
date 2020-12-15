@@ -213,7 +213,7 @@ initial equation
 
 By introducing a built-in attribute called `start_final` (`false` by default), the use of a causal equation assigning to `start('p')` can be replaced by a small modification of the hidden equation:
 ```
-start('p') :=
+guess('p') :=
   if not 'p'.start_final and userOverridesStart('p') then
     getUserStart('p')
   else
