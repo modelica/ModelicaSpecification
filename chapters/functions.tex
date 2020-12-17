@@ -1774,28 +1774,31 @@ The type \lstinline!size_t! is a C unsigned integer type.
 
 Arrays are by default stored in row-major order when calling C functions and in column-major order when calling FORTRAN~77 functions.  These defaults can be overridden by the \lstinline!arrayLayout! annotation.  See the example below.
 
-The table below shows the mapping of an array argument in the absence of
-an explicit external function call when calling a C function. The type \lstinline!T!
-is allowed to be any of the simple types which can be passed to C as
+The table below shows the mapping of an array argument in the absence of an explicit external function call when calling a C function.
+The type \lstinline!T! is allowed to be any of the simple types which can be passed to C as
 defined in \cref{simple-types} or a record type as defined in
 \cref{records} and it is mapped to the type \lstinline!T'! as defined in these sections
 for input arguments.
+Array inputs to C-functions are const-pointers, indicating that the arrays shall not be changed.
 
 \begin{center}
-\begin{tabular}{l|l}
+\begin{tabular}{l|l|l}
 \hline
-\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{1}{c}{\tablehead{C}}\\
-                                          & \multicolumn{1}{c}{\tablehead{Input and output}}\\
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{2}{c}{\tablehead{C}}\\
+                                          & \multicolumn{1}{c}{\tablehead{Input}}  & \multicolumn{1}{c}{\tablehead{Output}}  \\
 \hline
 \hline
 \lstinline!T[$\mathit{dim}_{1}$]! &
+\lstinline[language=C]!const T' *, size_t $\mathit{dim}_{1}$! &
 \lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$!
 \\
 \lstinline!T[$\mathit{dim}_{1}$, $\mathit{dim}_{2}$]! &
+\lstinline[language=C]!const T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$! &
 \lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$!
 \\
-\lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! &
-\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, $\ldots$, size_t $\mathit{dim}_{n}$!
+\lstinline!T[$\ldots$, $\mathit{dim}_{n}$]! &
+\lstinline[language=C]!const T' *, $\ldots$, size_t $\mathit{dim}_{n}$! &
+\lstinline[language=C]!T' *, $\ldots$, size_t $\mathit{dim}_{n}$!
 \\
 \hline
 \end{tabular}
@@ -1842,7 +1845,7 @@ end foo;
 \end{lstlisting}
 The corresponding C prototype is as follows:
 \begin{lstlisting}[language=C]
-double foo(double *, size_t, size_t, size_t);
+double foo(const double *, size_t, size_t, size_t);
 \end{lstlisting}
 
 If the external function is written in FORTRAN~77, i.e.:
@@ -1912,7 +1915,7 @@ end fie;
 \end{lstlisting}
 This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
-double fie(double *, size_t, size_t);
+double fie(const double *, size_t, size_t);
 \end{lstlisting}
 \end{example}
 
