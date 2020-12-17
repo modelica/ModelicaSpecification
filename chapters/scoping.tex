@@ -61,14 +61,13 @@ and an enumeration type and the implicitly created conversion function (\cref{ty
 
 \subsection{Simple Name Lookup}\label{simple-name-lookup}
 
-When an element, equation, or section is flattened, any simple name
-(not composed using dot notation) is first looked up sequentially among
-iteration variables (if any; see below), and then looked up sequentially in each
-member of the ordered set \emph{of instance scopes (see
-\cref{the-class-tree}) corresponding to lexically enclosing classes} until a
-match is found or an enclosing class is encapsulated. In the latter case
-the lookup stops except for the predefined types, functions and
-operators defined in this specification. For these cases the lookup continues in the global scope, where they are defined.
+% Not adding 'encapsulated' as normal word to index; the keyword variant seems sufficient
+A class declared with the keyword \lstinline!encapsulated!\indexinline{encapsulated} (see \lstinline[language=grammar]!class-definition! in the grammar) is called an \firstuse{encapsulated} class.
+By restricting name lookup inside a restricted class in ways defined in this chapter, the meaning of the class is made independent of where it is placed in a package hierarchy.
+
+When an element, equation, or section is flattened, any simple name (not composed using dot notation) is first looked up sequentially among iteration variables (if any; see below), and then looked up sequentially in each member of the ordered set \emph{of instance scopes (see \cref{the-class-tree}) corresponding to lexically enclosing classes} until a match is found or an enclosing class is encapsulated.
+In the latter case the lookup stops except for the predefined types, functions and operators defined in this specification.
+For these cases the lookup continues in the global scope, where they are defined.
 
 The iteration variables are the implicitly declared iteration variable(s) if inside
 the body of a for-loop, \cref{for-equations-repetitive-equation-structures} and \cref{for-statement},
@@ -110,14 +109,10 @@ For a composite name of the form \lstinline!A.B! or \lstinline!A.B.C!, etc.\ loo
   identifiers of the rest of the name (e.g., B and B.C) must be
   classes.
 \item
-  If the identifier denotes a class, that class is temporarily flattened
-  (as if instantiating a component without modifiers of this class, see
-  \cref{modification-environment}) and using the enclosing classes of the denoted class.
-  The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the
-  declared named elements of the temporary flattened class. If the class
-  does not satisfy the requirements for a package, the lookup is
-  restricted to encapsulated elements only. The class we look inside shall
-  not be partial in a simulation model.
+  If the identifier denotes a class, that class is temporarily flattened (as if instantiating a component without modifiers of this class, see \cref{modification-environment}) and using the enclosing classes of the denoted class.
+  The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the declared named elements of the temporary flattened class.
+  If the class does not satisfy the requirements for a package, the lookup is restricted to encapsulated\indexinline{encapsulated} elements only.
+  The class we look inside shall not be partial in a simulation model.
 \end{itemize}
 
 \begin{nonnormative}
@@ -152,7 +147,9 @@ end A;
 For a name starting with dot, e.g.: \lstinline!.A! (or \lstinline!.A.B!, \lstinline!.A.B.C! etc.) lookup is performed as follows:
 \begin{itemize}
 \item
-  The first identifier (\lstinline!A!) is looked up in the global scope.  This is possible even if the class is encapsulated and import-clauses are not used for this.  If there does not exist a class \lstinline!A! in global scope this is an error.
+  The first identifier (\lstinline!A!) is looked up in the global scope.
+  This is possible even if the class is encapsulated\indexinline{encapsulated} and import-clauses are not used for this.
+  If there does not exist a class \lstinline!A! in global scope this is an error.
 \item
   If the name is simple then the class \lstinline!A! is the result of lookup.
 \item
@@ -177,9 +174,7 @@ See \cref{lookup-of-imported-names}.
 
 \section{Instance Hierarchy Name Lookup of Inner Declarations}\label{instance-hierarchy-name-lookup-of-inner-declarations}
 
-An element declared with the prefix \lstinline!outer! references an element instance
-with the same name but using the prefix \lstinline!inner! which is nearest in the
-enclosing instance hierarchy of the \lstinline!outer! element declaration.
+An element declared with the prefix \lstinline!outer!\indexinline{outer} references an element instance with the same name but using the prefix \lstinline!inner!\indexinline{inner} which is nearest in the enclosing instance hierarchy of the \lstinline!outer! element declaration.
 
 Outer component declarations shall not have modifications (including binding equations).
 Outer class declarations should be defined using short-class
@@ -381,10 +376,7 @@ end System;
 
 \section{Flattening Process}\label{flattening-process}
 
-In order to guarantee that elements can be used before they are declared
-and that elements do not depend on the order of their declaration
-(\cref{declaration-order-and-usage-before-declaration}) in the enclosing class, the flattening proceeds in the
-following two major steps:
+In order to guarantee that elements can be used before they are declared and that elements do not depend on the order of their declaration (\cref{declaration-order-and-usage-before-declaration}) in the enclosing class, the \firstuse{flattening}\index{flattening} proceeds in the following two major steps:
 \begin{enumerate}
 \item
   Instantiation process
@@ -417,11 +409,10 @@ be omitted there, since they are not part of the simulation model.
 
 \subsubsection{The Class Tree}\label{the-class-tree}
 
-All necessary libraries including the model which is to be instantiated
-are loaded from e.g.\ file system and form a so called \firstuse{class tree}.
-This tree represents the syntactic information from the
-class definitions. It contains also all modifications at their original
-locations in syntactic form. The builtin classes are put into the unnamed root of the class tree.
+All necessary libraries including the model which is to be instantiated are loaded from e.g.\ file system and form a so called \firstuse{class tree}\index{class tree}.
+This tree represents the syntactic information from the class definitions.
+It contains also all modifications at their original locations in syntactic form.
+The builtin classes are put into the unnamed root of the class tree.
 
 \begin{nonnormative}
 The class tree is built up directly during parsing of the Modelica texts.  For each class a local tree is created which is then merged into the one big tree, according
@@ -430,13 +421,9 @@ to the location of the class in the class hierarchy.  This tree can be seen as t
 
 \subsubsection{The Instance Tree}\label{the-instance-tree}
 
-The output of the instantiation process is an \firstuse{instance tree}.
-The instance tree consists of nodes representing the elements of a class
-definition from the class tree. For a component the subtree of a
-particular node is created using the information from the class of the
-component clause and a new modification environment as result of merging
-the current modification environment with the modifications from the
-current element declaration (see \cref{merging-of-modifications}).
+The output of the instantiation process is an \firstuse{instance tree}\index{instance tree}.
+The instance tree consists of nodes representing the elements of a class definition from the class tree.
+For a component the subtree of a particular node is created using the information from the class of the component clause and a new modification environment as result of merging the current modification environment with the modifications from the current element declaration (see \cref{merging-of-modifications}).
 
 The instance tree has the following properties:
 \begin{itemize}
@@ -502,11 +489,13 @@ flat equation system) using the same lookup.
 
 \paragraph*{The element itself}\label{the-element-itself}
 
-A partially instantiated class or component is an element that is ready
-to be instantiated; a partially instantiated element (i.e.\ class or
-component) is comprised of a reference to the original element (from the
-class tree) and the modifiers for that element (including a possible
-redeclaration).
+A \firstuse{partially instantiated}\index{partially instantiated} class or component is an element that is ready to be instantiated; a partially instantiated element (i.e.\ class or component) is comprised of a reference to the original element (from the class tree) and the modifiers for that element (including a possible redeclaration).
+
+% henrikt-ma: The old glossary defined 'partial flattening' as follows -- does it belong here?
+%First find the names of declared local classes and components.
+%Modifiers, if present, are merged to the local elements and redeclarations are performed.
+%Then base-classes are looked up, flattened and inserted into the class.
+%See also flattening, which additionally flattens local elements and performs modifications.
 
 The possible redeclaration of the element itself takes effect.
 
