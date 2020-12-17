@@ -1,27 +1,35 @@
 \chapter{Equations}\label{equations}
 
+An \firstuse{equation}\index{equation} is part of a class definition.
+A scalar equation relates scalar variables, i.e., constrains the values that these variables can take simultaneously.
+When $n$-1 variables of an equation containing $n$ variables are known, the value of the $n$:th variable can be inferred (solved for).
+In contrast to a statement in an algorithm section, an equation does not define for which of its variable it is to be solved.
+% henrikt-ma: Keeping this sentence from the old glossary only because it mentions the 'instantaneous equations':
+Special cases are: initial equations, instantaneous equations, declaration equations.
+
+% Including definition of 'instantaneous' from old glossary here, even though the term isn't really used outside the introductory chapter.
+An equation or statement is \firstuse{instantaneous}\index{instantaneous} if it holds only at events, i.e., at single points in time.
+The equations and statements of a when-clause are instantaneous, see \cref{when-equations} and \cref{when-statements}.
+
 \section{Equation Categories}\label{equation-categories}
 
-Equations in Modelica can be classified into different categories
-depending on the syntactic context in which they occur:
+% henrikt-ma: One would have expected this list to also describe the instantaneous equations.
+Equations in Modelica can be classified into different categories depending on the syntactic context in which they occur:
 \begin{itemize}
 \item
-  \emph{Normal equality equations} occurring in equation sections,
-  including connect-equations and other equation types of special
-  syntactic form (\cref{equations-in-equation-sections}).
+  Normal equality equations occurring in equation sections, including connect-equations and other equation types of special syntactic form (\cref{equations-in-equation-sections}).
 \item
-  \emph{Declaration equations}, which are part of variable, parameter,
-  or constant declarations (\cref{declaration-equations}).
+  Declaration equations, which are part of variable, parameter, or constant declarations (\cref{declaration-equations}).
 \item
-  \emph{Modification equations}, which are commonly used to modify
-  attributes of classes (\cref{modifications}).
+  Modification equations, which are commonly used to modify attributes of classes (\cref{modifications}).
 \item
-  \emph{Binding equations}, which include both declaration equations and
-  modification equations (for the value itself).
+  \firstuse{Binding equations}\index{binding equation}, which include both declaration equations and element modification for the value of the variable itself.
+  These are considered equations when appearing outside functions, and then a component with a binding equation has its value bound to some expression.
+  (Binding equations can also appear in functions, see \cref{initialization-and-binding-equations-of-components-in-functions}.)
 \item
-  \emph{Initial equations}, which are used to express equations for
-  solving initialization problems (\cref{initialization-initial-equation-and-initial-algorithm}).
+  \willintroduce{Initial equations}, which are used to express equations for solving initialization problems (\cref{initialization-initial-equation-and-initial-algorithm}).
 \end{itemize}
+
 
 \section{Flattening and Lookup in Equations}\label{flattening-and-lookup-in-equations}
 
@@ -32,6 +40,13 @@ Names in an equation shall be found by looking up in the partially
 flattened enclosing class of the equation.
 
 \section{Equations in Equation Sections}\label{equations-in-equation-sections}
+
+An equation section is comprised of the keyword \lstinline!equation!\index{equation@\robustinline{equation}} followed by a sequence of equations.
+The formal syntax is as follows:
+\begin{lstlisting}[language=grammar]
+equation-section :
+   [ initial ] equation { equation ";" }
+\end{lstlisting}
 
 The following kinds of equations may occur in equation sections. The
 syntax is defined as follows:
@@ -80,15 +95,14 @@ functions with several results in assignment statements.
 
 \subsection{For-Equations -- Repetitive Equation Structures}\label{for-equations-repetitive-equation-structures}
 
-The syntax of a for-equation is as follows:
+The syntax of a for-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation} is as follows:
 \begin{lstlisting}[language=grammar]
 for for-indices loop
    { equation ";" }
    end for ";"
 \end{lstlisting}
 
-For-equations may optionally use several iterators (for-indices), see
-\cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
+For-equations may optionally use several iterators (for-indices)\index{in@\robustinline{in}!for-equation}, see \cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
 \begin{lstlisting}[language=grammar]
 for-indices:
    for-index {"," for-index}
@@ -153,7 +167,7 @@ The same restrictions apply to \lstinline!Connections.branch!, \lstinline!Connec
 
 \subsection{If-Equations}\label{if-equations}
 
-If-equations have the following syntax:
+If-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation}\index{else@\robustinline{else}!if-equation}\index{elseif@\robustinline{elseif}!if-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 if expression then
    { equation ";" }
@@ -180,7 +194,7 @@ although the number of unknowns remains the same.
 
 \subsection{When-Equations}\label{when-equations}
 
-When-equations have the following syntax:
+When-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 when expression then
    { equation ";" }
@@ -267,6 +281,7 @@ end when;
 \end{example}
 
 \subsubsection{Restrictions on Equations within When-Equations}\label{restrictions-on-equations-within-when-equations}
+
 The equations within the when-equation must have one of the following forms:
 \begin{itemize}
 \item
@@ -446,7 +461,7 @@ end when
 
 \subsection{assert}\label{assert}
 
-An equation or statement of one of the following forms is an assertion:
+An equation or statement of one of the following forms is an assertion\index{assert@\robustinline{assert}!equation}:
 \begin{lstlisting}[language=modelica]
 assert(condition, message); // Uses level=AssertionLevel.error
 assert(condition, message, assertionLevel);
@@ -509,14 +524,9 @@ assert(T > 200 and T < 500, "Medium model outside feasible region");
 
 \subsection{terminate}\label{terminate}
 
-The \lstinline!terminate! equation or statement (using function
-syntax) successfully terminates the analysis which was carried out,
-see also \cref{assert}. The termination is not immediate at the place
-where it is defined since not all variable results might be available
-that are necessary for a successful stop. Instead, the termination
-actually takes place when the current integrator step is successfully
-finalized or at an event instant after the event handling has been
-completed before restarting the integration.
+The \lstinline!terminate!\index{terminate@\robustinline{terminate}!equation} equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also \cref{assert}.
+The termination is not immediate at the place where it is defined since not all variable results might be available that are necessary for a successful stop.
+Instead, the termination actually takes place when the current integrator step is successfully finalized or at an event instant after the event handling has been completed before restarting the integration.
 
 The \lstinline!terminate! statement has a string argument indicating the reason for the success.
 
@@ -561,10 +571,13 @@ If computation or communication time has to be simulated, this property has to b
 
 \item There must exist a perfect matching of variables to equations after flattening, where a variable can only
 be matched to equations that can contribute to solving for the variable
-(\firstuse{perfect matching rule} -- previously called \emph{single assignment rule}); see also globally balanced \cref{balanced-models}.
+(\firstuse{perfect matching rule}\index{perfect matching rule} -- previously called \emph{single assignment rule}\index{single assignment rule|see{perfect matching rule}}); see also globally balanced \cref{balanced-models}.
 \end{enumerate}
 
 \section{Events and Synchronization}\label{events-and-synchronization}
+
+An \firstuse{event}\index{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
+Events are for example defined by the condition occurring in a when-clause, if-clause, or if-expression.
 
 The integration is halted and an event occurs whenever an event
 generation expression, e.g.\ \lstinline!x > 2! o or \lstinline!floor(x)!, changes
@@ -710,13 +723,9 @@ verification already at compile time.
 
 \section{Initialization, initial equation, and initial algorithm}\label{initialization-initial-equation-and-initial-algorithm}
 
-Before any operation is carried out with a Modelica model (e.g.,
-simulation or linearization), initialization takes place to assign
-consistent values for all variables present in the model. During this
-phase, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!),
-are interpreted as unknown algebraic variables. The initialization uses
-all equations and algorithms that are utilized in the intended operation
-(such as simulation or linearization).
+Before any operation is carried out with a Modelica model (e.g., simulation or linearization), initialization takes place to assign consistent values for all variables present in the model.
+During this phase, called the \firstuse{initialization problem}\index{initialization problem}, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!), are interpreted as unknown algebraic variables.
+The initialization uses all equations and algorithms that are utilized in the intended operation (such as simulation or linearization).
 
 The equations of a when-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
 \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).  In this case, the when-clause equations remain active during the
@@ -752,11 +761,9 @@ Further constraints, necessary to determine the initial values of all
 variables, can be defined in the following ways:
 \begin{enumerate}
 \item
-  As equations in an \lstinline!initial equation! section or as assignments in an
-  \lstinline!initial algorithm! section. The equations and assignments in these
-  initial sections are purely algebraic, stating constraints between the
-  variables at the initial time instant. It is not allowed to use
-  when-clauses in these sections.
+  As equations in an \lstinline!initial equation!\indexinline{initial equation} section or as assignments in an \lstinline!initial algorithm!\indexinline{initial algorithm} section.
+  The equations and assignments in these initial sections are purely algebraic, stating constraints between the variables at the initial time instant.
+  It is not allowed to use when-clauses in these sections.
 \item
   For a non-discrete (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!pre(vc) = vc! is added to the initialization equations.
   \begin{nonnormative}

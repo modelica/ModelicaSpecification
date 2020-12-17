@@ -2,6 +2,9 @@
 % Clearly it would be better to fix them, but if we anyway want to
 % change the layout that can wait
 \hfuzz=50pt
+
+\usepackage[english]{babel}
+
 \usepackage{fancyhdr}
 
 % The general view was that parskip without indent was most readable, so use it
@@ -77,6 +80,17 @@
 \setcounter{totalnumber}{1000}
 \raggedbottom
 
+% Load index before hyperref.
+\ifpdf
+\usepackage{index} % Not supported by LaTeXML.
+\else
+\usepackage{makeidx} % Poor man's alternative to index.sty.
+\fi
+\makeindex
+
+% Providing command that other authors seem to take for granted...
+\newcommand*\seealso[2]{\emph{\alsoname} #1}
+
 \ifpdf
 \usepackage{hyperref}
 \else
@@ -85,6 +99,13 @@
 % The bookmarks are used as table-of-contents in Acrobat
 % The default (magenta for urls and red for internal links) isn't nice
 \hypersetup{bookmarksnumbered=true, hidelinks, urlcolor=blue, linkcolor=blue}
+
+% Commands for styling \index page references.
+\newcommand{\hyperpageit}[1]{\textit{\hyperpage{#1}}}% Not the main entry for this index term.
+\newcommand{\hyperpagebf}[1]{\textbf{\hyperpage{#1}}}% (Over?) emphasized entry for this index term.  Use with caution!
+
+% Rudimentary fallback solution when \lstinline can't be used.  For example, in the argument of \index.
+\newcommand{\robustinline}[1]{\texttt{#1}}
 
 \ifpdf
 \usepackage[
@@ -139,6 +160,15 @@
   xrightmargin=-\fboxsep,
 }
 
+% Convenience for adding a term to the index, formatted with \robustinline.
+\newcommand{\indexinline}[1]{\index{#1@\robustinline{#1}}}
+
+% Similar to \indexinline, but specifically for adding annotation to the index.
+% This makes it easy to change the presentation of annotations in the index.
+\newcommand{\annotationindex}[1]{\index{#1@\robustinline{#1}}}
+% Like \annotationindex, but also outputting the formatted name of the annotation.
+\newcommand{\fmtannotationindex}[1]{\lstinline{#1}\annotationindex{#1}}
+
 \def\S0#1#2{\hypertarget{#2}\chapter{#1}\label{#2}}
 \def\S1#1#2{\hypertarget{#2}\section{#1}\label{#2}}
 \def\S2#1#2{\hypertarget{#2}\subsection{#1}\label{#2}}
@@ -186,6 +216,9 @@
 % to an index/glossary.
 \newcommand{\firstuse}[1]{\emph{#1}}
 
+% Like \firstuse, but when speaking of a term that hasn't been introduced.
+\newcommand{\willintroduce}[1]{\emph{#1}}
+
 % Formatting of table headings.
 \newcommand{\tablehead}[1]{\textit{#1}}
 
@@ -228,7 +261,7 @@
   {\bfseries} % HEADFONT
   {\\}        % HEADPUNCT
   {.75em}     % HEADSPACE
-  {#1~#2 \texttt{#3}\label{modelica:#3}} % CUSTOM-HEAD-SPEC {#1~#2. \texttt{#3}}
+  {#1~#2 \texttt{#3}\label{modelica:#3}\index{#3@\robustinline{#3}}} % CUSTOM-HEAD-SPEC {#1~#2. \texttt{#3}}
 \theoremstyle{modelicadefinition}
 \newtheorem{operatordefinition}{Operator}[chapter]
 \crefname{operatordefinition}{operator}{operators}
