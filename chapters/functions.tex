@@ -127,8 +127,7 @@ Modelica functions have the following restrictions compared to a general
 Modelica \lstinline!class!:
 \begin{itemize}
 \item
-  Each input formal parameter of the function must be prefixed by \lstinline!input!, and each result formal parameter by \lstinline!output!.
-  All public variables are formal parameters.
+  Only input and output formal parameters are allowed in the function's public variable section.
 \item
   Input formal parameters are read-only after being bound to the actual
   arguments or default values, i.e., they shall not be assigned values in
@@ -1640,14 +1639,16 @@ Components in the public part of an external function declaration shall be decla
 This is just as for any other function.  The components in the protected part allow local variables for temporary storage to be declared.
 \end{nonnormative}
 
-The \lstinline[language=grammar]!language-specification! must currently be one of \lstinline!"builtin"!, \lstinline!"C"!, \lstinline!"C..."! (for one of the specific C standards like C89, C99, and C11 -- specifying
-that it relies on the C standard library of that version) or \lstinline!"FORTRAN 77"!.  Unless the external language is specified, it is assumed to be \lstinline!"C"!.
+The \lstinline[language=grammar]!language-specification! must currently be one of \lstinline!"builtin"! (deprecated), \lstinline!"C"!, \lstinline!"C..."! (for one of the specific C standards like C89, C99, and C11 -- specifying
+that it relies on the C standard library of that version) or \lstinline!"FORTRAN 77"!.
+Unless the external language is specified, it is assumed to be \lstinline!"C"!.
 
 \begin{nonnormative}
 The intended use of e.g.\ C99 is to detect if the user tries to link with a C99-function using a C89 compiler.
 \end{nonnormative}
 
-The \lstinline!"builtin"! specification is only used for functions that are defined to be built-in in Modelica.  The external function call mechanism for \lstinline!"builtin"! functions is implementation-defined.
+The deprecated \lstinline!"builtin"! specification is only used for the elementary mathematical functions described in \cref{built-in-mathematical-functions-and-external-built-in-functions}.
+The external function call mechanism for \lstinline!"builtin"! functions is implementation-defined.
 
 \begin{nonnormative}
 Typically, for functions from the standard C library, the prototype of the function is provided but no \lstinline!Library! annotation.  Currently, there are no other builtin functions defined in Modelica.
@@ -1764,28 +1765,31 @@ The type \lstinline!size_t! is a C unsigned integer type.
 
 Arrays are by default stored in row-major order when calling C functions and in column-major order when calling FORTRAN~77 functions.  These defaults can be overridden by the \lstinline!arrayLayout! annotation.  See the example below.
 
-The table below shows the mapping of an array argument in the absence of
-an explicit external function call when calling a C function. The type \lstinline!T!
-is allowed to be any of the simple types which can be passed to C as
+The table below shows the mapping of an array argument in the absence of an explicit external function call when calling a C function.
+The type \lstinline!T! is allowed to be any of the simple types which can be passed to C as
 defined in \cref{simple-types} or a record type as defined in
 \cref{records} and it is mapped to the type \lstinline!T'! as defined in these sections
 for input arguments.
+Array inputs to C-functions are const-pointers, indicating that the arrays shall not be changed.
 
 \begin{center}
-\begin{tabular}{l|l}
+\begin{tabular}{l|l|l}
 \hline
-\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{1}{c}{\tablehead{C}}\\
-                                          & \multicolumn{1}{c}{\tablehead{Input and output}}\\
+\multicolumn{1}{c|}{\tablehead{Modelica}} & \multicolumn{2}{c}{\tablehead{C}}\\
+                                          & \multicolumn{1}{c}{\tablehead{Input}}  & \multicolumn{1}{c}{\tablehead{Output}}  \\
 \hline
 \hline
 \lstinline!T[$\mathit{dim}_{1}$]! &
+\lstinline[language=C]!const T' *, size_t $\mathit{dim}_{1}$! &
 \lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$!
 \\
 \lstinline!T[$\mathit{dim}_{1}$, $\mathit{dim}_{2}$]! &
+\lstinline[language=C]!const T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$! &
 \lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$!
 \\
-\lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! &
-\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, $\ldots$, size_t $\mathit{dim}_{n}$!
+\lstinline!T[$\ldots$, $\mathit{dim}_{n}$]! &
+\lstinline[language=C]!const T' *, $\ldots$, size_t $\mathit{dim}_{n}$! &
+\lstinline[language=C]!T' *, $\ldots$, size_t $\mathit{dim}_{n}$!
 \\
 \hline
 \end{tabular}
@@ -1832,7 +1836,7 @@ end foo;
 \end{lstlisting}
 The corresponding C prototype is as follows:
 \begin{lstlisting}[language=C]
-double foo(double *, size_t, size_t, size_t);
+double foo(const double *, size_t, size_t, size_t);
 \end{lstlisting}
 
 If the external function is written in FORTRAN~77, i.e.:
@@ -1902,7 +1906,7 @@ end fie;
 \end{lstlisting}
 This corresponds to the following C prototype:
 \begin{lstlisting}[language=C]
-double fie(double *, size_t, size_t);
+double fie(const double *, size_t, size_t);
 \end{lstlisting}
 \end{example}
 
@@ -2500,6 +2504,11 @@ Within Modelica this memory is defined as instance of the predefined class \lsti
   External objects may be an input (or part of an input) to a function, in that case the destructor is not called (since the external object is active before
   and after the function call).  Normally this is an external function, but it could be a non-external function as well (e.g.\ calling external functions one
   or more times).  The function input shall not have a default value using the constructor.
+  \end{nonnormative}
+\item
+  An external object class shall be of the specialized class \lstinline!class!.
+  \begin{nonnormative}
+  This is the only use of \lstinline!class!.
   \end{nonnormative}
 \item
   Classes derived from \lstinline!ExternalObject! can neither be used in an

@@ -331,7 +331,10 @@ The annotations listed below, appearing directly inside \lstinline!annotation($\
 "Evaluate" "=" ( false | true )
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base-class of the type-declaration.  In the case of multiple conflicting annotations it is handled similarly to modifiers (e.g., an \lstinline!Evaluate! annotation on the component declaration takes precedence).  The annotation \lstinline!Evaluate! only has effect for a component declared with the prefix \lstinline!parameter!.
+The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base-class of the type-declaration.
+In the case of multiple conflicting annotations it is handled similarly to modifiers (e.g., an \lstinline!Evaluate! annotation on the component declaration takes precedence).
+In the case of hierarchical components it is applied to all components, and if both of them have annotations then \lstinline!Evaluate = true! takes precedence.
+The annotation \lstinline!Evaluate! only has effect for a component declared with the prefix \lstinline!parameter!.
 
 If \lstinline!Evaluate = true!, the model developer proposes to utilize the value for the symbolic processing. In that case, it is not possible to change the parameter value after symbolic pre-processing.
 
@@ -455,7 +458,11 @@ This annotation is used by many functions of the \lstinline!Modelica.Fluid! libr
 \end{semantics}
 \end{annotationdefinition}
 
-\section{Annotations for Simulation Experiments}\label{annotations-for-simulation-experiments}
+\section{Annotations for Simulations}\label{annotations-for-simulations}
+
+These annotations define how models can be checked, translated, and simulated.
+
+\subsection{Annotations for Simulation Experiments}\label{annotations-for-simulation-experiments}
 
 \begin{lstlisting}[language=grammar]
 experiment-annotation:
@@ -471,6 +478,22 @@ experimentOption:
 
 The \fmtannotationindex{experiment} annotation defines the default start time (\lstinline!StartTime!) in {[}s{]}, the default stop time (\lstinline!StopTime!) in {[}s{]}, the suitable time resolution for the result grid (\lstinline!Interval!) in {[}s{]}, and the default relative integration tolerance (\lstinline!Tolerance!) for simulation experiments to be carried out with the model or block at hand.
 If \lstinline!StartTime! is not specified it is assumed to be \lstinline!0.0!.
+
+\subsection{Annotation for Test Cases}\label{annotation-for-test-cases}
+
+\begin{lstlisting}[language=grammar]
+testcase-annotation:
+   annotation "(" "TestCase" "(" "shouldPass" "=" ( false | true ) ")" ")"
+\end{lstlisting}%
+\annotationindex{TestCase}
+If \lstinline!shouldPass! is \lstinline!false! it indicates that the translation or the simulation of the model should fail.
+If a tools checks a package where classes have \lstinline!shouldPass = false! they should not generate errors, and checking may even be skipped.
+On the other hand, models with \lstinline!shouldPass = false! may be useful for creation of negative tests in tool-specific ways.
+Similarly as a class with obsolete-annotation, a class with \lstinline!TestCase! annotation (regardless of the value of \lstinline!shouldPass!) shall not be used in other models, unless those models also have a \lstinline!TestCase! annotation.
+\begin{nonnormative}
+The intent of the test-case can be included in the documentation of the class.
+This annotation can both be used for models intended as test-cases for implementations, and for models explaining detectable errors.
+\end{nonnormative}
 
 \section{Annotation for single use of class}\label{annotation-for-single-use-of-class}
 
