@@ -1,8 +1,8 @@
 \chapter{Operators and Expressions}\label{operators-and-expressions}
 
-The lexical units are combined to form even larger building blocks such
-as expressions according to the rules given by the expression part of
-the Modelica grammar in \cref{modelica-concrete-syntax}.
+The lexical units are combined to form even larger building blocks such as \firstuse{expressions}\index{expression} according to the rules given by the \lstinline[language=grammar]!expression! part of the Modelica grammar in \cref{modelica-concrete-syntax}.
+For example, they can be built from operators, function references, components, or component references (referring to components) and literals.
+Each expression has a type and a variability.
 
 This chapter describes the evaluation rules for expressions, the concept
 of expression variability, built-in mathematical operators and
@@ -39,6 +39,8 @@ operator with lower precedence in the same expression.
 The following table presents all the expression operators in order of precedence.
 \begin{table}[H]
 % Beware that the array construction operator, normally expressed as \lstinline!{ }! needs escaped braces inside \caption.
+% This isn't handled correctly by LaTeXML, as reported here:
+% - https://github.com/brucemiller/LaTeXML/issues/1377
 \caption{Operators in order of precedence from highest to lowest, as derived from the Modelica grammar in \cref{modelica-concrete-syntax}.  All operators are binary except the postfix operators and those shown as unary together with \emph{expr}, the conditional operator, the array construction operator \lstinline!\{ \}! and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.  Operators with the same precedence occur at the same table row.}\label{tab:operator-precedence}
 \begin{center}
 \begin{tabular}{l l l}
@@ -110,7 +112,7 @@ a:b:c:d:e:f:g // Not legal, and scalar arguments gives no legal interpretation.
 \section{Evaluation Order}\label{evaluation-order}
 
 A tool is free to solve equations, reorder expressions and to not evaluate expressions if their values do not influence the result (e.g.\ short-circuit
-evaluation of Boolean expressions).  If-statements and if-expressions guarantee that their clauses are only evaluated if the appropriate condition is true,
+evaluation of \lstinline!Boolean! expressions).  If-statements and if-expressions guarantee that their clauses are only evaluated if the appropriate condition is true,
 but relational operators generating state or time events will during continuous integration have the value from the most recent event.
 
 If a numeric operation overflows the result is undefined. For literals
@@ -204,16 +206,14 @@ The following logical operators are defined:
 \tablehead{Operator} & \tablehead{Description} \\
 \hline
 \hline
-\lstinline!not! & Logical negation (unary operator)\\
-\lstinline!and! & Logical \emph{and} (conjunction)\\
-\lstinline!or! & Logical \emph{or} (disjunction)\\
+\lstinline!not!\indexinline{not} & Logical negation (unary operator)\\
+\lstinline!and!\indexinline{and} & Logical \emph{and} (conjunction)\\
+\lstinline!or!\indexinline{or} & Logical \emph{or} (disjunction)\\
 \hline
 \end{tabular}
 \end{center}
 
-The grammar rules define the syntax of the relational and logical
-operators.
-
+The grammar rules define the syntax of the relational and logical operators.
 \begin{lstlisting}[language=grammar]
 logical-expression :
    logical-term { or logical-term }
@@ -251,10 +251,7 @@ The following holds for relational operators:
   In relations of the form \lstinline!v1 == v2 or v1 <> v2!,
   \lstinline!v1! or \lstinline!v2! shall, unless used in a function, not be a subtype of \lstinline!Real!.
   \begin{nonnormative}
-  The reason for this rule is that relations with \lstinline!Real! arguments are transformed to state events (see Events, \cref{events-and-synchronization})
-  and this transformation becomes unnecessarily complicated for the \lstinline!==! and \lstinline!<>! relational operators (e.g.\ two crossing functions instead
-  of one crossing function needed, epsilon strategy needed even at event instants). Furthermore, testing on equality of Real variables is questionable on machines
-  where the number length in registers is different to number length in main memory.
+  The reason for this rule is that relations with \lstinline!Real! arguments are transformed to state events (see Events, \cref{events-and-synchronization}) and this transformation becomes unnecessarily complicated for the \lstinline!==! and \lstinline!<>! relational operators (e.g.\ two crossing functions instead of one crossing function needed, epsilon strategy needed even at event instants).  Furthermore, testing on equality of \lstinline!Real! variables is questionable on machines where the number length in registers is different to number length in main memory.
   \end{nonnormative}
 \item
   Relational operators can generate events, see \cref{discrete-time-expressions}.
@@ -292,15 +289,13 @@ The array range constructor operator \lstinline!:! is described in \cref{vector-
 An expression
 \begin{lstlisting}[language=modelica]
 if expression1 then expression2 else expression3
-\end{lstlisting}
-is one example of if-expression. First \lstinline!expression1!, which must be
-\lstinline!Boolean! expression, is evaluated. If \lstinline!expression1! is true \lstinline!expression2! is
-evaluated and is the value of the if-expression, else \lstinline!expression3! is
-evaluated and is the value of the if-expression. The two expressions,
-\lstinline!expression2! and \lstinline!expression3!, must be type compatible expressions
-(\cref{type-compatible-expressions}) giving the type of the if-expression. If-expressions with
-\lstinline!elseif! are defined by replacing \lstinline!elseif! by \lstinline!else if!. For
-short-circuit evaluation see \cref{evaluation-order}.
+\end{lstlisting}%
+\index{if@\robustinline{if}!expression}\index{then@\robustinline{then}!if-expression}\index{else@\robustinline{else}!if-expression}
+is one example of if-expression. First \lstinline!expression1!, which must be \lstinline!Boolean! expression, is evaluated.
+If \lstinline!expression1! is true \lstinline!expression2! is evaluated and is the value of the if-expression, else \lstinline!expression3! is evaluated and is the value of the if-expression.
+The two expressions, \lstinline!expression2! and \lstinline!expression3!, must be type compatible expressions (\cref{type-compatible-expressions}) giving the type of the if-expression.
+If-expressions with \lstinline!elseif!\index{elseif@\robustinline{elseif}!if-expression} are defined by replacing \lstinline!elseif! by \lstinline!else if!.
+For short-circuit evaluation see \cref{evaluation-order}.
 
 \begin{nonnormative}
 \lstinline!elseif! in expressions has been added to the Modelica language for symmetry with if-clauses.
@@ -337,7 +332,7 @@ input Real time (final quantity = "Time",
                  final unit = "s");
 \end{lstlisting}
 
-The value of the start attribute of time is set to the time instant at
+The value of the \lstinline!start! attribute of \lstinline!time! is set to the time instant at
 which the simulation is started.
 
 \begin{example}
@@ -431,7 +426,7 @@ Square root of $v$ if $v \geq 0$, otherwise an error occurs.  Argument $v$ needs
 \end{semantics}
 \end{functiondefinition}
 
-\begin{operatordefinition*}[Integer]\label{modelica:integer-of-enumeration}
+\begin{operatordefinition*}[Integer]\label{modelica:integer-of-enumeration}\index{Integer@\robustinline{Integer}!conversion operator}
 \begin{synopsis}\begin{lstlisting}
 Integer($e$)
 \end{lstlisting}\end{synopsis}
@@ -440,7 +435,7 @@ Ordinal number of the expression $e$ of enumeration type that evaluates to the e
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[<EnumTypeName>]\label{modelica:enumeration-of-integer}
+\begin{operatordefinition*}[<EnumTypeName>]\label{modelica:enumeration-of-integer}\index{enumeration@\robustinline{enumeration}!conversion operator}
 \begin{synopsis}\begin{lstlisting}
 EnumTypeName($i$)
 \end{lstlisting}\end{synopsis}
@@ -451,7 +446,7 @@ It is an error to attempt to convert values of $i$ that do not correspond to val
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[String]\label{modelica:to-String}
+\begin{operatordefinition*}[String]\label{modelica:to-String}\index{String@\robustinline{String}!conversion operator}
 \begin{synopsis}\begin{lstlisting}
 String($b$, <options>)
 String($i$, <options>)
@@ -508,7 +503,7 @@ The operators listed below trigger events if used outside of a when-clause and o
 \lstinline!rem($x$, $y$)! & Integer remainder & \Cref{modelica:rem} \\
 \lstinline!ceil($x$)! & Smallest integer \lstinline!Real! not less than $x$ & \Cref{modelica:ceil} \\
 \lstinline!floor($x$)! & Largest integer \lstinline!Real! not greater than $x$ & \Cref{modelica:floor} \\
-\lstinline!integer($x$)! & Largest \lstinline!Intger! not greater than $x$ & \Cref{modelica:integer} \\
+\lstinline!integer($x$)! & Largest \lstinline!Integer! not greater than $x$ & \Cref{modelica:integer} \\
 \hline
 \end{tabular}
 \end{center}
@@ -516,7 +511,7 @@ The operators listed below trigger events if used outside of a when-clause and o
 These expression for \lstinline!div!, \lstinline!ceil!, \lstinline!floor!, and \lstinline!integer! are event generating expression.  The event generating expression for \lstinline!mod(x,y)! is \lstinline!floor(x/y)!, and for \lstinline!rem(x,y)! it is \lstinline!div(x,y)! -- i.e.\ events are not generated when \lstinline!mod! or \lstinline!rem! changes continuously in an interval, but when they change discontinuously from one interval to the next.
 
 \begin{nonnormative}
-If this is not desired, the \lstinline!noEvent! function can be applied to them.  E.g.\ \lstinline!noEvent(integer(v))!.
+If this is not desired, the \lstinline!noEvent! operator can be applied to them.  E.g.\ \lstinline!noEvent(integer(v))!.
 \end{nonnormative}
 
 \begin{operatordefinition}[div]
@@ -592,34 +587,37 @@ Note, outside of a when-clause state events are triggered when the return value 
 \end{semantics}
 \end{operatordefinition}
 
-\subsection{Built-in Mathematical Functions and External Built-in Functions}\label{built-in-mathematical-functions-and-external-built-in-functions}
+\subsection{Elementary Mathematical Functions}\label{built-in-mathematical-functions-and-external-built-in-functions}
 
-The functions listed below are built-in mathematical functions are available in Modelica
-and can be called directly without any package prefix added to the
-function name. They are also available as external built-in functions in
-the \lstinline!Modelica.Math! library.
+The functions listed below are elementary mathematical functions.  Tools are expected to utilize well known properties of these functions (derivatives, inverses, etc) for symbolic processing of expressions and equations.
 \begin{center}
 \begin{tabular}{l|l l}
 \hline
 \tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
 \hline
 \hline
-\lstinline!sin($x$)! & Sine & \\
-\lstinline!cos($x$)! & Cosine & \\
-\lstinline!tan($x$)! & Tangent ($x$ shall not be: $\ldots$, -$\pi/2$, $\pi/2$, $3\pi/2$, $\ldots$) & \\
-\lstinline!asin($x$)! & Inverse sine ($-1 \le x \le 1$) & \\
-\lstinline!acos($x$)! & Inverse cosine ($-1 \le x \le 1$) & \\
-\lstinline!atan($x$)! & Inverse tangent & \\
-\lstinline!atan2($y$, $x$)! & Principal value of the arc tangent of $y/x$ & \Cref{modelica:atan2} \\
-\lstinline!sinh($x$)! & Hyperbolic sine & \\
-\lstinline!cosh($x$)! & Hyperbolic cosine & \\
-\lstinline!tanh($x$)! & Hyperbolic tangent & \\
-\lstinline!exp($x$)! & Exponential, base $\mathrm{e}$ & \\
-\lstinline!log($x$)! & Natural (base $\mathrm{e}$) logarithm ($x > 0$) & \\
-\lstinline!log10($x$)! & Base 10 logarithm ($x > 0$) & \\
+\lstinline!sin($x$)!        \indexinline{sin}   & Sine & \\
+\lstinline!cos($x$)!        \indexinline{cos}   & Cosine & \\
+\lstinline!tan($x$)!        \indexinline{tan}   & Tangent ($x$ shall not be: $\ldots$, -$\pi/2$, $\pi/2$, $3\pi/2$, $\ldots$) & \\
+\lstinline!asin($x$)!       \indexinline{asin}  & Inverse sine ($-1 \le x \le 1$) & \\
+\lstinline!acos($x$)!       \indexinline{acos}  & Inverse cosine ($-1 \le x \le 1$) & \\
+\lstinline!atan($x$)!       \indexinline{atan}  & Inverse tangent & \\
+\lstinline!atan2($y$, $x$)! \indexinline{atan2} & Principal value of the arc tangent of $y/x$ & \Cref{modelica:atan2} \\
+\lstinline!sinh($x$)!       \indexinline{sinh}  & Hyperbolic sine & \\
+\lstinline!cosh($x$)!       \indexinline{cosh}  & Hyperbolic cosine & \\
+\lstinline!tanh($x$)!       \indexinline{tanh}  & Hyperbolic tangent & \\
+\lstinline!exp($x$)!        \indexinline{exp}   & Exponential, base $\mathrm{e}$ & \\
+\lstinline!log($x$)!        \indexinline{log}   & Natural (base $\mathrm{e}$) logarithm ($x > 0$) & \\
+\lstinline!log10($x$)!      \indexinline{log10} & Base 10 logarithm ($x > 0$) & \\
 \hline
 \end{tabular}
 \end{center}
+
+These functions are the only ones that can also be called using the deprecated \lstinline!"builtin"! external language, see \cref{external-function-interface}.
+
+\begin{nonnormative}
+End user oriented information about the elementary mathematical functions can be found for the corresponding functions in the \lstinline!Modelica.Math! package.
+\end{nonnormative}
 
 \begin{functiondefinition}[atan2]
 \begin{synopsis}\begin{lstlisting}
@@ -629,7 +627,7 @@ atan2($y$, $x$)
 Principal value of the arc tangent of $y/x$, using the signs of the two arguments to determine the quadrant of the result.  The result $\varphi$ is in the interval $\left[-\pi,\, \pi\right]$ and satisfies:
 \begin{equation*}
 \begin{aligned}
-\abs{(x,\, y)}\, \cos(\varphi) &= x \\
+\abs{(x,\, y)}\, \cos(\varphi) &= x\\
 \abs{(x,\, y)}\, \sin(\varphi) &= y
 \end{aligned}
 \end{equation*}
@@ -708,7 +706,7 @@ The scalar expressions $\mathit{actual}$ and $\mathit{simplified}$ are subtypes 
   \begin{example}
   $\mathit{actual} \cdot \lambda + \mathit{simplified} \cdot (1 - \lambda)$, where $\lambda$ is a homotopy parameter going from 0 to 1.
   \end{example}
-  The solution must fulfill the equations for homotopy returning $\mathit{actual}$.
+  The solution must fulfill the equations for \lstinline!homotopy! returning $\mathit{actual}$.
 \end{enumerate}
 For non-scalar arguments the function is vectorized according to \cref{scalar-functions-applied-to-array-arguments}.  For further details, see \cref{homotopy}.
 \end{semantics}
@@ -821,28 +819,18 @@ The calling syntax is:
                                    initialPoints = {0.0, 1.0},
                                    initialValues = {0.0, 0.0});
 \end{lstlisting}
-where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, \lstinline!x!, \lstinline!v! are all subtypes of Real,
-\lstinline!positiveVelocity! is a Boolean, \lstinline!initialPoints! and \lstinline!initialValues! are
-arrays of subtypes of Real of equal size, containing the y coordinates
-and the $z$ values of a finite set of points describing the initial
-distribution of $z(y, \mathit{t0})$. The \lstinline!out0! and \lstinline!out1! are given by
-the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1!
-are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at
-each point in time only one of in0 and in1 is used). Elements in the
-initialPoints array must be sorted in non-descending order. The operator
-can not be vectorized according to the vectorization rules described in
-\cref{scalar-functions-applied-to-array-arguments}. The operator can be vectorized only with respect to the
-arguments in0 and in1 (which must have the same size), returning
-vectorized outputs out0 and out1 of the same size; the arguments
-initialPoints and initialValues are vectorized accordingly.
+where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, \lstinline!x!, \lstinline!v! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real! of equal size, containing the y coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(y, \mathit{t0})$.
+The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
+Elements in the \lstinline!initialPoints! array must be sorted in non-descending order.
+The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.
+The operator can be vectorized only with respect to the arguments \lstinline!in0! and \lstinline!in1! (which must have the same size), returning vectorized outputs \lstinline!out0! and \lstinline!out1! of the same size; the arguments \lstinline!initialPoints! and \lstinline!initialValues! are vectorized accordingly.
 
 The solution, $z$, can be described in terms of characteristics:
 \begin{equation*}
 z(y+\int_{t}^{t+\beta} v(\alpha) \mathrm{d}\alpha, t+\beta) = z(y, t),\quad\text{for all $\beta$ as long as staying inside the domain}
 \end{equation*}
 
-This allows the direct computation of the solution based on interpolating the
-boundary conditions.
+This allows the direct computation of the solution based on interpolating the boundary conditions.
 
 \lstinline!spatialDistribution! can be described in terms of the pseudo-code given as a block:
 \begin{lstlisting}[language=modelica]
@@ -861,66 +849,68 @@ protected
   Real x0;
   Integer m;
 algorithm
+  /* The notation
+   *   x <and then> y
+   * is used below as a shorthand for
+   *   if x then y else false
+   * also known as "short-circuit evaluation of x and y".
+   */
   if positiveVelocity then
-    out1:=interpolate(points, values, 1-(x-x0));
-    out0:=values[1]; // similar to in0 but avoiding algebraic loop
+    out1 := interpolate(points, values, 1 - (x - x0));
+    out0 := values[1]; // Similar to in0 but avoiding algebraic loop.
   else
-    out0:=interpolate(points, values, 0-(x-x0));
-    out1:=values[end]; // similar to in1 but avoiding algebraic loop
+    out0 := interpolate(points, values, 0 - (x - x0));
+    out1 := values[end]; // Similar to in1 but avoiding algebraic loop.
   end if;
   when <acceptedStep> then
-    if x>x0 then
-      m:=size(points,1);
-      while (if m>0 then points[m]+(x-x0)>=1 else false) then
-        m:=m-1;
+    if x > x0 then
+      m := size(points, 1);
+      while m > 0 <and then> points[m] + (x - x0) >= 1 loop
+        m := m - 1;
       end while;
-      values:=cat(1, {in0}, values[1:m], {interpolate(points, values,1-(x-x0))} );
-      points:=cat(1, {0}, points[1:m] .+ (x-x0), {1} );
-    elseif x<x0 then
-      m:=1;
-      while (if m<size(points,1) then points[m]+(x-x0)<=0 else false) then
-        m:=m+1;
+      values := cat(1,
+                    {in0},
+                    values[1:m],
+                    {interpolate(points, values, 1 - (x - x0))});
+      points := cat(1, {0}, points[1:m] .+ (x-x0), {1});
+    elseif x < x0 then
+      m := 1;
+      while m < size(points, 1) <and then> points[m] + (x - x0) <= 0 loop
+        m := m + 1;
       end while;
-      values:=cat(1, {interpolate(points, values, 0-(x-x0))},values[m:end],{in1});
-      points:=cat(1, {0}, points[m:end] .+ (x-x0), {1});
+      values := cat(1,
+                    {interpolate(points, values, 0 - (x - x0))},
+                    values[m:end],
+                    {in1});
+      points := cat(1, {0}, points[m:end] .+ (x - x0), {1});
     end if;
-    x0:=x;
+    x0 := x;
   end when;
 initial algorithm
-  x0:=x;
-  points:=initialPoints;
-  values:=initialValues;
+  x0 := x;
+  points := initialPoints;
+  values := initialValues;
 end spatialDistribution;
 \end{lstlisting}
 
 \begin{nonnormative}
-Note that the implementation has an internal state and thus
-cannot be described as a function in Modelica; initialPoints and
-initialValues are declared as parameters to indicate that they are only
-used during initialization.
+Note that the implementation has an internal state and thus cannot be described as a function in Modelica; \lstinline!initialPoints! and \lstinline!initialValues! are declared as parameters to indicate that they are only used during initialization.
 
 The infinite-dimensional problem stated above can then be formulated in the following way:
 \begin{lstlisting}[language=modelica]
 der(x) = v;
-(out0, out1) = spatialDistribution(in0, in1, x, v >=0, initialPoints, initialValues);
+(out0, out1) = spatialDistribution(in0, in1, x, v >= 0,
+                                   initialPoints, initialValues);
 \end{lstlisting}
 
-Events are generated at the exact instants when the velocity
-changes sign -- if this is not needed, \lstinline!noEvent! can be used to
-suppress event generation.
+Events are generated at the exact instants when the velocity changes sign -- if this is not needed, \lstinline!noEvent! can be used to suppress event generation.
 
 If the velocity is known to be always positive, then \lstinline!out0! can be omitted, e.g.:
 \begin{lstlisting}[language=modelica]
 der(x) = v;
-(,out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
+(, out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
 \end{lstlisting}
-Technically relevant use cases for the use of
-\lstinline!spatialDistribution! are modeling of electrical
-transmission lines, pipelines and pipeline networks for gas, water and
-district heating, sprinkler systems, impulse propagation in elongated
-bodies, conveyor belts, and hydraulic systems. Vectorization is needed
-for pipelines where more than one quantity is transported with velocity
-v in the example above.
+Technically relevant use cases for the use of \lstinline!spatialDistribution! are modeling of electrical transmission lines, pipelines and pipeline networks for gas, water and district heating, sprinkler systems, impulse propagation in elongated bodies, conveyor belts, and hydraulic systems.  Vectorization is needed for pipelines where more than one quantity is transported with velocity \lstinline!v! in the example above.
 \end{nonnormative}
 
 \subsubsection{cardinality (deprecated)}\label{cardinality-deprecated}
@@ -947,7 +937,8 @@ end Pin;
 model Resistor
   Pin p, n;
 equation
-  assert(cardinality(p) > 0 and cardinality(n) > 0, "Connectors p and n of Resistor must be connected");
+  assert(cardinality(p) > 0 and cardinality(n) > 0,
+         "Connectors p and n of Resistor must be connected");
   // Equations of resistor
   ...
 end Resistor;
@@ -1254,7 +1245,7 @@ Hereby, \lstinline!terminal()! ensures an event at the end of successful simulat
 noEvent($\mathit{expr}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Real elementary relations within $\mathit{expr}$ are taken literally, i.e., no state or time event is triggered.  No zero crossing functions shall be used to monitor any of the normally event-generating subexpressions inside $\mathit{expr}$.  See also \crefnameref{modelica:smooth} and \cref{events-and-synchronization}.
+\lstinline!Real! elementary relations within $\mathit{expr}$ are taken literally, i.e., no state or time event is triggered.  No zero crossing functions shall be used to monitor any of the normally event-generating subexpressions inside $\mathit{expr}$.  See also \crefnameref{modelica:smooth} and \cref{events-and-synchronization}.
 \end{semantics}
 \end{operatordefinition}
 
@@ -1284,7 +1275,7 @@ equation
 \end{semantics}
 \end{operatordefinition}
 
-\begin{operatordefinition*}[sample]\label{modelica:event-sample}
+\begin{operatordefinition*}[sample]\label{modelica:event-sample}\index{sample@\robustinline{sample}!event-generating}
 \begin{synopsis}\begin{lstlisting}
 sample($\mathit{start}$, $\mathit{interval}$)
 \end{lstlisting}\end{synopsis}
@@ -1298,7 +1289,11 @@ Returns \lstinline!true! and triggers time events at time instants $\mathit{star
 pre($y$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Returns the \emph{left limit} $y(t^{-})$ of variable $y(t)$ at a time instant $t$.  At an event instant, $y(t^{-})$ is the value of $y$ after the last event iteration at time instant $t$ (see comment below). Any subscripts in the component expression $y$ must be parameter expressions.  \lstinline!pre! can be applied if the following three conditions are fulfilled simultaneously: (a) variable $y$ is either a subtype of a simple type or is a record component, (b) $y$ is a discrete-time expression (c) the operator is \emph{not} applied in a function class.
+Returns the \emph{left limit} $y(t^{-})$ of variable $y(t)$ at a time instant $t$.
+At an event instant, $y(t^{-})$ is the value of $y$ after the last event iteration at time instant $t$ (see comment below).
+% Warning "component expression" is a term defined for synchronous operator argument restrictions; this seems to conflict with also defining the present argument restriction below.
+Any subscripts in the component expression $y$ must be parameter expressions.
+\lstinline!pre! can be applied if the following three conditions are fulfilled simultaneously: (a) variable $y$ is either a subtype of a simple type or is a record component, (b) $y$ is a discrete-time expression (c) the operator is \emph{not} applied in a \lstinline!function! class.
 \begin{nonnormative}
 This can be applied to continuous-time variables in when-clauses, see \cref{discrete-time-expressions} for the definition of discrete-time expression.
 \end{nonnormative}
@@ -1307,9 +1302,12 @@ The first value of \lstinline!pre($y$)! is determined in the initialization phas
 A new event is triggered if there is at least for one variable \lstinline!v! such that \lstinline!pre(v) <> v! after the active model equations are evaluated at an event instant.  In this case the model is at once reevaluated.  This evaluation sequence is called \emph{event iteration}.  The integration is restarted once \lstinline!pre(v) == v! for all \lstinline!v! appearing inside \lstinline!pre($\ldots$)!.
 
 \begin{nonnormative}
-If \lstinline!v! and \lstinline!pre(v)! are only used in when-clauses, the translator might mask event iteration for variable \lstinline!v! since \lstinline!v! cannot change during event iteration.  It is a \emph{quality of implementation} to find the minimal loops for event iteration, i.e., not all parts of the model need to be reevaluated.
+If \lstinline!v! and \lstinline!pre(v)! are only used in when-clauses, the translator might mask event iteration for variable \lstinline!v! since \lstinline!v! cannot change during event iteration.
+It is a quality of implementation to find the minimal loops for event iteration, i.e., not all parts of the model need to be reevaluated.
 
-The language allows mixed algebraic systems of equations where the unknown variables are of type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, or an enumeration.  These systems of equations can be solved by a global fix point iteration scheme, similarly to the event iteration, by fixing the \lstinline!Boolean!, \lstinline!Integer!, and/or enumeration unknowns during one iteration.  Again, it is a quality of implementation to solve these systems more efficiently, e.g., by applying the fix point iteration scheme to a subset of the model equations.
+The language allows mixed algebraic systems of equations where the unknown variables are of type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, or an enumeration.
+These systems of equations can be solved by a global fix point iteration scheme, similarly to the event iteration, by fixing the \lstinline!Boolean!, \lstinline!Integer!, and/or enumeration unknowns during one iteration.
+Again, it is a quality of implementation to solve these systems more efficiently, e.g., by applying the fix point iteration scheme to a subset of the model equations.
 \end{nonnormative}
 \end{semantics}
 \end{operatordefinition}
@@ -1319,7 +1317,7 @@ The language allows mixed algebraic systems of equations where the unknown varia
 edge($b$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Expands into \lstinline!($b$ and not pre($b$))! for \lstinline!Boolean! variable $b$.  The same restrictions as for \lstinline!pre! apply (e.g.\ not to be used in function classes).
+Expands into \lstinline!($b$ and not pre($b$))! for \lstinline!Boolean! variable $b$.  The same restrictions as for \lstinline!pre! apply (e.g.\ not to be used in \lstinline!function! classes).
 \end{semantics}
 \end{operatordefinition}
 
@@ -1347,10 +1345,10 @@ $\mathit{expr}$ needs to be type-compatible with $x$.  \lstinline!reinit! can on
 
 \section{Variability of Expressions}\label{variability-of-expressions}
 
-The concept of variability of an expression indicates to what extent the
-expression can vary over time. See also \cref{component-variability-prefixes-discrete-parameter-constant} regarding the
-concept of variability. There are four levels of variability of
-expressions, starting from the least variable:
+The concept of \firstuse{variability of an expression}\index{expression variability}\index{variability!expression|see{expression variability}} indicates to what extent the expression can vary over time.
+See also \cref{component-variability-prefixes-discrete-parameter-constant} regarding the concept of variability.
+% It seems wrong to not mention 'clocked discrete-time' here.
+There are four levels of variability of expressions, starting from the least variable:
 \begin{itemize}
 \item
   constant variability
@@ -1367,8 +1365,7 @@ variability), the following rules both help enforcing compliance of computed sol
 restrictions that simplify reasoning and reporting of errors:
 \begin{itemize}
 \item
-  For an assignment \lstinline!v:=expr! or binding equation \lstinline!v=expr!, \lstinline!v! must be declared
-  to be at least as variable as \lstinline!expr!.
+  For an assignment \lstinline!v := expr! or binding equation \lstinline!v = expr!, \lstinline!v! must be declared to be at least as variable as \lstinline!expr!.
 \item
   When determining whether an equation can contribute to solving for a variable \lstinline!v! (for instance,
   when applying the perfect matching rule, see \cref{synchronous-data-flow-principle-and-single-assignment-rule}),
@@ -1383,12 +1380,12 @@ restrictions that simplify reasoning and reporting of errors:
 
 \subsection{Constant Expressions}\label{constant-expressions}
 
-Constant expressions are:
+Constant expressions\index{constant expression}\index{expression variability!constant} are:
 \begin{itemize}
 \item
   \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!, and \lstinline!enumeration! literals.
 \item
-  Variables declared as constant.
+  Variables declared as \lstinline!constant!.
 \item
   Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!,
   \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with constant
@@ -1402,22 +1399,16 @@ Constant expressions are:
   \end{itemize}
 \end{itemize}
 
-Components declared as constant shall have an associated declaration
-equation with a constant expression, if the constant is directly in the
-simulation model, or used in the simulation model. The value of a
-constant can be modified after it has been given a value, unless the
-constant is declared final or modified with a final modifier. A constant
-without an associated declaration equation can be given one by using a
-modifier.
+Components declared as \lstinline!constant! shall have an associated declaration equation with a constant expression, if the constant is directly in the simulation model, or used in the simulation model.  The value of a constant can be modified after it has been given a value, unless the constant is declared \lstinline!final! or modified with a \lstinline!final! modifier.  A constant without an associated declaration equation can be given one by using a modifier.
 
 \subsection{Parameter Expressions}\label{parameter-expressions}
 
-Parameter expressions are:
+Parameter expressions\index{parameter expression}\index{expression variability!parameter}\index{parametric variability|see{parameter expression}} are:
 \begin{itemize}
 \item
   Constant expressions.
 \item
-  Variables declared as parameter.
+  Variables declared as \lstinline!parameter!.
 \item
   Input variables in functions behave as though they were parameter expressions.
 \item
@@ -1430,7 +1421,7 @@ Parameter expressions are:
   \item
     \lstinline!cardinality(c)!, see restrictions for use in \cref{cardinality-deprecated}.
   \item
-    \lstinline!end! in \lstinline!A[$\ldots$ end $\ldots$]! if \lstinline!A! is variable declared in a non-function class.
+    \lstinline!end! in \lstinline!A[$\ldots$ end $\ldots$]! if \lstinline!A! is variable declared in a non-\lstinline!function! class.
   \item
     \lstinline!size(A)! (including \lstinline!size(A, j)! where \lstinline!j! is parameter expression) if \lstinline!A! is variable declared in a non-function class.
   \item
@@ -1442,36 +1433,27 @@ Parameter expressions are:
 
 \subsection{Discrete-Time Expressions}\label{discrete-time-expressions}
 
-Discrete-time expressions are:
+Discrete-time expressions\index{discrete-time expression}\index{expression variability!discrete-time} are:
 \begin{itemize}
 \item
   Parameter expressions.
 \item
-  Discrete-time variables, i.e., \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String! variables and
-  \lstinline!enumeration! variables, as well as \lstinline!Real! variables assigned in
-  \lstinline!when!-clauses
+  Discrete-time variables, i.e., \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String! variables and \lstinline!enumeration! variables, as well as \lstinline!Real! variables assigned in \lstinline!when!-clauses.
 \item
-  Function calls where all input arguments of the function are
-  discrete-time expressions.
+  Function calls where all input arguments of the function are discrete-time expressions.
 \item
-  Expressions where all the subexpressions are discrete-time
-  expressions.
+  Expressions where all the subexpressions are discrete-time expressions.
 \item
   Expressions in the body of a \lstinline!when!-clause, \lstinline!initial equation!, or \lstinline!initial algorithm!.
 \item
-  Unless inside \lstinline!noEvent!: Ordered relations (\lstinline!>!, \lstinline!<!, \lstinline!>=!, \lstinline!<=!) and the event
-  generating functions \lstinline!ceil!, \lstinline!floor!, \lstinline!div!, and \lstinline!integer!, if at least one
-  argument is non-discrete time expression and subtype of \lstinline!Real!.
+  Unless inside \lstinline!noEvent!: Ordered relations (\lstinline!>!, \lstinline!<!, \lstinline!>=!, \lstinline!<=!) and the event generating functions \lstinline!ceil!, \lstinline!floor!, \lstinline!div!, and \lstinline!integer!, if at least one argument is non-discrete time expression and subtype of \lstinline!Real!.
   \begin{nonnormative}
-  These will generate events, see \cref{events-and-synchronization}.  Note that \lstinline!rem! and \lstinline!mod! generate events but are not discrete-time
-  expressions. In other words, relations inside \lstinline!noEvent!, such as \lstinline!noEvent(x>1)!, are not discrete-time expressions.
+  These will generate events, see \cref{events-and-synchronization}.  Note that \lstinline!rem! and \lstinline!mod! generate events but are not discrete-time expressions.  In other words, relations inside \lstinline!noEvent!, such as \lstinline!noEvent(x>1)!, are not discrete-time expressions.
   \end{nonnormative}
 \item
-  The functions \lstinline!pre!, \lstinline!edge!, and \lstinline!change! result in discrete-time
-  expressions.
+  The functions \lstinline!pre!, \lstinline!edge!, and \lstinline!change! result in discrete-time expressions.
 \item
-  Expressions in functions behave as though they were discrete-time
-  expressions.
+  Expressions in functions behave as though they were discrete-time expressions.
 \end{itemize}
 
 For an equation \lstinline!expr1 = expr2! where neither expression is of base type
@@ -1527,7 +1509,5 @@ end Test;
 
 \subsection{Continuous-Time Expressions}\label{continuous-time-expressions}
 
-All expressions are continuous-time expressions including constant,
-parameter and discrete expressions. The term \emph{non-discrete-time
-expression} refers to expressions that are not constant, parameter or
-discrete expressions.
+All expressions are continuous-time expressions\index{continuous-time!expression}\index{expression variability!continuous-time} including constant, parameter and discrete expressions.
+The term \firstuse{non-discrete-time expression}\index{non-discrete-time expression}\index{expression variability!non-discrete-time} refers to expressions that are neither constant, parameter nor discrete-time expressions.

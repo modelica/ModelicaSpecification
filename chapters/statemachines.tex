@@ -1,22 +1,14 @@
 \chapter{State Machines}\label{state-machines}
 
-This chapter defines language elements to define clocked state
-machines. These state machines have a similar modeling power as
-Statecharts (Harel 1987) and have the important feature that at one
-clock tick, there is only one assignment to every variable (for example,
-it is an error if state machines are executed in parallel and they
-assign to the same variable at the same clock tick; such errors are
-detected during translation). Furthermore, it is possible to activate
-and deactivate clocked equations and blocks at a clock tick. An
-efficient implementation will only evaluate the equations and blocks
-that are active at the current clock tick. With other Modelica language
-elements, this important feature cannot be defined.
+This chapter defines language elements to define clocked state machines.
+These state machines have a similar modeling power as Statecharts \parencite{Harel1987Statecharts} and have the important feature that at one clock tick, there is only one assignment to every variable (for example, it is an error if state machines are executed in parallel and they assign to the same variable at the same clock tick; such errors are detected during translation).
+Furthermore, it is possible to activate and deactivate clocked equations and blocks at a clock tick.
+An efficient implementation will only evaluate the equations and blocks that are active at the current clock tick.
+With other Modelica language elements, this important feature cannot be defined.
 
-The semantics of the state machines defined in this chapter is
-inspired by mode automata and is basically the one from Lucid Synchrone
-3.0 (Pouzet 2006). Note, safety critical control software in aircrafts
-is often defined with such kind of state machines. The following
-properties are different to Lucid Synchrone 3.0:
+The semantics of the state machines defined in this chapter is inspired by mode automata and is basically the one from Lucid Synchrone 3.0 \parencite{Pouzet2006LucidSynchrone30}.
+Note, safety critical control software in aircrafts is often defined with such kind of state machines.
+The following properties are different to Lucid Synchrone 3.0:
 \begin{itemize}
 \item
   Lucid Synchrone has two kinds of transitions: \emph{strong} and
@@ -54,7 +46,7 @@ All transitions leaving one state must have different priorities. One
 and only one instance in each state machine must be marked as initial by
 appearing in an \lstinline!initialState! statement.
 
-The special kinds of connect-statements listed below are used to define define a state machine.
+The special kinds of connect-equations listed below are used to define define a state machine.
 \begin{center}
 \begin{tabular}{l|l l}
 \hline
@@ -67,7 +59,7 @@ The special kinds of connect-statements listed below are used to define define a
 \end{tabular}
 \end{center}
 
-The \lstinline!transition! and \lstinline!initialState! equations can only be used in equations and cannot be used inside if-equations with non-parametric condition, or in when-equations.
+The \lstinline!transition! and \lstinline!initialState! equations can only be used in equations, and cannot be used inside if-equations with conditions that are not parameter expressions, or in when-equations.
 
 The operators listed below are used to query the status of the state machine.
 \begin{center}
@@ -89,9 +81,18 @@ transition($\mathit{from}$, $\mathit{to}$, $\mathit{condition}$,
   immediate=$\mathit{imm}$, reset=$\mathit{reset}$, synchronize=$\mathit{synch}$, priority=$\mathit{prio}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Arguments $\mathit{from}$ and $\mathit{to}$ are block instances, and $\mathit{condition}$ is a \lstinline!Boolean! argument.  The optional arguments \lstinline!immediate!, \lstinline!reset!, and \lstinline!synchronize! are of type \lstinline!Boolean!, have parametric variability and a default of \lstinline!true!, \lstinline!true!, \lstinline!false! respectively.  The optional argument \lstinline!priority! is of type \lstinline!Integer!, has parametric variability and a default of 1.
+Arguments $\mathit{from}$ and $\mathit{to}$ are block instances, and $\mathit{condition}$ is a \lstinline!Boolean! argument.
+The optional arguments \lstinline!immediate!, \lstinline!reset!, and \lstinline!synchronize! are of type \lstinline!Boolean!, have parameter variability and a default of \lstinline!true!, \lstinline!true!, \lstinline!false! respectively.
+The optional argument \lstinline!priority! is of type \lstinline!Integer!, has parameter variability and a default of 1.
 
-This operator defines a transition from instance $\mathit{from}$ to instance $\mathit{to}$.  The $\mathit{from}$ and $\mathit{to}$ instances become states of a state machine.  The transition fires when $\mathit{condition} = \text{\lstinline!true!}$ if $\mathit{imm} = \text{\lstinline!true!}$ (this is called an \firstuse{immediate transition}) or \lstinline!previous($\mathit{condition}$)! when $\mathit{imm} = \text{\lstinline!false!}$ (this is called a \firstuse{delayed transition}).  Argument \lstinline!priority! defines the priority of firing when several transitions could fire.  In this case the transition with the smallest value of \lstinline!priority! fires.  It is required that $\mathit{prio} \geq 1$ and that for all transitions from the same state, the priorities are different. If $\mathit{reset} = \text{\lstinline!true!}$, the states of the target state are reinitialized, i.e.\ state machines are restarted in initial state and state variables are reset to their start values.  If $\mathit{synch} = \text{\lstinline!true!}$, any transition is disabled until all state machines of the from-state have reached final states, i.e.\ states without outgoing transitions.  For the precise details about firing a transition, see \cref{state-machine-semantics}.
+This operator defines a transition from instance $\mathit{from}$ to instance $\mathit{to}$.
+The $\mathit{from}$ and $\mathit{to}$ instances become states of a state machine.
+The transition fires when $\mathit{condition} = \text{\lstinline!true!}$ if $\mathit{imm} = \text{\lstinline!true!}$ (this is called an \firstuse{immediate transition}\index{immediate transition}\index{transition!immediate}) or \lstinline!previous($\mathit{condition}$)! when $\mathit{imm} = \text{\lstinline!false!}$ (this is called a \firstuse{delayed transition}\index{delayed transition}\index{transition!delayed}).
+Argument \lstinline!priority! defines the priority of firing when several transitions could fire.
+In this case the transition with the smallest value of \lstinline!priority! fires.
+It is required that $\mathit{prio} \geq 1$ and that for all transitions from the same state, the priorities are different. If $\mathit{reset} = \text{\lstinline!true!}$, the states of the target state are reinitialized, i.e.\ state machines are restarted in initial state and state variables are reset to their start values.
+If $\mathit{synch} = \text{\lstinline!true!}$, any transition is disabled until all state machines of the from-state have reached final states, i.e.\ states without outgoing transitions.
+For the precise details about firing a transition, see \cref{state-machine-semantics}.
 \end{semantics}
 \end{operatordefinition}
 
@@ -158,8 +159,6 @@ equation
 
 \begin{nonnormative}
 \Cref{fig:state-machine-layout} shows the recommended layout of a state machine.
-
-The recommended color is \{95, 95, 95\} for states and for transition text, and \{175,175,175\} for transition lines.
 \end{nonnormative}
 
 \begin{figure}[H]
@@ -179,38 +178,30 @@ and \lstinline!Text! annotations defined in \cref{annotations}.
 \begin{example}
 \begin{lstlisting}[language=modelica]
 transition(state2, state1, x < 10, immediate=true, reset=true, synchronize=false, priority=1)
-  annotation (
+  annotation(
     Line(
-      points={{-40,-16},{-36,-4},{-32,8},{-40,26},{-40,32},{-46,50}},
-      color={175,175,175},
-      thickness=0.25,
-      smooth=Smooth.Bezier),
+      points = {{-40,-16},{-36,-4},{-32,8},{-40,26},{-40,32},{-46,50}},
+      color = {175, 175, 175},
+      thickness = 0.25,
+      smooth = Smooth.Bezier),
     Text(
-      string="%condition",
-      extent={{4,-4},{4,-10}},
-      fontSize=10,
-      textStyle={TextStyle.Bold},
-      textColor={95,95,95},
-      horizontalAlignment=TextAlignment.Left),
-);
+      string = "%condition",
+      extent = {{4, -4}, {4, -10}},
+      fontSize = 10,
+      textStyle = {TextStyle.Bold},
+      textColor = {95, 95, 95},
+      horizontalAlignment = TextAlignment.Left),
+  );
 \end{lstlisting}
 \end{example}
 
-The Text annotation representing the transition condition can use the
-notation \%condition to refer to the condition expression.
+The \lstinline!Text! annotation representing the transition condition can use the notation \lstinline!%condition! to refer to the condition expression.
 
-The extent of the Text is interpreted relative to either the first point
-of the Line, in the case of immediate=false, or the last point
-(immediate=true).
+The extent of the Text is interpreted relative to either the first point of the \lstinline!Line!, in the case of \lstinline!immediate=false!, or the last point (\lstinline!immediate=true!).
 
-In addition to the line defined by the points of the Line annotation, a
-perpendicular line is used to represent the transition. This line is
-closer to the first point if immediate=false otherwise closer to the
-last point.
+In addition to the line defined by the points of the \lstinline!Line! annotation, a perpendicular line is used to represent the transition.  This line is closer to the first point if \lstinline!immediate=false! otherwise closer to the last point.
 
-If the condition text is somewhat distant from the perpendicular line, a
-dimmed straight line joins the transition text and the perpendicular
-line.  (See the rightmost transition above.)
+If the condition text is somewhat distant from the perpendicular line, a dimmed straight line joins the transition text and the perpendicular line.  (See the rightmost transition above.)
 
 If \lstinline!reset=true!, a filled arrow head is used otherwise an open arrow head.
 For \lstinline!synchronize=true!, an inverse ``fork'' symbol is used in the
@@ -260,11 +251,7 @@ The state update starts from \lstinline!nextState!, i.e., what has been determin
 \begin{lstlisting}[language=modelica]
 output Integer selectedState = if reset then 1 else previous(nextState);
 \end{lstlisting}
-The integer fired is calculated as the index of the transition to be
-fired by checking that \lstinline!selectedState! is the from-state and the condition
-is true for an immediate transition or previous(condition) is true for a
-delayed transition. The max function returns the index of the transition
-with highest priority or 0.
+The integer fired is calculated as the index of the transition to be fired by checking that \lstinline!selectedState! is the from-state and the condition is true for an immediate transition or \lstinline!previous($\mathit{condition}$)! is true for a delayed transition.  The max function returns the index of the transition with highest priority or 0.
 
 \begin{lstlisting}[language=modelica]
 Integer fired =
@@ -322,9 +309,9 @@ Integer fired = max(previous(delayed), immediate);
 Integer nextState =
   if active then
     (if fired > 0
-		  then t[fired].to
-		  else selectedState)
-	else
+      then t[fired].to
+      else selectedState)
+  else
     previous(nextState);
 \end{lstlisting}
 In order to define synchronize transitions, each state machine must
@@ -337,9 +324,7 @@ Boolean finalStates[nStates] = {
   for i in 1:nStates};
 Boolean stateMachineInFinalState = finalStates[activeState];
 \end{lstlisting}
-To enable a synchronize transition, all the stateMachineInFinalState
-conditions of all state machines within the meta state must be true. An
-example is given below in the semantic example model.
+To enable a synchronize transition, all the \lstinline!stateMachineInFinalState! conditions of all state machines within the meta state must be true.  An example is given below in the semantic example model.
 
 \subsection{Reset Handling}\label{reset-handling}
 
@@ -354,16 +339,13 @@ A state can be reset for two reasons:
   Then, its target state is reset, but not other states.
 \end{itemize}
 
-The first reset mechanism is handled by the activeResetStates and
-nextResetStates vectors.
+The first reset mechanism is handled by the \lstinline!activeResetStates! and \lstinline!nextResetStates! vectors.
 
-The state machine reset flag is propagated and maintained to each state
-individually:
+The state machine reset flag is propagated and maintained to each state individually:
 \begin{lstlisting}[language=modelica]
 output Boolean activeResetStates[nStates] = {if reset then true else previous(nextResetStates[i]) for i in 1:nStates};
 \end{lstlisting}
-until a state is eventually executed, then its corresponding reset
-condition is set to false:
+until a state is eventually executed, then its corresponding reset condition is set to false:
 \begin{lstlisting}[language=modelica]
 Boolean nextResetStates[nStates] =
   if active then
@@ -371,11 +353,11 @@ Boolean nextResetStates[nStates] =
   else
     previous(nextResetStates)
 \end{lstlisting}
-The second reset mechanism is implemented with the selectedReset~and
-nextReset~variables. If no reset transition is fired, the nextReset is
-set to false for the next cycle.
+The second reset mechanism is implemented with the \lstinline!selectedReset!~and \lstinline!nextReset!~variables.  If no reset transition is fired, the \lstinline!nextReset! is set to false for the next cycle.
 
 \subsection{Activation handling}\label{activation-handling}
+
+When a state is suspended its equations should not be executed, and its variables keep their values -- including state-variables in clocked discretized continuous-time equations.
 
 The execution of a sub-state machine has to be suspended when its
 enclosing state is not active. This activation flag is given as a
@@ -445,35 +427,24 @@ levels in nested state machines.
 \subsection{Merging Connections to Multiple Outputs}\label{merging-connections-to-multiple-outputs}
 
 \begin{nonnormative}
-Since instances of blocks can be used as states of a state
-machine it is natural to extend the connection semantics of Modelica to
-allow several outputs to be connected to one input.
+The causal connection semantics of Modelica for non-state machines are generalized to states of state machines, using the fact that only one state is active at a time.
 \end{nonnormative}
 
-It is possible to connect several outputs to an input if all the outputs
-come from states of the same state machine. In such cases, we get the
-following constraint equations:
+It is possible to connect outputs each coming from different states of state machines together -- and connect this with other causal connectors.
+These outputs are combined seen as one source of the signal, and give the following constraint equations,
 \begin{lstlisting}[language=modelica,escapechar=!]
 u!\textsubscript{1}! = u!\textsubscript{2}! = ... = y!\textsubscript{1}! = y!\textsubscript{2}! = ...
 \end{lstlisting}
-with u\textsubscript{i} inputs and y\textsubscript{i} outputs. The
-semantics is defined as follows. Introduce a variable v representing the
-signal flow and rewrite the equation above as a set of equations for
-u\textsubscript{i} and a set of assignment equations for v:
+with \lstinline!y!\textsubscript{i} being outputs from different states of the state-machine and \lstinline!u!\textsubscript{i} being other causal variables.
+The semantics is defined similarly to \cref{merging-variable-definitions}:
 \begin{lstlisting}[language=modelica,escapechar=!]
-v := if activeState(state!\textsubscript{1}!) then y!\textsubscript{1}! else last(v);
-v := if activeState(state!\textsubscript{2}!) then y!\textsubscript{2}! else last(v);
-...
-u!\textsubscript{1}! = v
-u!\textsubscript{2}! = v
-...
-\end{lstlisting}
-
-The merge of the definitions of v is then made according to \cref{merging-variable-definitions}:
-Merging Variable Definitions. The result is after
-simplification:
-\begin{lstlisting}[language=modelica,escapechar=!]
-v := if activeState(state!\textsubscript{1}!) then y!\textsubscript{1}! elseif activeState(state!\textsubscript{2}!) then y!\textsubscript{2}! elseif ... else last(v);
+v = if activeState(state!\textsubscript{1}!) then
+      y!\textsubscript{1}!
+    elseif activeState(state!\textsubscript{2}!) then
+      y!\textsubscript{2}!
+    elseif $\ldots$
+    else
+      last(v);
 u!\textsubscript{1}! = v
 u!\textsubscript{2}! = v
 ...
