@@ -1,20 +1,20 @@
 \chapter{Arrays}\label{arrays}
 
-An array can be regarded as a collection of values, all of the same
-type. Modelica arrays can be multidimensional and are ``rectangular'',
+A non-record array can be regarded as a collection of type compatible values, \cref{type-compatible-expressions}.
+An array of records may contain scalar record values whose elements differ in their dimension sizes, but apart from that they must be of the same type.
+Such heterogenous arrays may only be used completely, sliced as specified, or indexed.
+An array of arrays must have the same dimension sizes for all of the arrays (with the same exception for records).
+Modelica arrays can be multidimensional and are ``rectangular'',
 which in the case of matrices has the consequence that all rows in a
 matrix have equal length, and all columns have equal length.
 
-Each array has a certain dimensionality, i.e., number of dimensions. The
-degenerate case of a scalar variable is not really an array, but can be
-regarded as an array with zero dimensions. Vectors have one dimension,
-matrices have two dimensions, etc.
+Each array has a certain dimensionality, i.e., number of dimensions.
+The degenerate case of a \firstuse{scalar}\index{scalar} variable is not really an array, but can be regarded as an array with zero dimensions.
+\firstuse{Vectors}\index{vector} have one dimension, matrices (sing.\ \firstuse{matrix}\index{matrix}) have two dimensions, etc.
 
-
-So-called row vectors and column vectors do not exist in Modelica and cannot be distinguished since vectors have only one
-dimension.  If distinguishing these is desired, row matrices and column matrices are available, being the corresponding
-two-dimensional entities.  However, in practice this is seldom needed since the usual matrix arithmetic and linear algebra
-operations have been defined to give the expected behavior when operating on Modelica vectors and matrices.
+So-called row vectors and column vectors do not exist in Modelica and cannot be distinguished since vectors have only one dimension.
+If distinguishing these is desired, row matrices and column matrices are available, being the corresponding two-dimensional entities.
+However, in practice this is seldom needed since the usual matrix arithmetic and linear algebra operations have been defined to give the expected behavior when operating on Modelica vectors and matrices.
 
 Modelica is a strongly typed language, which also applies to array
 types. The number of dimensions of an array is fixed and cannot be
@@ -31,19 +31,16 @@ constructor. Elements of an array can be indexed by \lstinline!Integer!, \lstinl
 
 \section{Array Declarations}\label{array-declarations}
 
-The Modelica type system includes scalar number, vector, matrix (number
-of dimensions, ndim=2), and arrays of more than two dimensions.
+The Modelica type system includes scalar number, vector, matrix (number of dimensions, ndim=2), and arrays of more than two dimensions.
 
 \begin{nonnormative}
 There is no distinction between a row and column vector.
 \end{nonnormative}
 
-The following table shows the two possible forms of declarations and
-defines the terminology. \lstinline!C! is a placeholder for any class, including the
-built-in type classes \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!, and enumeration
-types. The type of a dimension upper bound expression, e.g.\ $n$, $m$, $p$, \ldots
-in the table below, need to be a subtype of \lstinline!Integer! or \lstinline!EB! for a class \lstinline!EB!
-that is an enumeration type or subtype of the \lstinline!Boolean! type.
+The following table shows the two possible forms of declarations and defines the terminology.
+% Is the use of "class" here meant to exclude types defined as array aliases (see comment in table below)?
+\lstinline!C! is a placeholder for any class, including the built-in type classes \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!, and enumeration types.
+The type of a dimension upper bound expression, e.g.\ $n$, $m$, $p$, \ldots in the table below, need to be a subtype of \lstinline!Integer! or \lstinline!EB! for a class \lstinline!EB! that is an enumeration type or subtype of the \lstinline!Boolean! type.
 
 Colon (\lstinline!:!) indicates that the dimension upper bound is unknown and is a subtype of \lstinline!Integer!.  The size of such a variable can be determined from its binding equation, or the
 size of any of its array attributes, see also \cref{flexible-array-sizes-and-resizing-of-arrays-in-functions}.  The size cannot be determined from other equations or algorithm.
@@ -55,13 +52,17 @@ An array indexed by \lstinline!Boolean! or enumeration type can only be used in 
 \item
   Subscripted using expressions of the appropriate type (i.e.\ \lstinline!Boolean! or the enumerated type).
 \item
-  Binding equations of the form \lstinline!x1 = x2! as well as declaration assignments of the form \lstinline!x1 := x2! are allowed for arrays independent of
-  whether the index types of dimensions are subtypes of \lstinline!Integer!, \lstinline!Boolean!, or enumeration types.
+  Binding equations of the form \lstinline!x1 = x2! are allowed for arrays independent of whether the index types of dimensions are subtypes of \lstinline!Integer!, \lstinline!Boolean!, or enumeration types.
 \end{itemize}
 
 % IMPROVETOP
 \begin{table}[H]
-\caption{General forms of declaration of arrays.  The notation \lstinline!EB! stands for an enumeration type or \lstinline!Boolean!.  The general array array can have zero or more dimensions ($k \geq 0$).}
+% henrikt-ma: Doesn't the "Designation" and "Explanation" here assume that C is of non-array type?
+\caption{%
+General forms of declaration of arrays.
+The notation \lstinline!EB! stands for an enumeration type or \lstinline!Boolean!.
+The general array can have one or more dimensions ($k \geq 1$).
+}
 \begin{center}
 \begin{tabular}{l l c l l}
 \hline
@@ -79,11 +80,26 @@ An array indexed by \lstinline!Boolean! or enumeration type can only be used in 
 \end{center}
 \end{table}
 
+% henrikt-ma: The following paragraph was only modified slightly when migrated from the old glossary to the index, and seems to be in need of more attention:
+A component declared with array dimensions, or where the element type is an array type, is called an \firstuse{array variable}\index{array!variable}.
+It is a component whose components are \willintroduce{array elements} (see below).
+For an array variable, the ordering of its components matters:
+The $k$:th element in the sequence of components of an array variable \lstinline!x! is the array element with index \lstinline!k!, denoted \lstinline!x[k]!.
+% henrikt-ma: The following statement seems like an over-simplification; for Flat Modelica, we've spent some time trying to figure out how to deal with the fact that Modelica arrays are not homogenous in general...
+All elements of an array have the same type.
+An array element may again be an array, i.e., arrays can be nested.
+An array element is hence referenced using $n$ indices in general, where $n$ is the number of dimensions of the array.
+
+% henrikt-ma: The following paragraph was only modified slightly when migrated from the old glossary to the index, and seems to be in need of more attention:
+A component contained in an array variable is called an \firstuse{array element}\index{array!element}.
+An array element has no identifier.
+Instead they are referenced by array access expressions called indices that use enumeration values or positive integer index values.
+
 \begin{example}
 The number of dimensions and the dimensions sizes are part of
 the type, and shall be checked for example at redeclarations.
-Declaration form 1 displays clearly the type of an array, whereas
-declaration form 2 is the traditional way of array declarations in
+Declaration form~1 displays clearly the type of an array, whereas
+declaration form~2 is the traditional way of array declarations in
 languages such as Fortran, C, C++.
 
 \begin{lstlisting}[language=modelica]
@@ -198,7 +214,7 @@ The \lstinline!promote! function listed below is utilized to define other array 
 \end{tabular}
 \end{center}
 
-\begin{operatordefinition*}[promote]\label{not-modelica-promote}
+\begin{operatordefinition*}[promote]\label{not-modelica-promote}\indexinline{promote}
 \begin{synopsis}\begin{lstlisting}
 promote($A$, $n$) /* Not available in Modelica. */
 \end{lstlisting}\end{synopsis}
@@ -254,7 +270,7 @@ Returns the number of dimensions $k$ of expression $A$, with $k \geq 0$.
 \end{semantics}
 \end{operatordefinition}
 
-\begin{operatordefinition*}[size]\label{modelica:size-of-dim}
+\begin{operatordefinition*}[size]\label{modelica:size-of-dim}\index{size@\robustinline{size}!of single array dimension}
 \begin{synopsis}\begin{lstlisting}
 size($A$, $i$)
 \end{lstlisting}\end{synopsis}
@@ -265,7 +281,7 @@ If $A$ refers to a component of an expandable connector, then the component must
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[size]\label{modelica:size-vector}
+\begin{operatordefinition*}[size]\label{modelica:size-vector}\index{size@\robustinline{size}!of all array dimensions}
 \begin{synopsis}\begin{lstlisting}
 size($A$)
 \end{lstlisting}\end{synopsis}
@@ -438,7 +454,7 @@ inputs for the reduction operator with the same name.
 \end{tabular}
 \end{center}
 
-\begin{operatordefinition*}[min]\label{modelica:min-of-array}
+\begin{operatordefinition*}[min]\label{modelica:min-of-array}\index{min@\robustinline{min}!of array}
 \begin{synopsis}\begin{lstlisting}
 min($A$)
 \end{lstlisting}\end{synopsis}
@@ -447,7 +463,7 @@ Returns the least element of array expression $A$; as defined by \lstinline!<!.
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[min]\label{modelica:min-binary}
+\begin{operatordefinition*}[min]\label{modelica:min-binary}\index{min@\robustinline{min}!binary function}
 \begin{synopsis}\begin{lstlisting}
 min($x$, $y$)
 \end{lstlisting}\end{synopsis}
@@ -456,7 +472,7 @@ Returns the least element of the scalars $x$ and $y$; as defined by \lstinline!<
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[min]\label{modelica:min-reduction}
+\begin{operatordefinition*}[min]\label{modelica:min-reduction}\index{min@\robustinline{min}!reduction expression}
 \begin{synopsis}\begin{lstlisting}
 min($e$($i$, $\ldots$, $j$) for $i$ in $u$, $\ldots$, $j$ in $v$)
 \end{lstlisting}\end{synopsis}
@@ -465,7 +481,7 @@ Also described in \cref{reduction-expressions}.  Returns the least value (as def
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[max]\label{modelica:max-of-array}
+\begin{operatordefinition*}[max]\label{modelica:max-of-array}\index{max@\robustinline{max}!of array}
 \begin{synopsis}\begin{lstlisting}
 max($A$)
 \end{lstlisting}\end{synopsis}
@@ -474,7 +490,7 @@ Returns the greatest element of array expression $A$; as defined by \lstinline!>
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[max]\label{modelica:max-binary}
+\begin{operatordefinition*}[max]\label{modelica:max-binary}\index{max@\robustinline{max}!binary function}
 \begin{synopsis}\begin{lstlisting}
 max($x$, $y$)
 \end{lstlisting}\end{synopsis}
@@ -483,7 +499,7 @@ Returns the greatest element of the scalars $x$ and $y$; as defined by \lstinlin
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[max]\label{modelica:max-reduction}
+\begin{operatordefinition*}[max]\label{modelica:max-reduction}\index{max@\robustinline{max}!reduction expression}
 \begin{synopsis}\begin{lstlisting}
 max($e$($i$, $\ldots$, $j$) for $i$ in $u$, $\ldots$, $j$ in $v$)
 \end{lstlisting}\end{synopsis}
@@ -492,7 +508,7 @@ Also described in \cref{reduction-expressions}.  Returns the greatest value (as 
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[sum]\label{modelica:sum-of-array}
+\begin{operatordefinition*}[sum]\label{modelica:sum-of-array}\index{sum@\robustinline{sum}!of array}
 \begin{synopsis}\begin{lstlisting}
 sum($A$)
 \end{lstlisting}\end{synopsis}
@@ -501,7 +517,7 @@ Returns the scalar sum of all the elements of array expression \lstinline!A!.  E
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[sum]\label{modelica:sum-reduction}
+\begin{operatordefinition*}[sum]\label{modelica:sum-reduction}\index{sum@\robustinline{sum}!reduction expression}
 \begin{synopsis}\begin{lstlisting}
 sum($e$($i$, $\ldots$, $j$) for $i$ in $u$, $\ldots$, $j$ in $v$)
 \end{lstlisting}\end{synopsis}
@@ -523,7 +539,7 @@ The type of \lstinline!sum($e$($i$, $\ldots$, $j$) for $i$ in $u$, $\ldots$, $j$
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[product]\label{modelica:product-of-array}
+\begin{operatordefinition*}[product]\label{modelica:product-of-array}\index{product@\robustinline{product}!of array}
 \begin{synopsis}\begin{lstlisting}
 product($A$)
 \end{lstlisting}\end{synopsis}
@@ -533,7 +549,7 @@ Returns the scalar product of all the elements of array expression \lstinline!A!
 \end{semantics}
 \end{operatordefinition*}
 
-\begin{operatordefinition*}[product]\label{modelica:product-reduction}
+\begin{operatordefinition*}[product]\label{modelica:product-reduction}\index{product@\robustinline{product}!reduction expression}
 \begin{synopsis}\begin{lstlisting}
 product($e$($i$, $\ldots$, $j$) for $i$ in $u$, $\ldots$, $j$ in $v$)
 \end{lstlisting}\end{synopsis}
@@ -557,7 +573,8 @@ The type of \lstinline!product($e$($i$, $\ldots$, $j$) for $i$ in $u$, $\ldots$,
 An expression:
 \begin{lstlisting}[language=grammar]
 function-name "(" expression1 for iterators ")"
-\end{lstlisting}
+\end{lstlisting}%
+\index{for@\robustinline{for}!reduction expression}
 
 is a reduction-expression. The expressions in the iterators of a
 reduction-expression shall be vector expressions. They are evaluated
@@ -567,7 +584,8 @@ immediately enclosing the reduction-expression.
 For an iterator:
 \begin{lstlisting}[language=grammar]
 IDENT in expression2
-\end{lstlisting}
+\end{lstlisting}%
+\index{in@\robustinline{in}!reduction expression}
 
 the loop-variable, \lstinline!IDENT!, is in scope inside \lstinline!expression1!. The
 loop-variable may hide other variables, as in for-clauses. The result
@@ -696,7 +714,7 @@ Returns the $3 \times 3$ skew symmetric matrix associated with a 3-vector, i.e.,
 
 \section{Vector, Matrix and Array Constructors}\label{vector-matrix-and-array-constructors}
 
-The constructor function \lstinline!array(A, B, C, $\ldots$)! constructs an array from its arguments according to the following rules:
+The \firstuse{array constructor}\index{array!constructor} function \lstinline!array(A, B, C, $\ldots$)! constructs an array from its arguments according to the following rules:
 \begin{itemize}
 \item
   Size matching: All arguments must have the same sizes, i.e.,
@@ -741,11 +759,9 @@ or
 \begin{lstlisting}[language=grammar]
 array "(" expression for iterators ")"
 \end{lstlisting}
-
-is an array constructor with iterators. The expressions inside the
-iterators of an array constructor shall be vector expressions. They are
-evaluated once for each array constructor, and are evaluated in the
-scope immediately enclosing the array constructor.
+is an \firstuse{array constructor with iterators}\index{array!constructor!with iterators}.
+The expressions inside the iterators of an array constructor shall be vector expressions.
+They are evaluated once for each array constructor, and are evaluated in the scope immediately enclosing the array constructor.
 
 For an iterator:
 \begin{lstlisting}[language=modelica]
@@ -784,8 +800,8 @@ a '\lstinline!{!'.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-Real hilb[:,:]= { 1/(i+j-1) for  i in 1:n, j in 1:n};
-Real hilb2[:,:]={{ 1/(i+j-1) for  j in 1:n} for i in 1:n};
+Real toeplitz[:,:]={i-j for i in 1:n, j in 1:n};
+Real toeplitz2[:,:]={{i-j for i in 1:n} for j in 1:n};
 \end{lstlisting}
 \end{example}
 
@@ -932,27 +948,21 @@ Colors ec[3] = Colors.red : Colors.green;
 
 \section{Array Indexing}\label{array-indexing}
 
-The array indexing operator \emph{name}\lstinline![!\emph{...}\lstinline!]! is used to
-access array elements for retrieval of their values or for updating
-these values. An indexing operation is subject to upper and lower array
-dimension index bounds (\cref{array-dimension-lower-and-upper-index-bounds}).  The indexing operator takes two or more
-operands, where the first operand is the array to be indexed and the rest of the operands are index expressions:
+The array indexing operator \lstinline!$\mathit{name}$[$\ldots$]! is used to access array elements for retrieval of their values or for updating these values.
+An indexing operation is subject to upper and lower array dimension index bounds (\cref{array-dimension-lower-and-upper-index-bounds}).
+The indexing operator takes two or more operands, where the first operand is the array to be indexed and the rest of the operands are \firstuse{index}\index{index} (or \firstuse{subscript}\index{subscript}) expressions:
 
 \lstinline!$\mathit{arrayname}$[$\mathit{indexexpr}_{1}$, $\mathit{indexexpr}_{2}$, $\ldots$]!
 
-A colon is used to denote all indices of one dimension. A vector
-expression can be used to pick out selected rows, columns and elements
-of vectors, matrices, and arrays. The number of dimensions of the
-expression is reduced by the number of scalar index arguments. If the
-number of index arguments is smaller than the number of dimensions of
-the array, the trailing indices will use `\lstinline!:!'.
+A colon (`\lstinline!:!') is used to denote all indices of one dimension.
+A vector expression can be used to pick out selected rows, columns and elements of vectors, matrices, and arrays.
+The number of dimensions of the expression is reduced by the number of scalar index arguments.
+If the number of index arguments is smaller than the number of dimensions of the array, the trailing indices will use `\lstinline!:!'.
 
-It is also possible to use the array access operator to assign to
-element/elements of an array in algorithm sections. If the index is an
-array the assignments take place in the order given by the index array.
-For assignments to arrays and elements of arrays, the entire right-hand
-side and the index on the left-hand side are evaluated before any
-element is assigned a new value.
+It is also possible to use the array access operator to assign to element/elements of an array in algorithm sections.
+This is called an \firstuse{indexed assignment statement}\index{assignment statement!indexed}.
+If the index is an array the assignments take place in the order given by the index array.
+For assignments to arrays and elements of arrays, the entire right-hand side and the index on the left-hand side are evaluated before any element is assigned a new value.
 
 \begin{nonnormative}
 An indexing operation is assumed to take constant time, i.e., largely independent of the size of the array.
@@ -1017,14 +1027,20 @@ algorithm
 
 \subsection{Indexing with end}\label{indexing-with-end}
 
-The expression \lstinline!end! may only appear inside array subscripts, and if used in the $i$:th subscript of an array expression \lstinline!A! it is equivalent
-to \lstinline!size(A, $i$)! provided indices to \lstinline!A! are a subtype of \lstinline!Integer!.  If used inside nested array subscripts it refers
-to the most closely nested array.
+The expression \lstinline!end!\indexinline{end} may only appear inside array subscripts, and if used in the $i$:th subscript of an array expression \lstinline!A! it is equivalent to the upper bound of the $i$:th dimension of \lstinline!A!.
+If used inside nested array subscripts it refers to the most closely nested array.
+
+\begin{nonnormative}
+If indices to \lstinline!A! are a subtype of \lstinline!Integer! it is equivalent to \lstinline!size(A, i)!.
+\end{nonnormative}
 
 \begin{example}
 \begin{lstlisting}[language=modelica, escapechar=!]
 A[end - 1, end] !is! A[size(A,1) - 1, size(A,2)]
 A[v[end], end] !is! A[v[size(v,1)], size(A,2)] // !\emph{First}! end !\emph{is referring to end of v.}!
+
+Real B[Boolean];
+B[end] !is! B[true]
 \end{lstlisting}
 \end{example}
 
