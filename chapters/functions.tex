@@ -246,6 +246,8 @@ The declaration of functions follow these rules:
 \item
   External functions must be explicitly declared with \lstinline!pure! or \lstinline!impure!.
 \item
+  If a function is declared as \lstinline!impure! any function extending from it shall be declared as \lstinline!impure!.
+\item
   A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be
   impure, but without any restriction on calling them.  Except for the function \lstinline!Modelica.Utilities.Streams.print!, diagnostics must be given if called in a simulation model.
 \end{itemize}
@@ -317,10 +319,8 @@ statements in an algorithm or common subexpression elimination is not
 allowed.
 \end{nonnormative}
 
-It is possible to mark a function formal parameter as \lstinline!impure!. Only if
-the function formal parameter is marked \lstinline!impure!, it is allowed to pass an
-\lstinline!impure! function to it. A function having a formal function parameter
-marked \lstinline!impure! must be marked \lstinline!pure! or \lstinline!impure!.
+By \cref{function-compatibility-or-function-subtyping-for-functions}, it follows that an impure function can only be passed as argument to a function formal parameter of impure type.
+A function having a formal function parameter that is \lstinline!impure! must be marked \lstinline!pure! or \lstinline!impure!.
 
 \begin{nonnormative}
 Comment: The semantics are undefined if the function call of an
@@ -727,7 +727,7 @@ Components in a function can be divided into three groups:
 When a function is called components of a function do not have start-attributes.
 However, a binding equation\index{binding equation!in function} (\lstinline!= expression!) with an expression may be present for a component.
 \begin{nonnormative}
-\firstuse{Declaration assignments}\index{declaration equation (deprecated)} of the form \lstinline!:= expression! are deprecated, but otherwise identical to binding equations.
+\firstuse{Declaration assignments}\index{declaration assignment (deprecated)} of the form \lstinline!:= expression! are deprecated, but otherwise identical to binding equations.
 \end{nonnormative}
 
 A binding equation for a non-input component initializes the
@@ -1747,10 +1747,8 @@ for Lapack/Blas-routines, and the strings are \textsc{nul}-terminated for
 compatibility with C. Returning strings from FORTRAN~77
 subroutines/functions is currently not supported.
 
-Enumeration types used as arguments are mapped to type int when calling
-an external C function, and to type \lstinline!INTEGER! when calling an external
-FORTRAN function. The $i$:th enumeration literal is mapped to integer
-value $i$, starting at 1.
+Enumeration types used as arguments are mapped to type int when calling an external C function, and to type \lstinline!INTEGER! when calling an external FORTRAN function.
+The $i$th enumeration literal is mapped to integer value $i$, starting at 1.
 
 Return values are mapped to enumeration types analogously: integer value
 1 is mapped to the first enumeration literal, 2 to the second, etc.
@@ -1762,16 +1760,13 @@ for the specified enumeration type is an error.
 Unless an explicit function call is present in the external-clause, an array is passed by its address followed by $n$ arguments of type \lstinline!size_t! with the corresponding array dimension sizes, where $n$ is the number of dimensions.
 
 \begin{nonnormative}
-The type \lstinline!size_t! is a C unsigned integer type.
+The type \lstinline[language=C]!size_t! is a C unsigned integer type.
 \end{nonnormative}
 
 Arrays are by default stored in row-major order when calling C functions and in column-major order when calling FORTRAN~77 functions.  These defaults can be overridden by the \lstinline!arrayLayout! annotation.  See the example below.
 
 The table below shows the mapping of an array argument in the absence of an explicit external function call when calling a C function.
-The type \lstinline!T! is allowed to be any of the simple types which can be passed to C as
-defined in \cref{simple-types} or a record type as defined in
-\cref{records} and it is mapped to the type \lstinline!T'! as defined in these sections
-for input arguments.
+The type \lstinline!T! is allowed to be any of the simple types which can be passed to C as defined in \cref{simple-types} or a record type as defined in \cref{records} and it is mapped to the type $T'$ as defined in these sections for input arguments.
 Array inputs to C-functions are const-pointers, indicating that the arrays shall not be changed.
 
 \begin{center}
@@ -1782,28 +1777,24 @@ Array inputs to C-functions are const-pointers, indicating that the arrays shall
 \hline
 \hline
 \lstinline!T[$\mathit{dim}_{1}$]! &
-\lstinline[language=C]!const T' *, size_t $\mathit{dim}_{1}$! &
-\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$!
+\lstinline[language=C]!const $T'$ *, size_t $\mathit{dim}_{1}$! &
+\lstinline[language=C]!$T'$ *, size_t $\mathit{dim}_{1}$!
 \\
 \lstinline!T[$\mathit{dim}_{1}$, $\mathit{dim}_{2}$]! &
-\lstinline[language=C]!const T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$! &
-\lstinline[language=C]!T' *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$!
+\lstinline[language=C]!const $T'$ *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$! &
+\lstinline[language=C]!$T'$ *, size_t $\mathit{dim}_{1}$, size_t $\mathit{dim}_{2}$!
 \\
 \lstinline!T[$\ldots$, $\mathit{dim}_{n}$]! &
-\lstinline[language=C]!const T' *, $\ldots$, size_t $\mathit{dim}_{n}$! &
-\lstinline[language=C]!T' *, $\ldots$, size_t $\mathit{dim}_{n}$!
+\lstinline[language=C]!const $T'$ *, $\ldots$, size_t $\mathit{dim}_{n}$! &
+\lstinline[language=C]!$T'$ *, $\ldots$, size_t $\mathit{dim}_{n}$!
 \\
 \hline
 \end{tabular}
 \end{center}
 
-The method used to pass array arguments to FORTRAN~77 functions in the
-absence of an explicit external function call is similar to the one
-defined above for C: first the address of the array, then the dimension
-sizes as integers. See the table below. The type T is allowed to be any
-of the simple types which can be passed to FORTRAN~77 as defined in
-\cref{simple-types} and it is mapped to the type T' as defined in that
-section.
+The method used to pass array arguments to FORTRAN~77 functions in the absence of an explicit external function call is similar to the one defined above for C: first the address of the array, then the dimension sizes as integers.
+See the table below.
+The type T is allowed to be any of the simple types which can be passed to FORTRAN~77 as defined in \cref{simple-types} and it is mapped to the type $T'$ as defined in that section.
 
 \begin{center}
 \begin{tabular}{l|l}
@@ -1813,13 +1804,13 @@ section.
 \hline
 \hline
 \lstinline!T[$\mathit{dim}_{1}$]! &
-\lstinline[language=FORTRAN77]!T', INTEGER $\mathit{dim}_{1}$!
+\lstinline[language=FORTRAN77]!$T'$, INTEGER $\mathit{dim}_{1}$!
 \\
 \lstinline!T[$\mathit{dim}_{1}$, $\mathit{dim}_{2}$]! &
-\lstinline[language=FORTRAN77]!T', INTEGER $\mathit{dim}_{1}$, INTEGER $\mathit{dim}_{2}$!
+\lstinline[language=FORTRAN77]!$T'$, INTEGER $\mathit{dim}_{1}$, INTEGER $\mathit{dim}_{2}$!
 \\
 \lstinline!T[$\mathit{dim}_{1}$, $\ldots$, $\mathit{dim}_{n}$]! &
-\lstinline[language=FORTRAN77]!T', INTEGER $\mathit{dim}_{1}$, $\ldots$, INTEGER $\mathit{dim}_{n}$!
+\lstinline[language=FORTRAN77]!$T'$, INTEGER $\mathit{dim}_{1}$, $\ldots$, INTEGER $\mathit{dim}_{n}$!
 \\
 \hline
 \end{tabular}
@@ -2101,6 +2092,11 @@ They can all specify either a scalar value or an array of values as indicated be
   \item
     \lstinline!"linux64"! (Linux Intel 64 bit)
   \end{itemize}
+\item
+  The
+  \lstinline!annotation(SourceDirectory="modelica://ModelicaLibraryName/Resources/Source")!\annotationindex{SourceDirectory}, gives the location for source files.
+  The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the source directory, see \cref{external-resources}.
+  It is not specified how they are built.
 \end{itemize}
 
 The \filename{win32} or \filename{win64} directories may contain \filename{gcc47}, \filename{vs2010}, \filename{vs2012}
@@ -2120,7 +2116,7 @@ a text-file as described below: e.g.\ a text-file \filename{vs2008} containing t
 compatible with vs2005.
 \end{nonnormative}
 
-The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory! and \lstinline!LibraryDirectory! indicates the top-level class where the annotation is found in the Modelica source code.
+The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory!, \lstinline!LibraryDirectory!, and \lstinline!SourceDirectory! indicates the top-level class where the annotation is found in the Modelica source code.
 
 \begin{example}
 Use of external functions and of object libraries:
