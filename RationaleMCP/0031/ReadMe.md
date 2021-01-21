@@ -25,6 +25,7 @@ Use cases to have in mind in the design of Flat Modelica, also indicating the us
 * Integration with third party tools for equation analysis.  _(Could we be more specific about what this migh be?)_
 * Platform for academic research on dynamic systems.  For example, numeric methods.
 * Target language for new high level modeling languages.
+* IP protection when combined with obfuscation.
 
 ### Relation to eFMI
 One of the key use cases driving the development of Flat Modelica is its use as basis for the _Equation Code_ of [eFMI](https://itea3.org/index.php/project/emphysis.html).  The requirements for eFMI are much smaller in terms of language features compared to the needs for serving as intermediate representation in the Modelica standard.  To accommodate both use cases, the Equation Code of eFMI will be defined as a restricted variant of Flat Modelica.
