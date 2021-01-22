@@ -1349,19 +1349,35 @@ end Frame;
 
 A component declaration or a short replaceable class definition may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(Dialog(enable = true,
-                  tab = "General",
-                  group = "",
-                  showStartAttribute = false,
-                  colorSelector = false,
-                  groupImage = "modelica://MyLib/Resources/Images/load.png",
-                  connectorSizing = false));
-\end{lstlisting}
+record Dialog
+  parameter String tab = "General";
+  parameter String group = "";
+  parameter Boolean enable = true;
+  parameter Boolean showStartAttribute = false;
+  parameter Boolean colorSelector = false;
+  parameter Selector loadSelector;
+  parameter Selector saveSelector;
+  parameter String groupImage = "";
+  parameter Boolean connectorSizing = false;
+end Dialog;
+
+record Selector
+  parameter String filter = "";
+  parameter String caption = "";
+end Selector;
+\end{lstlisting}%
+\annotationindex{Dialog}
+
 For a short replaceable class definition only the fields \lstinline!tab!, \lstinline!group!, \lstinline!enable! and \lstinline!groupImage! are allowed.
 
-The annotations \lstinline!tab! and \lstinline!group! define the placement of the component or of variables in a dialog with optional tab and group specification, where the empty string (default) means tool-specific group.
+In the organization of a tool's user interface, the \lstinline!tab! shall correspond to a major divisioning of ``tabs'', and \lstinline!group! correspond to sub-divisioning of ``groups'' within each tab.
+The order of components (and class definitions) within each group and the order of the groups and tabs are according to the declaration order, where inherited elements are added at the place of the extends.
+
+The \lstinline!tab! and \lstinline!group! define the placement of the component or of variables in a dialog with optional tab and group specification, where the empty string (default) means tool-specific group.
 The idea is that a tool may as default place parameters in the group ``Parameters'' in the tab ``General'', but add e.g., variables with \lstinline!showStartAttribute=true! to another group.
+
 If \lstinline!enable = false!, the input field may be disabled and no input can be given.
+
 If \lstinline!showStartAttribute = true! the dialog should allow the user to set the start-value and the \lstinline!fixed! attribute for the variable instead of the value of the variable.
 
 \begin{nonnormative}
@@ -1369,25 +1385,54 @@ The \lstinline!showStartAttribute = true! is primarily intended for non-paramete
 a separate parameter for the start-value of the variable.
 \end{nonnormative}
 
-The order of parameters within each group and the order of the groups and tabs are according
-to the declaration order, where inherited elements are added at the place of the extends.
+If \lstinline!colorSelector = true!, it indicates that an rgb-value selector can be presented for a vector of three elements and generate values 0..255 (the color selector should be useable both for vectors of \lstinline!Integer! and \lstinline!Real!).
 
-If \lstinline!colorSelector = true!, it indicates that an rgb-value selector can be
-presented for a vector of three elements and generate values 0..255 (the
-annotation should be useable both for vectors of \lstinline!Integer! and \lstinline!Real!).
+A \fmtannotationindex{Selector} displays a file dialog to select a file.
+Setting \lstinline!filter! only shows files that fulfill the given pattern defined by \lstinline!text1 (*.ext1);;text2 (*.ext2)! to show only files with file extension \filename{ext1} or \filename{ext2} and displaying a description text \lstinline!text1! and \lstinline!text2!, respectively.
+Parameter \lstinline!caption! is the text displayed in the dialog menu.
+Parameter \lstinline!loadSelector! is used to select an existing file for reading, whereas parameter \lstinline!saveSelector! is used to define a file for writing.
 
-The annotation \lstinline!groupImage! references an image using an URI (see
-\cref{external-resources}), and the image is intended to be shown together with the
-parameter-group (only one image per group is supported). Disabling the
-input field will not disable the image.
-
+The \lstinline!groupImage! references an image using an URI (see \cref{external-resources}), and the image is intended to be shown together with the parameter-group (only one image per group is supported).
+Disabling the input field will not disable the image.
 The background of the \lstinline!groupImage! and any image used in HTML-documentation is recommended to be transparent (intended to be a light color) or white.
 
-The value of the \lstinline!connectorSizing! annotation must be a literal
-\lstinline!false! or \lstinline!true! value. If \lstinline!connectorSizing = false!, this annotation has no effect.
-If \lstinline!connectorSizing = true!, the corresponding variable must be declared with the
-\lstinline!parameter! prefix, must be a subtype of a scalar \lstinline!Integer! and
-must have a literal default value of zero.
+The \lstinline!connectorSizing! is described separately in \cref{connector-sizing}.
+
+\begin{example}
+\begin{lstlisting}[language=modelica]
+model DialogDemo
+  parameter Boolean b = true "Boolean parameter";
+  parameter Modelica.Units.SI.Length length "Real parameter with unit";
+  parameter Integer nInports = 0
+     annotation(Dialog(connectorSizing = true));
+  parameter Real r1 "Real parameter in Group 1"
+     annotation(Dialog(group = "Group 1"));
+  parameter Real r2 "Disabled Real parameter in Group 1"
+     annotation(Dialog(group = "Group 1", enable = not b));
+  parameter Real r3 "Real parameter in Tab 1"
+     annotation(Dialog(tab = "Tab 1"));
+  parameter Real r4 "Real parameter in Tab 1 and Group 2"
+     annotation(Dialog(tab = "Tab 1", group = "Group 2"));
+  StepIn stepIn[nInports];
+  ...
+end DialogDemo;
+\end{lstlisting}
+When clicking on an instance of model \lstinline!DialogDemo!, a menu pops up that may have the following layout (other layouts are also possible, this is vendor specific).
+Note, parameter \lstinline!nInports! is not present in the menu since it has \lstinline!connectorSizing = true! and therefore it should not be modified by the user (an alternative is to show parameter \lstinline!nInports! in the menu but with disabled input field):
+
+\begin{center}
+\includegraphics[scale=0.5]{disabledparameter}
+\quad
+\includegraphics[scale=0.5]{tabparameter}\\
+\end{center}
+\end{example}
+
+\subsection{Connector sizing}\label{connector-sizing}
+
+This section describes the \lstinline!connectorSizing! annotation inside a \lstinline!Dialog! annotation.
+The value of \lstinline!connectorSizing! must be a literal \lstinline!false! or \lstinline!true!.
+If \lstinline!connectorSizing = false!, this annotation has no effect.
+If \lstinline!connectorSizing = true!, the corresponding variable must be declared with the \lstinline!parameter! prefix, must be a subtype of a scalar \lstinline!Integer! and must have a literal default value of zero.
 
 \begin{nonnormative}
 The reason why \lstinline!connectorSizing! must be given a literal value is that if the value is an expression,
@@ -1413,66 +1458,6 @@ connection requires to resize the vector and to connect to the new index
 actions in many cases automatically. This is, e.g., very useful for
 state machines and for certain components of fluid libraries.
 \end{nonnormative}
-
-Annotation \fmtannotationindex{Dialog} is defined as:
-\begin{lstlisting}[language=modelica]
-record Dialog
-  parameter String tab = "General";
-  parameter String group = "";
-  parameter Boolean enable = true;
-  parameter Boolean showStartAttribute = false;
-  parameter Boolean colorSelector = false;
-  parameter Selector loadSelector;
-  parameter Selector saveSelector;
-  parameter String groupImage = "";
-  parameter Boolean connectorSizing = false;
-end Dialog;
-
-record Selector
-  parameter String filter = "";
-  parameter String caption = "";
-end Selector;
-\end{lstlisting}
-
-In the organization of a tool's user interface, the \lstinline!tab! shall correspond to major divisioning, and \lstinline!group! correspond to sub-divisioning within each \lstinline!tab!.
-
-A \fmtannotationindex{Selector} displays a file dialog to select a file.
-Setting \lstinline!filter! only shows files that fulfill the given pattern defined by \lstinline!text1 (*.ext1);;text2 (*.ext2)! to show only files with file extension \filename{ext1} or \filename{ext2} and displaying a description text \lstinline!text1! and \lstinline!text2!, respectively.
-Parameter \lstinline!caption! is the text displayed in the dialog menu.
-Parameter \lstinline!loadSelector! is used to select an existing file for reading, whereas parameter \lstinline!saveSelector! is used to define a file for writing.
-
-\begin{example}
-\begin{lstlisting}[language=modelica]
-model DialogDemo
-  parameter Boolean b = true "Boolean parameter";
-  parameter Modelica.Units.SI.Length length "Real parameter with unit";
-  parameter Integer nInports=0
-     annotation(Dialog(connectorSizing=true));
-  parameter Real r1 "Real parameter in Group 1"
-     annotation(Dialog(group="Group 1"));
-  parameter Real r2 "Disabled Real parameter in Group 1"
-     annotation(Dialog(group="Group 1",enable = not b));
-  parameter Real r3 "Real parameter in Tab 1"
-     annotation(Dialog(tab="Tab 1"));
-  parameter Real r4 "Real parameter in Tab 1 and Group 2"
-     annotation(Dialog(tab="Tab 1", group="Group 2"));
-  StepIn stepIn[nInports];
-  ...
-end DialogDemo;
-\end{lstlisting}
-When clicking on an instance of model \lstinline!DialogDemo!, a menu pops up
-that may have the following layout (other layouts are also possible,
-this is vendor specific). Note, parameter \lstinline!nInports! is not present in the
-menu since it has the \lstinline!connectorSizing! annotation and therefore it
-should not be modified by the user (an alternative is to show parameter
-\lstinline!nInports! in the menu but with disabled input field):
-
-\begin{center}
-\includegraphics[scale=0.5]{disabledparameter}
-\quad
-\includegraphics[scale=0.5]{tabparameter}\\
-\end{center}
-\end{example}
 
 \begin{nonnormative}
 The following part is non-normative text and describes a useful
