@@ -1,9 +1,6 @@
 # ModelicaSpecification
 This repository contains the Modelica Language Specification, hosted at https://github.com/modelica/ModelicaSpecification. Development is organized within the [Modelica Association Project Language (MAP-LANG)](https://modelica.org/projects).
 
-## Build status
-[![Build Status](https://travis-ci.org/modelica/ModelicaSpecification.svg)](https://travis-ci.org/modelica/ModelicaSpecification)
-
 ## Description
 
 Modelica® https://modelica.org is a non-proprietary, object-oriented, equation based language to conveniently model complex physical systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
