@@ -1176,12 +1176,35 @@ A function declaration can have an annotation \fmtannotationindex{derivative} sp
 The \lstinline!derivative! annotation can influence simulation time and accuracy and can be applied to both functions written in Modelica and to external functions.
 A \lstinline!derivative! annotation can state that it is only valid under certain restrictions on the input arguments.
 These restrictions are defined using the following optional attributes: \lstinline!order! (only a restriction if $\text{\lstinline!order!} > 1$, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
-The given derivative-function can only be used to compute the derivative of a function call if these restrictions are satisfied.
+The given derivative-function must be a valid derivative if these restrictions are satisfied, and can thus be used to compute the derivative in those cases.
 There may be multiple restrictions on the derivative, in which case they must all be satisfied. The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
 A function may supply multiple derivative functions subject to different restrictions, the first one that can be used (i.e.\ satisfying the restrictions) will be used for each call.
 
 \begin{nonnormative}
 This means that the most restrictive derivatives should be written first.
+\end{nonnormative}
+\begin{nonnormative}
+A straightforward way of explaining a valid derivative is given by this model.
+The function value, \lstinline!x1!, should up to numerical precision match the integral of the derivative, \lstinline!x2!.
+Note that in practice tools may over-optimize this.
+\begin{lstlisting}[language=modelica]
+  function f
+    input Real x;
+    output Real y;
+    annotation(derivative=fder);
+    external "C";
+  end f;
+  model M
+    input Real u;
+    Real x1 "Directly from function";
+    Real x2 "Integrated from derivative";
+  equation
+    x1 = f(u);
+    der(x2) = der(x1);
+  initial equation
+    x2=x1;
+  end M;
+\end{lstlisting}
 \end{nonnormative}
 
 \begin{example}
@@ -1515,10 +1538,9 @@ The meaning is that function $f_2$ is one inverse to function $f_1$ where the pr
 More than one inverse can be defined within the same \lstinline!inverse! annotation.
 Several inverses are separated by commas.
 
-\begin{nonnormative}
-The inverse requires that for all valid values of the input arguments of \lstinline!$f_2$($\ldots$, y, $\ldots$)! and $u_k$ being calculated as \lstinline!$u_k$ := $f_2$($\ldots$, y, $\ldots$)! implies
-the equality \lstinline!y = $f_1$($\ldots$, $u_k$, $\ldots$)! up to a certain precision.
-\end{nonnormative}
+The function in the \lstinline!inverse! annotation must be an actual inverse.
+This requires that $f_2$ is such that, if $u_k$ is calculated as \lstinline!$u_k$ := $f_2$($\ldots$, y, $\ldots$)!, the equality \lstinline!y = $f_1$($\ldots$, $u_k$, $\ldots$)! is satisfied up to a certain precision, for all valid values of the input arguments of \lstinline!$f_2$($\ldots$, y, $\ldots$)!.
+the equality \lstinline!y = $f_1$($\ldots$, $u_k$, $\ldots$)! is satisfied up to a certain precision.
 
 Function $f_1$ can have any number and types of formal parameters with and without default value.
 The restriction is that the \emph{number of unknown variables} (see \cref{balanced-models}) in the output formal parameter of both $f_1$ and $f_2$ must be the same and that $f_2$ should have a union of output and formal parameters that is the same or a sub-set of that union for $f_1$, but the order of the formal parameters may be permuted.
