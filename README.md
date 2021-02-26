@@ -1,4 +1,4 @@
-<img src="https://github.com/modelica/MA-Logos/raw/master/HighRes/Modelica_Language.svg?sanitize=true" width="250px">
+<img src="https://github.com/modelica/MA-Logos/raw/master/HighRes/Modelica_Language.svg?sanitize=true" width="250px"/>
 
 # ModelicaSpecification
 This repository contains the Modelica Language Specification, hosted at https://github.com/modelica/ModelicaSpecification. Development is organized within the [Modelica Association Project Language (MAP-LANG)](https://modelica.org/projects).
