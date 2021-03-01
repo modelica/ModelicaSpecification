@@ -2144,7 +2144,10 @@ package ExternalFunctions
   external "C"
     y = ExternalFunc1_ext(x)
       annotation(Library = "ExternalLib1",
-                 Include = "#include \"ExternalFunc1.h\"");
+                 Include = "#include \"ExternalFunc1.h\"",
+                 SourceDirectory =
+                  "modelica://ExternalFunctions/Resources/Source");
+      // The SourceDirectory is the default and thus redundant.
   end ExternalFunc1;
 
   function ExternalFunc2
@@ -2175,22 +2178,30 @@ ExternalFunctions
     Include        // contains the include files
       ExternalFunc1.h // C header file
       ExternalFunc2.h // C header file
-      ExternalFunc3.c // C source file
-    Library       // contains the object libraries for different
-     platforms
+      ExternalFunc3.c // C source file (not ideal)
+    Library    // contains the object libraries for different platforms
        win32
          ExternalLib1.lib // static link library for VisualStudio
          ExternalLib2.lib // statically linking the dynamic link library
          ExternalLib2.dll // dynamic link library (with manifest)
        linux32
-         libExternalLib1.a   // static link library
+         libExternalLib1.a  // static link library
          libExternalLib2.so // shared library
+    Source // Sources for library
+      Func1.c         // C source for ExternalLib1.lib
+      Func2.c         // C source for ExternalLib2.lib
+      HelperFunc.c    // C source also included in ExternalLib2.lib
 MyExternalFunctions
    package.mo
 \end{lstlisting}
-Note that calling \lstinline!MyExternalFunctions.ExternalFunc1! will use
-header and library files from \lstinline!ExternalFunction!, the \lstinline!ExternalFunctions.Example! will not use \filename{ExternalFunc3.c},
+Note that calling the function \lstinline!MyExternalFunctions.ExternalFunc1! will use
+the header and library files from \lstinline!ExternalFunction!, the \lstinline!ExternalFunctions.Example! will not use \filename{ExternalFunc3.c},
 and one library file may contain multiple functions.
+
+The C-source \filename{ExternalFunc3.c} will be included fully, and is not part of any library.
+That is not ideal for C-code, but it works for small functions.
+
+It is not specified how the C-sources in \filename{Source} will be used to build the libraries.
 
 Header file for the function in the dynamic link / shared library
 \filename{ExternalLib2} so that the desired functions are defined to be exported
