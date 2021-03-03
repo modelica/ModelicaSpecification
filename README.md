@@ -43,6 +43,7 @@ A list of MCPs can be found here: [RationaleMCP](https://github.com/modelica/Mod
 CLA: Contributor's license agreement. (Details to follow.)
 
 How to edit and generate final documents
+* Read the [style guide](styleguide.md).
 * For online editing you can use www.overleaf.com (details to follow)
 * The pdf-documents are generated with pdflatex, which is part of most LaTeX installations, we used http://miktex.org/download
 * The HTML-documents are generated with LaTeXML. That is more complicated to install - and can optionally be skipped:
