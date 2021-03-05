@@ -61,6 +61,21 @@ For example, compare:
 - If equations are possible to simplify if their condition can be evaluated during translation.
 - `if`-equations are possible to simplify if their condition can be evaluated during translation.
 
+### Expressions
+
+Different constructs with _expression_ and _call_:
+
+Appearance | LaTeX source | Comment
+--- | --- | ---
+`if`-expression | `\lstinline!if!-expression` | Generic language concept
+`DynamicSelect`-expression | `\lstinline!DynamicSelect!-expression` | Currently with space in the document!
+`Curve`-expression | `\lstinline!Curve!-expression` | Currently with space in the document!
+`Real` expression | `\lstinline!Real! expression` | An expression of type `Real`
+`y` expression | `\lstinline!y! expression` | Expression for something named `y`
+`convertElement` call | `\lstinline!convertElement! call` | A call expression with callee `convertElement`
+
+Note: There is no need for hyphenation of "`convertElement` call" since we don't say "`Real` call" for a call expression of type `Real` (we have "`Real` expression" for this purpose).
+
 ### The keywords themselves
 
 When referencing a keyword itself, hyphenation is not used, and when possible, a better describing word than _keyword_ is used:
