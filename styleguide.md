@@ -94,6 +94,7 @@ Incomplete list of various terminology with special formatting rules:
 Appearance | LaTeX source | Comment
 --- | --- | ---
 start value | `start value` | Value of the `start`-attribute (there could be exceptions!)
+reduction expression | `reduction expression` |
 base class | `base class` | Similarly: derived class
 base-clock | `base-clock` | Similarly: sub-cock
 
