@@ -35,7 +35,7 @@ The following holds for slice operations:
 
 The document is in ongoing transition to _one sentence per line_ source code formatting.
 This means that any modified or new text should have each sentence alone on a single physical line in the source file.
-Once we have the physical line breaks in the correct places, the diffs of future changes will become clean and easy to grasp.
+Once we have the physical line breaks in the correct places, the diffs of future changes will become clean and easy to grasp, and merge conflicts much more easily resolved.
 
 ### Indentation
 
