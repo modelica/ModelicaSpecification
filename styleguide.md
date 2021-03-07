@@ -117,7 +117,9 @@ base-clock | `base-clock` | Similarly: sub-cock
 
 New terminology is either introduced with a `definition` environment, or as part of the running text.
 When part of the running text, the introduced terminology should be marked with `\firstuse` at the point of the definition.
-(The use of `\firstuse` helps us both produce consistent formatting and keep track of things that should appear in the document index.)
+As a general rule, `\firstuse` should appear in combination with `\index` for adding the term to the document index.
+(The use of `\firstuse` instead of just `\emph` helps us both produce consistent formatting and makes it easier to spot cases where the additional use of `\index` has been forgotten.
+The reason that `\firstuse` doesn't also do the job calling `\index` is that the form of the term presented to `\firstuse` isn't always in the base form expected in the document index, that there can be a need for special styling tricks in the `\index` argument, etc.)
 
 If the new terminology is used before being introduced, the first use should be marked with `\willintroduce` to alert the reader that this is not a term that is expected to be known yet by a first-time reader.
 
