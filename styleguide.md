@@ -167,7 +167,8 @@ equation
   der(x) = -x;
 ```
 
-Each line should fit within the width of the page, using hard line breaks and manual indentation of continued lines to meet this requirement.
+Each line should fit within the width of the page.
+Use hard line breaks and manual indentation of continued lines to meet this requirement.
 
 ### Grammar (extended BNF) listings
 
