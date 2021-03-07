@@ -8,6 +8,10 @@ This is the style guide for the Modelica Specification document.
 The source format of the document is LaTeX, and the source is processed by both pdfLaTeX and LaTeXML.
 It is good to be aware of the LaTeXML implications, but for most contributors and contributions is is considered sufficient to only check that the pdfLaTeX output looks good, the idea being that potential problems should be spotted in the pull request review process.
 
+The MSL-specific LaTeX macros and environments described in this style guide are defined in either of these two files:
+- [preamble.tex](preamble.tex) – Preamble contents for the main document.
+- [mlsshared.sty](mlsshared.sty) – Extracted parts of the styling to be shared with other documents that should follow the same style, such as many of the figures.
+
 
 ## Source code formatting
 
