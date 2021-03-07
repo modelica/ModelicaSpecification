@@ -15,9 +15,29 @@ The MSL-specific LaTeX macros and environments described in this style guide are
 
 ## Source code formatting
 
+### Trailing spaces and empty lines
+
+There shall be no trailing spaces, and each line (in particular, the last one in the file) shall be terminated by a newline.
+There shall be no empty lines at the beginning or end of a file, and there shall never be more than two empty lines in a row.
+Use one or two empty lines before sectioning commands such as `\section` or `\subsubsection`, except at the start of a file.
+An empty line is recommended also after the non-paragraph sectioning commands.
+
+Be careful about adding empty lines, as they actually are significant in places such as before list environments (`itemize`, etc).
+For example, if the text before a list acts as an introduction, it should be kept tight with the list:
+```
+The following holds for slice operations:
+\begin{itemize}
+\item
+    …
+```
+
+### Hard line breaks within paragraphs
+
 The document is in ongoing transition to _one sentence per line_ source code formatting.
 This means that any modified or new text should have each sentence alone on a single physical line in the source file.
 Once we have the physical line breaks in the correct places, the diffs of future changes will become clean and easy to grasp.
+
+### Indentation
 
 When indenting the contents of a LaTeX environment, an indentation of 2 spaces is used.
 It is recommended to not add indentation before `\item`:
