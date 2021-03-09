@@ -24,7 +24,7 @@ An empty line is recommended also after the non-paragraph sectioning commands.
 
 Be careful about adding empty lines, as they actually are significant in places such as before list environments (`itemize`, etc).
 For example, if the text before a list acts as an introduction, it should be kept tight with the list:
-```
+```tex
 The following holds for slice operations:
 \begin{itemize}
 \item
@@ -41,7 +41,7 @@ Once we have the physical line breaks in the correct places, the diffs of future
 
 When indenting the contents of a LaTeX environment, an indentation of 2 spaces is used.
 It is recommended to not add indentation before `\item`:
-```
+```tex
 \begin{itemize}
 \item
   First are all inputs to the original function, and after all them we will in order append one derivative for each input containing reals.
@@ -53,7 +53,7 @@ It is recommended to not add indentation before `\item`:
 ```
 
 Many environments are used without indenting the contents, including `nonnormative` and `example`:
-```
+```tex
 \begin{nonnormative}
 This means that the most restrictive derivatives should be written first.
 \end{nonnormative}
@@ -167,7 +167,7 @@ For purposes of marking emphasis, see use of `\emph` instead.
 ### Ordinals
 
 Ordinals are written with _th_ in normal font, possibly combined with a math styled expression for the number:
-```
+```tex
 Fixed ordinals: 1st, 2nd, 3rd.
 Symbolic ordinals: $n$th, $(n+1)$th.
 ```
@@ -193,7 +193,7 @@ Use hard line breaks and manual indentation of continued lines to meet this requ
 ### Grammar (extended BNF) listings
 
 Grammar listings use the `language=grammar`, and are written with indentation in steps of 3 spaces:
-```
+```tex
 \begin{lstlisting}[language=grammar]
 stored-definition :
    [ within [ name ] ";" ]
@@ -202,6 +202,6 @@ stored-definition :
 ```
 
 When a grammar rule is mentioned in the text, the rule shall be formatted with the _grammar_ language:
-```
+```tex
 The node shall contain a \lstinline[language=grammar]!stored-definition! that…
 ```
