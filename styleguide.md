@@ -155,7 +155,7 @@ To put emphasis on a word or small piece of text, use `\emph`.
 
 Italics is used when new terminology is introduced in the running text instead of the bulkier `definition` environment, see `\firstuse` and `\willintroduce`.
 
-Non-semantical font switching commands for producing italics (`\textit`, `\textsl`, `\itshape`) should pretty much never be used.
+Refrain from using non-semantical font switching commands for producing italics (`\textit`, `\textsl`, `\itshape`).
 
 Note that the document is full of text set in italics, since this is used for both non-normative text and examples, through the `nonnormative` and `example` environments.
 
