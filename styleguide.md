@@ -78,7 +78,7 @@ Note that there's often an associated rule in the Modelica grammar, which should
 
 Appearance | LaTeX source
 --- | ---
-`if-equation` | `\lstinline[language=grammar]!if-equation!`
+`if-equation` | `\lstinline[language=grammar]!if-equation!`{:.language-tex}
 
 Note: The hyphenation may sometimes appear grammatically incorrect, but the consistent use of hyphenation helps readability, and in some contexts the hyphen gives extra safety against reading the language name/keyword as part of the sentence structure.
 For example, compare:
