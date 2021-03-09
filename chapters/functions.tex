@@ -1194,7 +1194,7 @@ That \lstinline!fder! is a valid derivative of \lstinline!f! means that it can b
 function f
   input Real x;
   output Real y;
-  annotation(derivative=fder);
+  annotation(derivative = fder);
   external "C";
 end f;
 model M
@@ -1214,10 +1214,10 @@ Note that tools are not required to use the provided derivative, and might solve
 \begin{example}
 Use of \lstinline!order! to specify a second order derivative:
 \begin{lstlisting}[language=modelica]
-function foo0 annotation(derivative=foo1);
+function foo0 annotation(derivative = foo1);
 end foo0;
 
-function foo1 annotation(derivative(order=2)=foo2);
+function foo1 annotation(derivative(order=2) = foo2);
 end foo1;
 
 function foo2 end foo2;
@@ -1269,7 +1269,7 @@ function foo0
   input $\ldots$;
   output Real y;
   $\ldots$
-  annotation(derivative=foo1);
+  annotation(derivative = foo1);
 end foo0;
 
 function foo1
@@ -1281,7 +1281,7 @@ function foo1
   $\ldots$
   output Real der_y;
   $\ldots$
-  annotation(derivative(order=2)=foo2);
+  annotation(derivative(order=2) = foo2);
 end foo1;
 
 function foo2
@@ -1335,7 +1335,7 @@ function density
   output Density d "Density";
 algorithm
   $\ldots$
-  annotation(derivative=density_der);
+  annotation(derivative = density_der);
 end density;
 
 function density_der
@@ -1402,8 +1402,8 @@ function f "Simple table lookup"
   output Real z;
 algorithm
   $\ldots$
-  annotation(derivative(zeroDerivative=y, zeroDerivative=offset)= fDer,
-             derivative=fGeneralDer);
+  annotation(derivative(zeroDerivative=y, zeroDerivative=offset) = fDer,
+             derivative = fGeneralDer);
 end f;
 
 function fDer "Derivative of simple table lookup"
@@ -1414,7 +1414,8 @@ function fDer "Derivative of simple table lookup"
   output Real z_der;
 algorithm
   $\ldots$
-  annotation(derivative(zeroDerivative=y, zeroDerivative=offset, order=2) = fDer2);
+  annotation(
+    derivative(zeroDerivative=y, zeroDerivative=offset, order=2) = fDer2);
 end fDer;
 
 function fDer2 "Second derivative of simple table lookup"
@@ -1443,12 +1444,15 @@ algorithm
 end fGeneralDer;
 \end{lstlisting}
 In the example above \lstinline!zeroDerivative=y! and \lstinline!zeroDerivative=offset! imply that
-\begin{eqnarray*}
-\frac{d}{dt}f(x(t),y(t),o(t))&=&\frac{\partial f}{\partial x}\frac{dx}{dt}+\frac{\partial f}{\partial y}\frac{dy}{dt}+\frac{\partial f}{\partial o}\frac{do}{dt}\\
-&=&\frac{\partial f}{\partial x}\frac{dx}{dt}+\frac{\partial f}{\partial y}\cdot 0+\frac{\partial f}{\partial o}\cdot 0\\
-&=&\frac{\partial f}{\partial x}\frac{dx}{dt}\\
-&=&fDer\cdot\frac{dx}{dt}
-\end{eqnarray*}
+\begin{equation*}
+\begin{aligned}
+\udfrac{}{t}\text{\lstinline!f!}(x(t),\, y(t),\, o(t))
+&= \pdfrac{\text{\lstinline!f!}}{x} \udfrac{x}{t} + \pdfrac{\text{\lstinline!f!}}{y} \udfrac{y}{t} + \pdfrac{\text{\lstinline!f!}}{o} \udfrac{o}{t}\\
+&= \pdfrac{\text{\lstinline!f!}}{x} \udfrac{x}{t} + \pdfrac{\text{\lstinline!f!}}{y} \cdot 0 + \pdfrac{\text{\lstinline!f!}}{o} \cdot 0\\
+&= \pdfrac{\text{\lstinline!f!}}{x} \udfrac{x}{t}\\
+&= \text{\lstinline!fDer!} \cdot \udfrac{x}{t}
+\end{aligned}
+\end{equation*}
 \end{nonnormative}
 
 \begin{itemize}
@@ -1480,7 +1484,7 @@ function f
   output Real z;
 algorithm
   $\ldots$
-  annotation(derivative(noDerivative = y) = h);
+  annotation(derivative(noDerivative=y) = h);
 end f;
 
 function h
@@ -1496,12 +1500,15 @@ This is useful if \lstinline!g! represents the major computational
 effort of \lstinline!fg!.
 
 Therefore \lstinline!h! indirectly includes the derivative with respect to \lstinline!y! as follows:
-\begin{eqnarray*}
-\frac{d}{dt}fg(x(t))&=&\frac{d}{dt}f(x(t),g(x(t)))\\
-&=&\frac{\partial f}{\partial x}\frac{dx}{dt}+\frac{\partial f}{\partial y}\frac{\partial g}{\partial x}\frac{dx}{dt}\\
-&=&\left(\frac{\partial f}{\partial x}+\frac{\partial f}{\partial y}\frac{\partial g}{\partial x}\right)\frac{dx}{dt}\\
-&=&h(x,y)\frac{dx}{dt}
-\end{eqnarray*}
+\begin{equation*}
+\begin{aligned}
+\udfrac{}{t}\text{\lstinline!fg!}(x(t))
+&= \udfrac{}{t}\text{\lstinline!f!}(x(t),\, \text{\lstinline!g!}(x(t)))\\
+&= \pdfrac{\text{\lstinline!f!}}{x} \udfrac{x}{t} + \pdfrac{\text{\lstinline!f!}}{y} \pdfrac{\text{\lstinline!g!}}{x} \udfrac{x}{t}\\
+&= \left(\pdfrac{\text{\lstinline!f!}}{x} + \pdfrac{\text{\lstinline!f!}}{y} \pdfrac{\text{\lstinline!g!}}{x} \right) \udfrac{x}{t}\\
+&= \text{\lstinline!h!}(x(t),\, y(t))) \udfrac{x}{t}
+\end{aligned}
+\end{equation*}
 \end{nonnormative}
 
 \subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}
