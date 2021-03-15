@@ -56,4 +56,4 @@ but the rest of the development on a branch/pull-request before being accepted.
 - ~~MCP0002~~ Improved class generation
 - ~~MCP0001~~ Improved parametrization
 
-Note that the documents for older issues (especially the ones on hold) have not been transferred to GitHub, but are found on an older cvs-server.
+Note that the documents for older issues (especially the ones on hold) have not been transferred to GitHub, but are found on an older svn-server.
