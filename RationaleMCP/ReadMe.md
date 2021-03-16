@@ -12,6 +12,7 @@ A template for the rationale of the MCP is found as either [Markdown](MCPTemplat
 ## Workflow
 
 The workflow for all changes (including MCPs), and releases is described as part of the [Development Process](DevelopmentProcess.md).
+After a release is accepted, follow the [check-list for a new release](NewRelease.md).
 
 New MCP should be added to the following list - on the main branch to keep track of them,
 but the rest of the development on a branch/pull-request before being accepted.
