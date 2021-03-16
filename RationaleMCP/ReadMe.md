@@ -17,15 +17,18 @@ New MCP should be added to the following list - on the main branch to keep track
 but the rest of the development on a branch/pull-request before being accepted.
 
 ## List of existing MCPs
-- MCP0038 Initialization of Clocked Partitions ([MCP/0038](https://github.com/modelica/ModelicaSpecification/tree/MCP/0038/RationaleMCP/0038))
-- MCP0037 Generalized Modelica URIs ([MCP/0037](https://github.com/modelica/ModelicaSpecification/tree/MCP/0037/RationaleMCP/0037))
-- MCP0036 Setting states ([MCP/0036](https://github.com/modelica/ModelicaSpecification/tree/MCP/0036/RationaleMCP/0036))
-- MCP0035 Multilingual support of Modelica ([MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035))
-- MCP0034 Ternary ([MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034))
-- ~~MCP0033~~ Annotations for Predefined Plots (added in Modelica 3.5) ([MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033))
-- MCP0032 Selective Model Extension ([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032))
-- MCP0031 Flat Modelica and MLS modularization ([MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031))
-- ~~MCP0030~~ IsClocked Operator ([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))
+Status|Number|Name|Link
+-----------------------
+Active|0038|Initialization of Clocked Partitions|([MCP/0038](https://github.com/modelica/ModelicaSpecification/tree/MCP/0038/RationaleMCP/0038))
+Active|0037|Generalized Modelica URIs|([MCP/0037](https://github.com/modelica/ModelicaSpecification/tree/MCP/0037/RationaleMCP/0037))
+Active|0036|Setting states|([MCP/0036](https://github.com/modelica/ModelicaSpecification/tree/MCP/0036/RationaleMCP/0036))
+Active|0035|Multilingual support of Modelica|([MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035))
+Active|0034|Ternary|([MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034))
+Added in 3.5|0033|Annotations for Predefined Plots|([MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033))
+Active|0032|Selective Model Extension|([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032))
+Active|0031|Flat Modelica and MLS modularization|([MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031))
+Suspended|0030|IsClocked Operator|([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))
+
 - MCP0029 License Export ([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))
 - ~~MCP0028~~ Record Derivatives mixing Real and non-Real (added in Modelica 3.4) ([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))
 - MCP0027 Units of Literal Constants (active) ([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))
