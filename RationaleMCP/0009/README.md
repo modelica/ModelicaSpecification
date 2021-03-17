@@ -1,8 +1,10 @@
 Modelica Change Proposal MCP-0009
+
 Removing Modifications 
+
 Hans Olsson, Gerd Kurzbach, Hilding Elmqvist, Martin Otter, Michael Tiller
 (In Development) 
---
+
 
 # Summary
 This MCP proposes a possibility to remove existing, inherited modifications.
@@ -30,14 +32,15 @@ This allows more flexibility when using library elements because it enables a po
 # Proposal
 
 ## Syntax
-It is proposed to introduce a new keyword, when used as modification, removes an inherited modification and leaves the modified element as it was never modified. 
+It is proposed to introduce a new keyword, when used as modification, removes an inherited modification and leaves the modified element as it was never modified.
+
 Requirements to this keyword are:
 * It needs to be easily disdinguished from a modification expression, therefore it should not be part of the expression non terminal.
-* 	It should be self explaining and not contain only control characters.
+* It should be self explaining and not contain only control characters.
 * It should not break existing models by leading to unpredictable results.
-* 
+
 Because simple names are expressions and when becoming a keyword may break existing models it is considered to extend a descriptive name with some special characters.
-That lead to the proposal to use the keword `<empty>` or `break`, which fulfills the requirements.
+That lead to the proposal to use the keword `<empty>` or later `break`, which fulfills the requirements.
   
 Syntactically the rule of a modification is extended:
 
@@ -56,24 +59,24 @@ modification-expression :
 (Well, just one of the latter two.)
 
 ## Rules
-Modifications containing <empty> do not need special handling when they are merged during instantiation of models.
+Modifications containing `break` do not need special handling when they are merged during instantiation of models.
 They either override other modifications or will be overridden as usual.
 It is also not allowed to override modifications having the final prefix.
-Only during flattening of an instantiated model, remaining <empty> modifications are seen as not present.
+Only during flattening of an instantiated model, remaining `break` modifications are seen as not present.
 They have no further influence on the model equations.
   
 # Discussion of effects
 
 ## In Equations
 
-Because of the keyword <empty> is not an expression, it cannot be used at other places than modifications, neither in equations nor in algorithms.
+Because of the keyword `break` is not an expression, it cannot be used at other places than modifications, neither in equations nor in algorithms.
 It is also not possible to use it as sub expression inside modifications, therefore no operators or functions must deal with it.
 That eases the implementation in the compiler, because no runtime is needed.
-<empty> is not a value. It is just a marker to the modification, that it will be ignored.
+`break` is not a value. It is just a marker to the modification, that it will be ignored.
 
-A parameter or variable with the <empty> modification behaves in the same way as with no modification.
+A parameter or variable with the `break` modification behaves in the same way as with no modification.
 If such a parameter is referenced at places, where the value must be known at compile time (structural parameter), an error is given.
-Variables and parameters having `<empty>` modifications are free and must be calculated by an additional equation or algorithm.
+Variables and parameters having ``break` modifications are free and must be calculated by an additional equation or algorithm.
 Else there would be one missing equation, which leads to an error.
 From the point of the equation system they behave the same as without modification.
 
@@ -81,24 +84,24 @@ From the point of the equation system they behave the same as without modificati
 
 The use in annotations is not really useful, because they are not merged in current Modelica.
 Therefore no modification can be overridden.
-Finally, if an annotation has the `<empty>` modification but needs to have a value to work properly, a tool provided default value may be used  instead.
+Finally, if an annotation has the `break` modification but needs to have a value to work properly, a tool provided default value may be used  instead.
   
 ## At the GUI
 
-In a dialog, a tool may hide the keyword `<empty>` from the users and present them only an empty input field, not showing the inherited modification.
+In a dialog, a tool may hide the keyword `break` from the users and present them only an empty input field, not showing the inherited modification.
 Then, there needs to be a possibility to remove it again to get back the inherited modification.
   
 # Use cases
 
 ## Variables
 
-If there is an inherited modification from a base class and you want ot replace them by a (probably more sophisticated) equation or an algorithm in the `<empty>` can be used in the derived class:
+If there is an inherited modification from a base class and you want ot replace them by a (probably more sophisticated) equation or an algorithm in the `break` can be used in the derived class:
 ```
 model A
     Real x=1;
 end A;
 model B
-    extends A(x=<empty>);
+    extends A(x=break);
     algorithm
 	  x:=0;
 	  while(…)
@@ -117,7 +120,7 @@ model A
 end A;
 
 model B
-    extends A(diameter(fixed=false)=<empty>);
+    extends A(diameter(fixed=false)=break);
     parameter Real sqare;
     initial equation 
     //  assuming this cannot be solved symbolically for diameter
@@ -128,7 +131,7 @@ end B;
 
 # Backwards Compatibility
 The new syntax ensures that it is backwards compatible.
-Although the break-syntax overlaps with MCP-0032 it should be possible to combine.
+Although the `break`-syntax overlaps with ([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032)) it should be possible to combine.
 
 # Tool Implementation
 Implemented in SimulationX since a long time ago.
