@@ -25,26 +25,26 @@ but the rest of the development on a branch/pull-request before being accepted.
 |Active|0036|Setting states|([MCP/0036](https://github.com/modelica/ModelicaSpecification/tree/MCP/0036/RationaleMCP/0036))|
 |Active|0035|Multilingual support of Modelica|([MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035))|
 |Active|0034|Ternary|([MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034))|
-|Added in 3.5|0033|Annotations for Predefined Plots|([MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033))|
+|Added in [3.5](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.5)|0033|Annotations for Predefined Plots|([MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033))|
 |Active|0032|Selective Model Extension|([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032))|
 |Active|0031|Flat Modelica and MLS modularization|([MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031))|
 |On hold|0030|IsClocked Operator|([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))|
 |Active|0029|License Export|([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))|
-|Added in 3.4|0028|Record Derivatives mixing Real and non-Real|([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))|
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0028|Record Derivatives mixing Real and non-Real|([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))|
 |Active|0027|Units of Literal Constants|([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))|
-|Added in 3.4|0026|Arc-only Ellipse|([#2045](https://github.com/modelica/ModelicaSpecification/issues/2045))|
-|On hold|0025|Functions with input output ([#2012](https://github.com/modelica/ModelicaSpecification/issues/2012))|
-|Added in 3.4|0024|Initialization of Clocked States|([#2007](https://github.com/modelica/ModelicaSpecification/issues/2007))|
-|Added in 3.4|0023|Model to Record|([#1953](https://github.com/modelica/ModelicaSpecification/issues/1953))|
-|Added in 3.4|0022|Integer to Enumeration|([#1842](https://github.com/modelica/ModelicaSpecification/issues/1842))|
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0026|Arc-only Ellipse|([#2045](https://github.com/modelica/ModelicaSpecification/issues/2045))|
+|On hold|0025|Functions with input output|([#2012](https://github.com/modelica/ModelicaSpecification/issues/2012))|
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0024|Initialization of Clocked States|([#2007](https://github.com/modelica/ModelicaSpecification/issues/2007))|
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0023|Model to Record|([#1953](https://github.com/modelica/ModelicaSpecification/issues/1953))|
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0022|Integer to Enumeration|([#1842](https://github.com/modelica/ModelicaSpecification/issues/1842))|
 |Active|0021|Component iterators|([MCP/0021](https://github.com/modelica/ModelicaSpecification/tree/MCP/0021/RationaleMCP/0021))|
-|Added in 3.4|0020|Model as Arguments to Functions||
-|Added in 3.4|0019|Improvement of Flattening Description|([#1829](https://github.com/modelica/ModelicaSpecification/issues/1829))|
-|Added for 3.5|0018|Change specification format||
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0020|Model as Arguments to Functions||
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0019|Improvement of Flattening Description|([#1829](https://github.com/modelica/ModelicaSpecification/issues/1829))|
+|Added for [3.5](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.5)|0018|Change specification format||
 |Active|0017|Portable import of FMUs||
 |Active|0016|Semantic Versions||
 |Active|0015|Language Version Header|([MCP/0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015))|
-|Added in 3.4|0014|Conversion|([#1622](https://github.com/modelica/ModelicaSpecification/issues/1622))|
+|Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0014|Conversion|([#1622](https://github.com/modelica/ModelicaSpecification/issues/1622))|
 |On hold|0013|Introducing polymorphic functions||
 |Active|0012|Calling blocks as functions|([MCP/0012](https://github.com/modelica/ModelicaSpecification/tree/master/RationaleMCP/0012))|
 |On hold|0011|Allow user-defined functions in reductions||
