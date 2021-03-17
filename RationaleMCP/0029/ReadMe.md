@@ -77,3 +77,5 @@ Vendor Neutral Modelica Annotation Prototypes in MSL. https://trac.modelica.org/
 Analysis of third-party licenses of the MSL C-Sources. https://github.com/modelica/Modelica/issues/2253
 
 Git repository with prototype annotations. https://github.com/modelica-3rdparty/ExternData/commits/licenseexport
+
+Issue with discussions prior to creation of MCP branch. https://github.com/modelica/ModelicaSpecification/issues/2217
