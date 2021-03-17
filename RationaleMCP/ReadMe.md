@@ -46,10 +46,10 @@ but the rest of the development on a branch/pull-request before being accepted.
 |Active|0015|Language Version Header|([MCP/0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015))|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0014|Conversion|([#1622](https://github.com/modelica/ModelicaSpecification/issues/1622))|
 |On hold|0013|Introducing polymorphic functions||
-|Active|0012|Calling blocks as functions|([MCP/0012](https://github.com/modelica/ModelicaSpecification/tree/master/RationaleMCP/0012))|
+|Active|0012|Calling blocks as functions|([MCP/0012](https://github.com/modelica/ModelicaSpecification/tree/MCP/0012/RationaleMCP/0012))|
 |On hold|0011|Allow user-defined functions in reductions||
 |On hold|0010|Adding guards to reductions||
-|Active|0009|Undefined modification||
+|Active|0009|Undefined modification|([MCP/0009](https://github.com/modelica/ModelicaSpecification/tree/MCP/0009/RationaleMCP/0009))|
 |On hold|0008|Custom annotations||
 |On hold|0007|Match expressions||
 |On hold|0006|Atomic blocks||
