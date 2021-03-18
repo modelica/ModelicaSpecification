@@ -153,7 +153,7 @@ If the new terminology is used before being introduced, it should be marked with
 
 To put emphasis on a word or small piece of text, use `\emph`.
 
-Italics is used when new terminology is introduced in the running text instead of the bulkier `definition` environment, see `\firstuse` and `\willintroduce`.
+Italics is used via the semantic macros `\firstuse` and `\willintroduce` when new terminology is introduced in the running text instead of the bulkier `definition` environment.
 
 Refrain from using non-semantical font switching commands for producing italics (`\textit`, `\textsl`, `\itshape`).
 
