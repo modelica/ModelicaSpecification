@@ -35,6 +35,10 @@ The following holds for slice operations:
 
 The document is in ongoing transition to _one sentence per line_ source code formatting.
 This means that any modified or new text should have each sentence alone on a single physical line in the source file.
+
+When a sentence doesn't fit in one screen line, one may take that as a reminder that long sentences can reduce readability of the specification document, and consider breaking the long sentence into shorter ones.
+Just keep in mind that the purpose of doing this shall be to improve readability of the specification text, not improve readability of the _one sentence per line_ formatted source code.
+
 Once we have the physical line breaks in the correct places, the diffs of future changes will become clean and easy to grasp, and merge conflicts much more easily resolved.
 
 ### Indentation
