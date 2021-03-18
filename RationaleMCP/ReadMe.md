@@ -1,7 +1,6 @@
-
 # MCP Rationale
 This directory should contain the rationale behind Modelica Change Proposals, MCPs,
-(and possibly rationale behind other decisions as well). 
+(and possibly rationale behind other decisions as well).
 
 Each MCP should use a separate sub-directory based on the MCP-number.
 
