@@ -16,6 +16,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2014-06-14 | Update. Added corrections and results from discussions (#1377), clarifications and other proposals|
 | 2018-03-23 | Second Version with changed name, simplified and streamlined, no more related to custom annotations MCP-0008|
 | 2021-03-17 | Converted to markdown, by Hans Olsson and added new syntax-variant from Gerd Kurzbach |
+| 2021-03-18 | Hans Olsson - added experience from Dymola |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -127,18 +128,34 @@ model B
         square =f(diameter); 
 end B;
 ```
-  
+## Removing unwanted defaults
+As an practical example consider reusing `Modelica.Fluid.Pipes.StaticPipe` - when you don't like the defaults for `roughness` and `height_ab` and want to ensure that users provide both.
+
+Previously you would have to create a complete wrapper for this model, since the bad defaults are in a base-class.
+
+Now you can just write:
+```
+model MyPipe
+  extends Modelica.Fluid.Pipes.StaticPipe(roughness=break, height_ab=break);
+end MyPipe;
+```
+and use `MyPipe` instead.
 
 # Backwards Compatibility
 The new syntax ensures that it is backwards compatible.
-Although the `break`-syntax overlaps with ([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032)) it should be possible to combine.
+Although the `break`-syntax overlaps with ([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032)) they can be combined without problems.
 
 # Tool Implementation
 Implemented in SimulationX since a long time ago.
+Test-implemented in Dymola.
 
 ## Experience with Prototype
-The prototype implementation has to be sketched and the experience gained with the prototype, especially the implementation effort. Furthermore, simple test cases have to be provided to profoundly illustrate the solution of the problem, and at least one description of an industry-size example to prove scalability of the solution. 
+The experience with a simple prototype implementation in Dymola is that it can mostly be implemented in less than a day.
+(There might be some rough spots remaining.)
+The use cases above are relevant also for large industrial models.
+
+One additional relevant use case is allowing re-using of models that have unwanted defaults; added above.
 
 # Required Patents
-No patents needd.
+No patents needed.
 # References
