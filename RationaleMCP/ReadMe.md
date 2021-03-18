@@ -1,7 +1,6 @@
-
 # MCP Rationale
 This directory should contain the rationale behind Modelica Change Proposals, MCPs,
-(and possibly rationale behind other decisions as well). 
+(and possibly rationale behind other decisions as well).
 
 Each MCP should use a separate sub-directory based on the MCP-number.
 
@@ -30,7 +29,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 |Active|0032|Selective Model Extension|([MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032))|
 |Active|0031|Flat Modelica and MLS modularization|([MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031))|
 |On hold|0030|IsClocked Operator|([#2238](https://github.com/modelica/ModelicaSpecification/issues/2238))|
-|Active|0029|License Export|([#2217](https://github.com/modelica/ModelicaSpecification/issues/2217))|
+|Active|0029|License Export|([MCP/0029](https://github.com/modelica/ModelicaSpecification/tree/MCP/0029/RationaleMCP/0029))|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0028|Record Derivatives mixing Real and non-Real|([#2137](https://github.com/modelica/ModelicaSpecification/issues/2137))|
 |Active|0027|Units of Literal Constants|([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0026|Arc-only Ellipse|([#2045](https://github.com/modelica/ModelicaSpecification/issues/2045))|
