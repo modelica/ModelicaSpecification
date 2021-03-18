@@ -188,7 +188,8 @@ equation
 ```
 
 Each line should fit within the width of the page.
-Use hard line breaks and manual indentation of continued lines to meet this requirement.
+Use hard line breaks and manual additional indentation of continued lines to meet this requirement.
+A semicolon in a matrix should either be followed by a line break or by a space.
 
 ### Grammar (extended BNF) listings
 
