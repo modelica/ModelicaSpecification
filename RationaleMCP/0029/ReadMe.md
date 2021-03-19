@@ -12,7 +12,7 @@ This shifts the responsibility of providing the necessary license information fr
 ## Revisions
 | Date | Description |
 | --- | --- |
-| 2017-12-07 | Thomas Beutlich. Based on input from Christian Bertsch at FMI #417 |
+| 2017-12-07 | Thomas Beutlich. Based on input from Christian Bertsch at [FMI#417](https://github.com/modelica/fmi-standard/issues/417) |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
@@ -26,7 +26,7 @@ A library developer needs to provide the relevant license information as externa
 
 Use-cases:
 1. Export a Modelica model with Modelica.Blocks.Continuous.PID as FMU for ME and distribute this FMU to external customers or partners.
-Along with the FMU the distributor needs to provide the information of utilized software components, e.g., the MSL, which as of v3.2.2 is licensed under the Modelica License 2.
+Along with the FMU the distributor needs to provide the information of utilized software components, e.g., the MSL, which as of v4.0.0 is licensed under the 3-Clause BSD license.
 1. Export a Modelica model with Modelica.Blocks.Sources.CombiTable1D as S-Function and distribute this S-Function to external customers or partners.
 Along with the S-Function the distributor needs to provide the information of utilized third-party software of the ModelicaStandardTables, zlib, uthash etc.
 1. Export a Modelica model with Modelica.Blocks.Continuous.PID as FMU for CS and distribute this FMU to external customers or partners.
@@ -44,18 +44,18 @@ This change does not introduce any backwards incompatibilities.
 ### Experience with Prototype
 
 On the library side, the necessary changes have been applied to library _ExternData_.
-The following commits at the Git repository at https://github.com/modelica-3rdparty/ExternData were pushed to new feature branch licenseexport.
+The following commits at the Git repository at https://github.com/modelica-3rdparty/ExternData demonstrate the necessary steps to update a Modelica libarry.
 
-1. https://github.com/modelica3rdparty/ExternData/commit/7522046dce6d20fe01a85a559b02fd9d8878bdd2
+1. https://github.com/modelica-3rdparty/ExternData/commit/7522046dce6d20fe01a85a559b02fd9d8878bdd2
    - All license files were added as text files to a new directory ExternData/Resources/Licenses.
      The file format is not restricted to Text with a special encoding, but any file format (e.g., Mark-Down, PDF, HTML) basically can be supported.
      The license file LICENSE_ExternData.txt is the corresponding license of the copyright holder of the Modelica package, all other license files reflect third-party software components.
    - It is recommended to use ModelicaPackage/Resource/Licenses as default directory for the license files.
-1. https://github.com/modelica3rdparty/ExternData/commit/f38372d825b20eac4de01ce01b95560522b43ad2
+1. https://github.com/modelica-3rdparty/ExternData/commit/f38372d825b20eac4de01ce01b95560522b43ad2
    - The license file LICENSE_ExternData.txt of the Modelica package is referenced by the Modelica top-level class as new annotation License="modelica://ExternData/Resources/Licenses/LICENSE_ExternData.txt".
      To introduce this new annotation on existing Modelica packages in a Modelica-compliant and vendorneutral way, the `__ModelicaAssociation` prefix was added (similar as `__ModelicaAssociation_Impure` in MSL v3.2.2).
      This means, that library developers can adopt early to this proposal, for example a new MSL v3.2.3 can already introduce this new annotation and is not needed to be based on a new release of the Modelica language specification.
-1. https://github.com/modelica3rdparty/ExternData/commit/d6dec789aec1c1333386161147c91cdd49b484d0
+1. https://github.com/modelica-3rdparty/ExternData/commit/d6dec789aec1c1333386161147c91cdd49b484d0
    - All third-party licenses are listed as new License annotation to the external functions.
      There is some redundancy here in specifying the license directory many times in the Modelica URIs, but this is not a serious issue.
      Again, the `__ModelicaAssociation` prefix was added for Modelica-compliant tool-neutrality
@@ -70,12 +70,10 @@ No patent known that would be required for implementation of this proposal.
 
 ## References
 
-FMUs must contain all relevant license information. https://trac.fmi-standard.org/ticket/417
+FMUs must contain all relevant license information. https://github.com/modelica/fmi-standard/issues/417
 
-Vendor Neutral Modelica Annotation Prototypes in MSL. https://trac.modelica.org/Modelica/ticket/849
+Vendor Neutral Modelica Annotation Prototypes in MSL. https://github.com/modelica/ModelicaStandardLibrary/issues/849
 
-Analysis of third-party licenses of the MSL C-Sources. https://github.com/modelica/Modelica/issues/2253
-
-Git repository with prototype annotations. https://github.com/modelica-3rdparty/ExternData/commits/licenseexport
+Analysis of third-party licenses of the MSL C-Sources. https://github.com/modelica/ModelicaStandardLibrary/issues/2253
 
 Issue with discussions prior to creation of MCP branch. https://github.com/modelica/ModelicaSpecification/issues/2217
