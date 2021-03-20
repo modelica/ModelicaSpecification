@@ -210,3 +210,13 @@ When a grammar rule is mentioned in the text, the rule shall be formatted with t
 ```
 The node shall contain a \lstinline[language=grammar]!stored-definition! that…
 ```
+
+## English natural language text
+
+This section gives guidelines for how the natural language text in English should be written.
+
+The text is written in American English.
+
+### Contractions
+
+Avoid contractions such as _isn't_ or _won't_; write _is not_ or _will/would not_ instead.
