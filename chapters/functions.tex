@@ -1745,9 +1745,19 @@ Enumeration type & \lstinline[language=C]!int! & \lstinline[language=C]!int *!\\
 
 An exception is made when the argument is of the form \lstinline!size($\ldots$, $\ldots$)!. In this case the corresponding C type is \lstinline!size_t!.
 
-Strings are \textsc{nul}-terminated (i.e., terminated by \lstinline[language=C]!'\0'!) to
-facilitate calling of C functions. When returning a non-literal string,
-see \cref{utility-functions-for-allocating-strings} for details on memory allocation.
+Strings are \textsc{nul}-terminated (i.e., terminated by \lstinline[language=C]!'\0'!) to facilitate calling of C functions.
+The valid return values for an external function returning a \lstinline!String! are:
+\begin{itemize}
+\item A string given as \lstinline!String! input to the external function.
+\item A pointer to a C string literal.
+\item A pointer returned by one the string allocation functions in \cref{utility-functions-for-allocating-strings}.
+\end{itemize}
+
+\begin{nonnormative}
+The reason why it is not allowed to return a string allocated with, for instance, \lstinline[language=C]!malloc! is that there is no transfer of ownership when a string is returned from the external function.
+The external code would remain the owner of such a string, and would be responsible for eventually releasing the memory at some point.
+Consequently, the Modelica simulation environment would not be able to assume that all only its own string deallocation routines could invalidate any of the strings returned by external functions.
+\end{nonnormative}
 
 \lstinline!Boolean! values are mapped to C such that \lstinline!false! in Modelica is 0 in C and \lstinline!true! in Modelica is 1 in C.  If the returned value from C is 0 it is treated as \lstinline!false! in Modelica; otherwise as \lstinline!true!.
 
@@ -1971,16 +1981,12 @@ struct R {
 
 \subsection{Return Type Mapping}\label{return-type-mapping}
 
-If there is a single output parameter and no explicit call of the
-external function, or if there is an explicit external call in the form
-of an equation, in which case the LHS must be one of the output
-parameters, the external routine is assumed to be a value-returning
-function. Mapping of the return type of functions is performed as
-indicated in the table below. Storage for arrays as return values is
-allocated by the calling routine, so the dimensions of the returned
-array are fixed at call time. Otherwise the external function is assumed
-not to return anything; i.e., it is really a procedure or, in C, a
-void-function.
+If there is a single output parameter and no explicit call of the external function, or if there is an explicit external call in the form of an equation, in which case the LHS must be one of the output parameters, the external routine is assumed to be a value-returning function.
+Otherwise the external function is assumed not to return anything; i.e., it is really a procedure or, in C, a void-function.
+
+Mapping of the return type of functions is performed as indicated in the table below.
+Storage for arrays as return values is allocated by the calling routine, so the dimensions of the returned array are fixed at call time.
+See \cref{simple-types} regarding returning of \lstinline!String! values.
 
 \begin{nonnormative}
 In the case of an external function not returning anything, argument type mapping according to \cref{simple-types} is performed in the absence
@@ -2005,9 +2011,7 @@ Record              & See \cref{records}                  & \emph{Not allowed}\\
 \end{tabular}
 \end{center}
 
-The element type \lstinline!T! of an array can be any simple type as defined in
-\cref{simple-types} or, for C, a record type is returned as a value of the
-record type defined in \cref{records}.
+The element type \lstinline!T! of an array can be any simple type as defined in \cref{simple-types} or, for C, a record type is returned as a value of the record type defined in \cref{records}.
 
 \subsection{Aliasing}\label{aliasing}
 
@@ -2449,12 +2453,22 @@ The functions listed below are related to string allocation.
 \end{tabular}
 \end{center}
 
+As described in \cref{simple-types}, an external function wanting to return a newly constructed string must allocate this string with one of the string allocation functions in this section.
+The allocated memory is owned by the Modelica simulation environment, and may only be accessed by the external function during the currently executing external function call.
+The string allocation functions can also be used to allocate temporary strings that are not returned from the external function, with the convenience of the Modelica simulation environment being responsible for deallocation after the return of the external function.
+(This is particularly convenient for avoiding memory leaks in the event of abnormal termination of the external function, for example, via \lstinline[language=C]!ModelicaError!).
+
+\begin{nonnormative}
+Memory that is not passed to the Modelica simulation environment, such as memory that is freed before leaving the function, or in an \lstinline!ExternalObject!, see~\cref{external-objects}, may be allocated with the standard C mechanisms, like \lstinline[language=C]!malloc!.
+\end{nonnormative}
+
 \begin{functiondefinition}[ModelicaAllocateString]
 \begin{synopsis}[C]\begin{lstlisting}
 char* ModelicaAllocateString(size_t $\mathit{len}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Allocate memory for a writeable non-literal string which is used as a return argument of an external Modelica function.  It allocates $\mathit{len}+1$ characters and the last one is set to \textsc{nul}.  If an error occurs, this function does not return, but calls \lstinline[language=C]!ModelicaError!.
+Allocates $\mathit{len}+1$ characters, and sets the last one to \textsc{nul}.
+If an error occurs, this function does not return, but calls \lstinline[language=C]!ModelicaError!.
 \end{semantics}
 \end{functiondefinition}
 
@@ -2463,7 +2477,9 @@ Allocate memory for a writeable non-literal string which is used as a return arg
 char* ModelicaAllocateStringWithErrorReturn(size_t $\mathit{len}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Same as \lstinline[language=C]!ModelicaAllocateString!, except that in case of error, the function returns 0.  This allows the external function to close files and free other open resources in case of error.  After cleaning up resources, use \lstinline[language=C]!ModelicaError! or \lstinline[language=C]!ModelicaFormatError! to signal the error.
+Same as \lstinline[language=C]!ModelicaAllocateString!, except that in case of error, the function returns 0.
+This allows the external function to close files and free other open resources in case of error.
+After cleaning up resources, use \lstinline[language=C]!ModelicaError! or \lstinline[language=C]!ModelicaFormatError! to signal the error.
 \end{semantics}
 \end{functiondefinition}
 
@@ -2472,7 +2488,8 @@ Same as \lstinline[language=C]!ModelicaAllocateString!, except that in case of e
 char* ModelicaDuplicateString(const char* $\mathit{str}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Returns a writeable duplicate of the \textsc{nul}-terminated string $\mathit{str}$.  If an error occurs, this function does not return, but calls \lstinline[language=C]!ModelicaError!.
+Returns a writeable duplicate of the \textsc{nul}-terminated string $\mathit{str}$.
+If an error occurs, this function does not return, but calls \lstinline[language=C]!ModelicaError!.
 \end{semantics}
 \end{functiondefinition}
 
@@ -2481,28 +2498,11 @@ Returns a writeable duplicate of the \textsc{nul}-terminated string $\mathit{str
 char* ModelicaDuplicateStringWithErrorReturn(const char* $\mathit{str}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Same as \lstinline[language=C]!ModelicaDuplicateString!, except that in case of error, the function returns 0.  This allows the external function to close files and free other open resources in case of error. After cleaning up resources, use \lstinline[language=C]!ModelicaError! or \lstinline[language=C]!ModelicaFormatError! to signal the error.
+Same as \lstinline[language=C]!ModelicaDuplicateString!, except that in case of error, the function returns 0.
+This allows the external function to close files and free other open resources in case of error.
+After cleaning up resources, use \lstinline[language=C]!ModelicaError! or \lstinline[language=C]!ModelicaFormatError! to signal the error.
 \end{semantics}
 \end{functiondefinition}
-
-The valid return values for an external function returning a \lstinline!String! are:
-\begin{itemize}
-\item A literal \lstinline!String!.
-\item A string given as \lstinline!String! input to the external function.
-\item A string pointer returned by one the functions in the table above.
-\end{itemize}
-
-Thus if an external function wants to create a non-literal string it must be allocated with one of the functions in this section, e.g., \lstinline[language=C]!ModelicaAllocateString!.  After return of the external function, the Modelica environment is responsible for the memory allocated with \lstinline[language=C]!ModelicaAllocateString! (e.g., to free this memory, when appropriate).  It is not allowed to access memory that was allocated with \lstinline[language=C]!ModelicaAllocateString! in a previous call of this external function.
-
-\begin{nonnormative}
-Memory that is not passed to the Modelica simulation environment, such as memory that is freed before leaving the function, or in an \lstinline!ExternalObject!,
-see~\cref{external-objects}, should be allocated with the standard C mechanisms, like \lstinline[language=C]!calloc!.
-\end{nonnormative}
-
-\begin{nonnormative}
-The reason why one should avoid, for instance, \lstinline[language=C]!malloc! for string allocation is that a Modelica simulation environment may have
-its own allocation scheme, e.g., a special stack for local variables of a function.
-\end{nonnormative}
 
 \subsection{External Objects}\label{external-objects}
 
