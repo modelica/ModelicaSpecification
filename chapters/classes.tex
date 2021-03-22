@@ -180,22 +180,22 @@ in that order.
 
 Array dimensions shall be scalar non-negative parameter expressions of type \lstinline!Integer!, a reference to a type (which must an enumeration type or \lstinline!Boolean!, see \cref{enumeration-types}), or the colon operator denoting that the array dimension is left unspecified (see \cref{array-declarations}).  All variants can also be part of short class definitions.
 
-\begin{nonnormative}
-Example of variables with array dimensions.
+\begin{example}
+Variables with array dimensions:
 \begin{lstlisting}[language=modelica]
 model ArrayVariants
-  type T=Real[:];                     // Unspecified size for type
-  parameter T x=ones(4);
-  parameter T y[3]=ones(3, 4);
-  parameter Real a[2]=ones(2);        // Specified using Integer
-  parameter Real b[2, 0]=ones(2, 0);  // Size 0 is allowed
-  parameter Real c[:]=ones(0);        // Unspecified size for variable
-  parameter Integer n=0;
-  Real x[n*2]=cat(1,ones(n),zeros(n)};// Parameter expressions are allowed
-  Boolean notV[Boolean]={true,false}; // Indexing with type
+  type T = Real[:];                       // Unspecified size for type
+  parameter T x = ones(4);
+  parameter T y[3] = ones(3, 4);
+  parameter Real a[2] = ones(2);          // Specified using Integer
+  parameter Real b[2, 0] = ones(2, 0);    // Size 0 is allowed
+  parameter Real c[:] = ones(0);          // Unspecified size for variable
+  parameter Integer n = 0;
+  Real z[n*2] = cat(1, ones(n), zeros(n));// Parameter expressions are allowed
+  Boolean notV[Boolean] = {true, false};  // Indexing with type
 end ArrayVariants;
 \end{lstlisting}
-\end{nonnormative}
+\end{example}
 
 The rules for components in functions are described in \cref{function-as-a-specialized-class}.
 
@@ -252,11 +252,11 @@ The prefixes \lstinline!input!\indexinline{input} and \lstinline!output!\indexin
 \begin{lstlisting}[language=modelica]
 block FirstOrder
   input Real u;
-  ...
+  $\ldots$
 end FirstOrder;
 model UseFirstOrder
   FirstOrder firstOrder(u=time); // binding equation for u
-  ...
+  $\ldots$
 end UseFirstOrder;
 \end{lstlisting}
 \end{example}
@@ -383,14 +383,33 @@ The variability of expressions and restrictions on variability for
 definition equations is given in \cref{variability-of-expressions}.
 
 \begin{nonnormative}
-A discrete-time variable is a piecewise constant signal which
-changes its values only at event instants during simulation. Such types
-of variables are needed in order that special algorithms, such as the
-algorithm of Pantelides for index reduction, can be applied (it must be
-known that the time derivative of these variables is identical to zero).
-Furthermore, memory requirements can be reduced in the simulation
-environment, if it is known that a component can only change at event
-instants.
+For \lstinline!Real! variables we can distinguish two subtly different categories: discrete-time and piecewise constant, where the discrete-time variables are a subset of all piecewise constant variables.
+The \lstinline!Real! variables declared with the prefix \lstinline!discrete! is a subset of the discrete-time \lstinline!Real! variables.
+For a \lstinline!Real! variable, being discrete-time is equivalent to being assigned in a when-clause.
+A variable used as argument to \lstinline!pre! outside a when-clause must be discrete-time.
+
+\begin{lstlisting}[language=modelica]
+model PiecewiseConstantReals
+  discrete Real xd1 "Must be assigned in a when-clause, discrete-time";
+  Real xd2 "Assigned in a when-clause (below) and thus discrete-time";
+  Real xc3 "Not discrete-time, but piecewise constant";
+  Real x4 "Piecewise constant, but changes between events";
+equation
+  when sample(1, 1) then
+    xd1 = pre(xd1) + 1;
+    xd2 = pre(xd2) + 1;
+  end when;
+  // It is legal to use pre for a discrete-time variable outside of when
+  xc3 = xd1 + pre(xd2);
+  // But pre(xc3) would not be legal
+  x4 = if noEvent(cos(time) > 0.5) then 1.0 else -1.0;
+end PiecewiseConstantReals;
+\end{lstlisting}
+
+Tools may optimize code to only compute and store discrete-time variables at events.
+Tools may extend that optimization to piece-wise constant variables that only change at events (in the example above \lstinline!xc3!).
+As shown above variables can be piecewise constant, but change at times that are not events (in the example above \lstinline!x4!).
+It is not clear how a tool could detect and optimize the latter case.
 
 A \lstinline!parameter! variable is constant during simulation.  This prefix gives the library designer the possibility to express that the physical equations in a library are only valid if some of the used components are constant during simulation.  The same also holds for discrete-time and constant variables.  Additionally, the \lstinline!parameter! prefix allows a convenient graphical user interface in an experiment environment, to support quick changes of the most important constants of a compiled model.  In combination with an if-clause, a \lstinline!parameter! prefix allows removing parts of a model before the symbolic processing of a model takes place in order to avoid variable causalities in the model (similar to \lstinline!#ifdef! in C).  Class parameters can be sometimes used as an alternative.
 
@@ -398,7 +417,7 @@ Example:
 \begin{lstlisting}[language=modelica]
 model Inertia
   parameter Boolean state = true;
-  ...
+  $\ldots$
 equation
   J*a = t1 - t2;
   if state then // code which is removed during symbolic
@@ -477,7 +496,7 @@ A component declaration can have a \lstinline!condition-attribute!: \lstinline!i
   // Illegal modifier on component3 since component1.J is conditional
   // Even if we can see that component1 always exist if component3 exist
 equation
-  connect(component1..., ...) "Connection to conditional component 1";
+  connect(component1$\ldots$, $\ldots$) "Connection to conditional component 1";
   connect(component2.n, motor.n) "Connection to conditional component 2";
   connect(component3.n, motor.n) "Connection to conditional component 3";
   component1.u=0; // Illegal
@@ -533,11 +552,11 @@ followed by a number of equations in an equation section.
 class ClassName
   Declaration1
   Declaration2
-  ...
+  $\ldots$
 equation
   equation1
   equation2
-  ...
+  $\ldots$
 end ClassName;
 \end{lstlisting}
 \end{example}
@@ -617,7 +636,7 @@ Demonstrating the difference in scopes:
 \begin{lstlisting}[language=modelica]
 model Resistor
   parameter Real R;
-  ...
+  $\ldots$
 end Resistor;
 model A
   parameter Real R;
@@ -631,8 +650,8 @@ model A
   encapsulated model Load2=.Resistor(R=2); // Ok
   encapsulated model LoadR=.Resistor(R=R); // Illegal
   Load a,b,c;
-  ConstantSource ...;
-  ...
+  ConstantSource $\ldots$;
+  $\ldots$
 end A;
 \end{lstlisting}
 \end{example}
@@ -1533,7 +1552,7 @@ end Mixing2;
 
 For each enumeration:
 \begin{lstlisting}[language=modelica]
-type E=enumeration(e1, e2, ..., en);
+type E = enumeration(e1, e2, $\ldots$, en);
 \end{lstlisting}
 
 a new simple type is conceptually defined as
@@ -1546,9 +1565,9 @@ type E // Note: Defined with Modelica syntax although predefined
   parameter EnumType start = e1;       // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false; // default for other variables
-  constant EnumType e1=...;
-  ...
-  constant EnumType en=...;
+  constant EnumType e1 = $\ldots$;
+  $\ldots$
+  constant EnumType en = $\ldots$;
 equation
   assert(value >= min and value <= max, "Variable value out of limit");
 end E;
@@ -1562,10 +1581,10 @@ level, it is not possible to use the enumeration attribute names
 
 \subsubsection{Type Conversion of Enumeration Values to String or Integer}\label{type-conversion-of-enumeration-values-to-string-or-integer}
 
-The type conversion function \lstinline!Integer(<expression of enumeration type>)! returns the ordinal number of the
-enumeration value \lstinline!E.enumvalue!, to which the expression is evaluated,
-where \lstinline!Integer(E.e1) = 1!, \lstinline!Integer(E.en) = n!, for an enumeration type
-\lstinline!E = enumeration(e1, ..., en)!.
+% TODO: Can't have angle brackets and \emph in the same mathescape due to LaTeXML issue:
+% - https://github.com/brucemiller/LaTeXML/issues/1477
+% Once we cut the MathJax dependency, change to single mathescape for better character spacing.
+The type conversion function \lstinline!Integer($\langle$$\mbox{\emph{expression of enumeration type}}$$\rangle$)! returns the ordinal number of the enumeration value \lstinline!E.enumvalue!, to which the expression is evaluated, where $\text{\lstinline!Integer(E.e1)!} = 1$, $\text{\lstinline!Integer(E.en)!} = n$, for an enumeration type \lstinline!E = enumeration(e1, $\ldots$, en)!.
 
 \lstinline!String(E.enumvalue)! gives the \lstinline!String! representation of the enumeration value.
 
@@ -1582,10 +1601,10 @@ the same name and in the same scope as the enumeration type is
 implicitly defined. This function can be used in an expression to
 convert an integer value to the corresponding (as described in \cref{type-conversion-of-enumeration-values-to-string-or-integer}) enumeration value.
 
-For an enumeration type named \lstinline!EnumTypeName!, the expression
-\lstinline!EnumTypeName(<Integer expression>)! returns the
-enumeration value \lstinline!EnumTypeName.e! such that \lstinline!Integer(EnumTypeName.e)! is
-equal to the original integer expression.
+% TODO: Can't have angle brackets and \emph in the same mathescape due to LaTeXML issue:
+% - https://github.com/brucemiller/LaTeXML/issues/1477
+% Once we cut the MathJax dependency, change to single mathescape for better character spacing.
+For an enumeration type named \lstinline!EnumTypeName!, the expression \lstinline!EnumTypeName($\langle$$\mbox{\emph{Integer expression}}$$\rangle$)! returns the enumeration value \lstinline!EnumTypeName.e! such that \lstinline!Integer(EnumTypeName.e)! is equal to the original integer expression.
 
 Attempting to convert an integer argument that does not correspond to a
 value of the enumeration type is an error.
