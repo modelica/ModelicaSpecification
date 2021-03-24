@@ -17,6 +17,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2018-03-23 | Second Version with changed name, simplified and streamlined, no more related to custom annotations MCP-0008|
 | 2021-03-17 | Converted to markdown, by Hans Olsson and added new syntax-variant from Gerd Kurzbach |
 | 2021-03-18 | Hans Olsson - added experience from Dymola |
+| 2021-03-24 | Hans Olsson - feedback on prototype |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -155,6 +156,8 @@ The experience with a simple prototype implementation in Dymola is that it can m
 The use cases above are relevant also for large industrial models.
 
 One additional relevant use case is allowing re-using of models that have unwanted defaults; added above.
+
+From the user perspective there was feedback that it was seen as somewhat problematic that defaults (using start=... for parameters) was not removed by setting the value to break. Based on the proposal that is deliberate and also setting start=break is possible for users.
 
 # Required Patents
 No patents needed.
