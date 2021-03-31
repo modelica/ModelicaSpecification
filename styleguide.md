@@ -96,11 +96,14 @@ Different constructs with _expression_ and _call_:
 Appearance | LaTeX source | Comment
 --- | --- | ---
 `if`-expression | `\lstinline!if!-expression` | Generic language concept
-`DynamicSelect`-expression | `\lstinline!DynamicSelect!-expression` | Currently with space in the document!
 `Curve`-expression | `\lstinline!Curve!-expression` | Currently with space in the document!
 `Real` expression | `\lstinline!Real! expression` | An expression of type `Real`
 `y` expression | `\lstinline!y! expression` | Expression for something named `y`
 `convertElement` call | `\lstinline!convertElement! call` | A call expression with callee `convertElement`
+
+In particular, avoid other constructs with _expression_ than the variants above.
+For other needs, try to find a formulation not based on _expression_ to avoid misinterpretations according to the variants above.
+For example, instead of saying "… can be dependent on class variables using the `DynamicSelect` expression", just say "… can be dependent on class variables using `DynamicSelect`".
 
 Note: There is no need for hyphenation of "`convertElement` call" since we don't say "`Real` call" for a call expression of type `Real` (we have "`Real` expression" for this purpose).
 
