@@ -1340,7 +1340,27 @@ necessarily defines the computational causality.
 The \firstuse{attributes}\index{attribute} of the predefined variable types (\lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!) and \lstinline!enumeration! types are described below with Modelica syntax although they are predefined.
 All attributes are predefined and attribute values can only be defined using a modification, such as in \lstinline!Real x(unit = "kg")!.
 Attributes cannot be accessed using dot notation, and are not constrained by equations and algorithm sections.
-E.g.\ in \lstinline!Real x(unit = "kg") = y;! only the values of \lstinline!x! and \lstinline!y! are declared to be equal, but not their \lstinline!unit! attributes, nor any other attribute of \lstinline!x! and \lstinline!y!.
+
+The $\langle$$\mbox{\emph{value}}$$\rangle$ in the definitions of the predefined types represents the value of an expresion of that type.
+Unlike attributes, the $\langle$$\mbox{\emph{value}}$$\rangle$ of a component cannot be referred to by name; both access and modification of the value is made directly on the component.
+
+\begin{example}
+Accessing and modifying a variable value, using \lstinline!Real! as example of a predefined type:
+\begin{lstlisting}[language=modelica]
+model M
+  record R
+    Real u;
+    Real v;
+  end R;
+  Real x = sin(time);      // Value modification.
+  Real y(unit = "kg") = x; // Access value of x, and modify value of y.
+  R r(u = y);              // Value modification of r.u.
+equation
+  r.v + x * x = 0;         // Access values of r.v and x.
+end M;
+\end{lstlisting}
+Note that only the values of \lstinline!x! and \lstinline!y! are declared to be equal, but not their \lstinline!unit! attributes, nor any other attribute of \lstinline!x! and \lstinline!y!
+\end{example}
 
 It is not possible to combine extends from the predefined types, enumeration types, or this \lstinline!Clock! type with other components.
 
@@ -1362,7 +1382,7 @@ These are called the \firstuse{primitive types}\index{primitive type}.
 The following is the predefined \lstinline!Real!\indexinline{Real} type:
 \begin{lstlisting}[language=modelica]
 type Real // Note: Defined with Modelica syntax although predefined
-  RealType value; // Accessed without dot-notation
+  RealType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity    = "";
   parameter StringType unit        = "" "Unit used in equations";
   parameter StringType displayUnit = "" "Default display unit";
@@ -1374,7 +1394,7 @@ type Real // Note: Defined with Modelica syntax although predefined
   parameter BooleanType unbounded = false; // For error control
   parameter StateSelect stateSelect = StateSelect.default;
 equation
-  assert(value >= min and value <= max, "Variable value out of limit");
+  assert(min <= $\langle$$\mbox{\emph{value}}$$\rangle$ and $\langle$$\mbox{\emph{value}}$$\rangle$ <= max, "Variable value out of limit");
 end Real;
 \end{lstlisting}%
 \index{quantity@\robustinline{quantity}!attribute of \robustinline{Real}}%
@@ -1401,14 +1421,14 @@ For external functions in C89, \lstinline!RealType! maps to \lstinline[language=
 The following is the predefined \lstinline!Integer!\indexinline{Integer} type:
 \begin{lstlisting}[language=modelica]
 type Integer // Note: Defined with Modelica syntax although predefined
-  IntegerType value; // Accessed without dot-notation
+  IntegerType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
-  parameter IntegerType min=-Inf, max=+Inf;
+  parameter IntegerType min = -Inf, max = +Inf;
   parameter IntegerType start = 0; // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false; // default for other variables
 equation
-  assert(value >= min and value <= max, "Variable value out of limit");
+  assert(min <= $\langle$$\mbox{\emph{value}}$$\rangle$ and $\langle$$\mbox{\emph{value}}$$\rangle$ <= max, "Variable value out of limit");
 end Integer;
 \end{lstlisting}%
 \index{quantity@\robustinline{quantity}!attribute of \robustinline{Integer}}%
@@ -1424,7 +1444,7 @@ The minimal recommended number range for \lstinline!IntegerType! is from -214748
 The following is the predefined \lstinline!Boolean!\indexinline{Boolean} type:
 \begin{lstlisting}[language=modelica]
 type Boolean // Note: Defined with Modelica syntax although predefined
-  BooleanType value; // Accessed without dot-notation
+  BooleanType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
   parameter BooleanType start = false; // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
@@ -1440,7 +1460,7 @@ end Boolean;
 The following is the predefined \lstinline!String!\indexinline{String} type:
 \begin{lstlisting}[language=modelica]
 type String // Note: Defined with Modelica syntax although predefined
-  StringType value; // Accessed without dot-notation
+  StringType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
   parameter StringType start = "";     // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
@@ -1554,14 +1574,12 @@ For each enumeration:
 \begin{lstlisting}[language=modelica]
 type E = enumeration(e1, e2, $\ldots$, en);
 \end{lstlisting}
-
 a new simple type is conceptually defined as
-
 \begin{lstlisting}[language=modelica]
 type E // Note: Defined with Modelica syntax although predefined
-  EnumType value; // Accessed without dot-notation
+  EnumType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
-  parameter EnumType min=e1, max=en;
+  parameter EnumType min = e1, max = en;
   parameter EnumType start = e1;       // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false; // default for other variables
@@ -1569,7 +1587,7 @@ type E // Note: Defined with Modelica syntax although predefined
   $\ldots$
   constant EnumType en = $\ldots$;
 equation
-  assert(value >= min and value <= max, "Variable value out of limit");
+  assert(min <= $\langle$$\mbox{\emph{value}}$$\rangle$ and $\langle$$\mbox{\emph{value}}$$\rangle$ <= max, "Variable value out of limit");
 end E;
 \end{lstlisting}
 
