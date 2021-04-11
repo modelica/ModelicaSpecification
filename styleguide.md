@@ -70,13 +70,17 @@ This means that the most restrictive derivatives should be written first.
 As a general rule, when a concept is directly related to a construct in the Modelica language with a certain name/keyword, then the language concept is referred to using a hyphenated combination of the language name/keyword in code style, with a qualifying natural language word written as normal text.
 Examples:
 
-Appearance | LaTeX source
+Appearance | LaTeX source | Comment
 --- | ---
-`connect`-equation | `\lstinline!connect!-equation`
-`if`-equation | `\lstinline!if!-equation`
-`if`-expression | `\lstinline!if!-expression`
-`when`-clause | `\lstinline!when!-clause`
-`start`-attribute | `\lstinline!start!-attribute`
+`connect`-equation | `\lstinline!connect!-equation` |
+`if`-equation | `\lstinline!if!-equation` |
+`if`-expression | `\lstinline!if!-expression` |
+`when`-clause | `\lstinline!when!-clause` | A branch of a `when`-equation or `when`-statement
+`import`-clause | `\lstinline!import!-clause` |
+`for`-equation | `\lstinline!for!-equation` |
+`for`-statement | `\lstinline!for!-statement` |
+`for`-loop | `\lstinline!for!-loop` | A `for`-equation or `for`-statement
+`start`-attribute | `\lstinline!start!-attribute` |
 
 Note that there's often an associated rule in the Modelica grammar, which should only be used in the text on the rare occasions when it is the actual grammar rule – not the entire language concept – that is being referenced:
 
