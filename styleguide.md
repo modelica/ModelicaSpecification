@@ -97,11 +97,13 @@ Appearance | LaTeX source | Comment
 --- | --- | ---
 `if`-expression | `\lstinline!if!-expression` | Generic language concept
 parameter-expression | `parameter-expression` | Expression with parameter variability
-`Real` expression | `\lstinline!Real! expression` | An expression of type `Real`
+`Real` expression | `\lstinline!Real! expression` | Expression of type `Real`
+array expression | `array expression` | Expression of array type
+record expression | `record expression` | Expression of record type
 `y` expression | `\lstinline!y! expression` | Expression for something named `y`
 `convertElement` call | `\lstinline!convertElement! call` | A call expression with callee `convertElement`
 
-In particular, avoid other constructs with _expression_ than the variants above.
+In particular, avoid other combinations of inline code and _expression_ than the variants above.
 For other needs, try to find a formulation not based on _expression_ to avoid misinterpretations according to the variants above.
 For example, instead of saying "… can be dependent on class variables using the `DynamicSelect` expression", just say "… can be dependent on class variables using `DynamicSelect`".
 
