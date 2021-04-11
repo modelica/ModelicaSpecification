@@ -96,6 +96,7 @@ Different constructs with _expression_ and _call_:
 Appearance | LaTeX source | Comment
 --- | --- | ---
 `if`-expression | `\lstinline!if!-expression` | Generic language concept
+parameter-expression | `parameter-expression` | Expression with parameter variability
 `Real` expression | `\lstinline!Real! expression` | An expression of type `Real`
 `y` expression | `\lstinline!y! expression` | Expression for something named `y`
 `convertElement` call | `\lstinline!convertElement! call` | A call expression with callee `convertElement`
