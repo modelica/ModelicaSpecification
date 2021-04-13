@@ -341,30 +341,213 @@ If the `LineA` variant ends up being valid in full Modelica, then this is the fo
 
 The concept of being final in full Modelica implies two different things:
 - Further modification is not possible.  This can be verified in the reduction from full Modelica to Flat Modelica, and there is no real need to express this constraint also in the Flat Modelica model.  (It could be useful for expressing constraints for hand-written Flat Modelica, but it is a language feature we could add later if requested.)
-- Parameter values and `start` attributes cannot be modified after translation.  This is something that can't just be verified during the reduction from full Modelica to Flat Modelica.
+- Parameter values and `start` attributes cannot be modified after translation.  This is something that can't just be verified during the reduction from full Modelica to Flat Modelica.  Instead, final parameter declaration equations are turned into initial equations, and then the same technique is used to handle final modification of `start`.  Details of this are given the sections below on initialization of parameters and time-varying variables.
 
-How to deal with the latter is described below.
 
-#### Final modification of `start`
+## Initialization of parameters
 
-Consider the full Modelica model:
+In Flat Modelica, a parameter's declaration equation shall be solved with respect to the parameter, allowing the right hand side to be overridden during initialization (that is, after translation).  This is similar to a full Modelica non-final parameter with `fixed = true`.
+
+For example, the full Modelica
 ```
-model M
-  parameter Real x(final start = 1.0);
+parameter Real p(fixed = true) = 4.2;
+```
+translates to the Flat Modelica
+```
+parameter Real 'p' = 4.2; /* Presence of declaration equation corresponds to full Modelica fixed = true. */
+```
+
+In Flat Modelica, a parameter without declaration equation shall be solvable from equations given in the `initial equation` section.  This corresponds directly to the full Modelica parameters with `fixed = false`.
+
+For example, the full Modelica
+```
+  parameter Real p(fixed = false);
 initial equation
-  x * x = 2;
-end M;
+  p^2 + p = 1;
+```
+translates to the Flat Modelica
+```
+  parameter Real 'p'; /* Full Modelica parameter with fixed = false. */
+initial equation
+  'p'^2 + 'p' = 1;
 ```
 
-How should the Flat Modelica model express that `x.start` must not be changed after translation?
+The same mechanism is also able to represent a full Modelica final declaration equation.
 
-#### Final modification of parameter value
-
-Consider the full Modelica model:
+For example, the full Modelica
 ```
-model M
-  final parameter Real p = 1.0;
-end M;
+  final parameter Real p = 4.2;
+```
+translates to the Flat Modelica
+```
+  parameter Real p; /* Full Modelica final parameter has no declaration equation in Flat Modelica. */
+initial equation
+  p = 4.2; /* From full Modelica final declaration equation. */
 ```
 
-How should the Flat Modelica model express that `p` must not be changed after translation?
+The handling of guess values needed to solve parameters from nonlinear equations is the same as for time-varying variables, and is described in the next section.
+
+## Attributes `start`, `fixed`, and final modification of `start`
+
+### Implicitly declared guess value parameter
+
+Instead of controlling the guess values for the variable `x` via its `start` attribute as in full Modelica, Flat Modelica makes use of an implicitly declared parameter `guess('x')`.  This is called the _guess value parameter_ for `'x'`, and has the same type as `x`.
+
+Since the declaration of `guess('x')` is implicit, a declaration equation cannot be provided in the same was as for a declared parameter.  Instead, a special form of _parameter equation_ is used, where the parameter being solved must appear on the left hand side, and the equation shall be solved with causality so that the right hand side can be overridden during initialization (that is, after translation).  In the grammar, it is an new alternative in _generic-element_ (**TODO:** Transfer to grammar.md.):
+
+> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_ | _parameter-equation_
+
+> _parameter-equation_ → **parameter** **equation** _guess-value_ **=** _expression_ _comment_
+
+> _guess-value_ → **guess** `[(]` _IDENT_ `[)]`
+
+(One can consider more general use of parameter equations in the future, but for now they are only used for guess value parameters.)
+
+For example:
+```
+Real 'x';
+parameter equation guess('x') = 1.5;
+Real 'y'; /* Parameter equation above does not leave public section. */
+```
+
+Similar to `pre('x')`, `guess('x')` acts as an independent variable in the initialization problem, and instead of providing a parameter equation, it can be determiend by an initial equation.  Since an initial equation cannot be modified after translation, this form is useful when the full Modelica modification of `start` was final.
+
+For example:
+```
+  Real 'x';
+initial equation
+  guess('x') - 1.5 = 0;
+```
+
+When a guess value for `'x'` is needed to solve an equation (or system of equations), this equation has an implicit dependency on `guess('x')`, and it is an error if this causes `guess('x')` to be solved in the same equation system as `'x'`.
+
+While a guess value parameter is allowed to appear in equations in the same ways as a normal parameter, Flat Modelica models originating from full Modelica are only expected to have `guess('x')` appearing in an initial equation in solved form, if appearing at all:
+```
+  Real 'x';
+initial equation
+  guess('x') = 1.5;
+```
+
+Default parameter equations for guess value parameters shall be added as needed to obtain a balanced initialization problem.  For example:
+```
+  Real 'x';
+initial equation
+  'x'^2 + 'x' = 1; /* Needs guess value for 'x' */
+```
+should be conceptually extended to:
+```
+  Real 'x';
+  parameter equation guess('x') = 0.0; /* Default guess value. */
+initial equation
+  'x'^2 + 'x' = 1; /* Needs guess value for 'x' */
+```
+
+The need for a default equation can also come from direct use of `guess('x')`:
+```
+  Real 'x';
+initial equation
+  'x' = guess('x');
+```
+
+Unlike normal parameters, the value of `guess('x')` is not considered part of a simulation result, allowing tools to strip all unused guess value parameters from the initialization problem.
+
+
+### Final modification of `start`
+
+Consider the full Modelica:
+```
+  Real x(final start = 1.0);
+```
+
+In Flat Modelica, the fact that the modification of `start` is final means that the guess value parameter shall be determined by an initial equation rather than a parameter equation:
+```
+  Real 'x';
+initial equation
+  guess('x') = 1.0; /* From final modification of start in full Modelica. */
+```
+
+As another example, consider a final non-fixed parameter in full Modelica:
+```
+  final parameter Real p(fixed = false, start = 1.0); /* All modifications are final. */
+initial equation
+  p * p = 2;
+```
+Flat Modelica:
+```
+  parameter Real 'p';
+initial equation
+  'p' * 'p' = 2;
+  guess('p') = 1.0; /* From final modification of start in full Modelica. */
+```
+
+### The `fixed` attribute
+
+The `fixed` attribute has been completely removed in Flat Modelica.  This was described above for parameters, and is described here for time-varying variables.
+
+When the full Modelica variable has `fixed = true`, this is represented explicitly with an initial equation in Flat Modelica.  Having `fixed = false` in full Modelica doesn't turn into anything in Flat Modelica.
+
+For example, the full Modelica
+```
+  Real x(fixed = true, start = 1.0);
+```
+is translated to the Flat Modelica
+```
+  Real 'x';
+  parameter equation guess('x') = 1.0; /* From non-final modification of start in full Modelica. */
+initial equation
+  'x' = guess('x'); /* From fixed = true in full Modelica. */
+```
+
+Just like in Full Modelica, such equations shall also be added as needed to obtain a balanced initialization problem.  For example,
+```
+  Real 'x';
+  parameter equation guess('x') = 1.0;
+```
+may be conceptually extended to:
+```
+  Real 'x';
+  parameter equation guess('x') = 1.0;
+initial equation
+  'x' = guess('x'); /* Default initial equation for 'x'. */
+```
+
+This can happen in combination with default parameter equations for guess values.  For example,
+```
+  Real 'x';
+```
+may be conceptually extended to:
+```
+  Real 'x';
+  parameter equation guess('x') = 0.0; /* Default guess value. */
+initial equation
+  'x' = guess('x'); /* Default initial equation for 'x'. */
+```
+
+Note that omitting the guess value parameter would not give the same result:
+```
+  Real 'x';
+initial equation
+  'x' = 0.0; /* Wrong: No way to override after translation. */
+```
+
+### Syntactic sugars
+
+For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` are allowed as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Flat Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
+
+Setting `fixed = true` on the variable `'x'` is syntactic sugar for having:
+```
+initial equation
+  'x' = guess('x');
+```
+
+For `start`,
+```
+Real 'x'(start = startExpr);
+```
+is syntactic sugar for
+```
+Real 'x';
+parameter equation guess('x') = startExpr; /* Non-final modification of start in full Modelica. */
+```
+
+Note that it is not possible to use the syntactic sugar for a final modification of `start` in full Modelica, as this shall not be turned into a parameter equation for the guess value.

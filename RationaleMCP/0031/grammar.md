@@ -140,7 +140,7 @@ end _F;
 
 > _normal-element_ →\
 > &emsp; ~~**redeclare**?~~\
-> &emsp; **final**?\
+> &emsp; ~~**final**?~~\
 > &emsp; ~~**inner**? **outer**?~~\
 > &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
@@ -198,7 +198,7 @@ end _F;
 
 > _element-modification-or-replaceable_ →\
 > &emsp; ~~**each**?~~\
-> &emsp; **final**?\
+> &emsp; ~~**final**?~~\
 > &emsp; ( _element-modification_\
 > &emsp; ~~| _element-replaceable_~~\
 > &emsp; )
@@ -206,7 +206,7 @@ end _F;
 > _element-modification_ → _name_ _modification_? _string-comment_
 
 > ~~_element-redeclaration_ →\
-> &emsp; **redeclare** **each**? **final**?\
+> &emsp; **redeclare** **each**? ~~**final**?~~\
 > &emsp; ( _short-class-definition_\
 > &emsp; | _component-clause1_\
 > &emsp; | _element-replaceable_\
