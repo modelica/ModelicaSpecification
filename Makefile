@@ -1,4 +1,4 @@
-# Note: You should really repeat pdflatex run 1-3 times depending on status, I did not manage to make that conditional for nmake
+# Note: Using latexmk, since it automatically runs pdflatex as many times as needed.
 #
 # If you have latexml source (preferably with UseLabal patch) set:
 #    LATEXMLPREFIX=perl <latexmlinstallation/bin>
@@ -6,13 +6,22 @@
 
 all: MLS.pdf MLS.html
 
-clean:
-	rm *.aux MLS.log MLS.toc MLS.pdf
-	rm MLS.xml *.html
+.PHONY: clean-pdf
+clean-pdf:
+	-rm *.aux MLS.log MLS.toc MLS.pdf
 
-MLS.pdf: *.tex
-	pdflatex MLS.tex
+.PHONY: clean-html
+clean-html:
+	-rm MLS.xml LaTeXML.cache *.html *.css *.js
 
-MLS.html: *.tex
-	$(LATEXMLPREFIX)latexml MLS.tex --dest MLS.xml
-	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --javascript=css/LatexML-maybeMathJax.js --navigationtoc=context --css=css/LaTeXML-navbar-left.css --dest MLS.html
+.PHONY: clean
+clean: clean-pdf clean-html
+
+MLS.pdf: *.tex chapters/*.tex
+	latexmk -pdf MLS.tex
+
+# Seems to be some issue with graphicpath, so set path here as well
+# Not using %.html since nmake does not support it (instead using old-style suffix rules)
+MLS.html: MLS.tex chapters/*.tex
+	$(LATEXMLPREFIX)latexml MLS.tex --includestyles --path=media --dest MLS.xml
+	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest $@
