@@ -491,12 +491,12 @@ Combining arrays and records:
     Real 'b';
   end 'R';
   'R'[2] 'x';
-  parameter equation guess('x') = {R(fill(1.5, 3), 1.2), R(fill(1.5, 3), 1.2)};
+  parameter equation guess('x') = fill(R(fill(1.5, 3), 1.2), ,2);
   'R'[2] 'y';
   'R'[2] 'z';
 initial equation
   /* Some of the many ways to give equations for all guess values: */
-  guess('y') = {R(fill(1.5, 3), 1.2), R(fill(1.5, 3), 1.2)};
+  guess('y') = fill(R(fill(1.5, 3), 1.2), 2);
   guess('z'.'a') = fill(1.5, 2, 3);
   guess('z'[1].'b') = 1.2;
   guess('z'[2].'b') = 1.2;
@@ -533,6 +533,48 @@ initial equation
   'p' * 'p' = 2;
   guess('p') = 1.0; /* From final modification of start in full Modelica. */
 ```
+
+### Modification of `start` with `each`
+
+When modifying arrays of `start` attributes in full Modelica, one can take advantage of `each` to avoid the need to use `fill` to create an array of suitable size with equal elements.  As shown in the examples above, using `fill` can actually work as a replacement for `each` when it comes to setting guess value parameters, and the design proposed in this section may not add enough value compared to added complexity of the design.
+
+Consider the following full Modelica model:
+```
+  record R
+    Real[3] a;
+    Real b;
+  end R;
+  R[2] x(a(each start = 1.5), b(each start = 1.2));
+  R[2] y(each a(start = {1.5, 1.6, 1.7}), each b(start = 1.2));
+```
+
+In Flat Modelica, the parameter equation syntax can be extended to allow `each` in a similar way:
+```
+  parameter equation each guess('x'.'a') = 1.5;
+  parameter equation each guess('x'.'b') = 1.2;
+  parameter equation each guess('y'.'a') = {1.5, 1.6, 1.7};
+  parameter equation each guess('y'.'b') = 1.2;
+```
+
+Just like for normal modifications, the `each` is actually redundant and could be removed from the design; the array dimensions of the right hand side must match the trailing array dimensions of the component reference on the left hand side, and the `each` is required just to make it more obvious that the right hand side value will be used to fill an array of values.  (To make an actually meaninful use of `each` one needs the expressive power of selecting which array dimensions to fill, and this can be added in a backwards compatible way to future versions of Flat Modelica, by allowing `each` at different positions inside the component reference of `guess`.)
+
+Finally, consider a full Modelica model with final modifications of `start`:
+```
+  final R[2] x(a(each start = 1.5), b(each start = 1.2));
+  final R[2] y(each a(start = {1.5, 1.6, 1.7}), each b(start = 1.2));
+```
+Here, the general equation syntax could be extended similar to the parameter equations:
+```
+initial equation
+  each guess('x'.'a') = 1.5;
+  each guess('x'.'b') = 1.2;
+  each guess('y'.'a') = {1.5, 1.6, 1.7};
+  each guess('y'.'b') = 1.2;
+```
+
+Here, the `each` is associated with the equation's entire left hand side, and for clarity at the cost of symmetry, it should only be allowed for the left hand side of an equation.  As for modification with `each`, the array dimensions of the right hand side must match the trailing array dimensions of the left hand side, and the `each` corresponds to a `fill` on the right hand side, adding the missing dimensions needed to match the left hand side.
+
+Again: The two new uses of `each` (in parameter equations and in normal equations) add non-essential complexity to the first version of Flat Modelica, and might make more sense to add in future versions.  At the same time, the proposed use of `each` in normal equations have applications beyond guess value parameters, in particular when a full Modelica model has a final modification with `each` for an array of parameter values.
 
 ### The `fixed` attribute
 
