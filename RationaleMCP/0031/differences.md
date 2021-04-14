@@ -626,6 +626,10 @@ initial equation
   'x' = 0.0; /* Wrong: No way to override after translation. */
 ```
 
+### The `nominal` attribute
+
+TODO: If we proceed with the design where `start` is no longer a type attribute, we should probably deal with `nominal` similarly, so that we get rid of all non-constant type attributes (`nominal` currently has parameter variability, but there are also applications where a time-varying `nominal` would be useful).
+
 ### Syntactic sugars
 
 For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` are allowed as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Flat Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
