@@ -399,7 +399,7 @@ Since the declaration of `guess('x')` is implicit, a declaration equation cannot
 
 > _parameter-equation_ → **parameter** **equation** _guess-value_ **=** _expression_ _comment_
 
-> _guess-value_ → **guess** `[(]` _IDENT_ `[)]`
+> _guess-value_ → **guess** `[(]` _component-reference_ `[)]`
 
 (One can consider more general use of parameter equations in the future, but for now they are only used for guess value parameters.)
 
@@ -449,8 +449,57 @@ initial equation
   'x' = guess('x');
 ```
 
-Unlike normal parameters, the value of `guess('x')` is not considered part of a simulation result, allowing tools to strip all unused guess value parameters from the initialization problem.
+#### Arrays and records
 
+For arrays, full Modelica modification of `start` with `each` will be described below (**TODO**).  Here is a simple example without `each`:
+```
+  Real[3] 'x';
+  parameter equation guess('x') = fill(1.5, 3);
+  Real[3] 'y';
+  Real[2] 'z';
+initial equation
+  guess('y') = fill(1.5, 3);
+  guess('z'[1]) = 1.5;
+  guess('z'[2]) = 1.5;
+```
+
+Records are similar to arrays:
+```
+  record 'R'
+    Real 'a';
+    Real 'b';
+  end 'R';
+  'R' 'x';
+  parameter equation guess('x') = R(1.1, 1.2);
+  'R' 'y';
+  'R' 'z';
+initial equation
+  guess('y') = R(1.1, 1.2);
+  guess('z'.'a') = 1.1;
+  guess('z'.'b') = 1.2;
+```
+
+Combining arrays and records:
+```
+  record 'R'
+    Real[3] 'a';
+    Real 'b';
+  end 'R';
+  'R'[2] 'x';
+  parameter equation guess('x') = {R(fill(1.5, 3), 1.2), R(fill(1.5, 3), 1.2)};
+  'R'[2] 'y';
+  'R'[2] 'z';
+initial equation
+  /* Some of the many ways to give equations for all guess values: */
+  guess('y') = {R(fill(1.5, 3), 1.2), R(fill(1.5, 3), 1.2)};
+  guess('z'.'a') = fill(1.5, 2, 3);
+  guess('z'[1].'b') = 1.2;
+  guess('z'[2].'b') = 1.2;
+```
+
+#### Implementation notes
+
+Unlike normal parameters, the value of `guess('x')` is not considered part of a simulation result, allowing tools to strip all unused guess value parameters from the initialization problem.
 
 ### Final modification of `start`
 
