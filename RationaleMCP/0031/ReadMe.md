@@ -25,6 +25,7 @@ Use cases to have in mind in the design of Flat Modelica, also indicating the us
 * Integration with third party tools for equation analysis.  _(Could we be more specific about what this migh be?)_
 * Platform for academic research on dynamic systems.  For example, numeric methods.
 * Target language for new high level modeling languages.
+* IP protection when combined with obfuscation.
 
 ### Relation to eFMI
 One of the key use cases driving the development of Flat Modelica is its use as basis for the _Equation Code_ of [eFMI](https://itea3.org/index.php/project/emphysis.html).  The requirements for eFMI are much smaller in terms of language features compared to the needs for serving as intermediate representation in the Modelica standard.  To accommodate both use cases, the Equation Code of eFMI will be defined as a restricted variant of Flat Modelica.
@@ -45,7 +46,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Principles for use of language constructs vs annotations.  [Design](annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459)
 - [x] Get rid of the obviously irrelevant parts of the grammar.  [Design](grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465)
 - [x] Get rid of `connect` equations.
-- [x] Get rid of conditional components.
+- [ ] Get rid of conditional components.  (The _condition-attribute_ is still present in grammar.)
 - [x] Settle the top level structure. [Design](grammar.md#start-rule), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
 - [x] List of supported built-in operators and functions. [Design](functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
 - [x] Get rid of unbalanced `if`-equations. [Design](differences.md#unbalanced-if-equations)
@@ -55,13 +56,16 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Define allowed forms of type aliases (related to _one way to specify array dimensions_). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btype-aliases/RationaleMCP/0031/type-aliases.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2555)
 - [x] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
 - [ ] Handling of parameters treated as constants.
+- [ ] Get rid of `protected`.
 - [ ] Investigate need for `final`.
 - [ ] Origin of modifications (for start value prioritization).
 - [ ] Get rid of `false` as default for `fixed`.
 - [ ] Restricted rules for use of `start` attribute for parameter initialization.
-- [ ] Get rid of record member variability prefixes `constant` and `parameter`. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Brecord-member-variability/RationaleMCP/0031/differences.md#variability-in-record-member-declaration), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2694)
-- [ ] Simplify modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2BModifications/RationaleMCP/0031/differences.md#simplify-modifications), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2558)
-- [ ] Make constants available to types. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md#Start-rule), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2746)
+- [x] Get rid of record member variability prefixes `constant` and `parameter`. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Brecord-member-variability/RationaleMCP/0031/differences.md#variability-in-record-member-declaration), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2694) (Not gone, but restricted.)
+- [x] Simplify modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2BModifications/RationaleMCP/0031/differences.md#simplify-modifications), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2558) (Remaining parts covered by other items.)
+- [ ] Simplify value modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bvalue-modification/RationaleMCP/0031/differences.md#Value-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2747)
+- [ ] Express final modification. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfinal-modification/RationaleMCP/0031/differences.md#Final-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2748)
+- [x] Make constants available to types. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md#Start-rule), [PR (closed?!)](https://github.com/modelica/ModelicaSpecification/pull/2746)
 - [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
 - [ ] Investigate need for `for`-equations.
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
