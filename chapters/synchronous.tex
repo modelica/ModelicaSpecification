@@ -3,7 +3,7 @@
 This chapter defines synchronous
 behavior suited for implementation of control systems.
 The synchronous behavior relies on an additional kind of discrete-time
-variables and equations, as well as an additional kind of when-clause.
+variables and equations, as well as an additional kind of \lstinline!when!-clause.
 The benefits of synchronous behavior is that it allows a model to define large
 sampled data systems in a safe way, so that the
 translator can provide good diagnostics in case of a modeling error.
@@ -37,7 +37,7 @@ The following small example shows the most important elements:
   When no argument is defined for \lstinline!Clock!, the clock is
   deduced by clock inference.
 \item
-  For a \lstinline!when!-clause with an associated clock, all equations inside the \lstinline!when!-clause are clocked with the given clock.  All equations on an associated clock are treated together and in the same way regardless of whether they are inside a \lstinline!when!-clause or not.  This means that automatic sampling and hold of variables inside the \lstinline!when!-clause does not apply (explicit sampling and hold is required) and that general equations can be used in such when-clauses (this is not allowed for \lstinline!when!-clauses with \lstinline!Boolean! conditions, that require a variable reference on the left-hand side of an equation).
+  For a \lstinline!when!-clause with an associated clock, all equations inside the \lstinline!when!-clause are clocked with the given clock.  All equations on an associated clock are treated together and in the same way regardless of whether they are inside a \lstinline!when!-clause or not.  This means that automatic sampling and hold of variables inside the \lstinline!when!-clause does not apply (explicit sampling and hold is required) and that general equations can be used in such \lstinline!when!-clauses (this is not allowed for \lstinline!when!-clauses with \lstinline!Boolean! conditions, that require a variable reference on the left-hand side of an equation).
 \item
   The \lstinline!when!-clause in the controller could also be removed
   and the controller could just be defined by the equations:
@@ -60,10 +60,11 @@ E * xd = A * previous(xd) + B * yd;
   However, the Modelica approach also uses multi-rate periodic clocks based on rational arithmetic introduced by \textcite{ForgetEtAl2008MultiPeriodic}, as an extension of the Lucid Synchrone semantics.
   These approaches belong to the class of synchronous languages \parencite{BenvenisteEtAl2003SynchronousTwelveYearsLater}.
 \end{itemize}
+
 \section{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
 
 \begin{nonnormative}
-Periodically sampled control systems could also be defined with standard when-clauses, see \cref{when-equations}, and the \lstinline!sample! operator, see \cref{event-related-operators-with-function-syntax}.  For example:
+Periodically sampled control systems could also be defined with standard \lstinline!when!-clauses, see \cref{when-equations}, and the \lstinline!sample! operator, see \cref{event-related-operators-with-function-syntax}.  For example:
 \begin{lstlisting}[language=modelica]
 when sample(0, 3) then
   xd = A * pre(xd) + B * y;
@@ -71,15 +72,15 @@ when sample(0, 3) then
 end when;
 \end{lstlisting}
 
-Equations in a when-clause with a \lstinline!Boolean! condition have the
+Equations in a \lstinline!when!-clause with a \lstinline!Boolean! condition have the
 property that (a) variables on the left hand side of the equal sign are
 assigned a value when the when-condition becomes true and otherwise hold
-their value, (b) variables not assigned in the when-clause are directly
+their value, (b) variables not assigned in the \lstinline!when!-clause are directly
 accessed (= automatic \lstinline!sample! semantics), and (c) the variables
-assigned in the when-clause can be directly accessed outside of the
-when-clause (= automatic \lstinline!hold! semantics).
+assigned in the \lstinline!when!-clause can be directly accessed outside of the
+\lstinline!when!-clause (= automatic \lstinline!hold! semantics).
 
-Using standard when-clauses works well for individual simple sampled blocks, but the synchronous approach using clocks and clocked equations provide the following benefits (especially for large sampled systems):
+Using standard \lstinline!when!-clauses works well for individual simple sampled blocks, but the synchronous approach using clocks and clocked equations provide the following benefits (especially for large sampled systems):
 \begin{enumerate}
 \item
   Possibility to detect inconsistent sampling rate, since clock partitioning (see \cref{clock-partitioning}),
@@ -87,7 +88,7 @@ Using standard when-clauses works well for individual simple sampled blocks, but
   \begin{enumerate}
   \def\labelenumii{\alph{enumii}.}
   \item
-    If when-clauses in different blocks should belong to the same
+    If \lstinline!when!-clauses in different blocks should belong to the same
     controller part, but by accident different when-conditions are
     given, then this is accepted (no error is detected).
   \item
@@ -103,23 +104,23 @@ Using standard when-clauses works well for individual simple sampled blocks, but
 \item
   Fewer initial conditions are needed, as only a subset of clocked
   variables need initial conditions -- the clocked state variables (see \cref{clocked-state-variables}).
-  For a standard when-clause all variables
-  assigned in a when-clause must have an initial value
+  For a standard \lstinline!when!-clause all variables
+  assigned in a \lstinline!when!-clause must have an initial value
   because they might be used, before they are assigned a value the first
   time. As a result, all these variables are ``discrete-time states''
   although in reality only a subset of them need an initial
   value.
 \item
-  More general equations can be used, compared to standard when-clauses that require
+  More general equations can be used, compared to standard \lstinline!when!-clauses that require
   a restricted form of equations where the left hand side has to be a variable, in order
-  to identify the variables that are assigned in the when-clause.
-  This restriction can be circumvented for standard when-clauses, but is
+  to identify the variables that are assigned in the \lstinline!when!-clause.
+  This restriction can be circumvented for standard \lstinline!when!-clauses, but is
   absent for clocked equations and make it more convenient to define
   nonlinear control algorithms.
 \item
   Clocked equations allow clock inference,
   meaning that the sampling need only be given once for a sub-system.
-  For a standard when-clause the condition (sampling) must be explicitly
+  For a standard \lstinline!when!-clause the condition (sampling) must be explicitly
   propagated to all blocks, which is tedious and error prone for large systems.
 \item
   Possible to use general continuous-time models in synchronous models (e.g.\ some advanced controllers use an inverse model of a plant in the feedforward path of the controller, see \textcite{ThummelEtAl2005InverseModels}).
@@ -128,10 +129,10 @@ Using standard when-clauses works well for individual simple sampled blocks, but
 \item
   Clocked equations are straightforward to optimize because they are
   evaluated exactly once at each an event instant.
-  In contrast a standard when-clause with \lstinline!sample! conceptually
+  In contrast a standard \lstinline!when!-clause with \lstinline!sample! conceptually
   requires several evaluations of the model (in some cases tools
   can optimize this to avoid unneeded evaluations).
-  The problem for the standard when-clause is that after \lstinline!v!
+  The problem for the standard \lstinline!when!-clause is that after \lstinline!v!
   is changed, \lstinline!pre(v)! shall be updated and the model re-evaluated,
   since the equations could depend on \lstinline!pre(v)!.
   For clocked equations this iteration can be omitted
@@ -141,9 +142,9 @@ Using standard when-clauses works well for individual simple sampled blocks, but
   Clocked subsystems using arithmetic blocks are straightforward to optimize.
   When a standard math-block (e.g.\ addition) is part of a clocked sub-system it is automatically
   clocked and only evaluated when the clocked equations trigger.
-  For standard when-clauses one either needs a separate sampled math-block for each operation, or
+  For standard \lstinline!when!-clauses one either needs a separate sampled math-block for each operation, or
   it will conceptually be evaluated all the time.
-  However, tools may perform a similar optimization for standard when-clauses
+  However, tools may perform a similar optimization for standard \lstinline!when!-clauses
   and it is only relevant in large sampled systems.
 \end{enumerate}
 \end{nonnormative}
@@ -812,7 +813,7 @@ Note that it is not legal to compute the derivative of the \lstinline!sample!, \
 
 \section{Clocked When-Clause}\label{clocked-when-clause}
 
-In addition to the previously discussed conditional when-clause, a \emph{clocked} when-clause\index{clocked!when-clause}\index{when-clause!clocked} is introduced:
+In addition to the previously discussed conditional \lstinline!when!-clause, a \emph{clocked} \lstinline!when!-clause\index{clocked!\lstinline!when!-clause}\index{\lstinline!when!-clause!clocked} is introduced:
 % TODO: Can't have angle brackets and \emph in the same mathescape due to LaTeXML issue:
 % - https://github.com/brucemiller/LaTeXML/issues/1477
 % Once we cut the MathJax dependency, change to single mathescape for better character spacing.
@@ -823,9 +824,9 @@ when $\mathit{clockExpression}$ then
 end when;
 \end{lstlisting}
 
-The clocked when-clause cannot be nested and does not have any \lstinline!elsewhen! part.  It cannot be used inside an algorithm.  General equations are allowed in a clocked when-clause.
+The clocked \lstinline!when!-clause cannot be nested and does not have any \lstinline!elsewhen! part.  It cannot be used inside an algorithm.  General equations are allowed in a clocked \lstinline!when!-clause.
 
-For a clocked when-clause, all equations inside the when-clause are clocked with the same clock given by the $\mathit{clockExpression}$.
+For a clocked \lstinline!when!-clause, all equations inside the \lstinline!when!-clause are clocked with the same clock given by the $\mathit{clockExpression}$.
 
 \section{Clock Partitioning}\label{clock-partitioning}
 
@@ -841,7 +842,7 @@ Every clocked variable is uniquely associated with exactly one clock.
 After model flattening, every equation in an equation section, every expression and every algorithm section is either continuous-time, or it is uniquely associated with exactly one clock.
 % Warning: The uses of \firstuse below aren't the first time these terms are used.
 In the latter case it is called a \firstuse{clocked equation}\index{clocked!equation}\index{equation!clocked}, a \willintroduce{clocked expression} or \firstuse{clocked algorithm}\index{clocked!algorithm}\index{algorithm!clocked} section respectively.
-The associated clock is either explicitly defined by a when-clause, see \cref{sub-clock-conversion-operators}, or it is implicitly defined by the requirement that a clocked equation, a clocked expression and a clocked algorithm section must have the same clock as the variables used in them with exception of the expressions used as first arguments in the conversion operators of \cref{partitioning-operators}.
+The associated clock is either explicitly defined by a \lstinline!when!-clause, see \cref{sub-clock-conversion-operators}, or it is implicitly defined by the requirement that a clocked equation, a clocked expression and a clocked algorithm section must have the same clock as the variables used in them with exception of the expressions used as first arguments in the conversion operators of \cref{partitioning-operators}.
 \firstuse{Clock inference}\index{clock!inference} means to infer the clock of a variable, an equation, an expression or an algorithm section if the clock is not explicitly defined and is deduced from the required properties in the previous two paragraphs.
 
 All variables in an expression without clock conversion operators must
@@ -915,7 +916,7 @@ Correspondingly, variables \lstinline!u! and \lstinline!y! in
 \lstinline!y = backSample(u)!,
 \lstinline!y = previous(u)!,
 are in a clocked partition.
-Equations in a clocked when clause are also in a clocked partition.
+Equations in a clocked \lstinline!when!-clause are also in a clocked partition.
 Other partitions where none of the variables in the partition are associated with any of the operators above have an unspecified partition kind and are considered continuous-time partitions.
 
 All continuous-time partitions are collected together and form \firstuse{the continuous-time partition}\index{continuous-time!partition@partition, \emph{the}}.
