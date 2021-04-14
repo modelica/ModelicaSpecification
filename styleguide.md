@@ -146,6 +146,7 @@ Incomplete list of various terminology with special formatting rules:
 Appearance | LaTeX source | Comment
 --- | --- | ---
 start value | `start value` | Value of the `start`-attribute (there could be exceptions!)
+connection equation | `connection equation` | Equation generated from analysis of `connect`-equations
 reduction expression | `reduction expression` |
 base class | `base class` | Similarly: derived class
 base-clock | `base-clock` | Similarly: sub-cock
