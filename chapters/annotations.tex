@@ -341,7 +341,6 @@ The annotations listed below, appearing directly inside \lstinline!annotation($\
 \hline
 \hline
 \lstinline!Evaluate! & Use parameter value for symbolic processing & \Cref{modelica:Evaluate}\\
-\lstinline!HideResult! & Don't show component's simulator result & \Cref{modelica:HideResult}\\
 \hline
 \end{tabular}
 \end{center}
@@ -366,6 +365,41 @@ If \lstinline!Evaluate = false!, the model developer proposes to not utilize the
 \end{semantics}
 \end{annotationdefinition}
 
+
+\section{Annotations for Simulations}\label{annotations-for-simulations}
+
+The annotations listed below define how models can be checked, translated, and simulated.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!experiment! & Simulation experiment settings & \Cref{modelica:experiment}\\
+\lstinline!HideResult! & Don't show component's simulator result & \Cref{modelica:HideResult}\\
+\lstinline!TestCase! & Information for model used as test case & \Cref{modelica:TestCase}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[experiment]
+% henrikt-ma 2021-04: Seems strange to allow 'experiment' completely without list of options -- what would it mean?
+\begin{synopsis}[grammar]\begin{lstlisting}
+"experiment"
+   [ "(" [ experimentOption { "," experimentOption } ] ")" ]
+
+experimentOption:
+   "StartTime" "=" [ "+" | "-" ] UNSIGNED-NUMBER
+   | "StopTime" "=" [ "+" | "-" ] UNSIGNED-NUMBER
+   | "Interval" "=" UNSIGNED-NUMBER
+   | "Tolerance" "=" UNSIGNED-NUMBER
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The \lstinline{experiment} annotation defines the default start time (\lstinline!StartTime!) in {[}s{]}, the default stop time (\lstinline!StopTime!) in {[}s{]}, the suitable time resolution for the result grid (\lstinline!Interval!) in {[}s{]}, and the default relative integration tolerance (\lstinline!Tolerance!) for simulation experiments to be carried out with the model or block at hand.
+If \lstinline!StartTime! is not specified it is assumed to be \lstinline!0.0!.
+\end{semantics}
+\end{annotationdefinition}
+
 \begin{annotationdefinition}[HideResult]
 \begin{synopsis}[grammar]\begin{lstlisting}
 "HideResult" "=" ( false | true )
@@ -383,43 +417,22 @@ For example, a tool is not expected to provide means to plot a variable with \ls
 \end{semantics}
 \end{annotationdefinition}
 
-
-\section{Annotations for Simulations}\label{annotations-for-simulations}
-
-These annotations define how models can be checked, translated, and simulated.
-
-\subsection{Annotations for Simulation Experiments}\label{annotations-for-simulation-experiments}
-
-\begin{lstlisting}[language=grammar]
-experiment-annotation:
-   annotation "(" "experiment" [ "(" [experimentOption
-      {"," experimentOption}] ")" ] ")"
-
-experimentOption:
-  "StartTime" "=" [ "+" | "-" ] UNSIGNED-NUMBER |
-  "StopTime"  "=" [ "+"  | "-"] UNSIGNED-NUMBER |
-  "Interval" "=" UNSIGNED-NUMBER |
-  "Tolerance" "=" UNSIGNED-NUMBER
-\end{lstlisting}
-
-The \fmtannotationindex{experiment} annotation defines the default start time (\lstinline!StartTime!) in {[}s{]}, the default stop time (\lstinline!StopTime!) in {[}s{]}, the suitable time resolution for the result grid (\lstinline!Interval!) in {[}s{]}, and the default relative integration tolerance (\lstinline!Tolerance!) for simulation experiments to be carried out with the model or block at hand.
-If \lstinline!StartTime! is not specified it is assumed to be \lstinline!0.0!.
-
-\subsection{Annotation for Test Cases}\label{annotation-for-test-cases}
-
-\begin{lstlisting}[language=grammar]
-testcase-annotation:
-   annotation "(" "TestCase" "(" "shouldPass" "=" ( false | true ) ")" ")"
-\end{lstlisting}%
-\annotationindex{TestCase}
+\begin{annotationdefinition}[TestCase]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"TestCase" "(" "shouldPass" "=" ( false | true ) ")"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 If \lstinline!shouldPass! is \lstinline!false! it indicates that the translation or the simulation of the model should fail.
 If a tools checks a package where classes have \lstinline!shouldPass = false! they should not generate errors, and checking may even be skipped.
 On the other hand, models with \lstinline!shouldPass = false! may be useful for creation of negative tests in tool-specific ways.
 Similarly as a class with obsolete-annotation, a class with \lstinline!TestCase! annotation (regardless of the value of \lstinline!shouldPass!) shall not be used in other models, unless those models also have a \lstinline!TestCase! annotation.
+
 \begin{nonnormative}
 The intent of the test-case can be included in the documentation of the class.
 This annotation can both be used for models intended as test-cases for implementations, and for models explaining detectable errors.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
 
 \section{Annotation for Single Use of Class}\label{annotation-for-single-use-of-class}
