@@ -129,6 +129,7 @@ That could be automated in tools.
 
 ## Test-cases
 The package [TestSettingStates](TestSettingStates.mo) contain a trivial example showing how the model is supposed to be handled, with relevant details, and the previously constructed test-case.
+
 ![Plot showing result](BothControl.png)
 
 # Required Patents
