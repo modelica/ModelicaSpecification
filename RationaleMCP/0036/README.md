@@ -15,6 +15,7 @@ and have the state-updating as part of the model (and not as some tool-specific 
 | 2020-04-22 | Hans Olsson. Created. |
 | 2020-07-08 | Hans Olsson. Updated with reinit. |
 | 2020-09-25 | Hans Olsson. Updated with new semantics. |
+| 2021-04-29 | Hans Olsson. Added test-cases and more complete proposal. |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -71,19 +72,21 @@ Key points:
 - Few corner cases.
 - Easy to recognize for humans and tools.
 - Straightforward to implement. Adapting the existing prototype to the new syntax was straightforward.
+- The special binding equation is ignored for equation counting.
 
 Remaining:
-- Decide if the way to go
-- Name of operator (measurement, reinit, ...)
-- Figure out how it impacts equation count and write specification text (a few paragraphs)
+- Decide if the way to go. Proposal: Yes
+- Name of operator (measurement, reinit, ...). Proposal: reinit
+- Must the partition have a discretization method? Proposal: No 
+- Write specification text (a few paragraphs)
 
 # Semantics
-The operator is only legal in a "Clocked Discretized Continuous-Time Partition", and was originally defined as "means that 'x' is first seen as a state, but after index reduction x is no longer a state and x=xs replaces the integration of der(x)", but that seems unclear.
+The operator is only legal in a "Clocked Discretized Continuous-Time Partition", but the original semantics was unclear
 
 Thus we present an alternative below, 
 
-## Original semantics
-The operator is only legal in a "Clocked Discretized Continuous-Time Partition".
+## Original semantics (only of historic interest)
+The operator is only legal in a "Clocked Discretized Continuous-Time Partition", and means that 'x' is first seen as a state, but after index reduction x is no longer a state and x=xs replaces the integration of der(x)
 
 The meaning is that
 1. StateSelect.always is defined for variable x.
@@ -93,13 +96,14 @@ The meaning is that
 This is not ideal as it uses words like "treated as", and variables are changed from being states to non-states.
 
 ## Discretization method semantics
-The operator is only legal in a "Clocked Discretized Continuous-Time Partition".
+The operator is only legal in a "Clocked Discretized Continuous-Time Partition", and only as the entire declaration equation for a variable.
 
 The meaning is that
-1. StateSelect.always is defined for variable x.
-2. It is a state and thus participate in the usual index reduction and state selection.
+1. StateSelect.always is set for the variable x.
+2. Therefore it is a state and thus participate in the usual index reduction and state selection.
 3. During discretization the state is equal to the new value xs during the entire step, instead of using the discretization method
 https://specification.modelica.org/master/synchronous-language-elements.html#solver-methods
+4. This declaration equation is ignored for the equation count.
 
 This makes it clear that the variable is an actual state, just integrated differently.
 
@@ -121,7 +125,14 @@ However, as noted in the paper the procedure for using it is still slightly mess
  - Have parameters for those integrators etc.
 That could be automated in tools.
 
+(Note: The reinit-variant in Dymola 2022 and earlier requires that the argument to reinit must be declared before reinit, that will be corrected in the next release.)
+
+## Test-cases
+The package [TestSettingStates](TestSettingStates.mo) contain a trivial example showing how the model is supposed to be handled, with relevant details, and the previously constructed test-case.
+![Plot showing result](BothControl.png)
+
 # Required Patents
-At best of your knowledge state any patents that would be required for implementation of this proposal. 
+At best of your knowledge state any patents that would be required for implementation of this proposal.
+
 # References
 https://modelica.org/events/modelica2017/proceedings/html/submissions/ecp17132517_OlssonMattssonOtterPfeifferBurgerHenriksson.pdf
