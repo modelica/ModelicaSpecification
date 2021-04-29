@@ -1667,6 +1667,95 @@ end sine;
 \end{lstlisting}
 \end{example}
 
+
+\section{Function Inlining and Event Generation}\label{function-inlining-and-event-generation}
+
+The annotations listed below affect inlining of functions and the related topic of event generation inside functions.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!Inline! & Inline function & \Cref{modelica:Inline}\\
+\lstinline!LateInline! & Inline after all symbolic transformations & \Cref{modelica:LateInline}\\
+\lstinline!InlineAfterIndexReduction! & Inline after index reduction & \Cref{modelica:InlineAfterIndexReduction}\\
+\lstinline!GenerateEvents! & Generate events for zero crossings in function & \Cref{modelica:GenerateEvents}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[Inline]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"Inline" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration.
+
+If \lstinline!Inline = true!, the model developer proposes to inline the function.
+This means, that the body of the function is included at all places where the function is called.
+
+If \lstinline!Inline = false!, the model developer proposes to not inline the function.
+
+\begin{nonnormative}
+\lstinline!Inline = true! is for example used in \lstinline!Modelica.Mechanics.MultiBody.Frames! and in functions of \lstinline!Modelica.Media! to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[LateInline]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"LateInline" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration.
+
+If \lstinline!LateInline = true!, the model developer proposes to inline the function after all symbolic transformations have been performed.
+
+\begin{nonnormative}
+Late inlining is especially useful for differentiation and inversion of functions; for efficiency reasons it is then useful to replace all function calls with identical input arguments by one function call, before the inlining.
+\end{nonnormative}
+
+If \lstinline!LateInline = false!, the model developer proposes to not inline the function after symbolic transformations have been performed.
+
+\lstinline!Inline = true, LateInline = false! is identical to \lstinline!Inline = true!.
+
+\lstinline!Inline = true, LateInline = true! is identical to \lstinline!LateInline = true!.
+
+\lstinline!Inline = false, LateInline = true! is identical to \lstinline!LateInline = true!.
+
+\begin{nonnormative}
+This annotation is for example used in \lstinline!Modelica.Media.Water.IF97_Utilities.T_props_ph! to provide in combination with common subexpression elimination the automatic caching of function calls.
+Furthermore, it is used in order that a tool is able to propagate specific enthalpy over connectors in the \lstinline!Modelica.Fluid! library.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[InlineAfterIndexReduction]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"InlineAfterIndexReduction" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration.
+
+If \lstinline!true!, the model developer proposes to inline the function after the function is differentiated for index reduction, and before any other symbolic transformations are performed.
+This annotation cannot be combined with annotations \lstinline!Inline! and \lstinline!LateInline!.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[GenerateEvents]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"GenerateEvents" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration
+
+If \lstinline!GenerateEvents = true!, the model developer proposes that crossing functions in the function should generate events (one possibility of doing this is to inline the function and generate events for the inlined function).
+
+\end{semantics}
+\end{annotationdefinition}
+
+
 \section{External Function Interface}\label{external-function-interface}
 
 Here, the word \emph{function} is used to refer to an arbitrary external routine, whether or not the routine has a return value or returns its result via output parameters (or both).
