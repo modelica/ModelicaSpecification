@@ -121,6 +121,8 @@ equation
 The mapping is performed by instantiating the blocks and utilizing the input and output variables of 
 the blocks in the expressions. Simulation result of the above example:
 
+![Level1 results](Level1.svg)
+
 ### Mapping rule
 In the declaration section of a Modelica model or block class it is possible to call a Modelica block 
 with the syntax of a function call (with named input and output arguments), provided the following 
@@ -197,30 +199,32 @@ exception, because Asin1 is no longer defined for this input argument. The simpl
 Conceptually, an extended mapping rule is needed that is based on the continuous-time state 
 machine proposed in "Modelica extensions for Multi-Mode DAE Systems" by H. Elmqvist, S.E. Mattsson, M. Otter. Graphically, this can be performed as:
 
+![Level 2 state diagram](Level2Rewrite.png)
+
 Textually, the declaration can be mapped to (with possible changes see below):
 ```
- Modelica.Blocks.Math.Asin Asin1;
- 
- block ElseBranch
-   Modelica.Blocks.Interfaces.RealOutput y = 0.5;
- end ElseBranch;
- 
- ElseBranch elseBranch;
- 
- block IfInput
-   Modelica.Blocks.Interfaces.RealOutput y = time;
- end IfInput;
- 
- IfInput ifInput;
- Modelica.Blocks.Interfaces.RealOutput yTemp;
- Real y = yTemp;
-equation
- initialState(Asin1);
- transition(Asin1, elseBranch, not time < 0.5, reset=false);
- connect(ifInput.y, Asin1.u);
- connect(Asin1.y, yTemp);
- connect(elseBranch.y, yTemp);
+  Modelica.Blocks.Math.Asin asin1;
+  Modelica.Blocks.Sources.Constant const(k=0.5);
+  Modelica.Blocks.Interfaces.RealOutput yTemp;
+  Real y=yTemp;
+  
+  Modelica.Blocks.Sources.ContinuousClock continuousClock;
+equation 
+  initialState(asin1);
+  connect(asin1.y, yTemp);
+  connect(const.y, yTemp);
+  transition(asin1, const,  time > 0.5,  reset=false);
+  connect(continuousClock.y, asin1.u);
+  transition(const, asin1,  time <= 0.5, reset=false);
 ```
+Giving the result:
+
+![Level 2 state diagram plot](Level2RewriteY.png)
+
+Notes:
+* Instead of re-using the constant block and the clock block from MSL a simpler mapping would just generate blocks with similar contents.
+* The transition back from const to asin1 is not needed in this case.
+
 The needed changes are:
 * Continuous-time state machine need to be introduced in Modelica
 * Initialization of state machines becomes more important, [#2815](https://github.com/modelica/ModelicaSpecification/issues/2815)
