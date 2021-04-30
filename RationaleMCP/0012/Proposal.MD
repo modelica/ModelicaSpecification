@@ -199,7 +199,7 @@ exception, because Asin1 is no longer defined for this input argument. The simpl
 Conceptually, an extended mapping rule is needed that is based on the continuous-time state 
 machine proposed in "Modelica extensions for Multi-Mode DAE Systems" by H. Elmqvist, S.E. Mattsson, M. Otter. Graphically, this can be performed as:
 
-![Level 2 state diagram](Level2Rewrite.png)
+![Level 2 state diagram](Level2Rewrite.svg)
 
 Textually, the declaration can be mapped to (with possible changes see below):
 ```
@@ -219,7 +219,7 @@ equation
 ```
 Giving the result:
 
-![Level 2 state diagram plot](Level2RewriteY.png)
+![Level 2 state diagram plot](Level2RewriteY.svg)
 
 Notes:
 * Instead of re-using the constant block and the clock block from MSL a simpler mapping would just generate blocks with similar contents.
