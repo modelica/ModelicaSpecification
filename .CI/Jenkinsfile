@@ -106,36 +106,40 @@ pipeline {
   }
   stage('index') {
     agent {
-      docker {
-        image 'modelicaspec/markdown:20190307'
-        label 'linux'
-        alwaysPull true
-      }
+      label 'linux'
     }
     when {
       allOf {
         not {
           changeRequest()
         }
-        branch 'master'
+        anyOf {
+          branch 'master'
+          branch 'jenkins'
+        }
       }
       beforeAgent true
     }
     steps {
-      sh 'python3 .CI/index.py'
-      sshagent (credentials: ['Hudson-SSH-Key']) {
-        sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
-        sh "test -d specification.modelica.org || git clone git@github.com:modelica/specification.modelica.org"
-        sh "cd specification.modelica.org/ && git fetch && git reset --hard origin/master"
-        sh "cp -a index.html specification.modelica.org/"
-        sh """
-        cd specification.modelica.org
-        git add index.html
-        if ! git diff-index --quiet origin/master --; then
-          git commit --amend -m "Initial commit"
-          git push -f
-        fi
-        """
+      script {
+        docker.image('modelicaspec/markdown:20190307').inside() {
+          // The docker image does not have ssh-agent, so this is separate
+          sh 'python3 .CI/index.py'
+        }
+        sshagent (credentials: ['Hudson-SSH-Key']) {
+          sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
+          sh "test -d specification.modelica.org || git clone git@github.com:modelica/specification.modelica.org"
+          sh "cd specification.modelica.org/ && git fetch && git reset --hard origin/master"
+          sh "cp -a index.html specification.modelica.org/"
+          sh """
+          cd specification.modelica.org
+          git add index.html
+          if ! git diff-index --quiet origin/master --; then
+            git commit --amend -m "Initial commit"
+            git push -f
+          fi
+          """
+        }
       }
     }
   }
