@@ -18,6 +18,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2021-03-17 | Converted to markdown, by Hans Olsson and added new syntax-variant from Gerd Kurzbach |
 | 2021-03-18 | Hans Olsson - added experience from Dymola |
 | 2021-03-24 | Hans Olsson - feedback on prototype |
+| 2021-05-03 | Hans Olsson - additional feedback on prototype |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -148,7 +149,7 @@ Although the `break`-syntax overlaps with ([MCP/0032](https://github.com/modelic
 
 # Tool Implementation
 Implemented in SimulationX since a long time ago.
-Test-implemented in Dymola.
+Test-implemented in Dymola 2022.
 
 ## Experience with Prototype
 The experience with a simple prototype implementation in Dymola is that it can mostly be implemented in less than a day.
@@ -157,7 +158,7 @@ The use cases above are relevant also for large industrial models.
 
 One additional relevant use case is allowing re-using of models that have unwanted defaults; added above.
 
-From the user perspective there was feedback that it was seen as somewhat problematic that defaults (using start=... for parameters) was not removed by setting the value to break. Based on the proposal that is deliberate and also setting start=break is possible for users.
+From the user perspective there was feedback that it was seen as somewhat problematic that defaults (using start=... for parameters) was not removed by setting the value to break. Based on the proposal that is deliberate and also setting start=break is possible for users, and can be automated in tools.
 
 # Required Patents
 No patents needed.
