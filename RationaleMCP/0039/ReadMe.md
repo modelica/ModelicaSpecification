@@ -42,7 +42,7 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 
 The [rationale](rationale.md) presents the rationale with use cases.
 
-The design is developed in a [separate document](SEMLA.md), for later incorporation as changesets for the Modelica Specification document.
+The design, called _SEMLA_ is developed in a [separate document](SEMLA.md), for later incorporation as changesets for the Modelica Specification document.
 
 
 ## Backwards Compatibility
