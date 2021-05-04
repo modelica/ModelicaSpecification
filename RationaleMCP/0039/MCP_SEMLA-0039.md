@@ -108,7 +108,7 @@ implementation.
 
 The precise text of the proposed changes with respect to Modelica
 Specification 3.3 are in the accompanying document
-MCP_00XX_SEMLA_v1_SpecChanges.docx.
+TODO.md.
 
 # Backwards Compatibility
 
@@ -132,7 +132,8 @@ libraries.
 
 The protpype referenced above has been in use since 2015 and has
 generally been positive and without problems. There are now two
-independent implementations om
+independent implementations available, by Modelon as used in OCT, and by 
+the OpenModelica project.
 
 ## Required Patents
 
