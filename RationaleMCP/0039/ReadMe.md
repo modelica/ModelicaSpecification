@@ -28,9 +28,10 @@ different platforms.
 
 ## Revisions
 
-| Date | Description |
-| --- | --- |
-| April 9 – May 4, 2021 | Hubertus Tummescheit, Henrik Tidefelt. 1<sup>st</sup> MCP version converted from Modelon internal documentation to MCP format |
+| Version/Date                   | Changes/Comments                                                                             | Author                                     |
+|--------------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------|
+| 0.1, 2015                      | Initial version                                                                              | Jesper Mattsson                            |
+| 0.2, April 9<sup>th</sup> 2021 | Restructuring to separate out requirements and examples as appendices, minor wording updates | Hubertus Tummescheit                       |
 
 
 ## Contributor License Agreement
@@ -43,6 +44,8 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 The [rationale](rationale.md) presents the rationale with use cases.
 
 The design, called _SEMLA_ is developed in a [separate document](SEMLA.md), for later incorporation as changesets for the Modelica Specification document.
+
+A [manifest.xml example](manifest-example.md) is also provided.
 
 
 ## Backwards Compatibility
@@ -81,6 +84,7 @@ implementation of this proposal.
 ## References
 
 - <https://www.openssl.org/>
+- TLS 1.2 official specification: <https://tools.ietf.org/html/rfc5246>
 - <https://github.com/modelon-community/SEMLA>
 - <https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/encryption.html>
 - <https://www.modelon.com/leverage-standardized-encryption-and-licensing-for-modelica-libraries/>
