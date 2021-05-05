@@ -45,7 +45,7 @@ The [rationale](rationale.md) presents the rationale with use cases.
 
 The design, called _SEMLA_ is developed in a [separate document](SEMLA.md), for later incorporation as changesets for the Modelica Specification document.
 
-A [manifest.xml example](manifest-example.md) is also provided.
+A [manifest.xml example](examples/manifest.xml) is also provided.
 
 
 ## Backwards Compatibility
