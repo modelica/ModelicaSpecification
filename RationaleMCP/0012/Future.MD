@@ -1,7 +1,7 @@
 Modelica Change Proposal MCP-0012 Future possibilities
 
 # Summary
-This is separated out from (Proposal.MD) to contain items for the future to make the actual proposal easier to understand.
+This is separated out from the [Proposal](Proposal.MD) to contain items for the future to make the actual proposal easier to understand.
 
 # Revisions
 | Date | Description |
