@@ -8,7 +8,7 @@ In Development
 Allow calling blocks similarly functions in order to introduce function-calls with memory and events in Modelica.
 While being consistent with subtyping.
 
-This document contains the actual proposal, see also [Future extensions](Future.MD).
+This document contains the actual proposal, see also [Future extensions](Future.md).
 
 # Revisions
 | Date | Description |
