@@ -19,6 +19,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2021-03-18 | Hans Olsson - added experience from Dymola |
 | 2021-03-24 | Hans Olsson - feedback on prototype |
 | 2021-05-03 | Hans Olsson - additional feedback on prototype |
+| 2021-05-05 | Hans Olsson - feedback at language meeting |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -67,7 +68,15 @@ They either override other modifications or will be overridden as usual.
 It is also not allowed to override modifications having the final prefix.
 Only during flattening of an instantiated model, remaining `break` modifications are seen as not present.
 They have no further influence on the model equations.
+
+## Impact on balanced models.
+The section on balanced model does in some cases have a restrictions on modifiers:
+"The binding equations in modifiers for components may in these cases only be for parameters, constants, inputs and variables having a default binding equation."
+The latter case interacts with `break`, and the simplest solution seems to be:
+"For the latter case of variables having a default binding equation (that are not parameter, constant, or input) the modifier may not remove the binding equation using break."
   
+Alternatives would be that it is allowed to remove the binding equation, as long as a normal binding equation is added later, or that it is allowed to remove it and replace it with a normal equation. Both variants seem more complicated and with unclear benefits - but might be considered for the future if the need arises.
+
 # Discussion of effects
 
 ## In Equations
