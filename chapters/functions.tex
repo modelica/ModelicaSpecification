@@ -1544,7 +1544,7 @@ end specificEnthalpy;
 
 \section{Declaring Inverses of Functions}\label{declaring-inverses-of-functions}
 
-Every function with one output formal parameter may have one or more \fmtannotationindex{inverse} annotations to define inverses of this function:
+If a function $f_1$ with one output formal parameter $y$ can be restricted to an informally defined domain, such that the mapping of the input formal parameter $u_{k}$ to $y$ is injective for any fixed assignment to the other input formal parameters in the domain, then it can be given an \fmtannotationindex{inverse} annotation to provide an explicit inverse $f_2$ to this mapping, provided that the function is only applied on this domain:
 \begin{lstlisting}[language=modelica]
 function $f_1$
   input $A_1$ $u_1$;
@@ -1554,28 +1554,20 @@ function $f_1$
   input $A_m$ $u_m$ = $a_m$;
   $\ldots$
   input $A_n$ $u_n$;
-  output $T_2$ y;
+  output $T_2$ $y$;
 algorithm
   $\ldots$
-  annotation(inverse($u_k$ = $f_2$($\ldots$, y, $\ldots$), $u_i$ = $f_3$($\ldots$, y, $\ldots$), $\ldots$));
+  annotation(inverse($u_k$ = $f_2$($\ldots$, $y$, $\ldots$));
 end $f_1$;
 \end{lstlisting}
 
-The meaning is that function $f_2$ is one inverse to function $f_1$ where the previous output \lstinline!y! is now an input and the previous input $u_k$ is now an output.
-More than one inverse can be defined within the same \lstinline!inverse! annotation.
-Several inverses are separated by commas.
+In addition to $y$, the formal call to $f_2$ in the annotation shall also pass the other formal parameters (excluding $u_{k}$) needed determine the inverse, see below.
+The function $f_2$ must be an actual inverse, meaning that if $u_k$ is calculated as $u_k = f_2(\ldots,\, y,\, \ldots)$, then the equality $y = f_1(\ldots,\, u_k,\, \ldots)$ is satisfied up to a certain precision, for all values of the input arguments of $f_2(\ldots,\, y,\, \ldots)$ in the range and informal domain of $f_1$.
 
-The function in the \lstinline!inverse! annotation must be an actual inverse.
-This requires that $f_2$ is such that, if $u_k$ is calculated as \lstinline!$u_k$ := $f_2$($\ldots$, y, $\ldots$)!, the equality \lstinline!y = $f_1$($\ldots$, $u_k$, $\ldots$)! is satisfied up to a certain precision, for all valid values of the input arguments of \lstinline!$f_2$($\ldots$, y, $\ldots$)!.
-
-\begin{nonnormative}
-There is no guarantee that a provided inverse will be used, and no rule for at which stage of symbolic processing it could be applied.
-Hence, providing an inverse function cannot be used as a means to select a particular solution to a nonlinear equation with multiple solutions (in other words, to select particular pre-image for a non-injective function).
-On the contrary, providing an inverse function can make a model ambiguous, as it will not be known if an equation is solved using a generic nonlinear equation solver (with solution being influenced by guess values), or solved using the provided inverse (possibly selecting a different solution).
-
-While it is possible to have several inverse functions that could be applied to solve the same equation, the real problem of ambiguity is not the number of applicable inverse functions, but that there is ambiguity as soon as there is one inverse function and multiple solutions.
-Since ambiguity is inherent when inverse functions are provided, a tool shall not give any diagnostic regarding ambiguity due to use of inverse functions, even when making a choice between several applicable ones.
-\end{nonnormative}
+More than one inverse can be defined within the same \lstinline!inverse! annotation, separated by commas:
+\begin{lstlisting}[language=modelica]
+annotation(inverse($u_k$ = $f_2$($\ldots$, $y$, $\ldots$), $u_i$ = $f_3$($\ldots$, $y$, $\ldots$), $\ldots$));
+\end{lstlisting}
 
 Function $f_1$ can have any number and types of formal parameters with and without default value.
 The restriction is that the \emph{number of unknown variables} (see \cref{balanced-models}) in the output formal parameter of both $f_1$ and $f_2$ must be the same and that $f_2$ should have a union of output and formal parameters that is the same or a subset of that union for $f_1$, but the order of the formal parameters may be permuted.
@@ -1590,7 +1582,7 @@ function h_pTX
   output Real h "specific enthalpy";
 algorithm
   $\ldots$
-  annotation(inverse(T = T_phX(p,h,X)));
+  annotation(inverse(T = T_phX(p, h, X)));
 end h_pTX;
 
 function T_phX
@@ -1628,6 +1620,36 @@ algorithm
   // Note: No inverse.
 end sine;
 \end{lstlisting}
+\end{example}
+
+Tools are not expected to verify the injectiveness requirement, meaning that it is the user's responsibility to ensure that this requirement is fulfilled, and that tools can rely on the requirement as an assumption for symbolic manipulations when an inverse function is provided.
+
+There is no guarantee that a provided inverse will be used, and no rule for at which stage of symbolic processing it could be applied.
+Inlining a function means that the possibility to apply provided inverses is lost, so choosing the right variant of the function inlining alternatives can be important when inverse functions are provided.
+
+\begin{example}
+If an inverse is provided, but the injectiveness requirement not fulfilled, this may introduce additional ambiguity to the solution of equations with multiple solutions.
+Consider the following invalid use of the \lstinline!inverse! annotation:
+\begin{lstlisting}[language=modelica]
+model M
+  function square
+    input Real x;
+    output Real y = x^2;
+    annotation(inverse(x = sqrt(y))); // Invalid!
+  end square;
+
+  parameter Real y0 = -1.0;
+  Real y(start = y0, fixed = true);
+  Real x(start = sign(y0) * sqrt(abs(y0))); // Good guess with same sign as y.
+equation
+  der(y) = -y;
+  square(x) = abs(y); // Expecting continuous solution for x.
+end M;
+\end{lstlisting}
+That the parameter \lstinline!y0! may have any sign means the sign of \lstinline!x! cannot be restricted in the informal domain of \lstinline!square!, and hence that the injectiveness requirement cannot be fulfilled.
+Without the \lstinline!inverse! annotation, the nonlinear equation in \lstinline!x! and \lstinline!y! has an ambiguity, but it is generally expected that this is handled so that a continuous solution for \lstinline!x! is obtained, meaning that it will keep the same sign as \lstinline!y! throughout the simulation.
+The additional ambiguity introduced by the \lstinline!inverse! annotation is that if the provided inverse is used to solve the nonlinear equation instead of using a generic nonlinear equation solver based on local search, then the solution with positive sign is always obtained.
+The lack of guarantees that a provided inverse will be used thus implies a worse ambiguity than what was present in the model before introducing the \lstinline!inverse! annotation.
 \end{example}
 
 \section{External Function Interface}\label{external-function-interface}
