@@ -1544,7 +1544,7 @@ end specificEnthalpy;
 
 \section{Declaring Inverses of Functions}\label{declaring-inverses-of-functions}
 
-If a function $f_1$ with one output formal parameter $y$ can be restricted to an informally defined domain, such that the mapping of the input formal parameter $u_{k}$ to $y$ is injective for any fixed assignment to the other input formal parameters in the domain, then it can be given an \fmtannotationindex{inverse} annotation to provide an explicit inverse $f_2$ to this mapping, provided that the function is only applied on this domain:
+If a function $f_1$ with one output formal parameter $y$ can be restricted to an informally defined domain and codomain, such that the mapping of the input formal parameter $u_{k}$ to $y$ is bijective for any fixed assignment to the other input formal parameters in the domain (see examples below), then it can be given an \fmtannotationindex{inverse} annotation to provide an explicit inverse $f_2$ to this mapping, provided that the function is only applied on this domain:
 \begin{lstlisting}[language=modelica]
 function $f_1$
   input $A_1$ $u_1$;
@@ -1622,16 +1622,16 @@ end sine;
 \end{lstlisting}
 \end{example}
 
-Tools are not expected to verify the injectiveness requirement, meaning that it is the user's responsibility to ensure that this requirement is fulfilled, and that tools can rely on the requirement as an assumption for symbolic manipulations when an inverse function is provided.
+Tools are not expected to verify the bijectiveness requirement, meaning that it is the user's responsibility to ensure that this requirement is fulfilled, and that tools can rely on the requirement as an assumption for symbolic manipulations when an inverse function is provided.
 
 There is no guarantee that a provided inverse will be used, and no rule for at which stage of symbolic processing it could be applied.
 Inlining a function means that the possibility to apply provided inverses is lost, so choosing the right variant of the function inlining alternatives can be important when inverse functions are provided.
 
 \begin{example}
-If an inverse is provided, but the injectiveness requirement not fulfilled, this may introduce additional ambiguity to the solution of equations with multiple solutions.
+If an inverse is provided, but the injectiveness part of the bijectiveness requirement is not fulfilled, this may introduce additional ambiguity to the solution of equations with multiple solutions.
 Consider the following invalid use of the \lstinline!inverse! annotation:
 \begin{lstlisting}[language=modelica]
-model M
+model NotInjective
   function square
     input Real x;
     output Real y = x^2;
@@ -1644,13 +1644,49 @@ model M
 equation
   der(y) = -y;
   square(x) = abs(y); // Expecting continuous solution for x.
-end M;
+end NotInjective;
 \end{lstlisting}
 That the parameter \lstinline!y0! may have any sign means the sign of \lstinline!x! cannot be restricted in the informal domain of \lstinline!square!, and hence that the injectiveness requirement cannot be fulfilled.
 Without the \lstinline!inverse! annotation, the nonlinear equation in \lstinline!x! and \lstinline!y! has an ambiguity, but it is generally expected that this is handled so that a continuous solution for \lstinline!x! is obtained, meaning that it will keep the same sign as \lstinline!y! throughout the simulation.
 The additional ambiguity introduced by the \lstinline!inverse! annotation is that if the provided inverse is used to solve the nonlinear equation instead of using a generic nonlinear equation solver based on local search, then the solution with positive sign is always obtained.
 The lack of guarantees that a provided inverse will be used thus implies a worse ambiguity than what was present in the model before introducing the \lstinline!inverse! annotation.
 \end{example}
+
+\begin{example}
+If an inverse is provided, but the surjectiveness part of the bijectiveness requirement is not fulfilled, this may introduce an invalid solution to equations that do not have a solution at all.
+Consider the following invalid use of the \lstinline!inverse! annotation:
+\begin{lstlisting}[language=modelica]
+model NotSurjective
+  function cube
+    input Real x;
+    output Real y = x ^ 3;
+  end cube;
+
+  function cbrtPos "Cubic root of positive number"
+    input Real y;
+    output Real x;
+  algorithm
+    assert(y > 0, "Argument must be positive.");
+    x := exp(log(y) / 3);
+    annotation(inverse(y = cube(x))); // Invalid!
+  end cbrtPos;
+
+  Real x = 0.5 + sin(time);
+  Real y;
+equation
+  cbrtPos(y) = x; // Calling cbrtPos requires y > 0.
+  annotation(experiment(StopTime = 10.0));
+end NotSurjective;
+\end{lstlisting}
+As the value of \lstinline!x! varies over the interval $[-1,\, 1]$, but the range of \lstinline!cbrtPos! is only $(0, \infty)$, the informal codomain of \lstinline!cbrtPos! cannot be restricted such that the surjectiveness is fulfilled.
+A valid solution to the equation in \lstinline!x! and \lstinline!y! must satisfy $\text{\lstinline!y!} > 0$, and when no \lstinline!inverse! annotation is given, an violation will be detected by a nonlinear solver applied directly to the equation.
+When the (invalid) inverse provided by the \lstinline!inverse! annotation is used, however, the equation gets transformed into
+\begin{lstlisting}[language=modelica]
+  y = cube(x);
+\end{lstlisting}
+where the requirement $\text{\lstinline!y!} > 0$ can no longer be detected, resulting in a simulation result that does not fulfill the original model equations.
+\end{example}
+
 
 \section{External Function Interface}\label{external-function-interface}
 
