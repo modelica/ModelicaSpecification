@@ -540,6 +540,11 @@ Based on the above definition the following restriction holds:
   constraining interface of the function being redeclared.
 \end{itemize}
 
+Note that function-compatibilty does currently not ensure that the function call has the correct variability, and that must then be checked after re-declaration.
+\begin{nonnormative}
+Thus any call of a function that is replaceable will need to be checked after redeclarations.
+\end{nonnormative}
+
 \begin{example}
 Demonstrating a redeclaration using a function-compatible function
 \begin{lstlisting}[language=modelica]
@@ -562,6 +567,7 @@ model Body
   end UseDriveLine;
   Modelica.Mechanics.MultiBody.Interface.Frame_a frame_a;
   replaceable function gravity = GravityInterface;
+  constant Real failed[:]=gravity({1,0,0}); // May fail
 equation
   frame_a.f = gravity(frame_a.r0);
   // or gravity(position=frame_a.r0);
@@ -569,7 +575,8 @@ equation
 end Body;
 
 model PlanetSimulation
-  function sunGravity = PointMassGravity (m=2e30);
+  parameter Modelica.Units.SI.Mass mSun=2e30;
+  function sunGravity = PointMassGravity (m=mSun);
   Body planet1(redeclare function gravity = sunGravity);
   Body planet2(redeclare function gravity = PointMassGravity (m=2e30));
   $\ldots$
@@ -580,6 +587,9 @@ Note: \lstinline!PointMassGravity! is not function-compatible with
 \lstinline!GravityInterface! (no default for \lstinline!m!), but \lstinline!sunGravity!
 inside \lstinline!PlanetSimulation! is function-compatible with
 \lstinline!GravityInterface!.
+
+The constant failed in \lstinline!planet1!, will violate variability constraints, whereas it will work in \lstinline!planet2!.
+The call \lstinline!gravity(frame_a.r0)! will work in both of them.
 \end{example}
 
 \section{Type Compatible Expressions}\label{type-compatible-expressions}
