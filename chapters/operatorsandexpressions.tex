@@ -1384,6 +1384,7 @@ The (underdetermined) model \lstinline!Test! below illustrates two kinds of cons
 First, it contains variability errors for declaration equations and assignments.
 Second, it illustrates the impact of variability on the matching of equations to variables, which can lead to violation of the perfect matching rule.
 Details of how variabilities are determined are given in the sections below.
+The \willintroduce{discrete-valued equation variability rule} mentioned in the comments below refer to the rule in \cref{discrete-time-expressions} that requires both sides of the \lstinline!Boolean! equation to be discrete-time.
 \begin{lstlisting}[language=modelica]
 model Constants
   parameter Real p1 = 1;
@@ -1402,7 +1403,13 @@ model Test
 algorithm
   i1 := x; // Error, assignment to variable of lesser variability.
 equation
-  b2 = noEvent(x > 1); // No variability error, but equation cannot be matched.
+  /* The equation below can be rejected for two reasons:
+   * 1. Discrete-valued equation variability rule requires both sides to be
+   *    discrete-time.
+   * 2. Violates perfect matching rule, as no variable can be solved with
+   *    correct variability using this equation.
+   */
+  b2 = noEvent(x > 1); // Error, see above.
   i2 = x;              // No variability error, and can be matched to x.
 end Test;
 \end{lstlisting}
@@ -1500,6 +1507,7 @@ functions do not become active between events.
 
 For a scalar or array equation \lstinline!expr1 = expr2! where neither expression is of base type \lstinline!Real!, both expressions must be discrete-time expressions.
 For a record equation, the same rule applies to the non-record elements of the equation.
+This is called the \firstuse{discrete-valued equation variability rule}\index{discrete-valued equation variability rule}.
 
 \begin{nonnormative}
 For a scalar equation, the rule follows from the observation that a discrete-valued equation does not provide sufficient information to solve for a continuous-valued variable.
