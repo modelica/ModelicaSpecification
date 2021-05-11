@@ -25,3 +25,5 @@ MLS.pdf: *.tex chapters/*.tex
 MLS.html: MLS.tex chapters/*.tex
 	$(LATEXMLPREFIX)latexml MLS.tex --includestyles --path=media --dest MLS.xml
 	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest $@
+	.scripts/patch-viewport.sh
+	.scripts/patch-body-ios-hover.sh
