@@ -1379,6 +1379,42 @@ restrictions that simplify reasoning and reporting of errors:
   discrete-time expression.
 \end{itemize}
 
+\begin{example}
+The (underdetermined) model \lstinline!Test! below illustrates two kinds of consequences due to variability constraints.
+First, it contains variability errors for declaration equations and assignments.
+Second, it illustrates the impact of variability on the matching of equations to variables, which can lead to violation of the perfect matching rule.
+Details of how variabilities are determined are given in the sections below.
+The \willintroduce{discrete-valued equation variability rule} mentioned in the comments below refer to the rule in \cref{discrete-time-expressions} that requires both sides of the \lstinline!Boolean! equation to be discrete-time.
+\begin{lstlisting}[language=modelica]
+model Constants
+  parameter Real p1 = 1;
+  constant Real c1 = p1 + 2; // Error, not a constant expression.
+  parameter Real p2 = p1 + 2; // Fine.
+end Constants;
+model Test
+  Constants c1(p1 = 3); // Fine.
+  Constants c2(p2 = 7); // Fine, declaration equation can be modified.
+  Real x;
+  Boolean b1 = noEvent(x > 1); // Error, since b1 is a discrete-time variable
+                               // and noEvent(x > 1) is not discrete-time.
+  Boolean b2;
+  Integer i1;
+  Integer i2;
+algorithm
+  i1 := x; // Error, assignment to variable of lesser variability.
+equation
+  /* The equation below can be rejected for two reasons:
+   * 1. Discrete-valued equation variability rule requires both sides to be
+   *    discrete-time.
+   * 2. It violates the perfect matching rule, as no variable can be solved
+   *    with correct variability using this equation.
+   */
+  b2 = noEvent(x > 1); // Error, see above.
+  i2 = x;              // No variability error, and can be matched to x.
+end Test;
+\end{lstlisting}
+\end{example}
+
 \subsection{Constant Expressions}\label{constant-expressions}
 
 Constant expressions\index{constant expression}\index{expression variability!constant} are:
@@ -1457,16 +1493,6 @@ Discrete-time expressions\index{discrete-time expression}\index{expression varia
   Expressions in functions behave as though they were discrete-time expressions.
 \end{itemize}
 
-For an equation \lstinline!expr1 = expr2! where neither expression is of base type
-\lstinline!Real!, both expressions must be discrete-time expressions. For record
-equations the equation is split into basic types before applying this
-test.
-
-\begin{nonnormative}
-This restriction guarantees that \lstinline!noEvent! cannot be applied to \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String!, or \lstinline!enumeration!
-equations outside of a \lstinline!when!-clause, because then one of the two expressions is not discrete-time.
-\end{nonnormative}
-
 Inside an if-expression, \lstinline!if!-clause, \lstinline!while!-statement or \lstinline!for!-clause, that
 is controlled by a non-discrete-time (that is continuous-time, but not
 discrete-time) switching expression and not in the body of a
@@ -1479,31 +1505,50 @@ The restriction above is necessary in order to guarantee that all equations for 
 functions do not become active between events.
 \end{nonnormative}
 
+For a scalar or array equation \lstinline!expr1 = expr2! where neither expression is of base type \lstinline!Real!, both expressions must be discrete-time expressions.
+For a record equation, the rule applies recursively to each of the components of the record.
+This is called the \firstuse{discrete-valued equation variability rule}\index{discrete-valued equation variability rule}.
+
+\begin{nonnormative}
+For a scalar equation, the rule follows from the observation that a discrete-valued equation does not provide sufficient information to solve for a continuous-valued variable.
+Hence, and according to the perfect matching rule (see \cref{synchronous-data-flow-principle-and-single-assignment-rule}), such an equation must be used to solve for a discrete-valued variable.
+By the interpretation of \eqref{eq:dae-discrete-valued} in \cref{modelica-dae-representation}, it follows that one of \lstinline!expr1! and \lstinline!expr2! must be the variable, and the other expression its solution.
+Since a discrete-valued variable is a discrete-time variable, it follows that its solution on the other side of the equation must have at most discrete-time variability.
+That is, both sides of the equation are discrete-time expressions.
+
+For example, this rule shows that (outside of a \lstinline!when!-clause) \lstinline!noEvent! cannot be applied to either side of a \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String!, or \lstinline!enumeration! equation, as this would result in a non-discrete-time expression.
+
+For an array equation, note that each array can have only one element type, so if one element is \lstinline!Real!, then all other entries must also be \lstinline!Real!, possibly making use of standard type coercion, \cref{standard-type-coercion}.
+Hence, if the base type is not \lstinline!Real!, all elements of the array are discrete-valued, allowing the argument above for a scalar equation to be applied elementwise to the array equation.
+That is, all array elements on both sides of the array equation will have discrete-time variability, showing that also the entire arrays \lstinline!expr1! and \lstinline!expr2! are discrete-time expressions.
+
+For a record equation, the components of the record have independent types, and the equation is seen as a collection of equations for the individual components of the record.
+In order to support records with components of mixed variability, a record equation with sides given by either record variables or record constructors is conceptually split before variability is determined.
+\end{nonnormative}
+
 \begin{example}
-The (underdetermined) model \lstinline!Test! below illustrates two kinds of consequences due to variability constraints.
-First, it contains variability errors for declaration equations and assignments.
-Second, it illustrates the impact of variability on the matching of equations to variables, which can
-lead to violation of the perfect matching rule.
+Discrete-valued equation variability rule applied to record equations.
+In the first of the equations below, having a record constructor on both sides of the equation, the equation is conceptually split, and variabilities of \lstinline!time! and \lstinline!true! are considered separately.
+In the second equation, the \lstinline!makeR! function call -- regardless of inlining -- means that the equation cannot be conceptually split into individual components of the record.
+The variability of the \lstinline!makeR! call is continuous-time due to the \lstinline!time! argument, which also becomes the variability of the \lstinline!b! member of the call.
 \begin{lstlisting}[language=modelica]
-model Constants
-  parameter Real p1 = 1;
-  constant Real c1 = p1 + 2; // error, not a constant expression
-  parameter Real p2 = p1 + 2; // fine
-end Constants;
-model Test
-  Constants c1(p1=3); // fine
-  Constants c2(p2=7); // fine, declaration equation can be modified
+record R
   Real x;
-  Boolean b1 = noEvent(x > 1); // error, since b1 is a discrete-time variable
-                               // and noEvent(x > 1) is not discrete-time.
-  Boolean b2;
-  Integer i1;
-  Integer i2;
-algorithm
-  i1 := x; // error, assignment to variable of lesser variability.
+  Boolean b;
+end R;
+
+function makeR "Function wrapper around record constructor"
+  input Real xx;
+  input Boolean bb;
+  output R r = R(xx, bb);
+  annotation(Inline = true); // Inlining doesn't help.
+end makeR;
+
+model Test
+  R r1, r2;
 equation
-  b2 = noEvent(x > 1); // no variability error, but equation cannot be matched.
-  i2 = x;              // no variability error, and can be matched to x.
+  r1 = R(time, true);     // OK: Discrete-time Boolean member.
+  r2 = makeR(time, true); // Error: Continuous-time Boolean member.
 end Test;
 \end{lstlisting}
 \end{example}
