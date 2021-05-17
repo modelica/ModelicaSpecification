@@ -1169,6 +1169,7 @@ end ModelExpanded;
 \section{Declaring Derivatives of Functions}\label{declaring-derivatives-of-functions}
 
 The annotations listed below are related to differentiation of functions.
+A function declaration can have \fmtannotationindex{derivative} annotations specifying derivative functions or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically.
 Partial derivatives are not provided via annotations, but using a certain type of short function definition described in \cref{partial-derivatives-of-functions}.
 \begin{center}
 \begin{tabular}{l|l l}
@@ -1177,7 +1178,7 @@ Partial derivatives are not provided via annotations, but using a certain type o
 \hline
 \hline
 \lstinline!smoothOrder! & Function smoothness guarantee & \Cref{modelica:smoothOrder}\\
-\lstinline!derivative! & Provide function derivative & \Cref{using-the-derivative-annotation}\\
+\lstinline!derivative! & Provide function derivative & \Cref{modelica:derivative}\\
 \hline
 \end{tabular}
 \end{center}
@@ -1218,15 +1219,38 @@ This annotation is used by many functions of the \lstinline!Modelica.Fluid! libr
 \end{semantics}
 \end{annotationdefinition}
 
+\begin{annotationdefinition}[derivative]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"derivative" [ derivative-constraints ] "=" name
+
+derivative-constraints :
+   "(" derivative-constraint { "," derivative-constraint } ")"
+
+derivative-constraint :
+   "order" = UNSIGNED-NUMBER
+   | "noDerivative" = IDENT
+   | "zeroDerivative" = IDENT
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+This annotation has only an effect within a function declaration.
+
+The \lstinline!derivative! annotation can influence simulation time and accuracy, can be applied to both functions written in Modelica and to external functions, and may be used several times for the same function declaration.
+
+Each use of the \lstinline!derivative! annotation points to another \firstuse{derivative-function}\index{derivative-function} that expresses a derivative of the declared function, and the annotation can state that it is only valid under certain restrictions on the input arguments.
+These restrictions are defined using the optional attributes \lstinline!order!, \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
+The \lstinline!order! may be specified at most once for each \lstinline!derivative! annotation, must be at least 1, and defaults to 1.
+Specifying \lstinline!order! is only considered a restriction if $\text{\lstinline!order!} > 1$.
+
+For details abouts using the \lstinline!derivative! annotation, see \cref{using-the-derivative-annotation}.
+\end{semantics}
+\end{annotationdefinition}
+
 \subsection{Using the Derivative Annotation}\label{using-the-derivative-annotation}
 
-A function declaration can have an annotation \fmtannotationindex{derivative} specifying the derivative function or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically, \cref{modelica:smoothOrder}.
-The \lstinline!derivative! annotation can influence simulation time and accuracy and can be applied to both functions written in Modelica and to external functions.
-A \lstinline!derivative! annotation can state that it is only valid under certain restrictions on the input arguments.
-These restrictions are defined using the following optional attributes: \lstinline!order! (only a restriction if $\text{\lstinline!order!} > 1$, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
-The given derivative-function must be a valid derivative if these restrictions are satisfied, and can thus be used to compute the derivative in those cases.
-There may be multiple restrictions on the derivative, in which case they must all be satisfied. The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
-A function may supply multiple derivative functions subject to different restrictions, the first one that can be used (i.e.\ satisfying the restrictions) will be used for each call.
+The given derivative-function must be a valid derivative if the \lstinline!derivative! annotation restrictions are satisfied, and can thus be used to compute the derivative in those cases.
+There may be multiple restrictions on the derivative, in which case they must all be satisfied.
+The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
+When a function supplies multiple derivative-functions subject to different restrictions, the first one that can be used (i.e., satisfying the restrictions) will be used for each call.
 
 \begin{nonnormative}
 This means that the most restrictive derivatives should be written first.
