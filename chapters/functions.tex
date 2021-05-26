@@ -1166,22 +1166,107 @@ end ModelExpanded;
 \end{lstlisting}
 \end{example}
 
-\section{Declaring Derivatives of Functions}\label{declaring-derivatives-of-functions}
+\section{Derivatives and Inverses of Functions}\label{derivatives-and-inverses-of-functions}
 
-Derivatives of functions can be declared explicitly using the \lstinline!derivative!
-annotation, see \cref{using-the-derivative-annotation}, whereas a function can be defined as a
-partial derivative of another function using the \lstinline!der!-operator in a short
-function definition, see \cref{partial-derivatives-of-functions}.
+The annotations listed below are related to differentiation and closed-form inverses of functions.
+A function declaration can have \fmtannotationindex{derivative} annotations specifying derivative functions or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically.
+Partial derivatives are not provided via annotations, but using a certain type of short function definition described in \cref{partial-derivatives-of-functions}.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!smoothOrder! & Function smoothness guarantee & \Cref{modelica:smoothOrder}\\
+\lstinline!derivative! & Provide function derivative & \Cref{modelica:derivative}\\
+\lstinline!inverse! & Provide closed-form inverses & \Cref{modelica:inverse}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[smoothOrder]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"smoothOrder" "=" UNSIGNED-NUMBER
+"smoothOrder"
+   "("
+      "normallyConstant" "=" IDENT
+      { "," "normallyConstant" "=" IDENT }
+   ")"
+   "=" UNSIGNED-NUMBER
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+This annotation has only an effect within a function declaration.
+
+\lstinline!smoothOrder! defines the number of differentiations of the function, in order that all of the differentiated outputs are continuous provided all input arguments and their derivatives up to order \lstinline!smoothOrder! are continuous.
+
+\begin{nonnormative}
+This means that the function is at least C\textsuperscript{smoothOrder}.
+\lstinline!smoothOrder = 1! means that the function can be differentiated at least once in order that all output arguments are still continuous, provided the input arguments are continuous.
+If a tool needs the derivative of a function, e.g.\ for index reduction or to compute an analytic Jacobian, the function can be differentiated analytically at least \lstinline!smoothOrder! times.
+\end{nonnormative}
+
+The optional argument \lstinline!normallyConstant! of \lstinline!smoothOrder! defines that the function argument \lstinline!IDENT! is usually constant.
+
+\begin{nonnormative}
+A tool might check whether the actual argument to \lstinline!IDENT! is a parameter expression at the place where the function is called.
+If this is the case, the derivative of the function might be constructed under the assumption that the corresponding argument is constant, to enhance efficiency.
+Typically, a tool would generate at most two different derivative functions of a function:
+One, under the assumption that all \lstinline!normallyConstant! arguments are actually constant.
+And one, under the assumption that all input arguments are time varying.
+Based on the actual arguments of the function call either of the two derivative functions is used.
+
+This annotation is used by many functions of the \lstinline!Modelica.Fluid! library, such as\linebreak[4] \lstinline!Modelica.Fluid.Dissipation.PressureLoss.StraightPipe.dp_laminar_DP!, since geometric arguments to these functions are usually constant.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[derivative]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"derivative" [ derivative-constraints ] "=" name
+
+derivative-constraints :
+   "(" derivative-constraint { "," derivative-constraint } ")"
+
+derivative-constraint :
+   "order" = UNSIGNED-NUMBER
+   | "noDerivative" = IDENT
+   | "zeroDerivative" = IDENT
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+This annotation has only an effect within a function declaration.
+
+The \lstinline!derivative! annotation can influence simulation time and accuracy, can be applied to both functions written in Modelica and to external functions, and may be used several times for the same function declaration.
+
+Each use of the \lstinline!derivative! annotation points to another \firstuse{derivative-function}\index{derivative-function} that expresses a derivative of the declared function, and the annotation can state that it is only valid under certain restrictions on the input arguments.
+These restrictions are defined using the optional attributes \lstinline!order!, \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
+The \lstinline!order! may be specified at most once for each \lstinline!derivative! annotation, must be at least 1, and defaults to 1.
+Specifying \lstinline!order! is only considered a restriction if $\text{\lstinline!order!} > 1$.
+
+For details abouts using the \lstinline!derivative! annotation, see \cref{using-the-derivative-annotation}.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[inverse]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"inverse" "(" function-inverse { "," function-inverse } ")"
+
+function-inverse :
+   IDENT "=" type-specifier function-call-args"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+A function with one output formal parameter may have one or more \fmtannotationindex{inverse} annotations to define inverses of this function.
+
+For details abouts using the \lstinline!inverse! annotation, see \cref{using-the-inverse-annotation}.
+\end{semantics}
+\end{annotationdefinition}
+
 
 \subsection{Using the Derivative Annotation}\label{using-the-derivative-annotation}
 
-A function declaration can have an annotation \fmtannotationindex{derivative} specifying the derivative function or preferably, for a function written in Modelica, use the \lstinline!smoothOrder! annotation to indicate that the tool can construct the derivative function automatically, \cref{annotations-for-code-generation}.
-The \lstinline!derivative! annotation can influence simulation time and accuracy and can be applied to both functions written in Modelica and to external functions.
-A \lstinline!derivative! annotation can state that it is only valid under certain restrictions on the input arguments.
-These restrictions are defined using the following optional attributes: \lstinline!order! (only a restriction if $\text{\lstinline!order!} > 1$, the default for \lstinline!order! is 1), \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
-The given derivative-function must be a valid derivative if these restrictions are satisfied, and can thus be used to compute the derivative in those cases.
-There may be multiple restrictions on the derivative, in which case they must all be satisfied. The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
-A function may supply multiple derivative functions subject to different restrictions, the first one that can be used (i.e.\ satisfying the restrictions) will be used for each call.
+The given derivative-function must be a valid derivative if the \lstinline!derivative! annotation restrictions are satisfied, and can thus be used to compute the derivative in those cases.
+There may be multiple restrictions on the derivative, in which case they must all be satisfied.
+The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
+When a function supplies multiple derivative-functions subject to different restrictions, the first one that can be used (i.e., satisfying the restrictions) will be used for each call.
 
 \begin{nonnormative}
 This means that the most restrictive derivatives should be written first.
@@ -1242,13 +1327,10 @@ follows:
 If the Modelica function call is a $n$th derivative ($n \geq 1$), i.e.\ this function call has been derived from an $(n-1)$th derivative by differentiation inside the tool, an \lstinline!annotation(derivative(order=$n+1$) = $\ldots$)!, specifies the $(n+1)$th derivative, and the $(n+1)$th derivative call is constructed as follows:
 \begin{itemize}
 \item
-  The input arguments are appended with the (n+1)th derivative, which
-  are constructed in order from the $n$th \lstinline!order! derivatives.
+  The input arguments are appended with the $(n+1)$th derivative, which are constructed in order from the $n$th \lstinline!order! derivatives.
 \item
-  The output arguments are similar to the output argument for the $n$th
-  derivative, but each output is one higher in derivative order. The
-  outputs must have the same type and declaration order for the function
-  and its derivative.
+  The output arguments are similar to the output argument for the $n$th derivative, but each output is one higher in derivative order.
+  The outputs must have the same type and declaration order for the function and its derivative.
 \end{itemize}
 
 \begin{nonnormative}
@@ -1511,6 +1593,7 @@ Therefore \lstinline!h! indirectly includes the derivative with respect to \lsti
 \end{equation*}
 \end{nonnormative}
 
+
 \subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}
 
 A class defined as:
@@ -1542,9 +1625,12 @@ end specificEnthalpy;
 \end{lstlisting}
 \end{example}
 
-\section{Declaring Inverses of Functions}\label{declaring-inverses-of-functions}
+
+\subsection{Using the Inverse Annotation}\label{using-the-inverse-annotation}
 
 If a function $f_1$ with one output formal parameter $y$ can be restricted to an informally defined domain and codomain, such that the mapping of the input formal parameter $u_{k}$ to $y$ is bijective for any fixed assignment to the other input formal parameters in the domain (see examples below), then it can be given an \fmtannotationindex{inverse} annotation to provide an explicit inverse $f_2$ to this mapping, provided that the function is only applied on this domain:
+
+The \lstinline!inverse! annotation takes the following form in a function declaration:
 \begin{lstlisting}[language=modelica]
 function $f_1$
   input $A_1$ $u_1$;
@@ -1687,6 +1773,96 @@ When the (invalid) inverse provided by the \lstinline!inverse! annotation is use
 \end{lstlisting}
 where the requirement $\text{\lstinline!y!} > 0$ can no longer be detected, resulting in a simulation result that does not fulfill the original model equations.
 \end{example}
+\section{Function Inlining and Event Generation}\label{function-inlining-and-event-generation}
+
+The annotations listed below affect inlining of functions and the related topic of event generation inside functions.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!Inline! & Inline function & \Cref{modelica:Inline}\\
+\lstinline!LateInline! & Inline after all symbolic transformations & \Cref{modelica:LateInline}\\
+\lstinline!InlineAfterIndexReduction! & Inline after index reduction & \Cref{modelica:InlineAfterIndexReduction}\\
+\lstinline!GenerateEvents! & Generate events for zero crossings in function & \Cref{modelica:GenerateEvents}\\
+\hline
+\end{tabular}
+\end{center}
+
+Inlining a function makes the statements of the function body accessible to symbolic operations, potentially leading to expression simplifications and more efficient solution of equations.
+At the same time, another important consequence of inlining a function is that any annotations for derivatives or inverses are lost.
+Hence, one needs to find the right balance between inlining too early (loss of provided derivatives and inverses) and too late (earlier stages of symbolic processing cannot benefit from symbolic simplifications).
+
+\begin{annotationdefinition}[Inline]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"Inline" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration.
+
+If \lstinline!Inline = true!, the model developer proposes to inline the function.
+This means, that the body of the function is included at all places where the function is called.
+
+If \lstinline!Inline = false!, the model developer proposes to not inline the function.
+
+\begin{nonnormative}
+\lstinline!Inline = true! is for example used in \lstinline!Modelica.Mechanics.MultiBody.Frames! and in functions of \lstinline!Modelica.Media! to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[LateInline]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"LateInline" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration.
+
+If \lstinline!LateInline = true!, the model developer proposes to inline the function after all symbolic transformations have been performed.
+
+\begin{nonnormative}
+Late inlining is especially useful for differentiation and inversion of functions; for efficiency reasons it is then useful to replace all function calls with identical input arguments by one function call, before the inlining.
+\end{nonnormative}
+
+If \lstinline!LateInline = false!, the model developer proposes to not inline the function after symbolic transformations have been performed.
+
+\lstinline!Inline = true, LateInline = false! is identical to \lstinline!Inline = true!.
+
+\lstinline!Inline = true, LateInline = true! is identical to \lstinline!LateInline = true!.
+
+\lstinline!Inline = false, LateInline = true! is identical to \lstinline!LateInline = true!.
+
+\begin{nonnormative}
+This annotation is for example used in \lstinline!Modelica.Media.Water.IF97_Utilities.T_props_ph! to provide in combination with common subexpression elimination the automatic caching of function calls.
+Furthermore, it is used in order that a tool is able to propagate specific enthalpy over connectors in the \lstinline!Modelica.Fluid! library.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[InlineAfterIndexReduction]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"InlineAfterIndexReduction" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration.
+
+If \lstinline!true!, the model developer proposes to inline the function after the function is differentiated for index reduction, and before any other symbolic transformations are performed.
+This annotation cannot be combined with annotations \lstinline!Inline! and \lstinline!LateInline!.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[GenerateEvents]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"GenerateEvents" "=" ( false | true )
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Has only an effect within a function declaration
+
+If \lstinline!GenerateEvents = true!, the model developer proposes that crossing functions in the function should generate events (one possibility of doing this is to inline the function and generate events for the inlined function).
+
+\end{semantics}
+\end{annotationdefinition}
 
 
 \section{External Function Interface}\label{external-function-interface}
