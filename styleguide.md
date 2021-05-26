@@ -70,13 +70,17 @@ This means that the most restrictive derivatives should be written first.
 As a general rule, when a concept is directly related to a construct in the Modelica language with a certain name/keyword, then the language concept is referred to using a hyphenated combination of the language name/keyword in code style, with a qualifying natural language word written as normal text.
 Examples:
 
-Appearance | LaTeX source
+Appearance | LaTeX source | Comment
 --- | ---
-`connect`-equation | `\lstinline!connect!-equation`
-`if`-equation | `\lstinline!if!-equation`
-`if`-expression | `\lstinline!if!-expression`
-`when`-clause | `\lstinline!when!-clause`
-`start`-attribute | `\lstinline!start!-attribute`
+`connect`-equation | `\lstinline!connect!-equation` |
+`if`-equation | `\lstinline!if!-equation` |
+`if`-expression | `\lstinline!if!-expression` |
+`when`-clause | `\lstinline!when!-clause` | A branch of a `when`-equation or `when`-statement
+`import`-clause | `\lstinline!import!-clause` |
+`for`-equation | `\lstinline!for!-equation` |
+`for`-statement | `\lstinline!for!-statement` |
+`for`-loop | `\lstinline!for!-loop` | A `for`-equation or `for`-statement
+`start`-attribute | `\lstinline!start!-attribute` |
 
 Note that there's often an associated rule in the Modelica grammar, which should only be used in the text on the rare occasions when it is the actual grammar rule – not the entire language concept – that is being referenced:
 
@@ -96,11 +100,14 @@ Different constructs with _expression_ and _call_:
 Appearance | LaTeX source | Comment
 --- | --- | ---
 `if`-expression | `\lstinline!if!-expression` | Generic language concept
-`Real` expression | `\lstinline!Real! expression` | An expression of type `Real`
+parameter-expression | `parameter-expression` | Expression with parameter variability
+`Real` expression | `\lstinline!Real! expression` | Expression of type `Real`
+array expression | `array expression` | Expression of array type
+record expression | `record expression` | Expression of record type
 `y` expression | `\lstinline!y! expression` | Expression for something named `y`
 `convertElement` call | `\lstinline!convertElement! call` | A call expression with callee `convertElement`
 
-In particular, avoid other constructs with _expression_ than the variants above.
+In particular, avoid other combinations of inline code and _expression_ than the variants above.
 For other needs, try to find a formulation not based on _expression_ to avoid misinterpretations according to the variants above.
 For example, instead of saying "… can be dependent on class variables using the `DynamicSelect` expression", just say "… can be dependent on class variables using `DynamicSelect`".
 
@@ -139,6 +146,7 @@ Incomplete list of various terminology with special formatting rules:
 Appearance | LaTeX source | Comment
 --- | --- | ---
 start value | `start value` | Value of the `start`-attribute (there could be exceptions!)
+connection equation | `connection equation` | Equation generated from analysis of `connect`-equations
 reduction expression | `reduction expression` |
 base class | `base class` | Similarly: derived class
 base-clock | `base-clock` | Similarly: sub-cock

@@ -20,6 +20,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 
 |Status|Number|Name|Link|
 |------|------|----|----|
+|Active|0039|Licensing and encryption|([MCP/0039](https://github.com/modelica/ModelicaSpecification/tree/MCP/0039/RationaleMCP/0039))|
 |Active|0038|Initialization of Clocked Partitions|([MCP/0038](https://github.com/modelica/ModelicaSpecification/tree/MCP/0038/RationaleMCP/0038))|
 |Active|0037|Generalized Modelica URIs|([MCP/0037](https://github.com/modelica/ModelicaSpecification/tree/MCP/0037/RationaleMCP/0037))|
 |Active|0036|Setting states|([MCP/0036](https://github.com/modelica/ModelicaSpecification/tree/MCP/0036/RationaleMCP/0036))|
