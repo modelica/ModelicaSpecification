@@ -1,14 +1,14 @@
 \chapter{Connectors and Connections}\label{connectors-and-connections}
 
-This chapter covers connectors, connect-equations, and connections.
+This chapter covers connectors, \lstinline!connect!-equations, and connections.
 
-Connectors and connect-equations are designed so that different components can be connected graphically
-with well-defined semantics. However, the graphical part is optional and found in \cref{annotations}.
+Connectors and \lstinline!connect!-equations are designed so that different components can be connected graphically with well-defined semantics.
+However, the graphical part is optional and found in \cref{annotations}.
 
 \section{Connect-Equations and Connectors}\label{connect-equations-and-connectors}
 
-Connections between objects are introduced by connect-equations in the equation part of a class.
-A connect-equation\index{connect@\robustinline{connect}!equation} has the following syntax:
+Connections between objects are introduced by \lstinline!connect!-equations in the equation part of a class.
+A \lstinline!connect!-equation\index{connect@\robustinline{connect}!equation} has the following syntax:
 \begin{lstlisting}[language=grammar]
 connect(component-reference, component-reference);
 \end{lstlisting}
@@ -17,7 +17,7 @@ connect(component-reference, component-reference);
 A \emph{connector} is an instance of a \lstinline!connector!\indexinline{connector} class.
 \end{nonnormative}
 
-The connect-equation construct takes two references to connectors, each of which is either of the following forms:
+The \lstinline!connect!-equation construct takes two references to connectors, each of which is either of the following forms:
 \begin{itemize}
 \item
   $c_1.c_2\ldots{}c_n$,
@@ -41,15 +41,15 @@ Array usage:
   connector InPort = input Real;
   connector OutPort = output Real;
   block MatrixGain
-    input InPort u[size(A,2)];
-    output OutPort y[size(A,1)];
-    parameter Real A[:,:] = [1];
+    input InPort u[size(A, 2)];
+    output OutPort y[size(A, 1)];
+    parameter Real A[:, :] = [1];
   equation
-    y=A*u;
+    y = A * u;
   end MatrixGain;
   Modelica.Blocks.Sources.Sine sinSource[5];
-  MatrixGain gain (A = 5*identity(5));
-  MatrixGain gain2(A = ones(2,5));
+  MatrixGain gain (A = 5 * identity(5));
+  MatrixGain gain2(A = ones(2, 5));
   OutPort x[2];
 equation
   connect(sinSource.y, gain.u); // Legal
@@ -63,16 +63,15 @@ The three main tasks are to:
 \item
   Elaborate expandable connectors.
 \item
-  Build connection sets from connect-equations.
+  Build connection sets from \lstinline!connect!-equations.
 \item
   Generate equations for the complete model.
 \end{itemize}
 
 \subsection{Connection Sets}\label{connection-sets}
 
-A connection set is a set of variables connected by means of
-connect-equations. A connection set shall contain either only flow
-variables or only non-flow variables.
+A connection set is a set of variables connected by means of \lstinline!connect!-equations.
+A connection set shall contain either only flow variables or only non-flow variables.
 
 \subsection{Inside and Outside Connectors}\label{inside-and-outside-connectors}
 
@@ -87,23 +86,21 @@ This is done before resolving \lstinline!outer! elements to corresponding \lstin
   \end{center}
   \caption{Example for inside and outside connectors.}
 \end{figure}
-The figure visualizes the following \lstinline!connect! equations to
-the connector \lstinline!c! in the models \lstinline!m!$i$. Consider the
-following \lstinline!connect! equations found in the model for component \lstinline!m0!:
+The figure visualizes the following \lstinline!connect!-equations to the connector \lstinline!c! in the models \lstinline!m!$i$.
+Consider the following \lstinline!connect!-equations found in the model for component \lstinline!m0!:
 \begin{lstlisting}[language=modelica]
 connect(m1.c, m3.c); // m1.c and m3.c are inside connectors
 connect(m2.c, m3.c); // m2.c and m3.c are inside connectors
 \end{lstlisting}
-and in the model for component \lstinline!m3! (\lstinline!c.x! is a sub-connector inside
-\lstinline!c!):
+and in the model for component \lstinline!m3! (\lstinline!c.x! is a sub-connector inside \lstinline!c!):
 \begin{lstlisting}[language=modelica]
-connect(c, m4.c); // c is an outside connector, m4.c is an inside connector
+connect(c, m4.c);   // c is an outside connector, m4.c is an inside connector
 connect(c.x, m5.c); // c.x is an outside connector, m5.c is an inside connector
-connect(c , d) ; // c is an outside  connector, d  is an outside connector
+connect(c, d);      // c is an outside connector, d is an outside connector
 \end{lstlisting}
 and in the model for component \lstinline!m6!:
 \begin{lstlisting}[language=modelica]
-connect(d, m7.c); // d is an outside connector, m7.c is an inside connector
+connect(d, m7.c);   // d is an outside connector, m7.c is an inside connector
 \end{lstlisting}
 \end{example}
 
@@ -112,18 +109,15 @@ connect(d, m7.c); // d is an outside connector, m7.c is an inside connector
 If the \lstinline!expandable!\indexinline{expandable} qualifier is present on a connector definition, all instances of that connector are referred to as \firstuse{expandable connectors}\index{expandable connector}.
 Instances of connectors that do not possess this qualifier will be referred to as \firstuse{non-expandable connectors}\index{non-expandable connector}.
 
-Before generating connection equations non-parameter scalar variables and non-parameter array elements declared in expandable connectors are marked as only being
-potentially present.  A non-parameter array element may be declared with array dimensions \lstinline!:! indicating that the size is unknown (note that the size of
-such a dimension cannot be determined using \lstinline!size!, see \cref{array-dimension-and-size-functions}).  This applies to both variables of simple types,
-and variables of structured types.
+Before generating \willintroduce{connection equations}, non-parameter scalar variables and non-parameter array elements declared in expandable connectors are marked as only being
+potentially present.
+A non-parameter array element may be declared with array dimensions \lstinline!:! indicating that the size is unknown (note that the size of such a dimension cannot be determined using \lstinline!size!, see \cref{array-dimension-and-size-functions}).
+This applies to both variables of simple types, and variables of structured types.
 
 Then connections containing expandable connectors are elaborated:
 \begin{itemize}
 \item
-  One connector in the connect equation must reference a declared
-  component, and if the other connector is an undeclared element in a
-  declared expandable connector it is handled as follows (elements that
-  are only potentially present are not seen as declared):
+  One connector in the \lstinline!connect!-equation must reference a declared component, and if the other connector is an undeclared element in a declared expandable connector it is handled as follows (elements that are only potentially present are not seen as declared):
   \begin{itemize}
   \item
     The expandable connector instance is automatically augmented with a
@@ -131,7 +125,7 @@ Then connections containing expandable connectors are elaborated:
   \item
     If the undeclared component is subscripted, an array variable is created, and a connection to the specific array element is performed.  Introducing elements in an array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e.\ as if they were only potentially present, and the same note regarding the use of \lstinline!size! also applies here).
   \item
-    If the variable on the other side of the connect-equation is \lstinline!input! or \lstinline!output! the new component will be either \lstinline!input! or \lstinline!output! to satisfy the restrictions in \cref{restrictions-of-connections-and-connectors} for a non-expandable connector.
+    If the variable on the other side of the \lstinline!connect!-equation is \lstinline!input! or \lstinline!output! the new component will be either \lstinline!input! or \lstinline!output! to satisfy the restrictions in \cref{restrictions-of-connections-and-connectors} for a non-expandable connector.
     \begin{nonnormative}
     If the existing side refers to an inside connector (i.e.\ a connector of a component) the new variable will copy its causality, i.e.\ \lstinline!input! if \lstinline!input! and \lstinline!output! if \lstinline!output!, since the expandable connector must be an outside connector.
     \end{nonnormative}
@@ -225,9 +219,8 @@ end Battery;
   expandable connectors can only be connected to other expandable connectors.
 \end{itemize}
 
-If a connect equation references a potentially present variable, or variable element, in an expandable connector the variable or variable element is marked as being present, and due to the
-paragraphs above it is possible to deduce whether the bus variable shall be treated as input, or shall be treated as output in the connect equation.  That \lstinline!input! or \lstinline!output!
-prefix is added if no \lstinline!input!/\lstinline!output! prefix is present on the declaration.
+If a \lstinline!connect!-equation references a potentially present variable, or variable element, in an expandable connector the variable or variable element is marked as being present, and due to the paragraphs above it is possible to deduce whether the bus variable shall be treated as input, or shall be treated as output in the \lstinline!connect!-equation.
+That \lstinline!input! or \lstinline!output! prefix is added if no \lstinline!input!/\lstinline!output! prefix is present on the declaration.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -372,10 +365,8 @@ CylinderBus cylinder_bus[4];
 
 \section{Generation of Connection Equations}\label{generation-of-connection-equations}
 
-When generating connection equations, \lstinline!outer! elements are resolved to the
-corresponding \lstinline!inner! elements in the instance hierarchy (see instance
-hierarchy name lookup \cref{instance-hierarchy-name-lookup-of-inner-declarations}). The arguments to each \lstinline!connect!-equation are
-resolved to two connector elements.
+When generating \firstuse{connection equations}\index{connection equations}, \lstinline!outer! elements are resolved to the corresponding \lstinline!inner! elements in the instance hierarchy (see instance hierarchy name lookup \cref{instance-hierarchy-name-lookup-of-inner-declarations}).
+The arguments to each \lstinline!connect!-equation are resolved to two connector elements.
 
 For every use of the \lstinline!connect!-equation
 \begin{lstlisting}[language=modelica]
@@ -388,18 +379,10 @@ one set.  Composite connector types are broken down into primitive components.  
 and the inside indication is not influenced.  The outer connectors are handled by mapping the objects to the corresponding inner connectors, and they are always treated as outside connectors.
 
 \begin{nonnormative}
-Rationale: The inside/outside as part of the connection sets
-ensure that connections from different hierarchical levels are treated
-separately. Connection sets are formed from the primitive elements and
-not from the connectors; this handles connections to parts of
-hierarchical connectors and also makes it easier to generate equations
-directly from the connection sets. All variables in one connection set
-will either be flow variables or non-flow variables due to restriction
-on connect-equations. The mapping from an \lstinline!outer! to an \lstinline!inner!
-element must occur before merging the sets in order to get one
-zero-sum equation, and ensures that the equations for the \lstinline!outer!
-elements are all given for one side of the connector, and the
-\lstinline!inner! element can define the other side.
+Rationale: The inside/outside as part of the connection sets ensure that connections from different hierarchical levels are treated separately.
+Connection sets are formed from the primitive elements and not from the connectors; this handles connections to parts of hierarchical connectors and also makes it easier to generate equations directly from the connection sets.
+All variables in one connection set will either be flow variables or non-flow variables due to restriction on \lstinline!connect!-equations.
+The mapping from an \lstinline!outer! to an \lstinline!inner! element must occur before merging the sets in order to get one zero-sum equation, and ensures that the equations for the \lstinline!outer! elements are all given for one side of the connector, and the \lstinline!inner! element can define the other side.
 \end{nonnormative}
 
 The following connection sets with just one member are also present (and
@@ -564,20 +547,18 @@ This corresponds to a direct connection of the resistor.
 
 \begin{itemize}
 \item
-  The connect-equations (and the special functions for overdetermined connectors) can only be used in equations, and shall not be used inside if-equations with conditions that are not parameter expressions, or in when-equations.
+  The \lstinline!connect!-equations (and the special functions for overdetermined connectors) can only be used in equations, and shall not be used inside \lstinline!if!-equations with conditions that are not parameter expressions, or in \lstinline!when!-equations.
   \begin{nonnormative}
-  For-equations always have parameter expressions for the array expression.
+  The \lstinline!for!-equations always have parameter expressions for the array expression.
   \end{nonnormative}
 \item
-  A connector component shall not be declared with the prefix \lstinline!parameter! or \lstinline!constant!.  In the connect-equation the primitive components may only connect parameter variables to parameter variables and constant variables to constant variables.
+  A connector component shall not be declared with the prefix \lstinline!parameter! or \lstinline!constant!.
+  In the \lstinline!connect!-equation the primitive components may only connect parameter variables to parameter variables and constant variables to constant variables.
 \item
-  The connect-equation construct only accepts forms of connector
-  references as specified in \cref{connect-equations-and-connectors}.
+  The \lstinline!connect!-equation construct only accepts forms of connector references as specified in \cref{connect-equations-and-connectors}.
 \item
-  In a connect-equation the two connectors must have the same named
-  component elements with the same dimensions; recursively down to the
-  primitive components. The primitive components with the same name are
-  matched and belong to the same connection set.
+  In a \lstinline!connect!-equation the two connectors must have the same named component elements with the same dimensions; recursively down to the primitive components.
+  The primitive components with the same name are matched and belong to the same connection set.
 \item
   The matched primitive components of the two connectors must have the same primitive types, and flow variables may only connect to other flow variables, stream variables only to other stream variables, and causal variables (\lstinline!input!/\lstinline!output!) only to causal variables (\lstinline!input!/\lstinline!output!).
 \item
@@ -618,7 +599,7 @@ covers the case where a connector of a component is left unconnected and the sou
   In a connection set all variables having non-empty quantity attribute
   must have the same quantity attribute.
 \item
-  A \lstinline!connect! equation shall not (directly or indirectly) connect two
+  A \lstinline!connect!-equation shall not (directly or indirectly) connect two
   connectors of \lstinline!outer! elements.
   \begin{nonnormative}
   Indirectly is similar to them being part of the same connection set.  However, connections to \lstinline!outer! elements are ``moved up'' before forming
@@ -628,9 +609,7 @@ covers the case where a connector of a component is left unconnected and the sou
   Subscripts in a connector reference shall be parameter expressions or
   the special operator \lstinline!:!.
 \item
-  Constants or parameters in connected components yield the appropriate
-  assert statements to check that they have the same value; connections
-  are not generated.
+  Constants or parameters in connected components yield the appropriate \lstinline!assert!-statements to check that they have the same value; connections are not generated.
 \item
   For conditional connectors, see \cref{conditional-component-declaration}.
 \end{itemize}
@@ -829,17 +808,10 @@ A connector that contains instances of overdetermined type and/or record classes
 An overdetermined type or record may neither have flow components nor may be used as a type of flow components.
 If an array is used as argument to any of the \lstinline!Connections.*! functions it is treated as one unit -- unlike \lstinline!connect!, there is no special treatment of this case, compare \cref{connect-equations-and-connectors}.
 
-Every instance of an overdetermined type or record in an overdetermined
-connector is a node in a virtual connection graph that is used to
-determine when the standard equation \lstinline!R1 = R2! or when the equation
-\lstinline!0 = equalityConstraint(R1, R2)! has to be used for the generation of
-\lstinline!connect! equations. The edges of the virtual connection graph are
-implicitly defined by \lstinline!connect! and explicitly by
-\lstinline!Connections.branch! statements, see table below. \lstinline!Connections! is a
-built-in package in global scope containing built-in operators.
-Additionally, corresponding nodes of the virtual connection graph have
-to be defined as roots or as potential roots with functions
-\lstinline!Connections.root! and \lstinline!Connections.potentialRoot!, respectively.
+Every instance of an overdetermined type or record in an overdetermined connector is a node in a virtual connection graph that is used to determine when the standard equation \lstinline!R1 = R2! or when the equation \lstinline!0 = equalityConstraint(R1, R2)! has to be used for the generation of \lstinline!connect!-equations.
+The edges of the virtual connection graph are implicitly defined by \lstinline!connect! and explicitly by \lstinline!Connections.branch!, see table below.
+\lstinline!Connections! is a built-in package in global scope containing built-in operators.
+Additionally, corresponding nodes of the virtual connection graph have to be defined as roots or as potential roots with functions \lstinline!Connections.root! and \lstinline!Connections.potentialRoot!, respectively.
 
 The overconstrained equation operators for connection graphs are listed below.  Here, \lstinline!A! and \lstinline!B! are connector instances that may be hierarchically structured, e.g., \lstinline!A! may be an abbreviation for \lstinline!EnginePort.Frame!.
 \begin{center}
@@ -874,13 +846,13 @@ Connections.branch(A.R, B.R)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Defines a \firstuse{required spanning-tree edge}\index{required spanning-tree edge} from the overdetermined type or record instance \lstinline!R! in connector instance \lstinline!A! to the corresponding overdetermined type or record instance \lstinline!R! in connector instance \lstinline!B! for a virtual connection graph.
-This function can be used at all places where a \lstinline!connect! statement is allowed.
+This function can be used at all places where a \lstinline!connect!-equation is allowed.
 
 \begin{nonnormative}
 % TODO: Can't have angle brackets and \emph in the same mathescape due to LaTeXML issue:
 % - https://github.com/brucemiller/LaTeXML/issues/1477
 % Once we cut the MathJax dependency, change to single mathescape for better character spacing.
-E.g., it is not allowed to use this function in a when-clause.
+E.g., it is not allowed to use this function in a \lstinline!when!-clause.
 This definition shall be used if in a model with connectors \lstinline!A! and \lstinline!B! the overdetermined records \lstinline!A.R! and \lstinline!B.R! are algebraically coupled in the model, e.g., due to \lstinline!B.R = f(A.R, $\langle$$\mbox{\emph{other unknowns}}$$\rangle$)!.
 \end{nonnormative}
 \end{semantics}
@@ -930,7 +902,7 @@ Connections.rooted(A.R)
 rooted(A.R) // deprecated!
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-If the operator \lstinline!Connections.rooted(A.R)! is used, or the equivalent but deprecated operator \lstinline!rooted(A.R)!, then there must be exactly one statement \lstinline!Connections.branch(A.R, B.R)! involving \lstinline!A.R! (the argument of \lstinline!Connections.rooted! must be the first argument of \lstinline!Connections.branch!).  In that case \lstinline!Connections.rooted(A.R)! returns true, if \lstinline!A.R! is closer to the root of the spanning tree than \lstinline!B.R!; otherwise false is returned.
+If the operator \lstinline!Connections.rooted(A.R)! is used, or the equivalent but deprecated operator \lstinline!rooted(A.R)!, then there must be exactly one \lstinline!Connections.branch(A.R, B.R)! involving \lstinline!A.R! (the argument of \lstinline!Connections.rooted! must be the first argument of \lstinline!Connections.branch!).  In that case \lstinline!Connections.rooted(A.R)! returns true, if \lstinline!A.R! is closer to the root of the spanning tree than \lstinline!B.R!; otherwise false is returned.
 
 \begin{nonnormative}
 This operator can be used to avoid equation systems by providing analytic inverses, see\linebreak[4] \lstinline!Modelica.Mechanics.MultiBody.Parts.FixedRotation!.
@@ -947,13 +919,11 @@ generate nodes and edges in the virtual graph for analysis purposes.
 
 \subsection{Converting the Connection Graph into Trees and Generating Connection Equations}\label{converting-the-connection-graph-into-trees-and-generating-connection-equations}
 
-Before \lstinline!connect! equations are generated, the virtual connection
-graph is transformed into a set of spanning trees by removing optional spanning tree edges
-from the graph. This is performed in the following way:
+Before connection equations are generated, the virtual connection graph is transformed into a set of spanning trees by removing optional spanning tree edges from the graph.
+This is performed in the following way:
 \begin{enumerate}
 \item
-  Every root node defined via the \lstinline!Connections.root! statement is
-  a definite root of one spanning tree.
+  Every root node defined via the \lstinline!Connections.root!-equation is a definite root of one spanning tree.
 \item
   The virtual connection graph may consist of sets of subgraphs that are
   not connected together. Every subgraph in this set shall have at least
@@ -969,19 +939,13 @@ from the graph. This is performed in the following way:
   trees with the selected root nodes as roots.
 \end{enumerate}
 
-After this analysis, the connection equations are generated in the
-following way:
+After this analysis, the \firstuse{connection equations}\index{connection equations!overconstrained} are generated in the following way:
 \begin{enumerate}
 \item
-  For every optional spanning-tree edge (i.e., a \lstinline!connect(A, B)!
-  equation), in one of the spanning trees, the connection
-  equations are generated according to \cref{generation-of-connection-equations}.
+  For every optional spanning-tree edge (i.e., a \lstinline!connect(A, B)! equation), in one of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}.
 \item
-  For every optional spanning-tree edge not in any of the spanning trees, the
-  connection equations are generated according to \cref{generation-of-connection-equations}, except
-  for overdetermined type or record instances R. Here the equations
-  \lstinline!0 = R.equalityConstraint(A.R, B.R)! are generated instead
-  of \lstinline!A.R = B.R!.
+  For every optional spanning-tree edge not in any of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}, except for overdetermined type or record instances \lstinline!R!.
+  Here the equations \lstinline!0 = R.equalityConstraint(A.R, B.R)! are generated instead of \lstinline!A.R = B.R!.
 \end{enumerate}
 
 \subsection{Examples of Overconstrained Connection Graphs}\label{examples-of-overconstrained-connection-graphs}
@@ -1041,9 +1005,9 @@ equation
   Connections.branch(p.theta,n.theta); //edge in virtual graph
   // since n.theta = p.theta
   n.theta = p.theta; // pass angle theta between plugs
-  omega = der (p.theta); // frequency of source
+  omega = der(p.theta); // frequency of source
   zeros(3) = p.i + n.i;
-  X*der (p.i) + omega*Y*p.i = p.v - n.v;
+  X*der(p.i) + omega*Y*p.i = p.v - n.v;
 end AC_Inductor
 \end{lstlisting}
 At the place where the source frequency, i.e., essentially
@@ -1067,7 +1031,7 @@ may be defined as:
 \begin{lstlisting}[language=modelica]
 type TransformationMatrix = Real[3,3];
 type Orientation "Orientation from frame 1 to frame 2"
-  extendsTransformationMatrix;
+  extends TransformationMatrix;
   function equalityConstraint
     input Orientation R1 "Rotation from inertial frame to frame 1";
     input Orientation R2 "Rotation from inertial frame to frame 2";
