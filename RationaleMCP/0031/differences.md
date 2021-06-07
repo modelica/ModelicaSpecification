@@ -632,7 +632,7 @@ TODO: If we proceed with the design where `start` is no longer a type attribute,
 
 ### Syntactic sugars
 
-For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` are allowed as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Flat Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
+For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Flat Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
 
 Setting `fixed = true` on the variable `'x'` is syntactic sugar for having:
 ```
