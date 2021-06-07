@@ -10,7 +10,7 @@ RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirro
  && REMOTE="http://mirror.ctan.org/systems/texlive/tlnet" \
  && INSTALL="/tmp/install-texlive" \
  && mkdir -p $INSTALL \
- && echo "export PATH=$PATH:/usr/local/texlive/2018/bin" >> /etc/environment \
+ && echo "export PATH=$PATH:/usr/local/texlive/2020/bin" >> /etc/environment \
  && curl -sSL $REMOTE/install-tl-unx.tar.gz | tar -xzv -C $INSTALL --strip-components=1 \
  && echo selected_scheme scheme-basic > texlive.profile \
  && echo TEXDIR /usr/local/texlive/ >> texlive.profile \
@@ -23,9 +23,9 @@ RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirro
  && $INSTALL/install-tl --profile texlive.profile \
  && rm texlive.profile \
  && tlmgr update --self --all --reinstall-forcibly-removed \
- && tlmgr install latexmk listings xcolor float multirow tocloft parskip etoolbox \
+ && tlmgr install latexmk listings caption cleveref xcolor float multirow tocloft parskip etoolbox index biblatex biber newtxtt \
  && cpanm JSON \
- && cpanm --notest https://github.com/HansOlsson/LaTeXML.git@UseLabel \
+ && cpanm LaTeXML \
  && apt-get autoremove -qy make gcc curl wget git cpanminus libxml2-dev libxslt-dev \
  && latexmk --version \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/ /root/.cpanm/work*
