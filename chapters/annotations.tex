@@ -158,7 +158,7 @@ record Axis
 end Axis;
 \end{lstlisting}
 
-When an axis bound isn't provided, the tool computes one automatically.
+When an axis bound is not provided, the tool computes one automatically.
 
 An empty \lstinline!unit! means that the axis is unitless, and each expression plotted against it may use its own unit determined by the tool.  The tool is responsible for conveying the information
 about choice of unit for the different variables, for instance by attaching this information to curve legends.
@@ -172,7 +172,7 @@ user, on the other hand, a tool may choose a unit for the variable such that the
 
 If a tool does not recognize the \lstinline!unit!, it is recommended to issue a warning and treat the \lstinline!unit! as if it was empty, as well as ignore any setting for \lstinline!min! and \lstinline!max!.
 
-When \lstinline!label! isn't provided, the tool produces a default label.
+When \lstinline!label! is not provided, the tool produces a default label.
 Providing the empty string as \lstinline!label! means that no label should be shown.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!label!.
 The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis \lstinline!label! shall not contain the unit.
@@ -192,7 +192,7 @@ The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be c
 It is an error if \lstinline!x! or \lstinline!y! does not designate a scalar variable.
 When the \lstinline!unit! of an \lstinline!Axis! is non-empty, it is an error if the unit of the corresponding \lstinline!x! or \lstinline!y! expression (i.e., a variable's \lstinline!unit!, or second for \lstinline!time!) is incompatible with the axis unit.
 
-When \lstinline!legend! isn't provided, the tool produces a default based on \lstinline!x! and/or \lstinline!y!.
+When \lstinline!legend! is not provided, the tool produces a default based on \lstinline!x! and/or \lstinline!y!.
 Providing the empty string as \lstinline!legend! means that the curve shall be omitted from the plot legend.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!legend!.
 
@@ -331,9 +331,9 @@ One application of vendor-specific markup is to prototype a feature that can lat
 In a similar way, vendor-specific markup can be used to prototype a link for future inclusion in the link markup (either by extending the meaning of Modelica URIs, or by introducing another pseudo-scheme similar to \lstinline!variable:!).  This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
 \end{example}
 
-\section{Annotations for Code Generation}\label{annotations-for-code-generation}
+\section{Annotations for Symbolic Processing}\label{annotations-for-symbolic-processing}
 
-The annotations listed below, appearing directly inside \lstinline!annotation($\ldots$)!, can influence the code generation.
+The annotation listed below, in addition to annotations described in \crefrange{derivatives-and-inverses-of-functions}{function-inlining-and-event-generation}, can influence the symbolic processing.
 \begin{center}
 \begin{tabular}{l|l l}
 \hline
@@ -341,12 +341,6 @@ The annotations listed below, appearing directly inside \lstinline!annotation($\
 \hline
 \hline
 \lstinline!Evaluate! & Use parameter value for symbolic processing & \Cref{modelica:Evaluate}\\
-\lstinline!HideResult! & Don't show component's simulator result & \Cref{modelica:HideResult}\\
-\lstinline!Inline! & Inline function & \Cref{modelica:Inline}\\
-\lstinline!LateInline! & Inline after all symbolic transformations & \Cref{modelica:LateInline}\\
-\lstinline!InlineAfterIndexReduction! & Inline after index reduction & \Cref{modelica:InlineAfterIndexReduction}\\
-\lstinline!GenerateEvents! & Generate events for zero crossings in function & \Cref{modelica:GenerateEvents}\\
-\lstinline!smoothOrder! & Function smoothness guarantee & \Cref{modelica:smoothOrder}\\
 \hline
 \end{tabular}
 \end{center}
@@ -371,6 +365,41 @@ If \lstinline!Evaluate = false!, the model developer proposes to not utilize the
 \end{semantics}
 \end{annotationdefinition}
 
+
+\section{Annotations for Simulations}\label{annotations-for-simulations}
+
+The annotations listed below define how models can be checked, translated, and simulated.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!experiment! & Simulation experiment settings & \Cref{modelica:experiment}\\
+\lstinline!HideResult! & Don't show component's simulator result & \Cref{modelica:HideResult}\\
+\lstinline!TestCase! & Information for model used as test case & \Cref{modelica:TestCase}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[experiment]
+% henrikt-ma 2021-04: Seems strange to allow 'experiment' completely without list of options -- what would it mean?
+\begin{synopsis}[grammar]\begin{lstlisting}
+"experiment"
+   [ "(" [ experimentOption { "," experimentOption } ] ")" ]
+
+experimentOption:
+   "StartTime" "=" [ "+" | "-" ] UNSIGNED-NUMBER
+   | "StopTime" "=" [ "+" | "-" ] UNSIGNED-NUMBER
+   | "Interval" "=" UNSIGNED-NUMBER
+   | "Tolerance" "=" UNSIGNED-NUMBER
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The \lstinline{experiment} annotation defines the default start time (\lstinline!StartTime!) in {[}s{]}, the default stop time (\lstinline!StopTime!) in {[}s{]}, the suitable time resolution for the result grid (\lstinline!Interval!) in {[}s{]}, and the default relative integration tolerance (\lstinline!Tolerance!) for simulation experiments to be carried out with the model or block at hand.
+If \lstinline!StartTime! is not specified it is assumed to be \lstinline!0.0!.
+\end{semantics}
+\end{annotationdefinition}
+
 \begin{annotationdefinition}[HideResult]
 \begin{synopsis}[grammar]\begin{lstlisting}
 "HideResult" "=" ( false | true )
@@ -388,136 +417,25 @@ For example, a tool is not expected to provide means to plot a variable with \ls
 \end{semantics}
 \end{annotationdefinition}
 
-\begin{annotationdefinition}[Inline]
+\begin{annotationdefinition}[TestCase]
 \begin{synopsis}[grammar]\begin{lstlisting}
-"Inline" "=" ( false | true )
+"TestCase" "(" "shouldPass" "=" ( false | true ) ")"
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Has only an effect within a function declaration.
-
-If \lstinline!Inline = true!, the model developer proposes to inline the function.  This means, that the body of the function is included at all places where the function is called.
-
-If \lstinline!Inline = false!, the model developer proposes to not inline the function.
-
-\begin{nonnormative}
-\lstinline!Inline = true! is for example used in \lstinline!Modelica.Mechanics.MultiBody.Frames! and in functions of \lstinline!Modelica.Media! to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
-\end{nonnormative}
-\end{semantics}
-\end{annotationdefinition}
-
-\begin{annotationdefinition}[LateInline]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"LateInline" "=" ( false | true )
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-Has only an effect within a function declaration.
-
-If \lstinline!LateInline = true!, the model developer proposes to inline the function after all symbolic transformations have been performed.
-
-\begin{nonnormative}
-Late inlining is especially useful for differentiation and inversion of functions; for efficiency reasons it is then useful to replace all function calls with identical input arguments by one function call, before the inlining.
-\end{nonnormative}
-
-If \lstinline!LateInline = false!, the model developer proposes to not inline the function after symbolic transformations have been performed.
-
-\lstinline!Inline = true, LateInline = false! is identical to \lstinline!Inline = true!.
-
-\lstinline!Inline = true, LateInline = true! is identical to \lstinline!LateInline = true!.
-
-\lstinline!Inline = false, LateInline = true! is identical to \lstinline!LateInline = true!.
-
-\begin{nonnormative}
-This annotation is for example used in \lstinline!Modelica.Media.Water.IF97_Utilities.T_props_ph! to provide in combination with common subexpression elimination the automatic caching of function calls.  Furthermore, it is used in order that a tool is able to propagate specific enthalpy over connectors in the \lstinline!Modelica.Fluid! library.
-\end{nonnormative}
-\end{semantics}
-\end{annotationdefinition}
-
-\begin{annotationdefinition}[InlineAfterIndexReduction]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"InlineAfterIndexReduction" "=" ( false | true )
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-Has only an effect within a function declaration.
-
-If \lstinline!true!, the model developer proposes to inline the function after the function is differentiated for index reduction, and before any other symbolic transformations are performed.  This annotation cannot be combined with annotations \lstinline!Inline! and \lstinline!LateInline!.
-\end{semantics}
-\end{annotationdefinition}
-
-\begin{annotationdefinition}[GenerateEvents]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"GenerateEvents" "=" ( false | true )
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-Has only an effect within a function declaration
-
-If \lstinline!GenerateEvents = true!, the model developer proposes that crossing functions in the function should generate events (one possibility of doing this is to inline the function and generate events for the inlined function).
-
-\end{semantics}
-\end{annotationdefinition}
-
-\begin{annotationdefinition}[smoothOrder]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"smoothOrder" "=" UNSIGNED-NUMBER ")"
-"smoothOrder" "(" "normallyConstant" "=" IDENT
-            { "," "normallyConstant" "=" IDENT } ")" "=" UNSIGNED-NUMBER ")"
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-This annotation has only an effect within a function declaration.
-
-\lstinline!smoothOrder! defines the number of differentiations of the function, in order that all of the differentiated outputs are continuous provided all input arguments and their derivatives up to order \lstinline!smoothOrder! are continuous.
-
-\begin{nonnormative}
-This means that the function is at least C\textsuperscript{smoothOrder}.  \lstinline!smoothOrder = 1! means that the function can be differentiated at least once in order that all output arguments are still continuous, provided the input arguments are continuous.  If a tool needs the derivative of a function, e.g.\ for index reduction or to compute an analytic Jacobian, the function can be differentiated analytically at least \lstinline!smoothOrder! times.
-\end{nonnormative}
-
-The optional argument \lstinline!normallyConstant! of \lstinline!smoothOrder! defines that the function argument \lstinline!IDENT! is usually constant.
-
-\begin{nonnormative}
-A tool might check whether the actual argument to \lstinline!IDENT! is a parameter expression at the place where the function is called.  If this is the case, the derivative of the function might be constructed under the assumption that the corresponding argument is constant, to enhance efficiency.  Typically, a tool would generate at most two different derivative functions of a function: One, under the assumption that all \lstinline!normallyConstant! arguments are actually constant.  And one, under the assumption that all input arguments are time varying.  Based on the actual arguments of the function call either of the two derivative functions is used.
-
-This annotation is used by many functions of the \lstinline!Modelica.Fluid! library, such as\linebreak[4] \lstinline!Modelica.Fluid.Dissipation.PressureLoss.StraightPipe.dp_laminar_DP!, since geometric arguments to these functions are usually constant.
-\end{nonnormative}
-\end{semantics}
-\end{annotationdefinition}
-
-\section{Annotations for Simulations}\label{annotations-for-simulations}
-
-These annotations define how models can be checked, translated, and simulated.
-
-\subsection{Annotations for Simulation Experiments}\label{annotations-for-simulation-experiments}
-
-\begin{lstlisting}[language=grammar]
-experiment-annotation:
-   annotation "(" "experiment" [ "(" [experimentOption
-      {"," experimentOption}] ")" ] ")"
-
-experimentOption:
-  "StartTime" "=" [ "+" | "-" ] UNSIGNED-NUMBER |
-  "StopTime"  "=" [ "+"  | "-"] UNSIGNED-NUMBER |
-  "Interval" "=" UNSIGNED-NUMBER |
-  "Tolerance" "=" UNSIGNED-NUMBER
-\end{lstlisting}
-
-The \fmtannotationindex{experiment} annotation defines the default start time (\lstinline!StartTime!) in {[}s{]}, the default stop time (\lstinline!StopTime!) in {[}s{]}, the suitable time resolution for the result grid (\lstinline!Interval!) in {[}s{]}, and the default relative integration tolerance (\lstinline!Tolerance!) for simulation experiments to be carried out with the model or block at hand.
-If \lstinline!StartTime! is not specified it is assumed to be \lstinline!0.0!.
-
-\subsection{Annotation for Test Cases}\label{annotation-for-test-cases}
-
-\begin{lstlisting}[language=grammar]
-testcase-annotation:
-   annotation "(" "TestCase" "(" "shouldPass" "=" ( false | true ) ")" ")"
-\end{lstlisting}%
-\annotationindex{TestCase}
 If \lstinline!shouldPass! is \lstinline!false! it indicates that the translation or the simulation of the model should fail.
 If a tools checks a package where classes have \lstinline!shouldPass = false! they should not generate errors, and checking may even be skipped.
 On the other hand, models with \lstinline!shouldPass = false! may be useful for creation of negative tests in tool-specific ways.
 Similarly as a class with obsolete-annotation, a class with \lstinline!TestCase! annotation (regardless of the value of \lstinline!shouldPass!) shall not be used in other models, unless those models also have a \lstinline!TestCase! annotation.
+
 \begin{nonnormative}
 The intent of the test-case can be included in the documentation of the class.
 This annotation can both be used for models intended as test-cases for implementations, and for models explaining detectable errors.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\section{Annotation for single use of class}\label{annotation-for-single-use-of-class}
+
+\section{Annotation for Single Use of Class}\label{annotation-for-single-use-of-class}
 
 For state machines it is useful to have single instances of local classes.
 This can be done using:
@@ -527,6 +445,7 @@ annotation(singleInstance = true)
 
 The annotation \fmtannotationindex{singleInstance} in a class indicates that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
+
 
 \section{Annotations for Graphical Objects}\label{annotations-for-graphical-objects}
 
@@ -2238,25 +2157,12 @@ end MyLibraryAuthorization_Tool;
 \end{lstlisting}
 \end{example}
 
+
 \section{Annotations for Functions}\label{annotations-for-functions}
 
-\subsection{Function Derivative Annotations}\label{function-derivative-annotations}
+See \crefnameref{derivatives-and-inverses-of-functions}, \crefnameref{function-inlining-and-event-generation}, and \crefnameref{annotations-for-external-libraries-and-include-files}.
 
-See \cref{using-the-derivative-annotation}
-
-\subsection{Inverse Function Annotation}\label{inverse-function-annotation}
-
-See \cref{declaring-inverses-of-functions}.
-
-\subsection{External Function Annotations}\label{external-function-annotations}
-
-See \cref{annotations-for-external-libraries-and-include-files}.
 
 \section{Annotation Choices for Modifications and Redeclarations}\label{annotation-choices-for-modifications-and-redeclarations}
 
-See \cref{annotation-choices-for-suggested-redeclarations-and-modifications}.
-
-\section{Annotation for External Libraries and Include Files}\label{annotation-for-external-libraries-and-include-files}
-
-% Isn't this section silly considering that the same link was given above under "External Function Annotations"?
-See \cref{annotations-for-external-libraries-and-include-files}.
+See \crefnameref{annotation-choices-for-suggested-redeclarations-and-modifications}.
