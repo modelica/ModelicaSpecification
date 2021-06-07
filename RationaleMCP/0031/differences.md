@@ -626,6 +626,22 @@ initial equation
   'x' = 0.0; /* Wrong: No way to override after translation. */
 ```
 
+#### Arrays with `each` modification of `fixed`
+
+Nothing special is needed when a full Modelica array has a homogeneous modificaiton of `fixed` using `each`.  The modification `each fixed = false` doesn't turn into anything in Flat Modelica, while `each fixed = true` turns into an array equation.
+
+For example, the full Modelica
+```
+  Real[3] x(each fixed = true, start = {1.1, 1.2, 1.3});
+```
+is translated to the Flat Modelica
+```
+  Real[3] 'x';
+  parameter equation guess('x') = {1.1, 1.2, 1.3}); /* From non-final modification of start in full Modelica. */
+initial equation
+  'x' = guess('x'); /* Array equation from each fixed = true in full Modelica. */
+```
+
 #### Arrays with heterogeneous modification of `fixed`
 
 Nothing special is needed to handle arrays with heterogeneous modification of `fixed`.  For example, the full Modelica
