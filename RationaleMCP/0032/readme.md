@@ -146,7 +146,7 @@ The available versions are:
 1. **Version 0.1.0** for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1 and using tool-vendor specific annotations for deselection.
 2. **Version 0.2.0** for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 and using tool-vendor specific annotations for deselection (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as in version 0.1.0).
 3. **Version 0.3.0** for _Dymola 2021_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0. This version uses the correct syntax instead of vendor specific annotations and serves as a reference test case (besides syntax changes, the provided examples are still the ones of versions 0.1.0 and 0.2.0).
-4. **Version 0.4.0** for _Dymola 2022x_ and based on `Modelica` 3.2.3 only `Modelica_Synchronous` 0.93.0. This version adds unit-tests for correct and incorrect examples of advanced and corner case selective model extensions.
+4. **Version 0.4.0** for _Dymola 2022x_ and based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0. This version adds unit-tests for correct and incorrect examples of advanced and corner case selective model extensions.
 
 ## Revisions
 
