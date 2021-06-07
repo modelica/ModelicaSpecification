@@ -456,7 +456,7 @@ initial equation
 
 #### Arrays and records
 
-For arrays, full Modelica modification of `start` with `each` will be described below (**TODO**).  Here is a simple example without `each`:
+For arrays, full Modelica modification of `start` with `each` will be described below.  Here is a simple example without `each`:
 ```
   Real[3] 'x';
   parameter equation guess('x') = fill(1.5, 3);
