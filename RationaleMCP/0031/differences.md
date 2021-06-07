@@ -637,7 +637,7 @@ For example, the full Modelica
 is translated to the Flat Modelica
 ```
   Real[3] 'x';
-  parameter equation guess('x') = {1.1, 1.2, 1.3}); /* From non-final modification of start in full Modelica. */
+  parameter equation guess('x') = {1.1, 1.2, 1.3}; /* From non-final modification of start in full Modelica. */
 initial equation
   'x' = guess('x'); /* Array equation from each fixed = true in full Modelica. */
 ```
