@@ -626,6 +626,22 @@ initial equation
   'x' = 0.0; /* Wrong: No way to override after translation. */
 ```
 
+#### Arrays with heterogeneous modification of `fixed`
+
+Nothing special is needed to handle arrays with heterogeneous modification of `fixed`.  For example, the full Modelica
+```
+Real[3] x(each start = 1.0, fixed = {true, false, true});
+```
+is translated to the Flat Modelica
+```
+  Real[3] 'x';
+  parameter equation guess('x') = fill(1.0, 3);
+initial equation
+  'x'[1] = guess('x'[1]);
+  'x'[3] = guess('x'[3]);
+```
+
+
 ### The `nominal` attribute
 
 TODO: If we proceed with the design where `start` is no longer a type attribute, we should probably deal with `nominal` similarly, so that we get rid of all non-constant type attributes (`nominal` currently has parameter variability, but there are also applications where a time-varying `nominal` would be useful).
