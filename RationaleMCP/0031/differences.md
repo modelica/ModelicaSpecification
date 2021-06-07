@@ -657,6 +657,57 @@ initial equation
   'x'[3] = guess('x'[3]);
 ```
 
+### Guess value prioritization
+
+To feature-match the other proposal for modeling initialization in Flat Modelica, this is a short description of possible strategies that could be used to describe prioritization of guess values.  This is needed when a tool needs to decide which guess value to use/respect in case there are multiple possibilities.
+
+In full Modelica, the prioritization is based on the depth at which the `start` modification was made, seen from the top of the simulation model.  In Flat Modelica, the hierarchical structure of the model has been removed, so all guess values are defined at the same depth, and the prioritization needs to be provided separately.
+
+For guess value prioritization, it doesn't matter whether the guess value is set using a parameter equation or using an initial equation, so the mechanim to describe prioritization must work in both cases.  Further, it seems desirable to keep the priority close to the specification of the guess value itself.
+
+One idea would be to extend the `guess` syntax to take an optional priority as second argument.  The two argument form would only be allowed once for any component reference, and only be allowed where the guess value parameter can be solved.  (That is, in the first system of equations where the guess value parameter after sorting the equations of the initialization problem.  This requirement is only meant to make models more readable; techincally it would work just as well to allow the priority to be specified at any of the `guess` expressions)  A parameter equation would be a special case of where the guess value parameter can be solved.
+
+Examples:
+```
+  parameter equation guess('x', 8) = 1.0; /* Guess value priority for 'x' is 8. */
+  parameter equation guess('arr', 5) = fill(1.0, 3); /* Guess value priority for all elements of the array 'arr' is 5. */
+initial equation
+  guess('y', 7) = 1.5; /* Guess value priority for 'y' is 7. */
+  'z' = guess('y'); /* Use 1 argument form except where priority is specified.  */
+```
+
+The above syntax works well for homogeneous priorities, which will be the case for the arrays coming from current full Modelica, but not for records.  For example, here `r.b` has higher priority than `r.a`:
+```
+model M
+  record R
+    Real a(start = 1.1);
+    Real b(start = 1.2);
+  end R;
+  R r(b(start = 1.3));
+end M;
+```
+
+The basic way of dealing with the two different priorities would be to use two separate equations:
+```
+parameter equation guess('r'.'a', 1) = 1.1;
+parameter equation guess('r'.'b', 0) = 1.3;
+```
+
+If one would like to avoid splitting into scalar equations, variants that come to mind include:
+```
+parameter equation guess('r', 'R'(1, 0)) = 'R'(1.1, 1.3);
+```
+and
+```
+parameter equation guess('r') = 'R'(guessPriority(1.1, 1), guessPriority(1.1, 0));
+```
+
+The two designs come with different advantages over one another:
+- `guess('r', 'R'(1, 0))` doesn't require the right hand side to be splittable into scalar record members.
+- `guess('r', 'R'(1, 0))` works well also in initial equations that are not in solved form.
+- `guess('r', 'R'(1, 0))` keeps the priority close to the variable it prioritizes.
+- `guessPriority(1.1, 1)` doesn't require the funny `'R'(1, 0)` which is a record with only guess value priorities instead of the normal contents of the record `'R'`.
+- `guessPriority(1.1, 1)` keeps the priority close the expression it prioritizes.
 
 ### The `nominal` attribute
 
