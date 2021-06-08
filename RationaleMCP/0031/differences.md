@@ -654,7 +654,7 @@ is translated to the Flat Modelica
   parameter equation guess('x') = fill(1.0, 3);
 initial equation
   'x'[1] = guess('x'[1]);
-  'x'[3] = guess('x'[3]);
+  'x'[3] = guess('x')[3]; /* One can also apply guess to the entire 'x'. */
 ```
 
 ### Guess value prioritization
