@@ -699,13 +699,26 @@ parameter equation guess('r', 'R'(1, 0)) = 'R'(1.1, 1.3);
 ```
 and
 ```
-parameter equation guess('r') = 'R'(guessPriority(1.1, 1), guessPriority(1.1, 0));
+parameter equation guess('r') = 'R'(guessPriority(1.1, 1), guessPriority(1.3, 0));
 ```
 
-Some details about the two argument `guess` variant:
-- Arrays have homogeneous prirority, represented by a single element (which could be a record).
-- If all members of a record have the same priority, the record constructor call can be replaced by a single value.
-- The record constructor names only for clarity, they are redundant and implementations just need to verify that they correspond to the expected structure.
+In case all record members have the same priority:
+```
+parameter equation guess('r', 5) = 'R'(1.1, 1.3);
+```
+and
+```
+parameter equation guess('r') = guessPriority('R'(1.1, 1.3, 0), 5);
+```
+
+For now, arrays are assumed to always have homogenous guess value priority, represented by a single element:
+```
+parameter equation guess('arr', 5) = {1.1, 1.2, 1.3};
+```
+and
+```
+parameter equation guess('arr') = guessPriority({1.1, 1.2, 1.3}, 5);
+```
 
 The two designs come with different advantages over one another:
 - `guess('r', 'R'(1, 0))` doesn't require the right hand side to be splittable into scalar record members.
