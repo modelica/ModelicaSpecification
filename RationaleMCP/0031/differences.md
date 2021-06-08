@@ -702,11 +702,15 @@ and
 parameter equation guess('r') = 'R'(guessPriority(1.1, 1), guessPriority(1.1, 0));
 ```
 
+Some details about the two argument `guess` variant:
+- Arrays have homogeneous prirority, represented by a single element (which could be a record).
+- If all members of a record have the same priority, the record constructor call can be replaced by a single value.
+- The record constructor names only for clarity, they are redundant and implementations just need to verify that they correspond to the expected structure.
+
 The two designs come with different advantages over one another:
 - `guess('r', 'R'(1, 0))` doesn't require the right hand side to be splittable into scalar record members.
 - `guess('r', 'R'(1, 0))` works well also in initial equations that are not in solved form.
 - `guess('r', 'R'(1, 0))` keeps the priority close to the variable it prioritizes.
-- `guess('r', 'R'(1, 0))` has the record constructor names only for clarity, they are redundant and implementations just need to verify that they correspond to the expected structure.
 - `guessPriority(1.1, 1)` doesn't require the funny `'R'(1, 0)` which is a record with only guess value priorities instead of the normal contents of the record `'R'`.
 - `guessPriority(1.1, 1)` keeps the priority close the expression it prioritizes.
 
