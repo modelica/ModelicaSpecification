@@ -727,6 +727,31 @@ The two designs come with different advantages over one another:
 - `guessPriority(1.1, 1)` doesn't require the funny `'R'(1, 0)` which is a record with only guess value priorities instead of the normal contents of the record `'R'`.
 - `guessPriority(1.1, 1)` keeps the priority close the expression it prioritizes.
 
+In the second argument of `guess`, the record constructor names are often redundant, but are sometimes needed to figure out at what level all record members have equal priority:
+```
+model 'M'
+  record 'R'
+    Real 'x';
+    Real 'y';
+  end 'R';
+  record 'S'
+    'R' 'a';
+    'R' 'b';
+  end 'S';
+  'S' 's1';
+  'S' 's2';
+
+  /* The following two are equivalent: */
+  parameter equation guess('s1', 'S'(3, 4)) = …;
+  parameter equation guess('s1', 'S'('R'(3, 3), 'R'(4, 4))) = …;
+
+  /* The following two are equivalent: */
+  parameter equation guess('s2', 'R'(3, 4)) = …;
+  parameter equation guess('s1', 'S'('R'(3, 4), 'R'(3, 4))) = …;
+
+end 'M';
+```
+
 ### The `nominal` attribute
 
 TODO: If we proceed with the design where `start` is no longer a type attribute, we should probably deal with `nominal` similarly, so that we get rid of all non-constant type attributes (`nominal` currently has parameter variability, but there are also applications where a time-varying `nominal` would be useful).
