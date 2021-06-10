@@ -77,7 +77,7 @@ Even though the use of option types could be restricted to `Boolean` to start wi
 Another advantage of introducing option types instead of `Ternary` would be that it would probably be acceptable to say that no option type can be used for indexing into arrays.  This would simplify parts of the implementation compared to `Ternary`.
 
 However, these are some reasons for sticking with `Ternary` instead of `Boolean?`:
-- If the usual ternary logic according to Kleene is what we want — which is the assumption of this MCP — the use of `Boolean?` for would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
+- If the usual ternary logic according to Kleene is what we want — which is the assumption of this MCP — the use of `Boolean?` would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
 - Introducing the literal `none` to refer to the absence of a value for an option type leads to a significant change of the Modelica type system, as `none` can have any option type.  Even if type inference would be implemented, there would be problems when it comes to implicit conversions (see above).
 - Explicitly writting out the type of a _none_ as in `Boolean?()` would be inconvenient compared to just saying `unknown`.  (However, it would then be natural to define implicit conversion to any option type.)
 - Attributes of other type than `Boolean` typically have a default behavior that can be expressed with a default value (like the empty string in case of `String`), removing the need for an option type to express the absence of a value.
