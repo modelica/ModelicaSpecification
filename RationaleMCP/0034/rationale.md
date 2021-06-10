@@ -42,7 +42,7 @@ The implicit conversion from `Boolean` to `Ternary` would be very similar to the
 ## Conversion to Boolean
 
 ### Ternary operations resulting in Boolean
-Instead of introducing conversion constructs, there are some operations on `Ternary` that can be used to express exactly what should map to `false` and what should map to `true`.  For example, `unknown == true` is defined as `true`, not `unknown`.
+Instead of introducing conversion constructs, there are some operations on `Ternary` that can be used to express exactly what should map to `false` and what should map to `true`.  For example, `unknown == true` is defined as `false`, not `unknown`.
 
 ### No implicit conversion
 To not have implicit conversion from `Ternary` to `Boolean` (such as defining the meaning of `Boolean(t)` where `t` is a `Ternary`) means that the user will always have to make an explicit choice of how to interpret a `Ternary` where a `Boolean` is required, for example in `if` conditions.  There will be no surprises of _unknown_ being treated as either `true` or `false` instead of being reported as an error.
