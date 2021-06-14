@@ -13,7 +13,7 @@ In the discussion in #302 it was decided to provide the translation externally o
 # Revisions
 | Date | Description |
 | --- | --- |
-| 2020-02-27 | Anett Kloß: Prepared document based on ticket #302 |
+| 2021-06-14 | Anett Kloß: Prepared document based on ticket #302 |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -25,17 +25,27 @@ Why should this feature be included?
 * A new translation is additionally a review of the current state and can result in a better quality of both language versions.
 * Users can even write their own translation, when having a template *.pot-File for the library. 
 
-Provide at minimum two use cases for your proposal that show how it is applied. 
-* POT-File of current MSL library --> this translation template is provided by ESI and filled for the Hydraulics Pump ... 
-(*add picture*)
-* example from Thomas Beutlich with several names in tab and group and its translation files pot and po and a picture of the result
+Use case for your proposal that show how it is applied. 
+* POT-File of current MSL 4.0 library --> this translation template is provided by ESI and filled for the Hydraulics Pump ... 
+(*add pictures*)
 
 *For each use case state how it could be implemented by current Modelica at best and why the current Modelica does not suffice for this application.*
 
-Proposed Changes in Specification: 
-* Where shall the translation file be stored (Subfolder Language in the Resources Folder)
-* How does a GNU gettext translation template for a library look like and which kind of descriptive texts shall be included
-* How does a GNU gettext translation of a library look like
+Proposed changes in Specification: 
+* Add section 13.6 into "external ressources" which describes following:
+* Where shall the translation file be stored (Subfolder Language in the Resources Folder; proposal see below in tool implementation [step 3](#3.-file-storage))
+* How does a GNU gettext translation template for a library look like and which kind of descriptive texts shall be included (proposal in tool implementation [step 1](#1.-read-out-a-translation-template-file))?
+* How does a GNU gettext translation of a library look like (proposal in tool implementation [step 2](#2.-translation-of-the-template-file-into-a-language-file))?
+* Which strings should be translated:
+
+The following Modelica constructs shall be translated: 
+* Description / comment
+* choices annotation
+* missingInnerMessage, obsolete, unassignedMessage annotations
+* Dialog.[group|tab] annotations
+* Dialog.[load|save]Selector.[caption|filter] annotations
+* Documentation.[info|revisions] annotations
+* Text in diagram
 
 The precise updated text of the specification is part of this branch/pull-request: No.
 
@@ -47,8 +57,8 @@ After the introduction of translation files for libraries, this files need to be
 
 ## Experience with Prototype
 ### Implementation steps
-#### 1. Read out a translation template file \*.pot
-Create at first a translation template file for a library. Means a tool dependent readout of a *LibraryName*.pot-File. The \*.pot file serves as translation template. It contains: 
+#### 1. Read out a translation template file
+Create at first a translation template file \*.pot for a Modelica library. Means a (tool dependent) readout of all needed text strings into a *LibraryName*.pot-File. It contains: 
 - a header which concludes all necessary information
 ![Header of a *.pot file](POT_Header.png)
 
@@ -60,11 +70,12 @@ Create at first a translation template file for a library. Means a tool dependen
 ```
 
 Where *msgctxt* contains the ident of the Modelica Class and *msgid* contains the textstring which is situated in this name space and shall be translated. Please regard that if a *msgid* string (in this example "Volume Flow Port A") is given more than once in a namespace, all occurrences are translated with the same translation!
+
 It shall be mandatory to use for *msgctxt* the full ident of a class:
 - so a specific translation depending on the content in this namespace is possible, as every textstring may differ depending on the context,
 - using the class makes it easier for the Modelica tool to copy and re-arrange models and packages without loosing the already existing language information.
 
-The following Modelica constructs shall be read out: 
+The following Modelica constructs shall be read out / translated: 
 * Description / comment
 * choices annotation
 * missingInnerMessage, obsolete, unassignedMessage annotations
@@ -73,9 +84,9 @@ The following Modelica constructs shall be read out:
 * Documentation.[info|revisions] annotations
 * Text in diagram
 
-Having read out the file it just needs to be changed, if the library is changed (e.g. commented parts are added or changed). 
+Having read out the file it just needs to be changed, if the library is changed (e.g. commented parts are added or changed or when having changed the Modelica ident of the text strings containing element). 
 
-#### 2. Translation of the template file into a language file \*.*Language*.po
+#### 2. Translation of the template file into a language file
 Starting from the template file create a \*.po file for each needed language (e.g. german: *LibraryName*.de.po-File).
 
 Edit the *msgstr* with the translation in the wanted language (here for german: `` Hydraulics.de.po``) :
@@ -86,7 +97,7 @@ Edit the *msgstr* with the translation in the wanted language (here for german: 
 ```
 
 Hereby no error shall occur if there is one comment not having an translation. In this case the not translated text (the content of *msgid*) shall be used.
-Again the file needs to be adjusted if there are changes at the library (e.g. commented parts are added or changed).
+Again the file needs to be adjusted if there are changes at the library (e.g. commented parts are added or changed or when having changed the Modelica ident of the text strings containing element).
 
 ---
 **Note:** One may use the tool POedit for the translation, as it can be coupled with commercial translation tools for a faster translation. 
