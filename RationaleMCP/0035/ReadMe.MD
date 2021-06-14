@@ -1,7 +1,7 @@
-Modelica Change Proposal MCP-0035
-Multilingual support of Modelica
-Authors: Anett Kloß, Gerd Kurzbach, Olaf Oelsner, (Thomas Beutlich)
-(In Development) 
+# Modelica Change Proposal MCP-0035
+# Multilingual support of Modelica
+## Authors: Anett Kloß, Gerd Kurzbach, Olaf Oelsner, (Thomas Beutlich)
+(In development) 
 --
 
 # Summary
@@ -34,10 +34,10 @@ Provide at minimum two use cases for your proposal that show how it is applied.
 
 Proposed Changes in Specification: 
 * Where shall the translation file be stored (Subfolder Language in the Resources Folder)
-* How does a GNU gettext translation Template for a library look like and which kind of description texts shall be included
+* How does a GNU gettext translation template for a library look like and which kind of descriptive texts shall be included
 * How does a GNU gettext translation of a library look like
 
-The precise updated text of the specification is part of this branch/pull-request: Yes.
+The precise updated text of the specification is part of this branch/pull-request: No.
 
 # Backwards Compatibility
 The proposal is backwards compatible. All multilingual text changes can be applied without effect at existing Modelica code. 
@@ -50,15 +50,16 @@ After the introduction of translation files for libraries, this files need to be
 #### 1. Read out a translation template file \*.pot
 Create at first a translation template file for a library. Means a tool dependent readout of a *LibraryName*.pot-File. The \*.pot file serves as translation template. It contains: 
 - a header which concludes all necessary information
-   *(insert image of header)*
+![Header of a *.pot file](POT_Header.png)
 
 - for all original strings entries with following structure: 
-
+```
     msgctxt "Hydraulics.Basics.TankOverflow"
     msgid "Volume Flow Port A"
     msgstr ""
+```
 
-Where *msgctxt* contains the ident of the Modelica Class and *msgid* contains the textstring which is situated in this name space and shall be translated. If in this example name space the *msgid* string "Volume Flow Port A" is given more than once, all occurrences are translated with the same translation.
+Where *msgctxt* contains the ident of the Modelica Class and *msgid* contains the textstring which is situated in this name space and shall be translated. Please regard that if a *msgid* string (in this example "Volume Flow Port A") is given more than once in a namespace, all occurrences are translated with the same translation!
 It shall be mandatory to use for *msgctxt* the full ident of a class:
 - so a specific translation depending on the content in this namespace is possible, as every textstring may differ depending on the context,
 - using the class makes it easier for the Modelica tool to copy and re-arrange models and packages without loosing the already existing language information.
@@ -77,20 +78,25 @@ Having read out the file it just needs to be changed, if the library is changed 
 #### 2. Translation of the template file into a language file \*.*Language*.po
 Starting from the template file create a \*.po file for each needed language (e.g. german: *LibraryName*.de.po-File).
 
-Edit the *msgstr* with the translation in the wanted language (here: `` Hydraulics.de.po``) :
-
+Edit the *msgstr* with the translation in the wanted language (here for german: `` Hydraulics.de.po``) :
+```
     msgctxt "Hydraulics.Basics.TankOverflow"
     msgid "Volume Flow Port A"
     msgstr "Volumenstrom an Anschluss A"
+```
 
-Hereby no error shall occur if there is one comment not having an translation. In this case the old translation (the content of *msgid*) shall be used.
-One may use the tool POedit for the translation, as it can be coupled with commercial translation tools for a faster translation. 
+Hereby no error shall occur if there is one comment not having an translation. In this case the not translated text (the content of *msgid*) shall be used.
 Again the file needs to be adjusted if there are changes at the library (e.g. commented parts are added or changed).
+
+---
+**Note:** One may use the tool POedit for the translation, as it can be coupled with commercial translation tools for a faster translation. 
+
+---
 #### 3. File storage
 Both files need to be situated in the language directory ``Resources\Language`` of the top-level library e.g.:
   ``C:\...\<ModelicaPath>\<LibraryName>\Resources\Language``
 #### 4. Read in the translation
-A tool dependent language setting enables the reading of the current needed *LibraryName*.*Language*.po-File.
+The tool dependent language setting enables the reading of the current needed *LibraryName*.*Language*.po-File.
 
 ### Tool implementation effort 
 1. Readout of any comment / annotation without loosing content and with handling of exceptions, e.g. ``/"`` in comments. This can e.g. be created by the command:
