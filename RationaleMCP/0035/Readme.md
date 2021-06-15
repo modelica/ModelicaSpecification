@@ -69,9 +69,9 @@ Create at first a translation template file \*.pot for a Modelica library. Means
     msgstr ""
 ```
 
-Where *msgctxt* contains the ident of the Modelica Class and *msgid* contains the textstring which is situated in this name space and shall be translated. Please regard that if a *msgid* string (in this example "Volume Flow Port A") is given more than once in a namespace, all occurrences are translated with the same translation!
+Where *msgctxt* contains the name of the Modelica Class and *msgid* contains the textstring which is situated in this name space and shall be translated. Please regard that if a *msgid* string (in this example "Volume Flow Port A") is given more than once in a namespace, all occurrences are translated with the same translation!
 
-It shall be mandatory to use for *msgctxt* the full ident of a class:
+It shall be mandatory to use for *msgctxt* the full name of a class:
 - so a specific translation depending on the content in this namespace is possible, as every textstring may differ depending on the context,
 - using the class makes it easier for the Modelica tool to copy and re-arrange models and packages without loosing the already existing language information.
 
@@ -84,7 +84,7 @@ The following Modelica constructs shall be read out / translated:
 * Documentation.[info|revisions] annotations
 * Text in diagram
 
-Having read out the file it just needs to be changed, if the library is changed (e.g. commented parts are added or changed or when having changed the Modelica ident of the text strings containing element). 
+Having read out the file it just needs to be changed, if the library is changed (e.g. commented parts are added or changed or when having changed the Modelica name of the text strings containing element). 
 
 #### 2. Translation of the template file into a language file
 Starting from the template file create a \*.po file for each needed language (e.g. german: *LibraryName*.de.po-File).
@@ -97,7 +97,7 @@ Edit the *msgstr* with the translation in the wanted language (here for german: 
 ```
 
 Hereby no error shall occur if there is one comment not having an translation. In this case the not translated text (the content of *msgid*) shall be used.
-Again the file needs to be adjusted if there are changes at the library (e.g. commented parts are added or changed or when having changed the Modelica ident of the text strings containing element).
+Again the file needs to be adjusted if there are changes at the library (e.g. commented parts are added or changed or when having changed the Modelica name of the text strings containing element).
 
 ---
 **Note:** One may use the tool POedit for the translation, as it can be coupled with commercial translation tools for a faster translation. 
