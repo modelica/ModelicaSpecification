@@ -36,14 +36,14 @@ This allows more flexibility when using library elements because it enables a po
 # Proposal
 
 ## Syntax
-It is proposed to introduce a new keyword, when used as modification, removes an inherited modification and leaves the modified element as it was never modified.
+It is proposed to introduce a new keyword, when used as modification, removes an inherited modification and leaves the modified element as if it was never modified.
 
 Requirements to this keyword are:
 * It needs to be easily disdinguished from a modification expression, therefore it should not be part of the expression non terminal.
 * It should be self explaining and not contain only control characters.
 * It should not break existing models by leading to unpredictable results.
 
-Because simple names are expressions and when becoming a keyword may break existing models it is considered to extend a descriptive name with some special characters.
+Because simple names are expressions and when becoming a keyword that may break existing models it was considered to extend a descriptive name with some special characters.
 That lead to the proposal to use the keword `<empty>` or later `break`, which fulfills the requirements.
   
 Syntactically the rule of a modification is extended:
@@ -88,9 +88,9 @@ That eases the implementation in the compiler, because no runtime is needed.
 
 A parameter or variable with the `break` modification behaves in the same way as with no modification.
 If such a parameter is referenced at places, where the value must be known at compile time (structural parameter), an error is given.
-Variables and parameters having ``break` modifications are free and must be calculated by an additional equation or algorithm.
-Else there would be one missing equation, which leads to an error.
-From the point of the equation system they behave the same as without modification.
+Variables and parameters having ``break` modifications are free variables and must be calculated by an additional equation or algorithm.
+Otherwise there would be one missing equation, which leads to an error.
+From the point of the equation system they behave the same as variables without modification.
 
 ## In Annotations
 
@@ -98,7 +98,7 @@ The use in annotations is not really useful, because they are not merged in curr
 Therefore no modification can be overridden.
 Finally, if an annotation has the `break` modification but needs to have a value to work properly, a tool provided default value may be used  instead.
   
-## At the GUI
+## In the GUI
 
 In a dialog, a tool may hide the keyword `break` from the users and present them only an empty input field, not showing the inherited modification.
 Then, there needs to be a possibility to remove it again to get back the inherited modification.
@@ -167,7 +167,11 @@ The use cases above are relevant also for large industrial models.
 
 One additional relevant use case is allowing re-using of models that have unwanted defaults; added above.
 
-From the user perspective there was feedback that it was seen as somewhat problematic that defaults (using start=... for parameters) was not removed by setting the value to break. Based on the proposal that is deliberate and also setting start=break is possible for users, and can be automated in tools.
+### Removing more?
+From the user perspective there was feedback that it was seen as somewhat problematic that defaults (using `p(start=...)` for parameters) was not removed by a simple modifier `p=break` since that only undefine the value. Based on the proposal that is deliberate and also setting start=break is possible for users, and can be automated in tools.
+The other simple option would be that `p=break` removed modifiers for all attributes, but that have the undesired consequence of undefining unit and displayUnit.
+Undefining everything that isn't in the type would be counter-intuitive and sometimes fail to remove start-values and sometimes remove displayUnit.
+Note that there is no requirement that the undefined modification actually override something.
 
 # Required Patents
 No patents needed.
