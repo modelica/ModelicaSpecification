@@ -30,7 +30,7 @@ The purpose of this MCP is to introduce functions with memory and events into Mo
 achieved by enhancing Modelica so that blocks can be called as functions (since memory and events 
 are already supported in blocks). 
 
-Since functions have a different type system as blocks (e.g. 
+Since functions have a different type system than blocks (e.g. 
 arguments in functions **can** be identified by position, whereas in blocks they **must** be identified by 
 name), the calling mechanism of a block is naturally restricted to named arguments. 
 
@@ -160,7 +160,7 @@ Boolean y2 = OnDelay.y(u=u1, delayTime=0.3).y;
 ```
 Note: The reasons for the restriction on declarations are that 
 * The simple mapping mechanism would not give an intuitive result, 
-* The type-prefixes do not make sense for blocks that have potentially initialization, when-clauses, differential 
+* The type-prefixes do not make sense for blocks that potentially contain initialization, when-clauses, differential 
 equations (at least, it is not obvious what the result shall be). 
 Note, the synchronous language Lucide Synchrone supports both functions with and without memory and Lucide Synchrone has a similar restriction (a function with memory cannot be 
 called in a constant declaration)
