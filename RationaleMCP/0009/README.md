@@ -20,6 +20,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2021-03-24 | Hans Olsson - feedback on prototype |
 | 2021-05-03 | Hans Olsson - additional feedback on prototype |
 | 2021-05-05 | Hans Olsson - feedback at language meeting |
+| 2021-06-16 | Hans Olsson - removed <empty> |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -44,7 +45,7 @@ Requirements to this keyword are:
 * It should not break existing models by leading to unpredictable results.
 
 Because simple names are expressions and when becoming a keyword that may break existing models it was considered to extend a descriptive name with some special characters.
-That lead to the proposal to use the keword `<empty>` or later `break`, which fulfills the requirements.
+That lead to the proposal to use the keword `break` (after first considering `<empty>`), which fulfills the requirements.
   
 Syntactically the rule of a modification is extended:
 
@@ -56,11 +57,8 @@ modification :
  
 modification-expression :
    expression
- | <empty>
  | break
  ```
-
-(Well, just one of the latter two.)
 
 ## Rules
 Modifications containing `break` do not need special handling when they are merged during instantiation of models.
