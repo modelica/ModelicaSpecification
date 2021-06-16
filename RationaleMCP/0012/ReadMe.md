@@ -26,8 +26,23 @@ by Martin Otter)|
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
 
 # Rationale
-The purpose of this MCP is to introduce functions with memory and events into Modelica. This is 
-achieved by enhancing Modelica so that blocks can be called as functions (since memory and events 
+The purpose of this MCP is to introduce functions with memory and events into Modelica.
+One original rationale for this is to support requirements with temporal logic from the MODRIO project, and goes together with MCP-0021.
+For instance to require that OK must be true in each 8 s interval, if that is a requirement, one could write
+```
+  Boolean C2 = DuringAny.result(duration=8, check=On);
+```
+It could also be used to get optional indicators, e.g., losses.
+With the first level presented here that could be handled using:
+```
+protected
+  DuringAny dummy1(duration=8, check=On);
+public
+  Boolean C2 = dummy1.result;
+```
+Thus an alternative explanation for this MCP is the ability to construct anonymous instances of blocks,
+which ensures that users do not have to consider whether `dummy1` is used elsewhere in the model.
+This is achieved by enhancing Modelica so that blocks can be called as functions (since memory and events 
 are already supported in blocks). 
 
 Since functions have a different type system than blocks (e.g. 
