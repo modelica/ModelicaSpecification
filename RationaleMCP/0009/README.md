@@ -20,7 +20,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2021-03-24 | Hans Olsson - feedback on prototype |
 | 2021-05-03 | Hans Olsson - additional feedback on prototype |
 | 2021-05-05 | Hans Olsson - feedback at language meeting |
-| 2021-06-16 | Hans Olsson - removed <empty> |
+| 2021-06-16 | Hans Olsson - removed `<empty>` |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
