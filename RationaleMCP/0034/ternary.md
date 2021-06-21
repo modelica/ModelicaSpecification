@@ -36,6 +36,8 @@ The logical connectives `not`, `and` and `or` on `Ternary` are defined in accord
 
 For example, to evaluate `false or unknown`, one has to consider both possible outcomes for the uncertain operand, meaning that the result might be ither `false or false` or `false or true`.  Since the different outcomes don't agree, the result of the operation is uncertain, represented by `unknown`.
 
+Although the truth tables of `not`, `and` and `or` agree with Kleene logic, the set of logical connectives on `Ternary` is deliberately not meant to model any particular ternary logic.  In particular, by not defining an operator for material implication, `Ternary` cannot be considered a complete model of Kleene logic.  Applications requiring a complete model of one of the many possible ways to define ternary logic may use `Ternary` to represent the three truth values, but should define all the logical connectives of the logic in question as a package (library) of functions.
+
 ### Unary operators
 Unary operators on `Ternary`, where `x` is an expression of type `Ternary`:
 
