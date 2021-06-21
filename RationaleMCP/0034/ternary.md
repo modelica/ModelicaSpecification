@@ -32,7 +32,7 @@ There is a total order of the possible `Ternary` values given by `Ternary(false)
 
 ## Expressions with Ternary
 
-Logical operations on `Ternary` are defined according to Kleene, where `unknown` can be thought of as representinc uncertainty about being `true` or `false`.  With this interpretation the Kleene logic tables then follow from the Boolean logic.
+The logical connectives `not`, `and` and `or` on `Ternary` are defined in accordance with Kleene, where `unknown` can be thought of as representinc uncertainty about being `true` or `false`.  With this interpretation the truth tables then follow from the Boolean logic.
 
 For example, to evaluate `false or unknown`, one has to consider both possible outcomes for the uncertain operand, meaning that the result might be ither `false or false` or `false or true`.  Since the different outcomes don't agree, the result of the operation is uncertain, represented by `unknown`.
 

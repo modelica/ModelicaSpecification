@@ -77,7 +77,7 @@ Even though the use of option types could be restricted to `Boolean` to start wi
 Another advantage of introducing option types instead of `Ternary` would be that it would probably be acceptable to say that no option type can be used for indexing into arrays.  This would simplify parts of the implementation compared to `Ternary`.
 
 However, these are some reasons for sticking with `Ternary` instead of `Boolean?`:
-- If the usual ternary logic according to Kleene is what we want — which is the assumption of this MCP — the use of `Boolean?` would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
+- If the usual ternary operators `not`, `and` and `or` in accordance with Kleene is what we want — which is the assumption of this MCP — the use of `Boolean?` would imply an unnatural interpretation of `none`.  [This argument is elaborated below.](#Using-none-to-represent-undefined)
 - Introducing the literal `none` to refer to the absence of a value for an option type leads to a significant change of the Modelica type system, as `none` can have any option type.  Even if type inference would be implemented, there would be problems when it comes to implicit conversions (see above).
 - Explicitly writting out the type of a _none_ as in `Boolean?()` would be inconvenient compared to just saying `unknown`.  (However, it would then be natural to define implicit conversion to any option type.)
 - Attributes of other type than `Boolean` typically have a default behavior that can be expressed with a default value (like the empty string in case of `String`), removing the need for an option type to express the absence of a value.
@@ -87,7 +87,7 @@ However, these are some reasons for sticking with `Ternary` instead of `Boolean?
 - It is probably a bad idea to just introduce option types in Modelica without considering the more general concepts that would give option types as a special case.  Such more general constructs inspired by MetaModelica have been discussed at many design meetings without getting much traction.
 
 ## Using `none` to represent _undefined_
-While possible to interpret `Boolean?()` (hereafter referred to as `none` for brevity) as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary` to get a Kleene logic, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
+While possible to interpret `Boolean?()` (hereafter referred to as `none` for brevity) as _unknown_ and define logical operation on `Boolean?` in the same way as for `Ternary` to get consistency with Kleene logic, the generalization of this interpretation to other option types such as `Real?` or `String?` isn't as useful.  The natural interpretation of `none` would rather be _undefined_, which leads to more useful generalizations to other option types.
 
 For example, one could define that concatenation with an _undefined_ `String?`, would be a no-op, and the same for addition or multiplication with an _undefined_ `Real?`.  For `Boolean?` it would then be natural to define both disjunction and conjunction with _undefined_ to be no-ops, leading to things such as `none and true = some(true)`.
 
@@ -104,4 +104,4 @@ Please note that this logical table does not correspond to the often cited four-
 
 For the numeric types `Real` and `Integer`, a better analog to `unknown` would be `NaN` (not-a-number), having very different arithmetic behavior compared to the no-ops of _undefined_.  For example, this gives the expected behavior of adding _unknown_ to any number resulting in _unknown_.
 
-To summarize, while option types have many interesting applications — including modeling of built-in attributes with non-trivial defaults — it would be a mistake to use `Boolean?` for the usual ternary logic according to Kleene with _unknown_ as the third truth value.  This also shows that `Ternary` is not going to become redundant if option types are added to Modelica in the future.
+To summarize, while option types have many interesting applications — including modeling of built-in attributes with non-trivial defaults — it would be a mistake to use `Boolean?` for the usual ternary connectives defined in accordance with Kleene.  This also shows that `Ternary` is not going to become redundant if option types are added to Modelica in the future.
