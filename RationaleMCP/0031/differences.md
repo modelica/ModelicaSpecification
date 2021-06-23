@@ -498,14 +498,14 @@ Variable | Start-value | Priority
 'm4.y' | |
 'm4.z' | 4.0 | 0
 
-Note that the initializatin here is split into four separate sets in this case matching the four components, but in general they can be different and is determined by the tool handling FlatModelica.
+Note that the initialization here is split into four separate sets in this case matching the four components, but in general they can be different and is determined by the tool handling FlatModelica.
 
 An array with heterongenous values for fixed:
 ```
 block SimpleFilter
   parameter Real k=2;
-  Real x[3](start={1.0,0.0,0.0},fixed={false,true,true});
-  output Real y(start=1,fixed=true)=k*x[1];
+  Real x[3](each start=0.0,fixed={false,true,true});
+  output Real y(start=1.0,fixed=true)=k*x[1];
   input Real u;
 equation 
   der(x)=cat(1,x[2:end],{u});
@@ -515,13 +515,59 @@ can be handled as follows:
 ```
 class 'SimpleFilter'
   parameter Real 'k' = 2.0;
-  Real 'x'[3](start = prioritizedStart({1.0, 0.0, 0.0}, {1, 0, 0}));
+  Real 'x'[3](start = prioritizedStart(fill(0.0,3), {1, 0, 0}));
   output Real 'y'(start = 1.0) = 'k'*'x'[1];
   input Real 'u';
 equation
     der('x') = cat(1, 'x'[2:3], {'u'});
 end 'SimpleFilter';
 ```
+Note that this required replacing `each` in the start-value of 'x' by its expanded value. Another alternative in this case would be to expanded it to `{0.0, 0.0, 0.0}`.
+
+Note that this supports expanding models and keeping records, and some quite esoteric uses, e.g.:
+```
+model UTest
+  function foo
+    output Real x[3,2];
+    external "C";
+  end foo;
+
+  record R
+    Real x[2];
+    Real y;
+  end R;
+
+  model M
+    Real x[2];
+    Real y;
+  end M;
+  M m[3](y(each start=2.0),x(start=foo(), fixed=[true,false;false,true;true,true]));
+  R r[3](each y(start=2.0),x(start=foo(), fixed=[true,false;false,true;true,true]));
+equation 
+
+end UTest;
+```
+And handling it as:
+```
+  record 'UTest.R'
+    Real 'x'[2];
+    Real 'y';
+  end 'UTest.R';
+   function 'UTest.foo'
+    output Real 'x'[3,2];
+    external "C";
+  end 'UTest.foo';
+class 'UTest'
+  Real 'm[1].x'[2](start = prioritizedStart(('UTest.foo'())[1, :], {0, 1}));
+  Real 'm[1].y'(start = prioritizedStart(2.0, 1));
+  Real 'm[2].x'[2](start = prioritizedStart(('UTest.foo'())[2, :], {1, 0}));
+  Real 'm[2].y'(start = prioritizedStart(2.0, 1));
+  Real 'm[3].x'[2](start = (UTest.foo())[3, :]);
+  Real 'm[3].y'(start = prioritizedStart(2.0, 1));
+  'UTest.R' 'r'[3]('x'(start=prioritizedStart('UTest.foo'(),[1,0;0,1;1,1]),'y'(start=prioritizedStart(fill(2.0, 3), fill(1, 3)));
+end 'UTest';
+```
+Ideally people do not make models like that.
 
 For parameters the start-value is normally irrelevant and missing.
 If the parameter lacks a normal value the start-value it can be used as parameter-value after a warning, this can be done before generating FlatModelica (if `fixed=false`).
