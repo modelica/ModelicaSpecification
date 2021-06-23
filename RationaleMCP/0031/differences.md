@@ -480,6 +480,25 @@ The interesting case is 'm2' where 'm2.z' has a lower priority than 'm2.x' and s
 
 Tools can preferably present that information differently, e.g.:
 
+Variable | Start-value | Priority
+--------|--------------|------
+'m1.x' | 1.0 | 2
+'m1.y' | |
+'m1.z' | |
+||
+'m2.x' | 1.0 | 2
+'m2.y' | 2.0 | 1
+'m2.z' | |
+||
+'m3.x' | 1.0 | 2
+'m3.y' | 3.0 | 0
+'m3.z' | |
+||
+'m4.x' | 1.0 | 2
+'m4.y' | |
+'m4.z' | 4.0 | 0
+
+Note that the initializatin here is split into four separate sets in this case matching the four components, but in general they can be different and is determined by the tool handling FlatModelica.
 
 An array with heterongenous values for fixed:
 ```
@@ -500,7 +519,7 @@ class 'SimpleFilter'
   output Real 'y'(start = 1.0) = 'k'*'x'[1];
   input Real 'u';
 equation
-    der('x') = cat(1, 'x'[2:end], {'u'});
+    der('x') = cat(1, 'x'[2:3], {'u'});
 end 'SimpleFilter';
 ```
 
