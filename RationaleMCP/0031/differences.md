@@ -402,11 +402,11 @@ The handling of start-values in Modelica is complicated by several aspects:
 - The priorities for non-fixed start-values.
 - Whether start-values can be modified or not afterwards. This is related to final start-values.
 This information is hidden and not easy to understand, and is not even easy to modify in Modelica.
-As a simplifying assumption we assume that only literal start-values can be modified afterwards (but not that all literal start-values can be modified).
+As a simplifying assumption we could assume that only literal start-values can be modified afterwards (but not that all literal start-values can be modified).
 
-Flat Modelica will not by default preserve the priorities, since they are based on where a modification occurs - and that information is gone.
-Removing this complexity would require that start-values have been prioritized before generating Flat Modelica, which requires that index-reduction and state-selection is performed earlier, which is contrary to the goal.
-Replacing start-values by initial equations would require that priotization has been done, and also prevent experimenting with novel ideas for initialization; see "Investigating Steady State Initialization for Modelica models" by Olsson & Henningsson.
+Flat Modelica cannot simply preserve the priorities, since they are based on where a modification occurs - and that information is gone.
+Removing the complexity of priorities would require that start-values have been prioritized before generating Flat Modelica, which requires that index-reduction and state-selection is performed earlier, which is contrary to the goal.
+Replacing start-values by initial equations would require that prioritization has been done, and also prevent experimenting with novel ideas for initialization; see "Investigating Steady State Initialization for Modelica models" by Olsson & Henningsson (Modelica 2021 conference).
 Treating fixed and non-fixed variables differently doesn't work if we want to preserve arrays, since different array elements may have different values for `fixed`.
 
 We thus want to fully preserve the semantics, but make it simpler to understand.
@@ -419,9 +419,90 @@ Note that a start-value can also be given directly, we view that as equivalent t
 Possiblilities:
 - Using named arguments instead of order.
 - The vectorization could be simplified, if necessary.
-- We could view fixed start-values as a special priority, e.g., `-1` reducing it to a function with two arguments.
+- We could view fixed start-values as a special priority, e.g., `0` reducing it to a function with two arguments.
 - A tool having a more fine-grained priority for priorities can re-map the component levels to add intermediate levels; as long as it preserves the interal order.
 - Whether the start-value can be modified or not can either be handled by allowing the final-modifier, or using different function.
+
+To consider different start-values and fixed consider the following Modelica model:
+```
+model A
+  model M
+    Real x(start=1.0);
+    Real z;
+    Real y;
+  equation 
+    y=5*x;
+    z=7*x;
+    der(z)=1-x;
+  end M;
+  M m1;
+  M m2(z(start=2.0));
+  M m3(z(start=3.0,fixed=true));
+  M m4(y(start=4.0,fixed=true));
+end A;
+```
+The flat Modelica has:
+```
+class 'A'
+  Real 'm1.x'(start = prioritizedStart(1.0, 2));
+  Real 'm1.z';
+  Real 'm1.y';
+  Real 'm2.x'(start = prioritizedStart(1.0, 2));
+  Real 'm2.z'(start = prioritizedStart(2.0, 1));
+  Real 'm2.y';
+  Real 'm3.x'(start = prioritizedStart(1.0, 2));
+  Real 'm3.z'(start = 3.0); // Alternatively prioritizedStart(3.0, 0)
+  Real 'm3.y';
+  Real 'm4.x'(start = prioritizedStart(1.0, 2));
+  Real 'm4.z';
+  Real 'm4.y'(start = 4.0);
+equation
+  // Component m1 - class A.M
+    'm1.y' = 5*'m1.x';
+    'm1.z' = 7*'m1.x';
+    der('m1.z') = 1-'m1.x';
+  // Component m2 - class A.M
+    'm2.y' = 5*'m2.x';
+    'm2.z' = 7*'m2.x';
+    der('m2.z') = 1-'m2.x';
+  // Component m3 - class A.M
+    'm3.y' = 5*'m3.x';
+    'm3.z' = 7*'m3.x';
+    der('m3.z') = 1-'m3.x';
+  // Component m4 -  class A.M
+    'm4.y' = 5*'m4.x';
+    'm4.z' = 7*'m4.x';
+    der('m4.z') = 1-'m4.x';
+end 'A';
+```
+Here  'm4.y' and  'm3.z' are given as fixed start-values, whereas 'm1.x' is the only component with start-value in the first component and should then be chosen.
+The interesting case is 'm2' where 'm2.z' has a lower priority than 'm2.x' and should thus be chosen.
+
+Tools can preferably present that information differently, e.g.:
+
+
+An array with heterongenous values for fixed:
+```
+block SimpleFilter
+  parameter Real k=2;
+  Real x[3](start={1.0,0.0,0.0},fixed={false,true,true});
+  output Real y(start=1,fixed=true)=k*x[1];
+  input Real u;
+equation 
+  der(x)=cat(1,x[2:end],{u});
+end SimpleFilter;
+```
+can be handled as follows:
+```
+class 'SimpleFilter'
+  parameter Real 'k' = 2.0;
+  Real 'x'[3](start = prioritizedStart({1.0, 0.0, 0.0}, {1, 0, 0}));
+  output Real 'y'(start = 1.0) = 'k'*'x'[1];
+  input Real 'u';
+equation
+    der('x') = cat(1, 'x'[2:end], {'u'});
+end 'SimpleFilter';
+```
 
 For parameters the start-value is normally irrelevant and missing.
 If the parameter lacks a normal value the start-value it can be used as parameter-value after a warning, this can be done before generating FlatModelica (if `fixed=false`).
