@@ -768,7 +768,7 @@ package MoistAir2 "Alternative definition that does not work"
     X = {1, 0};
   end MoistAir_BaseProperties;
 
-  model MoistAir_dynamicViscosity
+  function MoistAir_dynamicViscosity
     extends PartialMedium.dynamicViscosity;
   algorithm
     eta := p;
@@ -776,7 +776,14 @@ package MoistAir2 "Alternative definition that does not work"
 end MoistAir2;
 \end{lstlisting}
 
-Here, the usual approach is used to extend (here from \lstinline!PartialMedium!) and in the modifier perform all redeclarations.  In order to perform these redeclarations, corresponding implementations of all elements of \lstinline!PartialMedium! have to be given under a different name, such as \lstinline!MoistAir2.MoistAir_BaseProperties!, since the name \lstinline!BaseProperties! already exists due to \lstinline!extends PartialMedium!.  Then it is possible in the modifier to redeclare \lstinline!PartialMedium.BaseProperties! to \lstinline!MoistAir2.MoistAir_BaseProperties!. Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g.\ \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!: The problem is that \lstinline!MoistAir_BaseProperties! extends from \lstinline!PartialMedium.BaseProperties! where the constant \lstinline!nX! does not yet have a value.  This means that the dimension of array \lstinline!X! is undefined and model \lstinline!MoistAir_BaseProperties! is wrong.  With this construction, all constant definitions have to be repeated whenever these constants shall be used, especially in \lstinline!MoistAir_BaseProperties! and \lstinline!MoistAir_dynamicViscosity!.  For larger models this is not practical and therefore the only practically useful definition is the complicated construction in the previous example with \lstinline!redeclare model extends BaseProperties!.
+Here, the usual approach is used to extend (here from \lstinline!PartialMedium!) and in the modifier perform all redeclarations.
+In order to perform these redeclarations, corresponding implementations of all elements of \lstinline!PartialMedium! have to be given under a different name, such as \lstinline!MoistAir2.MoistAir_BaseProperties!, since the name \lstinline!BaseProperties! already exists due to \lstinline!extends PartialMedium!.
+Then it is possible in the modifier to redeclare \lstinline!PartialMedium.BaseProperties! to \lstinline!MoistAir2.MoistAir_BaseProperties!.
+Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g.\ \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!:
+The problem is that \lstinline!MoistAir_BaseProperties! extends from \lstinline!PartialMedium.BaseProperties! where the constant \lstinline!nX! does not yet have a value.
+This means that the dimension of array \lstinline!X! is undefined and model \lstinline!MoistAir_BaseProperties! is wrong.
+With this construction, all constant definitions have to be repeated whenever these constants shall be used, especially in \lstinline!MoistAir_BaseProperties! and \lstinline!MoistAir_dynamicViscosity!.
+For larger models this is not practical and therefore the only practically useful definition is the complicated construction in the previous example with \lstinline!redeclare model extends BaseProperties!.
 
 To detect this issue the rule on lookup of composite names (\cref{composite-name-lookup}) ensures that \lstinline!PartialMedium.dynamicViscosity! is incorrect in a simulation model.
 \end{nonnormative}
