@@ -60,7 +60,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Investigate need for `final`.
 - [ ] Origin of modifications (for start value prioritization).
 - [ ] Get rid of `false` as default for `fixed`.
-- [ ] Restricted rules for use of `start` attribute for parameter initialization.
+- [x] Restricted rules for use of `start` attribute for parameter initialization.
 - [x] Get rid of record member variability prefixes `constant` and `parameter`. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Brecord-member-variability/RationaleMCP/0031/differences.md#variability-in-record-member-declaration), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2694) (Not gone, but restricted.)
 - [x] Simplify modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2BModifications/RationaleMCP/0031/differences.md#simplify-modifications), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2558) (Remaining parts covered by other items.)
 - [ ] Simplify value modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bvalue-modification/RationaleMCP/0031/differences.md#Value-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2747)
