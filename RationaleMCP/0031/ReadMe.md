@@ -57,7 +57,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
 - [ ] Handling of parameters treated as constants.
 - [ ] Get rid of `protected`.
-- [ ] Investigate need for `final`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2994)
+- [x] Investigate need for `final`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2994)
 - [ ] Origin of modifications (for start value prioritization). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bstart-value-prioritization/RationaleMCP/0031/differences.md#guess-value-prioritization), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2997)
 - [ ] Get rid of `false` as default for `fixed`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2996)
 - [ ] Restricted rules for use of `start` attribute for parameter initialization. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2995)
