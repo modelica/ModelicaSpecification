@@ -398,6 +398,8 @@ The handling of guess values needed to solve parameters from nonlinear equations
 
 Instead of controlling the guess values for the variable `x` via its `start` attribute as in full Modelica, Flat Modelica makes use of an implicitly declared parameter `guess('x')`.  This is called the _guess value parameter_ for `'x'`, and has the same type as `x`.
 
+The syntax makes use of the new keyword `guess` which is not present in full Modelica.  (Note that introducing a new keyword will not cause conflict with identifiers used in full Modelica code thanks to name mangling.)
+
 Since the declaration of `guess('x')` is implicit, a declaration equation cannot be provided in the same was as for a declared parameter.  Instead, a special form of _parameter equation_ is used, where the parameter being solved must appear on the left hand side, and the equation shall be solved with causality so that the right hand side can be overridden during initialization (that is, after translation).  In the grammar, it is an new alternative in _generic-element_:
 
 > _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_ | _parameter-equation_
