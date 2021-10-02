@@ -59,7 +59,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Get rid of `protected`.
 - [x] Investigate need for `final`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2994)
 - [ ] Origin of modifications (for start value prioritization). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bstart-value-prioritization/RationaleMCP/0031/differences.md#guess-value-prioritization), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2997)
-- [ ] Get rid of `false` as default for `fixed`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2996)
+- [x] Get rid of `false` as default for `fixed`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2996)
 - [ ] Restricted rules for use of `start` attribute for parameter initialization. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2995)
 - [x] Get rid of record member variability prefixes `constant` and `parameter`. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Brecord-member-variability/RationaleMCP/0031/differences.md#variability-in-record-member-declaration), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2694) (Not gone, but restricted.)
 - [x] Simplify modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2BModifications/RationaleMCP/0031/differences.md#simplify-modifications), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2558) (Remaining parts covered by other items.)
