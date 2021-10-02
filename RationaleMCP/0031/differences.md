@@ -426,7 +426,16 @@ initial equation
   guess('x') - 1.5 = 0;
 ```
 
-When a guess value for `'x'` is needed to solve an equation (or system of equations), this equation has an implicit dependency on `guess('x')`, and it is an error if this causes `guess('x')` to be solved in the same equation system as `'x'`.
+When a guess value for `'x'` is needed to solve an equation (or system of equations), this equation has an implicit dependency on `guess('x')`, and it is an error if `guess('x')` cannot be determined first.  For example, this is illegal:
+```
+model 'IllegalGuessDependency'
+  Real 'x';
+initial equation
+  guess('x') = 0.5 * 'x'; /* Cannot determine guess('x') before solving for 'x'. */
+equation
+  'x' * 'x' = time * time; /* Initialization depends on guess('x'). */
+model 'IllegalGuessDependency'
+```
 
 While a guess value parameter is allowed to appear in equations in the same ways as a normal parameter, Flat Modelica models originating from full Modelica are only expected to have `guess('x')` appearing in an initial equation in solved form, if appearing at all:
 ```
