@@ -58,11 +58,17 @@ The following list compiles minutes of all official events and discussions -- li
 ## _101th Modelica Design Meeting_
 
 - [**Original minutes**](https://svn.modelica.org/projects/ModelicaDesign/trunk/MeetingMinutesMaterial/min101_2019_Oberpfaffenhofen/)
-
 - **Decision 101.1 (poll), changes decision 99.3, further restricts decision 99.4:** For connection deselections, the order of the `connect` arguments matters. `break connect(a, b)` only deselects the connection between `a` and `b` if it is defined as `connect(a, b)` in the selectively extended base-class; it does not deselect it if it is defined as `connect(b, a)` .
   - Clear poll: Yes 7, No 0, Abstain 3
   - **Rationale 101.1.1 why order of `connect` arguments matters:** In decision 100.4, syntactic equivalence has been established as base-paradigm for connection deselections; it is strange, if there are relaxing exceptions.
   - Rationale 101.1.1 is in conflict with rationale 99.3.1.
   - **Open question (discussion to continue at the next meeting):** We forgot to reconsider rationale 99.3.1 when doing this decision. We have to choose either, decision 99.3 or 101.1, weighting rationale 99.3.1 vs. rationale 101.1.1.
-
 - **Discussion:** One result of decisions 100.3 and 100.4 is, that syntactic equivalence deselects _all_ matching base-class connections, regardless in which `for-equation` they are. For example, if the base class has two `for-equation`, each establishing connections `connect(b[i].o, b[i + 1].i)` -- like `for i in 1:3 loop connect(b[i + 1].i, b[i].o); end for;` and `for i in 5:7 loop connect(b[i + 1].i, b[i].o); end for;` -- the single `break connect(b[i].o, b[i + 1].i)` deselects all respective connections.
+
+## _Modelica Phone Meeting (2021-09-28, 15:00)_
+
+* Discussed further roadmap on how to get selective model extension soon into the Modelica Standard:
+  * Proposal: Only one prototype implementation in Dymola (instead of the usual two) and instead comprehensive examples library and proof reading of the MCP by other tool implementors.
+  * Open question: Do the MAP-Lang bylaws need to be adapted to support this process?
+  * In general such a process is desired and should be supported by the bylaws.
+

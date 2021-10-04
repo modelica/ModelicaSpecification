@@ -71,7 +71,7 @@ Selective model extension adds only minor semantic rules and constraints. Given 
 
 2. _D_ must match at least one element of _B_. All matched elements are excluded from inheritance to _C_ via _E_ (i.e., are removed from _B_ when adding its elements to instantiate _C_).
 
-   1. A component deselection matches all equally named components of _B_.
+   1. A component deselection matches all equally named components of _B_ and all their connections. Matched components must be models, blocks or connectors.
    2. A connection deselection matches all syntactical equivalent connections of _B_.
 
       * A connection `connect(c, d)`, with `c` and `d` arbitrary but valid connection arguments, is syntactically equivalent to a connection deselection _D_ = `break connect(a, b)`, if, and only if, either, `c` is syntactically equivalent to `a` and `d` is syntactically equivalent to `b` or, vice versa, `c` is syntactically equivalent to `b` and `d` is syntactically equivalent to `a`.
@@ -146,13 +146,14 @@ The available versions are:
 1. **Version 0.1.0** for _Dymola 2020_, based on `Modelica` 3.2.2 and `Modelica_Synchronous` 0.92.1 and using tool-vendor specific annotations for deselection.
 2. **Version 0.2.0** for _Dymola 2020_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 and using tool-vendor specific annotations for deselection (incorporates layout-adjustments for selective extensions of MSL base-classes whose layout changed from MSL 3.2.2 to 3.2.3, otherwise very same examples with the very same modeling as in version 0.1.0).
 3. **Version 0.3.0** for _Dymola 2021_, based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0. This version uses the correct syntax instead of vendor specific annotations and serves as a reference test case (besides syntax changes, the provided examples are still the ones of versions 0.1.0 and 0.2.0).
-4. **Version 0.4.0** for _Dymola 2022x_ and based on `Modelica` 3.2.3 only `Modelica_Synchronous` 0.93.0. This version adds unit-tests for correct and incorrect examples of advanced and corner case selective model extensions.
+4. **Version 0.4.0** for _Dymola 2022x_ and based on `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0. This version adds unit-tests for correct and incorrect examples of advanced and corner case selective model extensions.
 
 ## Revisions
 
 | Date             | Description                                                  |
 | ---------------- | ------------------------------------------------------------ |
-| 2022-June-06     | Christoff Bürger. Adding unit-tests to examples library (`SelectiveExtension_13th_Modelica_Conference` version 0.4.0). Added "Semantic rules" Section. The current _Dymola_ in development (next release _Dymola 2022x_) fully supports selective model extension. |
+| 2021-October-04  | Christoff Bürger. Incorporated feedback from Elena Shmoylova (Maplesoft) given on [GitHub](https://github.com/modelica/ModelicaSpecification/issues/3005), mostly clarification of rule 2.1 of _"Semantic rules"_-Section (deselected components must be models, blocks or connectors and deselecting a component also deselects all its connections). |
+| 2021-June-06     | Christoff Bürger. Adding unit-tests to examples library (`SelectiveExtension_13th_Modelica_Conference` version 0.4.0). Added "Semantic rules" Section. The current _Dymola_ in development (next release _Dymola 2022x_) fully supports selective model extension. |
 | 2020-February-20 | Christoff Bürger. Updated minutes with the results of the _101th Modelica Design Meeting_. |
 | 2019-October-01  | Christoff Bürger. Updated examples library adopting final syntax (`SelectiveExtension_13th_Modelica_Conference` version 0.3.0). |
 | 2019-May-20      | Christoff Bürger. Updated minutes with the results of the _99th Modelica Design Meeting_. Updated syntax. Updated examples library to `Modelica` 3.2.3 and `Modelica_Synchronous` 0.93.0 (`SelectiveExtension_13th_Modelica_Conference` version 0.2.0). |
