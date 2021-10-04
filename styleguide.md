@@ -230,3 +230,12 @@ The text is written in American English.
 ### Contractions
 
 Avoid contractions such as _isn't_ or _won't_; write _is not_ or _will/would not_ instead.
+
+### Inline code at beginning of sentence
+
+When a sentence starts with inline code,
+> `import`-clauses are not inherited.
+
+this may be rewritten using _The_ inserted before the inline code to avoid a lower case letter at the beginning of the sentence:
+
+> The `import`-clauses are not inherited.
