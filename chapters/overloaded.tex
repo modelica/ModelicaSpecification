@@ -4,7 +4,8 @@ A Modelica \lstinline!operator record!\indexinline{operator record} can overload
 
 The overloading is defined in such a way that ambiguities are not allowed and give an error.
 Furthermore, it is sufficient to define overloading for scalars.
-Overloaded array operations are automatically deduced from the overloaded scalar operations.
+Overloaded array operations are automatically deduced from the overloaded scalar operations,
+but can also be specified.
 
 \section{Overview of overloaded operators}\label{overview-of-overloaded-operators}
 
@@ -197,6 +198,7 @@ class \lstinline!B!.
   \begin{nonnormative}
   Having a union of the operators ensures that if \lstinline!A! and \lstinline!B! are the same, each function only appears once.
   \end{nonnormative}
+  Note that if the operations take array arguments, they will in this step only match if the number of dimensions match.
 \item
   Otherwise, consider the set given by $f$ in \lstinline!A.$\theop$!
   and an operator record class \lstinline!C! (different from \lstinline!B!) with a
@@ -208,6 +210,7 @@ class \lstinline!B!.
   is a valid match. If the sum of the sizes of these sets is one this
   gives the unique match. If the sum of the sizes is larger than one it
   is an error.
+  Note that if the operations take array arguments, they will in this step only match if the number of dimensions match.
 \begin{nonnormative}
   Informally, this means: If there is no direct match of \lstinline!a $\theop$ b!, then it is tried to find a direct match by automatic type casts of \lstinline!a! or \lstinline!b!, by converting either \lstinline!a! or \lstinline!b! to the needed type using an appropriate constructor function from one of the operator record classes used as arguments of the overloaded \lstinline!op! functions.  Example using the \lstinline!Complex!-definition below:
 \begin{lstlisting}[language=modelica]
@@ -224,19 +227,21 @@ Complex c = a * b; // interpreted as:
   \begin{enumerate}
   \def\labelenumii{(\alph{enumii})}
   \item
-    \lstinline!$\mathit{vector}$ * $\mathit{vector}$! should be left undefined.
+    \lstinline!$\mathit{vector}$ * $\mathit{vector}$! is not automatically defined based on the scalar multiplication.
     \begin{nonnormative}
     The scalar product of \cref{tab:product} does not generalize to the expected linear and conjugate linear scalar product of complex numbers.
+    It is possible to define a specific product function taking two array arguments handling this case.
     \end{nonnormative}
   \item
-    \lstinline!$\mathit{vector}$ * $\mathit{matrix}$! should be left undefined.
+    \lstinline!$\mathit{vector}$ * $\mathit{matrix}$! is not automatically defined based on the scalar multiplication.
     \begin{nonnormative}
     The corresponding definition of \cref{tab:product} does not generalize to complex numbers in the expected way.
+    It is possible to define a specific product function taking two array arguments handling this case.
     \end{nonnormative}
   \item
     If the inner dimension for \lstinline!$\mathit{matrix}$ * $\mathit{vector}$! or \lstinline!$\mathit{matrix}$ * $\mathit{matrix}$! is zero, this uses the overloaded \lstinline!'0'! operator of the result array element type.  If the operator \lstinline!'0'! is not defined for that class it is an error if the inner dimension is zero.
   \end{enumerate}
-
+  
 \begin{nonnormative}
 For array multiplication it is assumed that the scalar elements
 form a non-commutative ring that does not necessarily have a
