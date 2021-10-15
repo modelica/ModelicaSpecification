@@ -2409,7 +2409,7 @@ package ExternalFunctions
     der(x) = -ExternalFunc3(x);
   end OtherExample;
 
-  function ExternalFunc1
+  function ExternalFunc1 "Include header file for library implementation"
     input Real x;
     output Real y;
   external "C"
@@ -2418,10 +2418,10 @@ package ExternalFunctions
                  Include = "#include \"ExternalFunc1.h\"",
                  SourceDirectory =
                   "modelica://ExternalFunctions/Resources/Source");
-      // The SourceDirectory is the default and thus redundant.
+      // The specified SourceDirectory is the default and thus redundant.
   end ExternalFunc1;
 
-  function ExternalFunc2
+  function ExternalFunc2 "Include header file for library implementation"
     input Real x;
     output Real y;
   external "C"
@@ -2429,7 +2429,7 @@ package ExternalFunctions
                  Include = "#include \"ExternalFunc2.h\"");
   end ExternalFunc2;
 
-  function ExternalFunc3
+  function ExternalFunc3 "Include source file"
     input Real x;
     output Real y;
   external "C"
@@ -2472,7 +2472,7 @@ and one library file may contain multiple functions.
 The C-source \filename{ExternalFunc3.c} will be included fully, and is not part of any library.
 That is not ideal for C-code, but it works for small functions.
 
-It is not specified how the C-sources in \filename{Source} will be used to build the libraries.
+It is not specified how the C-sources in the specified \lstinline!SourceDirectory! will be used to build the libraries.
 
 Header file for the function in the dynamic link / shared library
 \filename{ExternalLib2} so that the desired functions are defined to be exported
@@ -2481,7 +2481,9 @@ recommended to use the compiler option \lstinline!-fPIC! to build shared
 libraries or object libraries that are later transformed to a shared
 library):
 \begin{lstlisting}[language=C]
-// File ExternalFunc2.h
+/* File ExternalFunc2.h */
+#ifndef EXTERNAL_FUNC2_H_
+#define EXTERNAL_FUNC2_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -2499,10 +2501,11 @@ extern "C" {
 #  define EXTLIB2_EXPORT
 #endif
 
-EXTLIB2_EXPORT void ExternalFunc2(<function arguments>);
+EXTLIB2_EXPORT double ExternalFunc2(double);
 
 #ifdef __cplusplus
 }
+#endif
 #endif
 \end{lstlisting}
 \end{example}
