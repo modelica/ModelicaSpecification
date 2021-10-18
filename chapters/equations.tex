@@ -887,16 +887,19 @@ The level number increases by 1 for each level down in the model component hiera
 The model component hierarchy level number is used to give \lstinline!start!-attribute a confidence number, where a lower number means that the \lstinline!start!-attribute is more confident.
 Loosely, if the \lstinline!start!-attribute is set or modified on level $i$ then the confidence number is $i$.
 If a \lstinline!start!-attribute is set by a possibly hierarchical modifier at the top level, then this \lstinline!start!-attribute has the highest confidence, namely 1 irrespectively on what level, the variable itself is declared.
-In case this process is \emph{tied} and at least one of the \lstinline!start!-attributes is equal to a parameter, which may be equal to another parameter (etc), the confidence number is propagated through these bindings and used to break the tie.
-Note that this is only applied if the expression is exactly the parameter - not an expression depending on one or more parameters.
+If the \lstinline!start!-attribute is set equal to parameter, which may be equal which may be equal to another parameter (etc), the lowest confidence number of these bindings are used.
+(In almost all cases that is the confidence number of the last parameter binding in the chain.)
+Note that this is only applied if the expression is exactly the parameter -- not an expression depending on one or more parameters.
+In case the confidence number considering parameter bindings is tied the confidence number of the \lstinline!start!-attribute is used to break the tie, if unequal.
 \begin{example}
-Simplified example showing the priority of start-values.
+Simplified examples showing the priority of start-values.
+The example \lstinline!M3! shows that it is important that parameter-confidence is used directly and not only when the other priority is tied.
 \begin{lstlisting}[language=modelica]
 model M1
   Real x(start = 4.0);
   Real y(start = 5.0);
 equation
-  x=y;
+  x = y;
 end M1;
 model M2
   parameter Real xStart = 4.0;
@@ -904,14 +907,31 @@ model M2
   Real x(start = xStart);
   Real y(start = yStart);
 equation
-  x=y;
+  x = y;
 end M2;
+model M3
+  model MLocal
+    parameter Real xStart = 4.0;
+    Real x(start = xStart);
+  end MLocal;
+  model MLocalWrapped
+    parameter Real xStart = 4.0;
+    MLocal m(xStart = xStart);
+  end MLocalWrapped;
+  MLocal mx;
+  MLocalWrapped my(xStart = 3.0);
+equation
+  mx.x = my.y;
+end M3;
 M1 m1(x(start = 3.0));
 // Using m1.x.start = 3.0 with confidence number 1
 // over m1.y.start = 5.0 with confidence number 2
 M2 m2(xStart = 3.0);
-// Using m2.x.start = m2.xStart = 3.0 with confidence number 2, and tie-breaker 1
-// over m2.y.start = m2.yStart = 5.0 with confidence number 2, and tie-breaker 2
+// Using m2.x.start = m2.xStart = 3.0 with confidence number 1
+// over m2.y.start = m2.yStart = 5.0 with confidence number 2
+M3 m3;
+// Using m3.my.x = m3.my.xStart = 3.0 with confidence number 1
+// over m3.mx.x = m3.mx.xStart = 4.0 with confidence number 2
 \end{lstlisting}
 \end{example}
 \end{nonnormative}
