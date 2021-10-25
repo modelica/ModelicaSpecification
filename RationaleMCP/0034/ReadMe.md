@@ -19,6 +19,7 @@ See [design](ternary.md) for details.
 | Date | Description |
 | --- | --- |
 | 2019-11-22 | Henrik Tidefelt. Filling this document with initial content. |
+| 2021-10-25 | Henrik Tidefelt. Introducing collection of examples. |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
@@ -32,8 +33,12 @@ The introduction of the keyword `unknown` introduces a backwards incompatibility
 ## Tool Implementation
 A prototype has been implemented in a development version of Wolfram SystemModeler.  In the prototype, the type is named `__Wolfram_Ternary`, and the third truth value is named `__Wolfram_unknown`.
 
+The prototype is complemented with a collection of example models, provided in a separate repository: https://github.com/henrikt-ma/TernaryTest
+
 ### Experience with Prototype
 Although introducing a new built-in type is a change that ammounts to a large number of smaller changes, finding the places in a code base that need attention is easy due to the similarity between `Ternary` and `Boolean`.  In a similar way, the implicit conversion from `Boolean` to `Ternary` is a feature that can be implemented by glancing at the handling of implicit conversion from `Integer` to `Real`.
+
+There are still a few examples in the collection that are not supported by the prototype.  Fixing the the last examples is work in progress and none of them seem tricky.
 
 Regarding the application of this MCP to a new attribute called `visible` in the `Dialog` annotation, the proposed choice of Kleene logic certainly gets the job done.  The default value of `unknown` which means _apply tool-specific rules for visibility_, a user can easily write a ternary logical expression to override the default in either way, and the expression may also evaluate to `unknown` in cases where the user doesn't want to fall back on the tool logic.  Thanks to the implicit cast from `Boolean`, most uses of `visible` would probably be in the simple forms `visible = true` or `visible = false`.  However, upon closer acquaintance with the Kleene logic, which still appears as the most natural choice for `Ternary`, it has been questioned whether this is the best way to model the absence of information, see [rationale](rationale.md#The-option-type-alternative).
 
