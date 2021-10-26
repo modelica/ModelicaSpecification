@@ -57,10 +57,10 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
 - [ ] Handling of parameters treated as constants.
 - [ ] Get rid of `protected`.
-- [ ] Investigate need for `final`.
-- [x] Origin of modifications (for start value prioritization).
-- [ ] Get rid of `false` as default for `fixed`.
-- [ ] Restricted rules for use of `start` attribute for parameter initialization.
+- [x] Investigate need for `final`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2994)
+- [x] Origin of modifications (for start value prioritization). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bstart-value-prioritization/RationaleMCP/0031/differences.md#guess-value-prioritization), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2997)
+- [x] Get rid of `false` as default for `fixed`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2996)
+- [ ] Restricted rules for use of `start` attribute for parameter initialization. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2995)
 - [x] Get rid of record member variability prefixes `constant` and `parameter`. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Brecord-member-variability/RationaleMCP/0031/differences.md#variability-in-record-member-declaration), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2694) (Not gone, but restricted.)
 - [x] Simplify modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2BModifications/RationaleMCP/0031/differences.md#simplify-modifications), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2558) (Remaining parts covered by other items.)
 - [ ] Simplify value modifications. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bvalue-modification/RationaleMCP/0031/differences.md#Value-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2747)
