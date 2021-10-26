@@ -9,7 +9,7 @@ In #2468, we ended up discussing type aliases for scalar variables, and finally 
 
 ```
 type Length = Real(quantity = "Length", unit = "m", displayUnit = "m");
-Length x(min = 0, start = 1);
+Length thickness(min = 0, displayUnit = "cm");
 type BigLength = Length(nominal = 1e6);
 ```
 
