@@ -667,7 +667,7 @@ initial equation
   prioritize('x', 2); /* The guess value priority of 'x' is 2. */
 ```
 
-The second argument of `prioritize` shall be given directly by a special kind of _priority expression_, see below.
+The priority in the second argument of `prioritize` shall be an `Integer` constant.
 
 For a hierarchical variable where an entire sub-tree of the hierarchy has the same priority, it is sufficient to just specify a single priority for then entire sub-tree.  For example, instead of
 ```
@@ -702,6 +702,8 @@ initial equation
   prioritize('r'.'x', 100); /* Not allowed, even though it is consistent with earlier specification. */
 ```
 
+#### Syntactic sugar: Prioritized guess value parameter equations
+
 A syntactic sugar is provided for guess value parameter equations:
 ```
   parameter equation guess('x') = prioritize(0.5, 2);
@@ -714,9 +716,7 @@ initial equation
 ```
 That is, in the syntactic sugar form, `prioritize` is used with different arguments compared to its basic form in an initial equation.  In the syntactic sugar form, `prioritize` is wrapped around the right hand side of the parameter equation, and the variable to which the priority belongs is given by the left hand side, extracted from the `guess` wrapper.
 
-#### Priority expressions
-
-A _priority expression_ is always required in the second argument to `prioritize`, and cannot appear anywhere else.  The most simple form of a priority expression is just an integer number, and using the basic initial equation syntax this can be used to specify priorities for variables that consist of a complex hierarchy with records and arrays:
+To be able to use the prioritized guess value parameter equation when different parts of a complex variable have different priorities it may be necessary to split a complex guess value parameter equation into smaller parts.  For example, consider this model with a complex guess value parameter equation:
 ```
 record 'R'
   Real[3] 'a';
@@ -727,56 +727,16 @@ model 'M'
   'R' 'x';
   parameter equation guess('x') = 'R'({0.1, 0.2, 0.3}, 0.4);
 initial equation
-  prioritize('x'.'a'[2], 100);
-  prioritize('x'.'a'[3], 101);
+  prioritize('x'.'a', 100);
   prioritize('x'.'b', 102);
 end 'M';
 ```
-
-Since this way of breaking down specification of priority to parts of the variable hierarchy where all priorities are equal don't work in the syntactic sugar form, the full definition of a _priority expression_ allows the variable hierarchy to be mirrored.  It is defined as either of:
-- An integer number.
-- The literal `false` representing not having a priority at all (for example, no modification at all of `start` in full Modelica).
-- An explicit vector of priority expressions: `{p1, p2, …, pn}`
-- A record constructor call (possibly using named arguments), but where the normal argument expressions have been replaced by priority expressions: `'R'(px, py)`
-
-This provides an alternative way of giving the priorities in the previous example:
+To use the prioritized guess value parameter equation form instead, it needs to be split in two:
 ```
-initial equation
-  prioritize('x', 'R'({false, 100, 101}, 102));
+  parameter equation guess('x'.'a') = prioritize({0.1, 0.2, 0.3}, 100);
+  parameter equation guess('x'.'b') = prioritize(0.4, 102);
 ```
-More importantly, this also allows the syntactic suger in the guess value parameter equation to be used:
-```
-  parameter equation guess('x') = prioritize('R'({0.1, 0.2, 0.3}, 0.4), 'R'({false, 100, 101}, 102));
-```
-
-By completely mirroring a complex variable's structure in the priority expression, individual priorities can be given to each of its scalar parts.  To make specification of priorities more compact, the basic rule above that allows a single priority to be given at once for an entire sub-tree is generalized and rephrased as simplifying rewriting rules for priority expressions, to be applied bottom-up:
-- When all elements of an array have equal priority it is allowed to replace the explicit vector of equal priority expressions by the priority expression for a single element.
-- When all record members have the equal priority it is allowed to replace the record constructor call by the priority expression for a single record member.  Note that the bottom-up procedure means that the record members don't need to have the same structure as long as their priority expressions can be made equal.
-
-In the priority expressions the record constructor names are often redundant, but are sometimes needed to figure out at what level all record members have equal priority:
-```
-model 'M'
-  record 'R'
-    Real 'x';
-    Real 'y';
-  end 'R';
-  record 'S'
-    'R' 'a';
-    'R' 'b';
-  end 'S';
-  'S' 's1';
-  'S' 's2';
-
-  /* The following two are equivalent: */
-  parameter equation guess('s1') = prioritize(…, 'S'(3, 4));
-  parameter equation guess('s1') = prioritize(…, 'S'('R'(3, 3), 'R'(4, 4)));
-
-  /* The following two are equivalent: */
-  parameter equation guess('s2') = prioritize(…, 'R'(3, 4));
-  parameter equation guess('s1') = prioritize(…, 'S'('R'(3, 4), 'R'(3, 4)));
-
-end 'M';
-```
+(Combining a single prioritized guess value parameter equation for `'x'` with more specific specification overriding the priority for, say, `'x'.'b'` is possible, but not recommended.)
 
 ### The `nominal` attribute
 
