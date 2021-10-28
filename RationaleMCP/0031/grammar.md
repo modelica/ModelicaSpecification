@@ -144,7 +144,7 @@ end _F;
 
 > _external-function-call_ → ( _component-reference_ **=** )? _IDENT_ `[(]` _expression-list_? `[)]`
 
-> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_
+> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_ | _parameter-equation_
 
 > _normal-element_ →\
 > &emsp; ~~**redeclare**?~~\
@@ -154,6 +154,10 @@ end _F;
 > &emsp; | _component-clause_\
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
+
+> _parameter-equation_ → **parameter** **equation** _guess-value_ **=** _expression_ _comment_
+
+> _guess-value_ → **guess** `[(]` _component-reference_ `[)]`
 
 > ~~_import-clause_ →\
 > &emsp; **import**\
