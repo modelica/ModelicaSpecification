@@ -132,7 +132,8 @@ end _F;
 > &emsp; (_generic-element_ **;**)* \
 > &emsp; ( **public** (_generic-element_ **;**)* \
 > &emsp; | **protected** (_generic-element_ **;**)* \
-> &emsp; | **initial**? **equation** ( _equation_ **;** )* \
+> &emsp; | **equation** ( _equation_ **;** )* \
+> &emsp; | **initial** **equation** ( _initial-equation_ **;** )* \
 > &emsp; | **initial**? **algorithm** ( _statement_ **;** )* \
 > &emsp; )* \
 > &emsp; ( **external** _language-specification_?\
@@ -155,7 +156,10 @@ end _F;
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
 
-> _parameter-equation_ → **parameter** **equation** _guess-value_ **=** _expression_ _comment_
+> _parameter-equation_ →\
+> &emsp; **parameter** **equation** _guess-value_ **=**\
+> &emsp; ( _expression_ | _prioritize-expression_ )\
+> &emsp; _comment_
 
 > _guess-value_ → **guess** `[(]` _component-reference_ `[)]`
 
@@ -250,6 +254,8 @@ end _F;
 > &emsp; )\
 > &emsp; _comment_
 
+> _initial-equation_ → _equation_ | _prioritize-equation_
+
 > _statement_ →\
 > &emsp; ( _component-reference_ ( **:=** _expression_ | _function-call-args_ )\
 > &emsp; | `[(]` _output-expression-list_ `[)]` **:=** _component-reference_ _function-call-args_\
@@ -320,6 +326,12 @@ end _F;
 > &emsp; **end** **when**
 
 > ~~_connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`~~
+
+> _prioritize-equation_ → **prioritize** `[(]` _component-reference_ **,** _priority_ `[)]`
+
+> _prioritize-expression_ → **prioritize** `[(]` _expression_ **,** _priority_ `[)]`
+
+> _priority_ → _expression_
 
 
 ## Expressions
