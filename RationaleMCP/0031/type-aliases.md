@@ -88,11 +88,11 @@ record PositiveCone3D
 end PositiveCone3D;
 
 record PositiveCone3DPair_A
-  Length[2, 3] member(each min = 0.0, each max = {10.0, 11.0, 12.0}, each start = {5.0, 5.5, 6.0});
+  Length[2, 3] member(each min = 0.0, each max = {10.0, 11.0, 12.0}, each unbounded = {false, true, false});
 end PositiveCone3DPair_A;
 
 record PositiveCone3D_Bounded "Bounded PositiveCone3D with different upper bounds"
-  PositiveCone3D member(member(max = {10.0, 11.0, 12.0}, start = {5.0, 5.5, 6.0})); /* Note appearance of 'member' from PositiveCone3D. */
+  PositiveCone3D member(member(max = {10.0, 11.0, 12.0}, unbounded = {false, true, false})); /* Note appearance of 'member' from PositiveCone3D. */
 end PositiveCone3D_Bounded;
 
 record PositiveCone3DPair_B
@@ -100,7 +100,7 @@ record PositiveCone3DPair_B
 end PositiveCone3DPair_B;
 
 record PositiveCone3DPair_C
-  PositiveCone3D member[2](each member(max = {10.0, 11.0, 12.0}, start = {5.0, 5.5, 6.0})); /* Note appearance of 'member' from PositiveCone3D. */
+  PositiveCone3D member[2](each member(max = {10.0, 11.0, 12.0}, unbounded = {false, true, false})); /* Note appearance of 'member' from PositiveCone3D. */
 end PositiveCone3DPair_C;
 ```
 
@@ -113,22 +113,22 @@ type Point3D = Length[3];
 
 type PositiveCone3D = Length[3](min = 0.0);
 
-type PositiveCone3DPair_A = Length[2, 3](min = 0.0, max = 10.0, start = 5.0);
+type PositiveCone3DPair_A = Length[2, 3](min = 0.0, max = 10.0, unbounded = false);
 ```
 
 It gets more complicated with nested array types:
 
 ```
-type PositiveCone3DPair_B = PositiveCone3D[2](max = 10.0, start = 5.0); /* Allowed? */
+type PositiveCone3DPair_B = PositiveCone3D[2](max = 10.0, unbounded = false); /* Allowed? */
 
-type PositiveCone3DPair_C = PositiveCone3D[2](max = {10.0, 11.0, 12.0}, start = {5.0, 5.5, 6.0}); /* Allowed? */
+type PositiveCone3DPair_C = PositiveCone3D[2](max = {10.0, 11.0, 12.0}, unbounded = {false, true, false}); /* Allowed? */
 ```
 
 If those are not allowed, one would be forced to use an intermediate record with dummy member as workaround:
 
 ```
 record PositiveCone3D_Bounded "Bounded PositiveCone3D with different upper bounds"
-  PositiveCone3D member(max = {10.0, 11.0, 12.0}, start = {5.0, 5.5, 6.0});
+  PositiveCone3D member(max = {10.0, 11.0, 12.0}, unbounded = {false, true, false});
 end PositiveCone3D_Bounded;
 
 type PositiveCone3DPair_D = PositiveCone3D_Bounded[2];
