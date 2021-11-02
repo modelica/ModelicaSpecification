@@ -670,7 +670,7 @@ initial equation
 
 ### Guess value prioritization
 
-In full Modelica, there is a priority associated with the effective modifier for a variable's `start` attribute.  Details of how the priority is determined are outside the scope of Flat Modelica specification, but Flat Modelica needs a way to directly express a variable's guess value priority as a number (computed based on the full Modelica definition of priority).  
+In full Modelica, there is a priority associated with the effective modifier for a variable's `start` attribute.  Details of how the priority is determined are outside the scope of Flat Modelica specification, but Flat Modelica needs a way to directly express a variable's guess value priority as a number (computed based on the full Modelica definition of priority).
 
 The basic Flat Modelica way of expressing a variable's guess value priority take the form of a special kind of initial equation:
 ```
