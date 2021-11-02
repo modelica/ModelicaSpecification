@@ -680,34 +680,31 @@ initial equation
 
 The second argument of `prioritize` – denoted _priority_ in the grammar – shall be an `Integer` constant.  Lower value means higher priority; that is, when making a choice based on priority, the variable with lower _priority_ value should be given precedence.
 
-For a hierarchical variable where an entire sub-tree of the hierarchy has the same priority, it is sufficient to just specify a single priority for then entire sub-tree.  For example, instead of
+Specification of priority is only allowed for components whose guess value parameter is explicitly present in the model.  Example:
 ```
+  Real 'x';
+  parameter equation guess('x') = 1.1;
+  Real 'y';
+  Real 'z';
 initial equation
-  prioritize('r'.'x'.'a'[2], 100);
-  prioritize('r'.'x'.'a'[3], 100);
-  prioritize('r'.'x'.'b', 100);
-```
-it is sufficient to just specify:
-```
-initial equation
-  prioritize('r'.'x'.'a', 100); /* Giving priority to all elements of 'a', not just at position 2 and 3. */
-  prioritize('r'.'x'.'b', 100);
-```
-or even:
-```
-initial equation
-  prioritize('r'.'x', 100);
+  guess('y') = 1.2;
+  prioritize('x', 1); /* OK: Mentioned in guess value parameter equation. */
+  prioritize('y', 2); /* OK: Mentioned in initial equation. */
+  prioritize('z', 3); /* Error: Guess value is not explicitly mentioned anywhere. */
 ```
 
-More specific specification of priority takes precedence over less specific:
+Array variables are no exception:
 ```
+  Real[3] 'x';
+  parameter equation guess('x') = {1.1, 1.2, 1.3};
 initial equation
-  prioritize('r'.'x', 100);
-  prioritize('r'.'x'.'b', 101); /* More specific, takes precedence over 100. */
+  prioritize('x', 2);
 ```
 
-Multiple specification is an error unless resolved according to precedence rule above.  For example:
+Multiple specification is an error.  For example (here `R` is a record type):
 ```
+  'R' 'r';
+  parameter equation guess('r'.'x') = 1.1;
 initial equation
   prioritize('r'.'x', 100);
   prioritize('r'.'x', 100); /* Not allowed, even though it is consistent with earlier specification. */
@@ -726,28 +723,6 @@ initial equation
   prioritize('x', 2)
 ```
 That is, in the syntactic sugar form, `prioritize` is used with different arguments compared to its basic form in an initial equation.  In the syntactic sugar form, `prioritize` is wrapped around the right hand side of the parameter equation, and the variable to which the priority belongs is given by the left hand side, extracted from the `guess` wrapper.
-
-To be able to use the prioritized guess value parameter equation when different parts of a complex variable have different priorities it may be necessary to split a complex guess value parameter equation into smaller parts.  For example, consider this model with a complex guess value parameter equation:
-```
-record 'R'
-  Real[3] 'a';
-  Real 'b';
-end 'R';
-
-model 'M'
-  'R' 'x';
-  parameter equation guess('x') = 'R'({0.1, 0.2, 0.3}, 0.4);
-initial equation
-  prioritize('x'.'a', 100);
-  prioritize('x'.'b', 102);
-end 'M';
-```
-To use the prioritized guess value parameter equation form instead, it needs to be split in two:
-```
-  parameter equation guess('x'.'a') = prioritize({0.1, 0.2, 0.3}, 100);
-  parameter equation guess('x'.'b') = prioritize(0.4, 102);
-```
-(Combining a single prioritized guess value parameter equation for `'x'` with more specific specification overriding the priority for, say, `'x'.'b'` is possible, but not recommended.)
 
 ### The `nominal` attribute
 
