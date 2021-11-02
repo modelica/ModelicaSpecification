@@ -41,12 +41,25 @@ Of course, the example is too small to illustrate the scalability benefit of typ
 
 ### No type aliases for records
 
-Without type aliases for records, all type abstraction that requires modification of an existing type needs to use a record with dummy member:
+Without type aliases for records there are at least two principal approaches to work around the limitation.
 
+Workaround 1: Use modified copy of `Interval` definition:
 ```
 record PositiveInterval
-  Interval member(low(min = 0.0), high(min = 0.0));
+  Real low(min = 0.0);
+  Real high(min = 0.0);
 end PositiveInterval;
+
+Interval interval1;
+PositiveInterval posinterval1;
+PositiveInterval posinterval2;
+```
+
+Workaround 2: Just use `Interval` and put all modifiers on the instances:
+```
+Interval interval1;
+Interval posinterval1(low(min = 0.0), high(min = 0.0));
+Interval posinterval2(low(min = 0.0), high(min = 0.0));
 ```
 
 ### Record type aliases with attribute modifications
