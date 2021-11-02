@@ -678,7 +678,7 @@ initial equation
   prioritize('x', 2); /* The guess value priority of 'x' is 2. */
 ```
 
-The second argument of `prioritize` – denoted _priority_ in the grammar – shall be an `Integer` constant.
+The second argument of `prioritize` – denoted _priority_ in the grammar – shall be an `Integer` constant.  Lower value means higher priority; that is, when making a choice based on priority, the variable with lower _priority_ value should be given precedence.
 
 For a hierarchical variable where an entire sub-tree of the hierarchy has the same priority, it is sufficient to just specify a single priority for then entire sub-tree.  For example, instead of
 ```
