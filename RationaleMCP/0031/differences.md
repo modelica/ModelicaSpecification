@@ -701,13 +701,21 @@ initial equation
   prioritize('x', 2);
 ```
 
-Multiple specification is an error.  For example (here `R` is a record type):
+Multiple specification is an error.  For example:
 ```
-  'R' 'r';
+  Real 'x';
+  parameter equation guess('x') = 1.1;
+initial equation
+  prioritize('x', 100);
+  prioritize('x', 100); /* Not allowed, even though it is consistent with earlier specification. */
+```
+
+Since records themselves don't have `start` in full Modelica, the guess value parameter and prioritization mechanism gets applied to the members of the record:
+```
+  'R' 'r'; /* 'R' is a record type. */
   parameter equation guess('r'.'x') = 1.1;
 initial equation
   prioritize('r'.'x', 100);
-  prioritize('r'.'x', 100); /* Not allowed, even though it is consistent with earlier specification. */
 ```
 
 #### Syntactic sugar: Prioritized guess value parameter equations
