@@ -116,6 +116,29 @@ following the usual rules for inheritance of classes (\cref{inheritance-modifica
 For example, it is possible to modify and extend a \lstinline!function! class to add default values for input variables.
 \end{nonnormative}
 
+A special case is defining a \lstinline!function! as a short-class definition with modifiers for inputs inside a model.
+These default values, unless overridden in the function call, will then be considered for variability similarly as if they were given in the function call, see \cref{function-variability}.
+
+\begin{example}
+Demonstrating the variability implications.
+Note that functions cannot directly use non-constants in enclosing scopes, so we cannot write \lstinline!input Real x1 = x;! directly in \lstinline!foo!.
+\begin{lstlisting}[language=modelica]
+model M
+  function foo
+    input Real x1;
+    input Real x2 = 2;
+    output Real y;
+  algorithm
+    y := x1 + x2;
+  end foo;
+  Real x = time;
+  function f1 = foo(x1 = x);
+  constant Real z1 = f1(x1 = 2); // Legal, since 'x1' has a new value.
+  constant Real z2 = f1(x2 = 1); // Illegal, since 'x' is seen as an argument.
+end M;
+\end{lstlisting}
+\end{example}
+
 \section{Function as a Specialized Class}\label{function-as-a-specialized-class}
 
 The function concept in Modelica is a specialized class (\cref{specialized-classes}).
