@@ -394,6 +394,104 @@ The handling of guess values needed to solve parameters from nonlinear equations
 
 ## Attributes `start`, `fixed`, and final modification of `start`
 
+### Background for start-values in Modelica
+
+The handling of start-values in Modelica is complicated by several aspects:
+- The interaction between start and fixed.
+- The priorities for non-fixed start-values.
+- Whether start-values can be modified or not afterwards. This is related to final start-values.
+This information is hidden and not easy to understand, and is not even easy to modify in Modelica.
+As a simplifying assumption we could assume that only literal start-values can be modified afterwards (but not that all literal start-values can be modified).
+
+Flat Modelica cannot simply preserve the priorities, since they are based on where a modification occurs - and that information is gone.
+Removing the complexity of priorities would require that start-values have been prioritized before generating Flat Modelica, which requires that index-reduction and state-selection is performed earlier, which is contrary to the goal.
+Replacing start-values by initial equations would require that prioritization has been done, and also prevent experimenting with novel ideas for initialization; see "Investigating Steady State Initialization for Modelica models" by Olsson & Henningsson (Modelica 2021 conference).
+Treating fixed and non-fixed variables differently doesn't work if we want to preserve arrays, since different array elements may have different values for `fixed`.
+
+To consider different start-values consider the following Modelica model:
+```
+model B
+  model A
+    model M
+      Real x(start=1.0);
+      Real z;
+      Real y;
+    equation 
+      y=5*x;
+      z=7*x;
+      x+y+z=sin(time+x+y+z);
+    end M;
+    M m1;
+    M m2(z(start=2.0));
+    M m3(y(start=3.0));
+  end A;
+  B b(m2(y(start=4.0)))
+end B;
+```
+Variable | Start-value | Priority in Modelica
+--------|--------------|------
+'b.m1.x' | 1.0 | 3
+'b.m1.y' | |
+'b.m1.z' | |
+||
+'b.m2.x' | 1.0 | 3
+'b.m2.y' | 4.0 | 1
+'b.m2.z' | 2.0 | 2
+||
+'b.m3.x' | 1.0 | 3
+'b.m3.y' | 3.0 | 2
+'b.m3.z' | |
+
+In this case it is recommended to use 'm1.x', 'm2.y', and 'm3.y' as iteration variables in the non-linear equations.
+
+For initialization these start-values can also be used for selecting additional start-values and also considering fixed-attributes.
+
+### Heterongenous arrays with fixed
+The fixed attribute can vary between array elements in Modelica.
+
+A non-contrived example is:
+```
+block SimpleFilter
+  parameter Real k=2;
+  Real x[3](each start=0.0,fixed={false,true,true});
+  output Real y(start=1.0,fixed=true)=k*x[1];
+  input Real u;
+equation 
+  der(x)=cat(1,x[2:end],{u});
+end SimpleFilter;
+```
+In this case the first state is not fixed, instead the output is fixed (in some cases the output may be in another sub-model).
+
+### Start-value for parameters
+For parameters the start-value is normally irrelevant and missing.
+If the parameter lacks a normal value the start-value can be used as parameter-value after a warning, this can be done before generating FlatModelica (if `fixed=false`).
+
+The real problem is if the parameter has `fixed=false` and no value (but possibly a start-value).
+
+As an example:
+```
+model SteadyStateInit
+  parameter Real p(start=2, fixed=false);
+  Real x(start=10, fixed=true);
+initial equation
+  der(x)=0;
+equation
+  der(x)=10-p*x;
+end SteadyStateInit;
+```
+In more complicated this can be the length of a mechnical arm that must be adjusted based on initial configuration.
+
+Which can be transformed to:
+```
+  initial parameter Real 'p'(start=2);
+  Real 'x';
+initial equation
+  der('x')=0;
+equation
+  der('x')=10-'p'*'x';
+end SteadyStateInit;
+```
+
 ### Implicitly declared guess value parameter
 
 Instead of controlling the guess values for the variable `x` via its `start` attribute as in full Modelica, Flat Modelica makes use of an implicitly declared parameter `guess('x')`.  This is called the _guess value parameter_ for `'x'`, and has the same type as `x`.
