@@ -430,19 +430,19 @@ end A;
 ```
 Variable | Start-value | Priority in Modelica
 --------|--------------|------
-'b.m1.x' | 1.0 | 3
-'b.m1.y' | |
-'b.m1.z' | |
+`b.m1.x` | 1.0 | 3
+`b.m1.y` | |
+`b.m1.z` | |
 ||
-'b.m2.x' | 1.0 | 3
-'b.m2.y' | 4.0 | 1
-'b.m2.z' | 2.0 | 2
+`b.m2.x` | 1.0 | 3
+`b.m2.y` | 4.0 | 1
+`b.m2.z` | 2.0 | 2
 ||
-'b.m3.x' | 1.0 | 3
-'b.m3.y' | 3.0 | 2
-'b.m3.z' | |
+`b.m3.x` | 1.0 | 3
+`b.m3.y` | 3.0 | 2
+`b.m3.z` | |
 
-In this case it is recommended to use `m1.x`, `m2.y`, and `m3.y` as iteration variables in the non-linear equations.
+In this case it is recommended to use `b.m1.x`, `b.m2.y`, and `b.m3.y` as iteration variables in the non-linear equations.
 
 For initialization these start-values can also be used for selecting additional start-values while also considering fixed-attributes.
 
