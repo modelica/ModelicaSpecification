@@ -444,7 +444,7 @@ Variable | Start-value | Priority in Modelica
 
 In this case it is recommended to use `m1.x`, `m2.y`, and `m3.y` as iteration variables in the non-linear equations.
 
-For initialization these start-values can also be used for selecting additional start-values and also considering fixed-attributes.
+For initialization these start-values can also be used for selecting additional start-values while also considering fixed-attributes.
 
 ### Heterongenous arrays with fixed
 The fixed attribute can vary between array elements in Modelica.
@@ -481,7 +481,7 @@ end SteadyStateInit;
 ```
 In more complicated this can be the length of a mechnical arm that must be adjusted based on initial configuration.
 
-Which can be transformed to:
+Which can be transformed to Flat Modelica:
 ```
   initial parameter Real 'p'(start=2);
   Real 'x';
