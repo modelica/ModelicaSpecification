@@ -410,12 +410,12 @@ Treating fixed and non-fixed variables differently doesn't work if we want to pr
 
 To consider different start-values consider the following Modelica model:
 ```
-model B
-  model A
+model A
+  model B
     model M
       Real x(start=1.0);
-      Real z;
       Real y;
+      Real z;
     equation 
       y=5*x;
       z=7*x;
@@ -424,9 +424,9 @@ model B
     M m1;
     M m2(z(start=2.0));
     M m3(y(start=3.0));
-  end A;
+  end B;
   B b(m2(y(start=4.0)))
-end B;
+end A;
 ```
 Variable | Start-value | Priority in Modelica
 --------|--------------|------
@@ -442,7 +442,7 @@ Variable | Start-value | Priority in Modelica
 'b.m3.y' | 3.0 | 2
 'b.m3.z' | |
 
-In this case it is recommended to use 'm1.x', 'm2.y', and 'm3.y' as iteration variables in the non-linear equations.
+In this case it is recommended to use `m1.x`, `m2.y`, and `m3.y` as iteration variables in the non-linear equations.
 
 For initialization these start-values can also be used for selecting additional start-values and also considering fixed-attributes.
 
