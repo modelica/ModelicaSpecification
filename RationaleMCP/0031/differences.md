@@ -50,6 +50,14 @@ The rule for `pure(impureFunctionCall(...))` needs to be rephrased to not say _a
 
 This change was made to support the [changed definitions of _constant expression_](#Constant-expressions).
 
+## Function default arguments
+
+TO BE DECIDED
+
+## Record construction
+
+TO BE DECIDED
+
 ## Variability of expressions
 
 ### Constant expressions
