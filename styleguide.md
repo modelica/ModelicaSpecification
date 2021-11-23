@@ -157,7 +157,7 @@ New terminology is either introduced with a `definition` environment, or as part
 When part of the running text, the introduced terminology should be marked with `\firstuse` at the point of the definition.
 As a general rule, terminology introduced with `\firstuse` should appear in the document index, and by default the mandatory argument to `\firstuse` is automatically passed to `\index`.
 To change the appearance of the index entry, the default may be overridden using an optional argument to `\firstuse`, for example, `\firstuse[array!variable]{array variable}`.
-This is also useful when capitalization or plural/singular differs; excapt for things like names, lower case should be used in the index, and terms should typically appear in the singular, for example, `\firstuse[vector]{Vectors}`.
+This is also useful when capitalization or plural/singular differs; except for things like names, lower case should be used in the index, and terms should typically appear in the singular, for example, `\firstuse[vector]{Vectors}`.
 On rare occasions, one just wants the standardized typesetting of `\firstuse` but no entry in the index, which can be achieved by passing an em-dash for the optional argument, for example, \firstuse[---]{constant}.
 When suppressing the appearnce in the index, it is recommended to add a comment in the source explaining why.
 It is common that the use of `\firstuse` is directly followed by additional calls to `\index` for adding the terminology in more variants to the document index.
