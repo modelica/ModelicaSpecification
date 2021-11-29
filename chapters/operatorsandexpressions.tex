@@ -27,12 +27,18 @@ An operator with higher precedence is evaluated before an operator with lower pr
 
 The following table presents all the expression operators in order of precedence.
 \begin{table}[H]
+\caption{%
+Operators in order of precedence from highest to lowest, as derived from the Modelica grammar in \cref{modelica-concrete-syntax}.
+All operators are binary except the postfix operators and those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
 % Beware that the array construction operator, normally expressed as \lstinline!{ }! needs escaped braces inside \caption.
 % This isn't handled correctly by LaTeXML, as reported here:
 % - https://github.com/brucemiller/LaTeXML/issues/1377
-\caption{%
-Operators in order of precedence from highest to lowest, as derived from the Modelica grammar in \cref{modelica-concrete-syntax}.
-All operators are binary except the postfix operators and those shown as unary together with \emph{expr}, the conditional operator, the array construction operator \lstinline!\{ \}! and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.
+\ifpdf
+\lstinline!\{ \}! % Intentional space at end of line.
+\else
+\lstinline!{ }! % Intentional space at end of line.
+\fi
+and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.
 Operators with the same precedence occur at the same table row.
 }\label{tab:operator-precedence}
 \begin{center}
@@ -87,16 +93,17 @@ The array range operator is non-associative.
 \begin{nonnormative}
 The unary minus and plus in Modelica is slightly different than in Mathematica\footnote{\emph{Mathematica} is a registered trademark of Wolfram Research Inc.} and in MATLAB\footnote{\emph{MATLAB} is a registered trademark of MathWorks Inc.}, since the following expressions are illegal (whereas in Mathematica and in MATLAB these are valid expressions):
 \begin{lstlisting}[language=modelica]
-2*-2  // = -4 in Mathematica/MATLAB; is illegal in Modelica
---2   // = 2 in Mathematica/MATLAB; is illegal in Modelica
-++2   // = 2 in Mathematica/MATLAB; is illegal in Modelica
-2--2  // = 4 in Mathematica/MATLAB; is illegal in Modelica
+2*$\hspace{0pt}$-2 // = -4 in Mathematica/MATLAB; is illegal in Modelica
+-$\hspace{0pt}$-2  // = 2 in Mathematica/MATLAB; is illegal in Modelica
++$\hspace{0pt}$+2  // = 2 in Mathematica/MATLAB; is illegal in Modelica
+2-$\hspace{0pt}$-2 // = 4 in Mathematica/MATLAB; is illegal in Modelica
 \end{lstlisting}
+% Using $\hspace{0pt}$ to work around https://github.com/brucemiller/LaTeXML/issues/1399
 
-Non-associative exponentiation and array range operator:
+Non-associative exponentiation and array range operator (note that the array range operator only takes scalar operands):
 \begin{lstlisting}[language=modelica]
-x^y^z         // Not legal, use parenthesis to make it clear
-a:b:c:d:e:f:g // Not legal, and scalar arguments gives no legal interpretation.
+x ^ y ^ z     // Not legal, use parentheses to make it clear.
+a : b : c : d // Not legal, and parentheses cannot make it legal.
 \end{lstlisting}
 \end{nonnormative}
 
@@ -1231,7 +1238,6 @@ Note that \lstinline!smooth! does not guarantee a smooth output if any of the oc
 \begin{example}
 \begin{lstlisting}[language=modelica]
   Real x, y, z;
-  parameter Real p;
 equation
   x = if time < 1 then 2 else time - 2;
   z = smooth(0, if time < 0 then 0 else time);
@@ -1391,9 +1397,23 @@ end Test;
 \end{lstlisting}
 \end{example}
 
+\subsection{Function Variability}\label{function-variability}
+
+The variability of function calls needs to consider both the variability of arguments directly given in the function and the variability of the used default arguments, if any.
+This is especially a concern for functions given as a short class, see \cref{inheritance-of-functions}.
+This has additional implications for redeclarations, see \cref{function-compatibility}.
+The purity of the function, see \cref{pure-modelica-functions}, does not influence the variability of the function call.
+
+\begin{nonnormative}
+The restrictions for calling functions declared as \lstinline!impure! serve a similar purpose as the variability restrictions, see \cref{pure-modelica-functions}, and thus it is not necessary to consider purity in the definition of variability.
+Consider a function reading an external file and returning some value from that file.
+Different uses can have the file updated before the simulation (as a parameter-expression), or during the simulation (as a discrete-time expression).
+Thus it depends on the use case and the specific file, not the function itself, and it would even be possible to update the file in continuous time (as part of an algorithm) and still use the same function.
+\end{nonnormative}
+
 \subsection{Constant Expressions}\label{constant-expressions}
 
-Constant expressions\index{constant expression}\index{expression variability!constant} are:
+Constant expressions\index{constant!expression}\index{expression variability!constant} are:
 \begin{itemize}
 \item
   \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!, and \lstinline!enumeration! literals.
@@ -1414,7 +1434,7 @@ Constant expressions\index{constant expression}\index{expression variability!con
 
 \subsection{Parameter Expressions}\label{parameter-expressions}
 
-Parameter expressions\index{parameter expression}\index{expression variability!parameter}\index{parametric variability|see{parameter expression}} are:
+Parameter expressions\index{parameter!expression}\index{expression variability!parameter}\index{parametric variability|see{parameter, expression}} are:
 \begin{itemize}
 \item
   Constant expressions.
@@ -1444,7 +1464,7 @@ Parameter expressions\index{parameter expression}\index{expression variability!p
 
 \subsection{Discrete-Time Expressions}\label{discrete-time-expressions}
 
-Discrete-time expressions\index{discrete-time expression}\index{expression variability!discrete-time} are:
+Discrete-time expressions\index{discrete-time!expression}\index{expression variability!discrete-time} are:
 \begin{itemize}
 \item
   Parameter expressions.
@@ -1483,7 +1503,7 @@ This is called the \firstuse{discrete-valued equation variability rule}\index{di
 For a scalar equation, the rule follows from the observation that a discrete-valued equation does not provide sufficient information to solve for a continuous-valued variable.
 Hence, and according to the perfect matching rule (see \cref{synchronous-data-flow-principle-and-single-assignment-rule}), such an equation must be used to solve for a discrete-valued variable.
 By the interpretation of \eqref{eq:dae-discrete-valued} in \cref{modelica-dae-representation}, it follows that one of \lstinline!expr1! and \lstinline!expr2! must be the variable, and the other expression its solution.
-Since a discrete-valued variable is a discrete-time variable, it follows that its solution on the other side of the equation must have at most discrete-time variability.
+Since a discrete-valued variable is a discrete-time expression, it follows that its solution on the other side of the equation must have at most discrete-time variability.
 That is, both sides of the equation are discrete-time expressions.
 
 For example, this rule shows that (outside of a \lstinline!when!-clause) \lstinline!noEvent! cannot be applied to either side of a \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String!, or \lstinline!enumeration! equation, as this would result in a non-discrete-time expression.
