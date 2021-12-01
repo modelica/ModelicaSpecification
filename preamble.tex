@@ -90,6 +90,8 @@
 
 % For solving issue with see-also entries in index, see
 % - https://tex.stackexchange.com/questions/231840/what-is-the-proper-use-of-several-seealso-in-the-same-index-entry-with-makeinde
+% For example, this is how to create a see-also item under "declaration equation":
+%   \index{declaration equation!zzzzz@\igobble |seealso{binding equation}}
 \def\igobble#1 {}
 
 % Providing command that other authors seem to take for granted.
@@ -223,12 +225,30 @@
 }
 
 % Like \emph, but marking this as the place where new terminology is introduced.
-% In the future, we can change this to something that will automatically add this
-% to an index/glossary.
-\newcommand{\firstuse}[1]{\emph{#1}}
+% By default, the argument is added to the document index as is, but this can be overridden using the optional argument.
+\makeatletter% As long as this file isn't a normal package included with \usepackage...
+\newcommand{\firstuse}[2][\@nil]{%
+  \emph{#2}%
+  \def\tmp{#1}%
+  \def\skipindex{---}% Special string for saying "don't add to index"
+  \ifx\tmp\@nnil
+    % Default case: Use mandatory argument also for document index.
+    \index{#2}%
+  \else
+    \ifx\tmp\skipindex
+      % Don't add anything to document index; \firstuse is only used for purposes of typesetting.
+    \else
+      % Add custom entry to document index.
+      \index{#1}%
+    \fi%
+  \fi%
+}
+\makeatother% As long as this file isn't a normal package included with \usepackage...
+
 
 % Like \firstuse, but when speaking of a term that hasn't been introduced.
-\newcommand{\willintroduce}[1]{\emph{#1}}
+% Produces same appearance as \firstuse, but doesn't add anything to the index.
+\newcommand{\willintroduce}[1]{\firstuse[---]{#1}}
 
 % Formatting of table headings.
 \newcommand{\tablehead}[1]{\textit{#1}}
@@ -243,7 +263,7 @@
   {\bfseries} % HEADFONT
   {.}         % HEADPUNCT
   {.75em}     % HEADSPACE
-  {#1~#2. \firstuse{#3}}        % CUSTOM-HEAD-SPEC
+  {#1~#2. \firstuse[---]{#3}}        % CUSTOM-HEAD-SPEC
 \theoremstyle{mlsdefinition}
 % In order to show where the definition ends, we put a \qed at the end.  This can't be done using \newtheoremstyle,
 % so instead we make the 'definition' environment a wrapper around the amsthm-base environment.
