@@ -1,6 +1,6 @@
 \chapter{Equations}\label{equations}
 
-An \firstuse{equation}\index{equation} is part of a class definition.
+An \firstuse{equation} is part of a class definition.
 A scalar equation relates scalar variables, i.e., constrains the values that these variables can take simultaneously.
 When $n$-1 variables of an equation containing $n$ variables are known, the value of the $n$th variable can be inferred (solved for).
 In contrast to an algorithm section, there is no order between the equations in an equation section and they can be solved separately.
@@ -16,7 +16,7 @@ Equations in Modelica can be classified into different categories depending on t
 \item
   Modification equations\index{modification equation|hyperpageit}, which are commonly used to modify attributes of classes (\cref{modifications}).
 \item
-  \firstuse{Binding equations}\index{binding equation}, which include both declaration equations and element modification for the value of the variable itself.
+  \firstuse[binding equation]{Binding equations}, which include both declaration equations and element modification for the value of the variable itself.
   These are considered equations when appearing outside functions, and then a component with a binding equation has its value bound to some expression.
   (Binding equations can also appear in functions, see \cref{initialization-and-binding-equations-of-components-in-functions}.)
 \item
@@ -545,12 +545,12 @@ If computation or communication time has to be simulated, this property has to b
 \end{nonnormative}
 
 \item There must exist a perfect matching of variables to equations after flattening, where a variable can only be matched to equations that can contribute to solving for the variable
-(\firstuse{perfect matching rule}\index{perfect matching rule} -- previously called \emph{single assignment rule}\index{single assignment rule|see{perfect matching rule}}); see also globally balanced \cref{balanced-models}.
+(\firstuse{perfect matching rule} -- previously called \emph{single assignment rule}\index{single assignment rule|see{perfect matching rule}}); see also globally balanced \cref{balanced-models}.
 \end{enumerate}
 
 \section{Events and Synchronization}\label{events-and-synchronization}
 
-An \firstuse{event}\index{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
+An \firstuse{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
 Events are for example defined by the condition occurring in a \lstinline!when!-clause, \lstinline!if!-equation, or \lstinline!if!-expression.
 
 The integration is halted and an event occurs whenever an event generation expression, e.g.\ \lstinline!x > 2! o or \lstinline!floor(x)!, changes its value.
@@ -690,7 +690,7 @@ The single assignment rule and the requirement to explicitly program the synchro
 \section{Initialization, initial equation, and initial algorithm}\label{initialization-initial-equation-and-initial-algorithm}
 
 Before any operation is carried out with a Modelica model (e.g., simulation or linearization), initialization takes place to assign consistent values for all variables present in the model.
-During this phase, called the \firstuse{initialization problem}\index{initialization problem}, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!), are interpreted as unknown algebraic variables.
+During this phase, called the \firstuse{initialization problem}, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!), are interpreted as unknown algebraic variables.
 The initialization uses all equations and algorithms that are utilized in the intended operation (such as simulation or linearization).
 
 The equations of a \lstinline!when!-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).
@@ -718,14 +718,14 @@ similarly as \lstinline!when false then!.
 There is no special handling of inactive \lstinline!when!-statements during initialization, instead variables assigned in \lstinline!when!-statements are initialized using \lstinline!v := pre(v)! before the body of the algorithm (since they are discrete), see \cref{execution-of-an-algorithm-in-a-model}.
 \end{nonnormative}
 
-Further constraints, necessary to determine the initial values of all variables, can be defined in the following ways:
+Further constraints, necessary to determine the initial values of all variables (depending on the component variability, see \cref{component-variability-prefixes-discrete-parameter-constant} for definitions), can be defined in the following ways:
 \begin{enumerate}
 \item
   As equations in an \lstinline!initial equation!\indexinline{initial equation} section or as assignments in an \lstinline!initial algorithm!\indexinline{initial algorithm} section.
   The equations and assignments in these initial sections are purely algebraic, stating constraints between the variables at the initial time instant.
   It is not allowed to use \lstinline!when!-clauses in these sections.
 \item
-  For a non-discrete-time \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!pre(vc) = vc! is added to the initialization equations.
+  For a continuous-time \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!pre(vc) = vc! is added to the initialization equations.
   \begin{nonnormative}
   If \lstinline!pre(vc)! is not present in the flattened model, a tool may choose not to introduce this equation, or if it was introduced
   it can eliminate it (to avoid the introduction of many dummy variables \lstinline!pre(vc)!).
@@ -739,7 +739,7 @@ Further constraints, necessary to determine the initial values of all variables,
   \item
     For a discrete-time variable \lstinline!vd!, the equation \lstinline!pre(vd) = startExpression! is added to the initialization equations.
   \item
-    For a non-discrete-time \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
+    For a continuous-time \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
   \end{itemize}
 \end{enumerate}
 
@@ -763,9 +763,9 @@ This is used in libraries to give non-zero defaults so that users can quickly co
 All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e.\ there must be additional equations for them -- and the \lstinline!start!-value can be used as a guess-value during initialization.
 
 \begin{nonnormative}
-In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostics is recommended, but the parameter should be solved from the binding equation.
+In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostic is recommended, but the parameter should be solved from the binding equation.
 
-Non-discrete-time \lstinline!Real! variables \lstinline!vc! have exactly one initialization value since the rules above assure that during initialization \lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed = true!).
+Continuous-time \lstinline!Real! variables \lstinline!vc! have exactly one initialization value since the rules above assure that during initialization \lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed = true!).
 
 Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!.
 If this is not the case for some variables \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
@@ -776,10 +776,19 @@ This whole set of equations, together with the additional constraints defined ab
 Often, this is a nonlinear system of equations and therefore it may be necessary to provide appropriate guess values (i.e., \lstinline!start! values and \lstinline!fixed = false!) in order to compute a solution numerically.
 
 It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index.
-A tool may add or remove initial equations automatically such that the resulting system is structurally nonsingular.
-In these cases diagnostics are appropriate since the result is not unique and not necessarily what the user expects.
-A missing initial value of a discrete-time variable which does not influence the simulation result, may be automatically set to the \lstinline!start! value or its default without informing the user.
+\end{nonnormative}
+
+These non-normative considerations are addressed as follows.
+A tool may add or remove initial equations automatically according to the rules below such that the resulting system is structurally nonsingular:
+\begin{itemize}
+\item A missing initial value of a discrete-time variable (see \cref{component-variability-prefixes-discrete-parameter-constant} -- this does not include parameter and constant variables) which does not influence the simulation result, may be automatically set to the start value or its default without informing the user.
 For example, variables assigned in a \lstinline!when!-clause which are not accessed outside of the \lstinline!when!-clause and where \lstinline!pre! is not explicitly used on these variables, do not have an effect on the simulation.
+\item A \lstinline!start!-attribute that is not fixed may be treated as fixed with a diagnostic.
+\item A consistent start value or initial equation may be removed with a diagnostic.
+\end{itemize}
+
+\begin{nonnormative}
+The goal is to be able to initialize the model, while satisfying the initial equations and fixed start values.
 \end{nonnormative}
 
 \begin{example}
@@ -887,4 +896,51 @@ The level number increases by 1 for each level down in the model component hiera
 The model component hierarchy level number is used to give \lstinline!start!-attribute a confidence number, where a lower number means that the \lstinline!start!-attribute is more confident.
 Loosely, if the \lstinline!start!-attribute is set or modified on level $i$ then the confidence number is $i$.
 If a \lstinline!start!-attribute is set by a possibly hierarchical modifier at the top level, then this \lstinline!start!-attribute has the highest confidence, namely 1 irrespectively on what level, the variable itself is declared.
+If the \lstinline!start!-attribute is set equal to a parameter, which may be equal to another parameter (etc), the lowest confidence number of these bindings are used.
+(In almost all cases that is the confidence number of the last parameter binding in the chain.)
+Note that this is only applied if the expression is exactly the parameter -- not an expression depending on one or more parameters.
+In case the confidence number considering parameter bindings is tied the confidence number of the \lstinline!start!-attribute is used to break the tie, if unequal.
+\begin{example}
+Simplified examples showing the priority of start-values.
+The example \lstinline!M3! shows that it is important that parameter-confidence is used directly and not only when the other priority is tied.
+\begin{lstlisting}[language=modelica]
+model M1
+  Real x(start = 4.0);
+  Real y(start = 5.0);
+equation
+  x = y;
+end M1;
+model M2
+  parameter Real xStart = 4.0;
+  parameter Real yStart = 5.0;
+  Real x(start = xStart);
+  Real y(start = yStart);
+equation
+  x = y;
+end M2;
+model M3
+  model MLocal
+    parameter Real xStart = 4.0;
+    Real x(start = xStart);
+  end MLocal;
+  model MLocalWrapped
+    parameter Real xStart = 4.0;
+    MLocal m(xStart = xStart);
+  end MLocalWrapped;
+  MLocal mx;
+  MLocalWrapped my(xStart = 3.0);
+equation
+  mx.x = my.y;
+end M3;
+M1 m1(x(start = 3.0));
+// Using m1.x.start = 3.0 with confidence number 1
+// over m1.y.start = 5.0 with confidence number 2
+M2 m2(xStart = 3.0);
+// Using m2.x.start = m2.xStart = 3.0 with confidence number 1
+// over m2.y.start = m2.yStart = 5.0 with confidence number 2
+M3 m3;
+// Using m3.my.x = m3.my.xStart = 3.0 with confidence number 1
+// over m3.mx.x = m3.mx.xStart = 4.0 with confidence number 2
+\end{lstlisting}
+\end{example}
 \end{nonnormative}
