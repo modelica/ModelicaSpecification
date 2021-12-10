@@ -859,6 +859,28 @@ pre(y) := y;
 \end{lstlisting}
 \end{example}
 
+\begin{example}
+Resettable continuous time controller initialized either in steady-state or by providing a \lstinline!start! value for state \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+  parameter Boolean steadyState = true;
+  parameter Real y0 = 0 "start and reset value for y, if not steadyState";
+  Real y;
+equation
+  der(y) = a*y + b*u;
+  when { initial(), reset } then
+    if not ( initial() and steadyState ) then
+      reinit(y, y0);
+    end if;
+  end when;
+initial equation
+  if steadyState then
+    der(y) = 0;
+  end if;
+\end{lstlisting}
+If \lstinline!not steadyState! this will add \lstinline!y=y0! during the initialization; if not the \lstinline!reinit! is ignored during initialization and the initial equation is used.
+This model can be written in various ways, this particular way makes it clear that the reset is equal to the normal initialization.
+\end{example}
+
 \subsection{The Number of Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}
 
 \begin{nonnormative}
