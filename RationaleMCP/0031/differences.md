@@ -413,19 +413,19 @@ To consider different start-values consider the following Modelica model:
 model A
   model B
     model M
-      Real x(start=1.0);
+      Real x(start = 1.0);
       Real y;
       Real z;
     equation 
-      y=5*x;
-      z=7*x;
-      x+y+z=sin(time+x+y+z);
+      y = 5 * x;
+      z = 7 * x;
+      x + y + z = sin(time + x + y + z);
     end M;
     M m1;
-    M m2(z(start=2.0));
-    M m3(y(start=3.0));
+    M m2(z(start = 2.0));
+    M m3(y(start = 3.0));
   end B;
-  B b(m2(y(start=4.0)))
+  B b(m2(y(start = 4.0)))
 end A;
 ```
 Variable | Start-value | Priority in Modelica
@@ -447,48 +447,48 @@ In this case it is recommended to use `b.m1.x`, `b.m2.y`, and `b.m3.y` as iterat
 For initialization these start-values can also be used for selecting additional start-values while also considering fixed-attributes.
 
 ### Heterongenous arrays with fixed
-The fixed attribute can vary between array elements in Modelica.
+The `fixed` attribute can vary between array elements in Modelica.
 
 A non-contrived example is:
 ```
 block SimpleFilter
-  parameter Real k=2;
-  Real x[3](each start=0.0,fixed={false,true,true});
-  output Real y(start=1.0,fixed=true)=k*x[1];
+  parameter Real k = 2;
+  Real x[3](each start = 0.0, fixed = {false, true, true});
+  output Real y(start = 1.0, fixed = true) = k * x[1];
   input Real u;
 equation 
-  der(x)=cat(1,x[2:end],{u});
+  der(x) = cat(1, x[2 : end], {u});
 end SimpleFilter;
 ```
 In this case the first state is not fixed, instead the output is fixed (in some cases the output may be in another sub-model).
 
 ### Start-value for parameters
-For parameters the start-value is normally irrelevant and missing.
-If the parameter lacks a normal value the start-value can be used as parameter-value after a warning, this can be done before generating FlatModelica (if `fixed=false`).
+For parameters the start-value is normally irrelevant and not specified.
+If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Flat Modelica (if `fixed = false`).
 
-The real problem is if the parameter has `fixed=false` and no value (but possibly a start-value).
+The real problem is if the parameter has `fixed = false` and no value (but possibly a start-value).
 
 As an example:
 ```
 model SteadyStateInit
-  parameter Real p(start=2, fixed=false);
-  Real x(start=10, fixed=true);
+  parameter Real p(start = 2, fixed = false);
+  Real x(start = 10, fixed = true);
 initial equation
-  der(x)=0;
+  der(x) = 0;
 equation
-  der(x)=10-p*x;
+  der(x) = 10 - p * x;
 end SteadyStateInit;
 ```
-In more complicated this can be the length of a mechnical arm that must be adjusted based on initial configuration.
+In more a complicated situation, this could be the length of a mechnical arm that must be adjusted based on initial configuration.
 
 Which can be transformed to Flat Modelica:
 ```
-  initial parameter Real 'p'(start=2);
+  initial parameter Real 'p'(start = 2);
   Real 'x';
 initial equation
-  der('x')=0;
+  der('x') = 0;
 equation
-  der('x')=10-'p'*'x';
+  der('x') = 10 - 'p' * 'x';
 end SteadyStateInit;
 ```
 
