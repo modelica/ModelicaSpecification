@@ -446,7 +446,7 @@ In this case it is recommended to use `b.m1.x`, `b.m2.y`, and `b.m3.y` as iterat
 
 For initialization these start-values can also be used for selecting additional start-values while also considering fixed-attributes.
 
-### Heterongenous arrays with fixed
+#### Heterongenous arrays with fixed
 The `fixed` attribute can vary between array elements in Modelica.
 
 A non-contrived example is:
@@ -462,7 +462,7 @@ end SimpleFilter;
 ```
 In this case the first state is not fixed, instead the output is fixed (in some cases the output may be in another sub-model).
 
-### Start-value for parameters
+#### Start-value for parameters
 For parameters the start-value is normally irrelevant and not specified.
 If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Flat Modelica (if `fixed = true`).
 
@@ -480,20 +480,6 @@ equation
 end SteadyStateInit;
 ```
 In more a complicated situation, this could be the length of a mechnical arm that must be adjusted based on initial configuration.
-
-Which can be transformed to Flat Modelica:
-```
-  parameter Real 'p';
-  parameter equation guess('p') = 2;
-  Real 'x';
-  parameter equation guess('x') = 10;
-initial equation
-  der('x') = 0;
-  'x' = guess('x');
-equation
-  der('x') = 10 - 'p' * 'x';
-end SteadyStateInit;
-```
 
 ### Implicitly declared guess value parameter
 
@@ -564,6 +550,21 @@ The need for a default equation can also come from direct use of `guess('x')`:
   Real 'x';
 initial equation
   'x' = guess('x');
+```
+
+With the use of guess value parameters, the `SteadyStateInit` full Modelica example above can be turned into Flat Modelica:
+```
+model 'SteadyStateInit'
+  parameter Real 'p';
+  parameter equation guess('p') = 2;
+  Real 'x';
+  parameter equation guess('x') = 10;
+initial equation
+  der('x') = 0;
+  'x' = guess('x');
+equation
+  der('x') = 10 - 'p' * 'x';
+end 'SteadyStateInit';
 ```
 
 #### Arrays and records
