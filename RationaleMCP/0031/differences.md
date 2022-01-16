@@ -483,10 +483,13 @@ In more a complicated situation, this could be the length of a mechnical arm tha
 
 Which can be transformed to Flat Modelica:
 ```
-  initial parameter Real 'p'(start = 2);
+  parameter Real 'p';
+  parameter equation guess('p') = 2;
   Real 'x';
+  parameter equation guess('x') = 10;
 initial equation
   der('x') = 0;
+  'x' = guess('x');
 equation
   der('x') = 10 - 'p' * 'x';
 end SteadyStateInit;
