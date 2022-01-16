@@ -464,7 +464,7 @@ In this case the first state is not fixed, instead the output is fixed (in some 
 
 ### Start-value for parameters
 For parameters the start-value is normally irrelevant and not specified.
-If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Flat Modelica (if `fixed = false`).
+If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Flat Modelica (if `fixed = true`).
 
 The real problem is if the parameter has `fixed = false` and no value (but possibly a start-value).
 
