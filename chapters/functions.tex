@@ -4,7 +4,7 @@ This chapter describes the Modelica function construct.
 
 \section{Function Declaration}\label{function-declaration}
 
-A Modelica \firstuse{function}\index{function} is a specialized class (\cref{function-as-a-specialized-class}) using the keyword \lstinline!function!.
+A Modelica \firstuse{function} is a specialized class (\cref{function-as-a-specialized-class}) using the keyword \lstinline!function!.
 The body of a Modelica function is an algorithm section that contains procedural algorithmic code to be executed when the function is called, or alternatively an external function specifier (\cref{external-function-interface}).
 Formal parameters are specified using the \lstinline!input!\indexinline{input} keyword, whereas results are denoted using the \lstinline!output!\indexinline{output} keyword.
 This makes the syntax of function definitions quite close to Modelica class definitions, but using the keyword \lstinline!function! instead of \lstinline!class!.
@@ -115,6 +115,29 @@ following the usual rules for inheritance of classes (\cref{inheritance-modifica
 \begin{nonnormative}
 For example, it is possible to modify and extend a \lstinline!function! class to add default values for input variables.
 \end{nonnormative}
+
+A special case is defining a \lstinline!function! as a short-class definition with modifiers for inputs inside a model.
+These default values, unless overridden in the function call, will then be considered for variability similarly as if they were given in the function call, see \cref{function-variability}.
+
+\begin{example}
+Demonstrating the variability implications.
+Note that functions cannot directly use non-constants in enclosing scopes, so we cannot write \lstinline!input Real x1 = x;! directly in \lstinline!foo!.
+\begin{lstlisting}[language=modelica]
+model M
+  function foo
+    input Real x1;
+    input Real x2 = 2;
+    output Real y;
+  algorithm
+    y := x1 + x2;
+  end foo;
+  Real x = time;
+  function f1 = foo(x1 = x);
+  constant Real z1 = f1(x1 = 2); // Legal, since 'x1' has a new value.
+  constant Real z2 = f1(x2 = 1); // Illegal, since 'x' is seen as an argument.
+end M;
+\end{lstlisting}
+\end{example}
 
 \section{Function as a Specialized Class}\label{function-as-a-specialized-class}
 
@@ -245,8 +268,8 @@ The declaration of functions follow these rules:
 \item
   If a function is declared as \lstinline!impure! any function extending from it shall be declared as \lstinline!impure!.
 \item
-  A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be
-  impure, but without any restriction on calling them.  Except for the function \lstinline!Modelica.Utilities.Streams.print!, diagnostics must be given if called in a simulation model.
+  A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be impure, but without any restriction on calling them.
+  Except for the function \lstinline!Modelica.Utilities.Streams.print!, a diagnostic must be given if called in a simulation model.
 \end{itemize}
 
 Calls of pure functions used inside expression may be skipped if the
@@ -292,7 +315,8 @@ With the prefix keyword \lstinline!impure!\indexinline{impure} it is stated that
 \item
   A \lstinline!when!-statement.
 \item
-  \lstinline!pure(impureFunctionCall($\ldots$))! -- which allows calling impure functions in any pure context.
+  \lstinline!pure(impureFunction($\ldots$))! -- which allows calling impure functions in any pure context.
+  The wrapping in \lstinline!pure($\ldots$)! only by-passes the purity checking of the callee \lstinline!impureFunction!; the argument expressions of the function call are not affected.
 \item
   Initial equations and initial algorithms.
 \item
@@ -518,7 +542,9 @@ function quadrature2 "Integrate function y=integrand(x) from x1 to x2"
   input Integrand integrand; // Integrand is a partial function type
   output Real integral;
 algorithm
-  integral := quadrature(x1, (x1+x2)/2, integrand)+  quadrature((x1+x2)/2, x2, integrand);
+  integral :=
+    quadrature(x1, (x1 + x2) / 2, integrand) +
+    quadrature((x1 + x2) / 2, x2, integrand);
 end quadrature2;
 \end{lstlisting}
 \end{example}
@@ -725,7 +751,7 @@ Components in a function can be divided into three groups:
 When a function is called, components of the function do not have \lstinline!start!-attributes.
 However, a binding equation\index{binding equation!in function} (\lstinline!= expression!) with an expression may be present for a component.
 \begin{nonnormative}
-\firstuse{Declaration assignments}\index{declaration assignment (deprecated)} of the form \lstinline!:= expression! are deprecated, but otherwise identical to binding equations.
+\firstuse[declaration assignment (deprecated)]{Declaration assignments} of the form \lstinline!:= expression! are deprecated, but otherwise identical to binding equations.
 \end{nonnormative}
 
 A binding equation for a non-input component initializes the
@@ -958,7 +984,7 @@ Examples:
 
   function add
     input Complex u, v;
-    output Complex w(re=u.re + v.re, im=u.im+v.re);
+    output Complex w(re = u.re + v.re, im = u.im + v.re);
   end add;
 
   Complex c1, c2;
@@ -1055,7 +1081,9 @@ package Demo;
     input Real r5 = 5.0;
     input Real r6[n1];
     input Real r7[n2];
-    output Record2 $\mathit{result}$(r0=r0,c2=c2,n1=n1,n2=n2,r1=r1,r2=r2,r4=r4,r5=r5,r6=r6,r7=r7);
+    output Record2 $\mathit{result}$(
+      r0 = r0, c2 = c2, n1 = n1, n2 = n2,
+      r1 = r1, r2 = r2, r4 = r4, r5 = r5, r6 = r6, r7 = r7);
   protected
     final constant Real c1 = 2.0; // referenced from r2
     final parameter Real r3 = Modelica.Math.cos(r2);
@@ -1065,9 +1093,13 @@ end Demo;
 and can be applied in the following way
 % henrikt-ma: TODO: Fix too long lines.
 \begin{lstlisting}[language=modelica]
-Demo.Record2 r1 = Demo.Record2(r0=1, c2=2, n1=2, n2=3, r1=1, r2=2,r4=5, r5=5, r6={1,2}, r7={1,2,3});
-Demo.Record2 r2 = Demo.Record2(1,2,2,3,1,2,5,5,{1,2},{1,2,3});
-parameter Demo.Record2 r3 = Demo.Record2(c2=2, n2=1, r1=1,r4=4, r6=1:5, r7={1});
+Demo.Record2 r1 =
+  Demo.Record2(r0 = 1, c2 = 2, n1 = 2, n2 = 3, r1 = 1, r2 = 2, r4 = 5, r5 = 5,
+               r6 = {1, 2}, r7 = {1, 2, 3});
+Demo.Record2 r2 =
+  Demo.Record2(1, 2, 2, 3, 1, 2, 5, 5, {1, 2}, {1, 2, 3});
+parameter Demo.Record2 r3 =
+  Demo.Record2(c2 = 2, n2 = 1, r1 = 1, r4 = 4, r6 = 1 : 5, r7 = {1});
 \end{lstlisting}
 
 The above example is only used to show the different variants
@@ -1237,7 +1269,7 @@ This annotation has only an effect within a function declaration.
 
 The \lstinline!derivative! annotation can influence simulation time and accuracy, can be applied to both functions written in Modelica and to external functions, and may be used several times for the same function declaration.
 
-Each use of the \lstinline!derivative! annotation points to another \firstuse{derivative-function}\index{derivative-function} that expresses a derivative of the declared function, and the annotation can state that it is only valid under certain restrictions on the input arguments.
+Each use of the \lstinline!derivative! annotation points to another \firstuse{derivative-function} that expresses a derivative of the declared function, and the annotation can state that it is only valid under certain restrictions on the input arguments.
 These restrictions are defined using the optional attributes \lstinline!order!, \lstinline!noDerivative!, and \lstinline!zeroDerivative!.
 The \lstinline!order! may be specified at most once for each \lstinline!derivative! annotation, must be at least 1, and defaults to 1.
 Specifying \lstinline!order! is only considered a restriction if $\text{\lstinline!order!} > 1$.
@@ -1254,7 +1286,7 @@ function-inverse :
    IDENT "=" type-specifier function-call-args"
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-A function with one output formal parameter may have one or more \fmtannotationindex{inverse} annotations to define inverses of this function.
+A function with one output formal parameter may have one or more \lstinline!inverse! annotations to define inverses of this function.
 
 For details abouts using the \lstinline!inverse! annotation, see \cref{using-the-inverse-annotation}.
 \end{semantics}
@@ -1403,7 +1435,7 @@ non-\lstinline!Real! as inputs and outputs:
 record ThermodynamicState "Thermodynamic state"
   SpecificEnthalpy h "Specific enthalpy";
   AbsolutePressure p "Pressure";
-  Integer phase(min=1, max=2, start=1);
+  Integer phase(min = 1, max = 2, start = 1);
 end ThermodynamicState;
 
 record ThermoDynamicState_der "Derivative"
@@ -1459,7 +1491,7 @@ DensityDerivative d_rho2 = der(rho2);
 
 \begin{itemize}
 \item
-  \lstinline[language=grammar]!zeroDerivative = $\mathit{inputVar}_{1}$ { , zeroDerivative = $\mathit{inputVar}_{2}$ }!
+  \lstinline[language=grammar]!"zeroDerivative" "=" $\mathit{inputVar}_{1}$ { "," "zeroDerivative" "=" $\mathit{inputVar}_{2}$ }!
 \end{itemize}
 
 The derivative function is only valid if $\mathit{inputVar}_{1}$ (and $\mathit{inputVar}_{2}$ etc.) are independent of the variables the function call is differentiated with respect to (i.e.\ that the derivative of $\mathit{inputVar}_{1}$ is zero).
@@ -1539,7 +1571,7 @@ In the example above \lstinline!zeroDerivative=y! and \lstinline!zeroDerivative=
 
 \begin{itemize}
 \item
-  \lstinline[language=grammar]!noDerivative = $\mathit{inputVar}_{1}$!
+  \lstinline[language=grammar]!"noDerivative" "=" $\mathit{inputVar}_{1}$!
 \end{itemize}
 
 The derivative of $\mathit{inputVar}_{1}$ is excluded from the argument list of the derivative-function.
@@ -2385,9 +2417,8 @@ If the directory for the specific compiler version is missing the
 platform specific directory is used.
 
 \begin{nonnormative}
-A tool may give diagnostics if the directory corresponding to the selected compiler version is missing.  The directories may use symbolic links or use
-a text-file as described below: e.g.\ a text-file \filename{vs2008} containing the text \emph{../win32/vs2005} (or \emph{vs2005}) suggesting that it is
-compatible with vs2005.
+A tool may give a diagnostic if the directory corresponding to the selected compiler version is missing.
+The directories may use symbolic links or use a text-file as described below: e.g.\ a text-file \filename{vs2008} containing the text \emph{../win32/vs2005} (or \emph{vs2005}) suggesting that it is compatible with vs2005.
 \end{nonnormative}
 
 The \lstinline!ModelicaLibraryName! used for \lstinline!IncludeDirectory!, \lstinline!LibraryDirectory!, and \lstinline!SourceDirectory! indicates the top-level class where the annotation is found in the Modelica source code.
@@ -2409,7 +2440,7 @@ package ExternalFunctions
     der(x) = -ExternalFunc3(x);
   end OtherExample;
 
-  function ExternalFunc1
+  function ExternalFunc1 "Include header file for library implementation"
     input Real x;
     output Real y;
   external "C"
@@ -2418,10 +2449,10 @@ package ExternalFunctions
                  Include = "#include \"ExternalFunc1.h\"",
                  SourceDirectory =
                   "modelica://ExternalFunctions/Resources/Source");
-      // The SourceDirectory is the default and thus redundant.
+      // The specified SourceDirectory is the default and thus redundant.
   end ExternalFunc1;
 
-  function ExternalFunc2
+  function ExternalFunc2 "Include header file for library implementation"
     input Real x;
     output Real y;
   external "C"
@@ -2429,7 +2460,7 @@ package ExternalFunctions
                  Include = "#include \"ExternalFunc2.h\"");
   end ExternalFunc2;
 
-  function ExternalFunc3
+  function ExternalFunc3 "Include source file"
     input Real x;
     output Real y;
   external "C"
@@ -2442,29 +2473,43 @@ package MyExternalFunctions
 end MyExternalFunctions;
 \end{lstlisting}
 Directory structure:
-\begin{lstlisting}[language=modelica]
-ExternalFunctions
-  package.mo  // contains the Modelica code from above
-  Resources
-    Include        // contains the include files
-      ExternalFunc1.h // C header file
-      ExternalFunc2.h // C header file
-      ExternalFunc3.c // C source file (not ideal)
-    Library    // contains the object libraries for different platforms
-       win32
-         ExternalLib1.lib // static link library for VisualStudio
-         ExternalLib2.lib // statically linking the dynamic link library
-         ExternalLib2.dll // dynamic link library (with manifest)
-       linux32
-         libExternalLib1.a  // static link library
-         libExternalLib2.so // shared library
-    Source // Sources for library
-      Func1.c         // C source for ExternalLib1.lib
-      Func2.c         // C source for ExternalLib2.lib
-      HelperFunc.c    // C source also included in ExternalLib2.lib
-MyExternalFunctions
-   package.mo
-\end{lstlisting}
+% Adding paragraph break above tabbing environment to work around LaTeXML issue (fixed on master 2021-12-17):
+% - https://github.com/brucemiller/LaTeXML/issues/1719 (marked as fixed as of commit 3e8e2e15)
+\ifpdf
+\else
+\par
+\fi
+{\upshape
+\begin{tabbing}
+\hspace{15em}\=\hspace{1em}\=\kill
+\filename{ExternalFunctions}\\
+\quad\filename{package.mo}                        \>-- \>Modelica code from above\\
+\quad\filename{Resources}\\
+\quad\quad\filename{Include}                      \>-- \>Include files\\
+\quad\quad\quad\filename{ExternalFunc1.h}         \>-- \>C header file\\
+\quad\quad\quad\filename{ExternalFunc2.h}         \>-- \>C header file\\
+\quad\quad\quad\filename{ExternalFunc3.c}         \>-- \>C source file (not ideal)\\
+\quad\quad\filename{Library}                      \>-- \>Object libraries for different platforms\\
+\quad\quad\quad\filename{win32}\\
+\quad\quad\quad\quad\filename{ExternalLib1.lib}   \>-- \>Static link library for VisualStudio\\
+\quad\quad\quad\quad\filename{ExternalLib2.lib}   \>   \>statically linking the dynamic link library\\
+\quad\quad\quad\quad\filename{ExternalLib2.dll}   \>-- \>Dynamic link library (with manifest)\\
+\quad\quad\quad\filename{linux32}\\
+\quad\quad\quad\quad\filename{libExternalLib1.a}  \>-- \>Static link library\\
+\quad\quad\quad\quad\filename{libExternalLib2.so} \>-- \>Shared library\\
+\quad\quad\filename{Source}                       \>-- \>Sources for library\\
+\quad\quad\quad\filename{Func1.c}                 \>-- \>C source for \filename{ExternalLib1.lib}\\
+\quad\quad\quad\filename{Func2.c}                 \>-- \>C source for \filename{ExternalLib2.lib}\\
+\quad\quad\quad\filename{HelperFunc.c}            \>-- \>C source also included in \filename{ExternalLib2.lib}\\
+\filename{MyExternalFunctions}\\
+\quad\filename{package.mo}% No line break on last line!
+\end{tabbing}}
+% Adding paragraph break (line break isn't allowed after empty line) below tabbing environment to work around LaTeXML issue (fixed on master 2021-12-17):
+% - https://github.com/brucemiller/LaTeXML/issues/1719 (marked as fixed as of commit 3e8e2e15)
+\ifpdf
+\else
+\par
+\fi
 Note that calling the function \lstinline!MyExternalFunctions.ExternalFunc1! will use
 the header and library files from \lstinline!ExternalFunction!, the \lstinline!ExternalFunctions.Example! will not use \filename{ExternalFunc3.c},
 and one library file may contain multiple functions.
@@ -2472,7 +2517,7 @@ and one library file may contain multiple functions.
 The C-source \filename{ExternalFunc3.c} will be included fully, and is not part of any library.
 That is not ideal for C-code, but it works for small functions.
 
-It is not specified how the C-sources in \filename{Source} will be used to build the libraries.
+It is not specified how the C-sources in the specified \lstinline!SourceDirectory! will be used to build the libraries.
 
 Header file for the function in the dynamic link / shared library
 \filename{ExternalLib2} so that the desired functions are defined to be exported
@@ -2481,7 +2526,9 @@ recommended to use the compiler option \lstinline!-fPIC! to build shared
 libraries or object libraries that are later transformed to a shared
 library):
 \begin{lstlisting}[language=C]
-// File ExternalFunc2.h
+/* File ExternalFunc2.h */
+#ifndef EXTERNAL_FUNC2_H_
+#define EXTERNAL_FUNC2_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -2499,10 +2546,11 @@ extern "C" {
 #  define EXTLIB2_EXPORT
 #endif
 
-EXTLIB2_EXPORT void ExternalFunc2(<function arguments>);
+EXTLIB2_EXPORT double ExternalFunc2(double);
 
 #ifdef __cplusplus
 }
+#endif
 #endif
 \end{lstlisting}
 \end{example}
