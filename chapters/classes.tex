@@ -1157,8 +1157,8 @@ globally singular model.
 import Modelica.Units.SI;
 
 partial model BaseProperties
-  "Interface of medium model for all type of media"
-  parameter Boolean preferredMediumStates=false;
+    "Interface of medium model for all type of media"
+  parameter Boolean preferredStates = false;
   constant Integer nXi "Number of independent mass fractions";
   InputAbsolutePressure     p;
   InputSpecificEnthalpy     h;
@@ -1187,12 +1187,13 @@ variables'' from which all other intrinsic thermodynamic variables can
 be recursively computed. For example, a simple air model could be
 defined as:
 \begin{lstlisting}[language=modelica]
-model SimpleAir "Medium model of simple air. Independent variables: p,T"
-  extends BaseProperties(nXi = 0,
-     p(stateSelect = if preferredMediumStates then StateSelect.prefer
-                       else StateSelect.default),
-     T(stateSelect = if preferredMediumStates then StateSelect.prefer
-                       else StateSelect.default));
+model SimpleAir "Medium model of simple air. Independent variables: p, T"
+  extends BaseProperties(
+    nXi = 0,
+    p(stateSelect =
+      if preferredStates then StateSelect.prefer else StateSelect.default),
+    T(stateSelect =
+      if preferredStates then StateSelect.prefer else StateSelect.default));
   constant SI.SpecificHeatCapacity R = 287;
   constant SI.SpecificHeatCapacity cp = 1005.45;
   constant SI.Temperature T0 = 298.15
@@ -1235,14 +1236,15 @@ connector FluidPort
   SI.SpecificEnthalpy h;
   flow SI.EnthalpyFlowRate H_flow;
   SI.MassFraction Xi [Medium.nXi] "Independent mixture mass fractions";
-  flow SI.MassFlowRate mXi_flow[Medium.nXi] "Independent subst. mass flow rates";
+  flow SI.MassFlowRate mXi_flow[Medium.nXi]
+    "Independent subst. mass flow rates";
 end FluidPort;
 
 model DynamicVolume
   parameter SI.Volume V;
   replaceable model Medium = BaseProperties;
   FluidPort port(redeclare model Medium = Medium);
-  Medium medium(preferredMediumStates=true); // No modifier for p,h,Xi
+  Medium medium(preferredStates = true); // No modifier for p, h, Xi
   SI.InternalEnergy U;
   SI.Mass M;
   SI.Mass MXi[medium.nXi];

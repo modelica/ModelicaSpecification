@@ -253,9 +253,8 @@ The integer fired is calculated as the index of the transition to be fired by ch
 \begin{lstlisting}[language=modelica]
 Integer fired =
   max(
-    if (if t[i].from == selectedState
-        then (if t[i].immediate then c[i] else previous(c[i]))
-        else false)
+    if t[i].from == selectedState and
+        (if t[i].immediate then c[i] else previous(c[i]))
       then i
       else 0
     for i in 1 : size(t, 1));
@@ -273,11 +272,7 @@ of the transition with true condition and highest priority or 0.
 \begin{lstlisting}[language=modelica]
 Integer immediate =
   max(
-    if (if t[i].immediate and t[i].from == selectedState
-        then c[i]
-        else false)
-      then i
-      else 0
+    if t[i].immediate and t[i].from == selectedState and c[i] then i else 0
     for i in 1 : size(t, 1));
 \end{lstlisting}
 
@@ -288,11 +283,7 @@ next clock tick. In this case the from-state needs to be equal to
 \begin{lstlisting}[language=modelica]
 Integer delayed =
   max(
-    if (if not t[i].immediate and t[i].from == nextState
-        then c[i]
-        else false)
-      then i
-      else 0
+    if not t[i].immediate and t[i].from == nextState and c[i] then i else 0
     for i in 1 : size(t, 1));
 \end{lstlisting}
 
@@ -305,9 +296,7 @@ Integer fired = max(previous(delayed), immediate);
 \begin{lstlisting}[language=modelica]
 Integer nextState =
   if active then
-    (if fired > 0
-      then t[fired].to
-      else selectedState)
+    (if fired > 0 then t[fired].to else selectedState)
   else
     previous(nextState);
 \end{lstlisting}
@@ -317,8 +306,7 @@ from-transitions and to determine if the state machine is in a final
 state currently:
 \begin{lstlisting}[language=modelica]
 Boolean finalStates[nStates] =
-  {max(if t[j].from == i then 1 else 0 for j in 1 : size(t, 1)) == 0
-    for i in 1 : nStates};
+  {min(t[j].from <> i for j in 1 : size(t, 1)) for i in 1 : nStates};
 Boolean stateMachineInFinalState = finalStates[activeState];
 \end{lstlisting}
 To enable a synchronize transition, all the \lstinline!stateMachineInFinalState! conditions of all state machines within the meta state must be true.  An example is given below in the semantic example model.
@@ -328,11 +316,10 @@ To enable a synchronize transition, all the \lstinline!stateMachineInFinalState!
 A state can be reset for two reasons:
 \begin{itemize}
 \item
-  The whole state machine has been reset from its context.\\
-  In this case, all states must be reset, and the initial state becomes
-  active.
+  The whole state machine has been reset from its context.
+  In this case, all states must be reset, and the initial state becomes active.
 \item
-  A reset transition has been fired.\\
+  A reset transition has been fired.
   Then, its target state is reset, but not other states.
 \end{itemize}
 
@@ -341,14 +328,13 @@ The first reset mechanism is handled by the \lstinline!activeResetStates! and \l
 The state machine reset flag is propagated and maintained to each state individually:
 \begin{lstlisting}[language=modelica]
 output Boolean activeResetStates[nStates] =
-  {if reset then true else previous(nextResetStates[i]) for i in 1 : nStates};
+  {reset or previous(nextResetStates[i]) for i in 1 : nStates};
 \end{lstlisting}
 until a state is eventually executed, then its corresponding reset condition is set to false:
 \begin{lstlisting}[language=modelica]
 Boolean nextResetStates[nStates] =
   if active then
-    {if activeState == i then false else activeResetStates[i]
-      for i in 1 : nStates}
+    {activeState <> i and activeResetStates[i] for i in 1 : nStates}
   else
     previous(nextResetStates)
 \end{lstlisting}
@@ -375,46 +361,35 @@ model StateMachineSemantics "Semantics of state machines"
   input Boolean active "true if the state machine is active";
   input Boolean reset "true when the state machine should be reset";
   Integer selectedState = if reset then 1 else previous(nextState);
-  Boolean selectedReset = if reset then true else previous(nextReset);
+  Boolean selectedReset = reset or previous(nextReset);
   // For strong (immediate) and weak (delayed) transitions
   Integer immediate =
     max(
-      if (if t[i].immediate and t[i].from == selectedState
-          then c[i]
-          else false)
-        then i
-        else 0
+      if (t[i].immediate and t[i].from == selectedState and c[i]) then i else 0
       for i in 1 : size(t, 1));
   Integer delayed =
     max(
-      if (if not t[i].immediate and t[i].from == nextState
-          then c[i]
-          else false)
-        then i
-        else 0
+      if (not t[i].immediate and t[i].from == nextState and c[i]) then i else 0
       for i in 1 : size(t, 1));
   Integer fired = max(previous(delayed), immediate);
   output Integer activeState =
     if reset then 1 elseif fired > 0 then t[fired].to else selectedState;
   output Boolean activeReset =
-    if reset then true elseif fired > 0 then t[fired].reset else selectedReset;
+    reset or (if fired > 0 then t[fired].reset else selectedReset);
 
   // Update states
   Integer nextState = if active then activeState else previous(nextState);
-  Boolean nextReset = if active then false else previous(nextReset);
+  Boolean nextReset = not active and previous(nextReset);
   // Delayed resetting of individual states
   output Boolean activeResetStates[nStates] =
-    {if reset then true else previous(nextResetStates[i])
-      for i in 1 : nStates};
+    {reset or previous(nextResetStates[i]) for i in 1 : nStates};
   Boolean nextResetStates[nStates] =
     if active then
-      {if activeState == i then false else activeResetStates[i]
-        for i in 1 : nStates}
+      {activeState <> i and activeResetStates[i] for i in 1 : nStates}
     else
       previous(nextResetStates);
   Boolean finalStates[nStates] =
-    {max(if t[j].from == i then 1 else 0 for j in 1 : size(t, 1)) == 0
-      for i in 1 : nStates};
+    {min(t[j].from <> i for j in 1 : size(t, 1)) for i in 1 : nStates};
   Boolean stateMachineInFinalState = finalStates[activeState];
 end StateMachineSemantics;
 \end{lstlisting}
