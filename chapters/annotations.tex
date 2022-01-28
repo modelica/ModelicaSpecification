@@ -1747,14 +1747,13 @@ convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
 convertModifiers("Modelica.Blocks.Math.LinearDependency",
    {"y0=0", "k1=0", "k2=0"}, {"y0=%y0%", "k1=%y0%*%k1%", "k2=%y0%*%k2%"},
    true);
-convertClass(
-   "Modelica.Electrical.Machines.BasicMachines.QuasiStationaryDCMachines",
-   "Modelica.Electrical.Machines.BasicMachines.QuasiStaticDCMachines");
-convertElement("Modelica.Electrical.Machines.Interfaces.PartialBasicDCMachine",
-               "quasiStationary", "quasiStatic");
-convertElement("Modelica.Electrical.Machines.BasicMachines." +
-                "QuasiStationaryDCMachines.DC_ElectricalExcited",
-               "quasiStationary", "quasiStatic");
+
+convertClass("My.Library.BadPackage",
+             "My.Library.Package");
+convertElement("My.Library.BadPackage.PartialBase",
+               "bad", "correct");
+convertElement("My.Library.BadPackage.ActualClass",
+               "bad", "correct");
 \end{lstlisting}
 converts
 \begin{lstlisting}[language=modelica]
@@ -1763,12 +1762,12 @@ Modelica.StateGraph.Temporary.NumericValue tempValue(
   Value = 10, hideConnector = true);
 Modelica.Blocks.Math.LinearDependency linearDep(y0 = 2, k2 = 1);
 model A
-  import Modelica.Electrical.Machines.BasicMachines;
-  extends BasicMachines.QuasiStationaryDCMachines.DC_ElectricalExcited;
+  import My.Library;
+  extends Library.BadPackage.ActualClass;
 end A;
 model B
   extends A;
-  Boolean b = quasiStationary;
+  Boolean b = bad;
 end B;
 \end{lstlisting}
 to
@@ -1778,16 +1777,17 @@ Modelica.Blocks.Interaction.Show.RealValue(
   number = 10, use_numberPort = not true);
 Modelica.Blocks.Math.LinearDependency linearDep(y0 = 2, k1 = 0, k2 = 2);
 model A
-  import Modelica.Electrical.Machines.BasicMachines;
-  extends BasicMachines.QuasiStaticDCMachines.DC_ElectricalExcited;
+  import My.Library;
+  extends Library.Package.ActualClass;
 end A;
 model B
   extends A;
-  Boolean b = a.quasiStatic;
+  Boolean b = correct;
 end B;
 \end{lstlisting}
-The \lstinline!convertElement! call for \lstinline!DC_ElectricalExcited! is needed to avoid relying on base classes in the original library where \lstinline!DC_ElectricalExcited! inherits from \lstinline!PartialBasicDCMachine!.
+The \lstinline!convertElement! call for \lstinline!ActualClass! is needed to avoid relying on base classes in the original library where \lstinline!ActualClass! inherits from \lstinline!PartialBase!.
 However, the inheritance among the models to convert (in this case \lstinline!B! inherits from \lstinline!A!) should be handled.
+Note that conversion works regardless of the import of \lstinline!My.Library!.
 \end{example}
 
 \paragraph*{convertMessage("OldClass", "Failed Message")}\label{convertmessageoldclass-failed-message}\annotationindex{convertMessage}
