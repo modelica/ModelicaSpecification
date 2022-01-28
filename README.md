@@ -5,13 +5,14 @@ This repository contains the Modelica Language Specification, hosted at https://
 
 ## Description
 
-Modelica® https://modelica.org is a non-proprietary, object-oriented, equation based language to conveniently model complex physical systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
+Modelica® is a language for modeling of cyber-physical systems, supporting acausal connection of components governed by mathematical equations to facilitate modeling from first principles.
+It provides object-oriented constructs that facilitate reuse of models, and can be used conveniently for modeling complex systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
 
 ## Releases
 
 Version | Link                                                              | Published |
 ------- | ----------------------------------------------------------------- | --------|
-3.6-dev | [Master branch](https://github.com/modelica/ModelicaSpecification/tree/master) [HTML](https://specification.modelica.org/master/MLS.html) [PDF](https://specification.modelica.org/master/MLS.pdf)| not yet |
+3.6-dev | [Master branch](https://github.com/modelica/ModelicaSpecification/tree/master) [HTML](https://specification.modelica.org/master/) [PDF](https://specification.modelica.org/master/MLS.pdf)| not yet |
 3.5 | [3.5 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.5) [HTML](https://specification.modelica.org/maint/3.5/MLS.html) [PDF](https://specification.modelica.org/maint/3.5/MLS.pdf)| 2021 |
 3.4     | [3.4 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.4) [HTML](https://specification.modelica.org/maint/3.4/MLS.html) [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
 3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
