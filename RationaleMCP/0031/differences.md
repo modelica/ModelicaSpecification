@@ -26,7 +26,7 @@ Flat Modelica is designed to avoid such implicit evaluation of parameters, and t
 In Modelica a separate issue is that `if`-equations may contain connect and similar primitives
 that cannot easily be counted; but they are gone in Flat Modelica.
 
-# Pure Modelica functions
+## Pure Modelica functions
 
 In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
 - Only the output values of a function call influence the simulation result (considered free of side effects for purposes of program analysis).
