@@ -52,7 +52,61 @@ This change was made to support the [changed definitions of _constant expression
 
 ## Function default arguments
 
-TO BE DECIDED
+Flat Modelica functions cannot have function default arguments.
+A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of argument used in the model.
+(No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
+
+For example, consider this full Modelica model:
+```
+model M
+  function f
+    input Real a;
+    input Real b = a + 1;
+    input Real c = 2 * b;
+    output Real y = a + b + c;
+  end f;
+
+  Real x = f(0.5, c = time);
+end M;
+```
+Here, there is only one call to the function `f` making use of argument defaults.
+Hence, out of the three possible combinations of absent arguments (not counting all arguments being present, as this will correspond to the base variant of `f` in Flat Modelica), only one needs a helper function in Flat Modelica:
+```
+package 'M'
+  function 'M.f'
+    input Real 'a';
+    input Real 'b';
+    input Real 'c';
+    output Real 'y' = 'a' + 'b' + 'c';
+  end 'M.f';
+
+  function '-M.f:1,3' "Automatically generated helper for passing only the first and third arguments to 'M.f'"
+    input Real 'a';
+    input Real 'c';
+    output Real 'y' = 'M.f'('a', 'b', 'c'); /* Is 'b' in scope here? If not, assign in algorithm. */
+  protected
+    Real 'b' = 'a' + 1;
+  end '-M.f:1,3';
+
+  model 'M'
+    Real 'x' = '-M.f:1,3'(0.5, time);
+  end 'M';
+end 'M';
+```
+
+Note the name chosen for the automatically generated helper, `'-M.f:1,3'`.
+Due to the leading hyphen, it belongs to the part of the variable namespace that is a vailable for automatically generated names, meaning that there is no risk of collision with names coming from the original full Modelica source.
+
+A Flat Modelica function may still have declaration equations on its inputs, but unlike full Modelica, these are ignored.
+They are only allowed for the sake of consistency with how deeper value modifiers on functions inputs are handled, see [record construction](#record-construction).
+```
+function 'f'
+  input Real 'a';
+  input Real 'b' = 'a' + 1; /* No default; declaration equation is ignored in Flat Modelica. */
+  input Real 'c' = 2 * 'b'; /* No default; declaration equation is ignored in Flat Modelica. */
+  output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and protected variables. */
+end 'f';
+```
 
 ## Record construction
 
