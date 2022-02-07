@@ -367,13 +367,13 @@ In the case of multiple conflicting annotations it is handled similarly to modif
 In the case of hierarchical components it is applied to all components, overriding any \lstinline!Evaluate!-setting for specific components.
 The annotation \lstinline!Evaluate! is only allowed for parameters and constants.
 
-Setting \lstinline!Evaluate = true! for a structural parameter, means that it must be an evaluated parameter (i.e., its value must be determined during translation, similar to a constant).
+Setting \lstinline!Evaluate = true! for an evaluable parameter, means that it must be an evaluated parameter (i.e., its value must be determined during translation, similar to a constant).
 For a normal parameter, it has no impact and it is recommended to issue a warning in most cases.
 The exception for recommending this warning is when the parameter is normal due to dependency on a parameter with \lstinline!Evaluate = false!, as this could be a sign of intentional overriding of \lstinline!Evaluate = true!, see example below.
-For both structural parameters and constants, the model developer further proposes to utilize the value for symbolic processing.
+For both evaluable parameters and constants, the model developer further proposes to utilize the value for symbolic processing.
 A constant can never be changed after translation, and it is normal for its value to be used for symbolic processing even without \lstinline!Evaluate = true!.
 
-For a parameter, \lstinline!Evaluate = false! ensures that the parameter is a normal parameter according to \cref{component-variability-prefixes-discrete-parameter-constant} (meaning it is not allowed to be used where a structural expression (\cref{structural-expressions}) is expected).
+For a parameter, \lstinline!Evaluate = false! ensures that the parameter is a normal parameter according to \cref{component-variability-prefixes-discrete-parameter-constant} (meaning it is not allowed to be used where an evaluable expression (\cref{evaluable-expressions}) is expected).
 For both parameters and constants -- even when the value can be determined during translation -- the model developer further proposes to not utilize the value for symbolic processing.
 
 \begin{nonnormative}
@@ -383,25 +383,25 @@ Conversely, a possible use of \lstinline!Evaluate = false! is to ensure that a p
 \end{nonnormative}
 
 \begin{example}
-When a parameter has \lstinline!Evaluate = true! for optimization reasons (not because it needs to be structural), it is possible to prevent the value from being determined during translation without modifying the original model:
+When a parameter has \lstinline!Evaluate = true! for optimization reasons (not because it needs to be evaluable), it is possible to prevent the value from being determined during translation without modifying the original model:
 \begin{lstlisting}[language=modelica]
-model M_structural
-  /* Here, 'b' is structural, and will be evaluated. */
+model M_evaluable
+  /* Here, 'b' is evaluable, and will be evaluated. */
   parameter Boolean b = false annotation(Evaluate = true);
   Real x(start = 1.0, fixed = true);
 equation
-  if b then /* No need for b to be structural. */
+  if b then /* No need for b to be evaluable. */
     der(x) = x;
   else
     der(x) = -x;
   end if;
-end M_structural;
+end M_evaluable;
 
 model M_normal
   /* Here, 'bn' is normal, which in turn will cause 'b' to be normal,
    * thereby preventing it from being determined during translation.
    */
-  extends M_structural(b = bn);
+  extends M_evaluable(b = bn);
   parameter Boolean bn = false annotation(Evaluate = false);
 end M_normal;
 \end{lstlisting}

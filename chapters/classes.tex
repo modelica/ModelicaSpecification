@@ -284,11 +284,11 @@ end UseFirstOrder;
 \subsection{Acyclic Bindings of Constants and Parameters}\label{acyclic-bindings-of-constants-and-parameters}
 
 For a constant or parameter \lstinline!v! with declaration equation, the expression of the declaration equation in the flattended model must not depend on \lstinline!v! itself, neither directly nor indirectly via other variables' declaration equations.
-To satisfy this condition, dependencies shall be removed as needed by applying simplifications based on values of constants (except with \lstinline!Evaluate = false!) and all other \willintroduce{structural parameters} (\cref{component-variability-prefixes-discrete-parameter-constant}) that don't depend on \lstinline!v!.
+To satisfy this condition, dependencies shall be removed as needed by applying simplifications based on values of constants (except with \lstinline!Evaluate = false!) and all other \willintroduce{evaluable parameters} (\cref{component-variability-prefixes-discrete-parameter-constant}) that don't depend on \lstinline!v!.
 It is not permitted to expand a non-scalar declaration equation into scalar equations to satisfy the condition.
 
-That the value of a structural parameter is used for these simplifications does not mean that it has to be determined during translation, but if \lstinline!v! is found to be a structural parameter, then a Modelica tool will be able to break all cycles involving \lstinline!v! by making some (possibly none or all) of the other structural parameters determined during translation.
-Hence, evaluation of a constant or structural parameter can never require solving systems of equations; they can always be sorted so that they can be solved one at a time with the natural causality (i.e., the declaration equation is used to determine the value of the component to which it belongs).
+That the value of an evaluable parameter is used for these simplifications does not mean that it has to be determined during translation, but if \lstinline!v! is found to be an evaluable parameter, then a Modelica tool will be able to break all cycles involving \lstinline!v! by making some (possibly none or all) of the other evaluable parameters determined during translation.
+Hence, evaluation of a constant or evaluable parameter can never require solving systems of equations; they can always be sorted so that they can be solved one at a time with the natural causality (i.e., the declaration equation is used to determine the value of the component to which it belongs).
 
 \begin{example}
 Direct and indirect cyclic dependency:
@@ -358,7 +358,7 @@ The prefixes \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant! o
   A variable \lstinline!vc! declared with \lstinline!constant!\indexinline{constant} prefix remains constant during transient analysis, with a value that is unaffected by the initialization problem (i.e., determined during translation).
   This is called a \firstuse[---]{constant}, or \firstuse[constant!variable]{constant variable}\index{component variability!constant}.
 \item
-  A variable \lstinline!sp! is called a \firstuse[parameter!structural]{structural parameter variable}\index{component variability!structural parameter} if all of the following applies:
+  A variable \lstinline!ep! is called a \firstuse[parameter!evaluable]{evaluable parameter variable}\index{component variability!evaluable parameter} if all of the following applies:
   \begin{itemize}
   \item
     It is declared with the \lstinline!parameter!\indexinline{parameter} prefix.
@@ -367,12 +367,12 @@ The prefixes \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant! o
   \item
     It does not have annotation \lstinline!Evaluate = false!.
   \item
-    The declaration equation -- or \lstinline!start! attribute if no declaration equation is given (see \cref{initialization-initial-equation-and-initial-algorithm}) -- is given by a structural expression (\cref{structural-expressions}).
+    The declaration equation -- or \lstinline!start! attribute if no declaration equation is given (see \cref{initialization-initial-equation-and-initial-algorithm}) -- is given by an evaluable expression (\cref{evaluable-expressions}).
   \end{itemize}
-  A structural parameter remains constant during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{normal parameter}, see item below).
+  An evaluable parameter remains constant during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{normal parameter}, see item below).
   At which of these stages the value is determined is tool dependent.
 \item
-  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!normal]{normal parameter variable}\index{component variability!normal parameter} unless it is a structural parameter.
+  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!normal]{normal parameter variable}\index{component variability!normal parameter} unless it is an evaluable parameter.
   It is also simply called a \firstuse[parameter!normal]{normal parameter}.
   It remains constant during transient analysis, with a value determined by the initialization problem.
 \item
@@ -393,41 +393,41 @@ Components declared as \lstinline!constant! shall have an associated declaration
 The value of a constant can be modified after it has been given a value, unless the constant is declared \lstinline!final! or modified with a \lstinline!final! modifier.
 A constant without an associated declaration equation can be given one by using a modifier.
 
-The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either a normal or structural parameter variable.
+The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either a normal or evaluable parameter variable.
 
 \begin{nonnormative}
-With every normal parameter, there is at least one reason why it isn't a structural parameter.
-This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of structural expression variability is detected.
+With every normal parameter, there is at least one reason why it isn't an evaluable parameter.
+This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of evaluable expression variability is detected.
 For example:
 \begin{lstlisting}[language=modelica]
   parameter Integer n =
     if b then 1 else 2;        // Normal parameter due to variability of b.
   parameter Boolean b(fixed = false); // Normal parameter due to fixed = false.
-  Real[n] x;                   // Variability error: n must be structural.
+  Real[n] x;                   // Variability error: n must be evaluable.
 initial equation
   b = n > 3;
 \end{lstlisting}
 Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a normal parameter is that it has a dependency on the normal parameter \lstinline!b!.
 
-(Would structural and normal parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the structural component declarations instead.)
+(Would evaluable and normal parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the evaluable component declarations instead.)
 \end{nonnormative}
 
 \begin{nonnormative}
-For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is a structural or normal parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
+For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is an evaluable or normal parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
 To see this, note that \lstinline!Evaluate = false! makes it a normal parameter by definition, and that \lstinline!Evaluate = true! would trigger the warning if the parameter is normal.
 \end{nonnormative}
 
-By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that the value of a constant or structural parameter to be used in simplifications is possible to obtain by evaluation of a structural expression where values are available for all component subexpressions.
+By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that the value of a constant or evaluable parameter to be used in simplifications is possible to obtain by evaluation of an evaluable expression where values are available for all component subexpressions.
 
 \begin{example}
 A particularly demanding aspect of this evaluation is the potential presence of external functions.
-Hence, if it is known that a parameter won't be used by a structural expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
+Hence, if it is known that a parameter won't be used by an evaluable expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
 \begin{lstlisting}[language=modelica]
 import length = Modelica.Utilities.Strings.length; /* Pure external function */
-parameter Integer n = length("Hello");             /* Structural parameter */
+parameter Integer n = length("Hello");             /* Evaluable parameter */
 parameter Integer p = length("Hello")
   annotation(Evaluate = false);                    /* Normal parameter */
-parameter Boolean b = false;                       /* Structural parameter */
+parameter Boolean b = false;                       /* Evaluable parameter */
 
 /* Fulfillment of acyclic binding rule might cause evaluation of n;
  * to break the cycle, a tool might evaluate either b, n, or both:
