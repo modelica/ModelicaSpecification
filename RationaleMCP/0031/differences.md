@@ -164,7 +164,7 @@ end 'M';
 Even though Flat Modelica doesn't come with implicitly defined record constructor functions — that in full Modelica are derived based on value modifications in the record type definition – it is still allowed to have value modifications for the members of a record type in Flat Modelica.
 Note that the top level structure of a Flat Modelica model ensures that the value modifications that are part of record types can only contain constant values (possibly obtained by evaluation of constant expressions).
 As usual, such value modifications can be overridden when declaring a component of the record type, and when made in a model component declaration, it is possible to also have non-constant expressions in the modifications.
-The only semantics of value modifications in record types is that they will be used as the basis for the effective modifications of a component declaration, but the semantics of value modifications in a component declaration are different depending on the kind of component declaration.
+The only semantics of value modifications in record types is that they will be used as the basis for the effective modifications of a component declaration, but the semantics of value modifications in a component declaration are different depending on the kind of component declaration (function/record/model component declaration).
 
 #### Record component declarations
 
