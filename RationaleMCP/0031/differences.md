@@ -197,7 +197,7 @@ record 'R'
 end 'R';
 
 function 'makeR'
-  output 'R' 'r'('x' = 2); /* OK, right?!  Every record member has a modification... */
+  output 'R' 'r'('x' = 2);
 end 'makeR'
 
 model 'M'
