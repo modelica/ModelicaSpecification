@@ -259,7 +259,7 @@ end 'f';
 ```
 
 For the purpose of analyzing uninitialized use of variables in functions, a record variable is considered assigned when all it's members have been assigned.
-(A record-valued assignment to the enitre variable is a special case of this, with all record members being assigned at once.)
+(A record-valued assignment to the entire variable is a special case of this, with all record members being assigned at once.)
 It follows that a function output (of record type) can be completely determined using only modifications in the component declaration.
 
 Note that one consequence of the initial assignment semantics is that this is valid:
