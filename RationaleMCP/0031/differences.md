@@ -142,7 +142,7 @@ package 'M'
     input Real 'a';
     input Real 'b';
     input Real 'c';
-    output 'M.R' _result('a' = 'a', 'b' = 'b', 'c' = 'c'); /* Make sure this isn't considered returning uninitialized result! */
+    output 'M.R' _result('a' = 'a', 'b' = 'b', 'c' = 'c');
   end '-M.R';
 
   function '-M.R:1' "Automatically generated helper for passing only the first argument to '-M.R'"
