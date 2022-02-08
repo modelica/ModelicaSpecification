@@ -54,8 +54,8 @@ This change was made to support the [changed definitions of _constant expression
 
 Flat Modelica functions cannot have function default arguments.
 A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of arguments used in the model.
-The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call.
-(No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
+(The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call. 
+No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
 
 For example, consider this full Modelica model:
 ```
