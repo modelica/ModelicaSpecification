@@ -50,6 +50,231 @@ The rule for `pure(impureFunctionCall(...))` needs to be rephrased to not say _a
 
 This change was made to support the [changed definitions of _constant expression_](#Constant-expressions).
 
+## Function default arguments
+
+Flat Modelica functions cannot have function default arguments.
+A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of arguments used in the model.
+(The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call. 
+No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
+
+For example, consider this full Modelica model:
+```
+model M
+  function f
+    input Real a;
+    input Real b = a + 1;
+    input Real c = 2 * b;
+    output Real y = a + b + c;
+  end f;
+
+  Real x = f(0.5, c = time);
+end M;
+```
+Here, there is only one call to the function `f` making use of argument defaults.
+Hence, out of the three possible combinations of absent arguments (not counting all arguments being present, as this will correspond to the base variant of `f` in Flat Modelica), only one needs a helper function in Flat Modelica:
+```
+package 'M'
+  function 'M.f'
+    input Real 'a';
+    input Real 'b';
+    input Real 'c';
+    output Real 'y' = 'a' + 'b' + 'c';
+  end 'M.f';
+
+  function '-M.f:1,3' "Automatically generated helper for passing only the first and third arguments to 'M.f'"
+    input Real 'a';
+    input Real 'c';
+    output Real 'y' = 'M.f'('a', 'b', 'c');
+  protected
+    Real 'b' = 'a' + 1;
+  end '-M.f:1,3';
+
+  model 'M'
+    Real 'x' = '-M.f:1,3'(0.5, time);
+  end 'M';
+end 'M';
+```
+
+Note the name chosen for the automatically generated helper, `'-M.f:1,3'`.
+Due to the leading hyphen, it belongs to the part of the variable namespace that is available for automatically generated names, meaning that there is no risk of collision with names coming from the original full Modelica source.
+
+A Flat Modelica function may still have declaration equations on its inputs, but unlike full Modelica, these are ignored.
+They are only allowed for the sake of consistency with how deeper value modifiers on functions inputs are handled, see [record construction](#record-construction).
+```
+function 'f'
+  input Real 'a';
+  input Real 'b' = 'a' + 1; /* No default; declaration equation is ignored in Flat Modelica. */
+  input Real 'c' = 2 * 'b'; /* No default; declaration equation is ignored in Flat Modelica. */
+  output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and protected variables. */
+end 'f';
+```
+
+## Records
+
+### Record construction
+
+Unlike full Modelica, there are no implicitly defined record constructor functions in Flat Modelica.
+A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating helper functions as needed.
+The default arguments of the full Modelica record constructor can be handled just like default arguments of other functions, see [above](#function-default-arguments).
+In addition to the helper functions for handling default argumnets, tools producing Flat Modelica from full Modelica can also create a base function for record construction based on values for all record members.
+
+For example, consider this full Modelica model:
+```
+model M
+  record R
+    Real a;
+    Real b = 1;
+    Real c = a + 1;
+  end R;
+
+  R r = R(3);
+end M;
+```
+To convert this to Flat Modelica, a tool can automatically create two functions:
+```
+package 'M'
+  record 'M.R'
+    Real 'a';
+    Real 'b';
+    Real 'c';
+  end 'M.R';
+
+  function '-M.R' "Automatically generated constructor for 'M.R'"
+    input Real 'a';
+    input Real 'b';
+    input Real 'c';
+    output 'M.R' _result('a' = 'a', 'b' = 'b', 'c' = 'c');
+  end '-M.R';
+
+  function '-M.R:1' "Automatically generated helper for passing only the first argument to '-M.R'"
+    input Real 'a';
+    output 'M.R' _result = '-M.R'('a', 'b', 'c');
+  protected
+    Real 'b' = 1;
+    Real 'c' = 'a' + 1;
+  end '-M.R:1';
+
+  model 'M'
+    'M.R' 'r' = '-M.R:1'(3);
+  end 'M';
+end 'M';
+```
+
+### Record member value modifications
+
+Even though Flat Modelica doesn't come with implicitly defined record constructor functions — that in full Modelica are derived based on value modifications in the record type definition – it is still allowed to have value modifications for the members of a record type in Flat Modelica.
+Note that the top level structure of a Flat Modelica model ensures that the value modifications that are part of record types can only contain constant values (possibly obtained by evaluation of constant expressions).
+As usual, such value modifications can be overridden when declaring a component of the record type, and when made in a model component declaration, it is possible to also have non-constant expressions in the modifications.
+The only semantics of value modifications in record types is that they will be used as the basis for the effective modifications of a component declaration, but the semantics of value modifications in a component declaration are different depending on the kind of component declaration (function/record/model component declaration).
+
+#### Record component declarations
+
+Value modifications on a record component declaration are simply stored as part of the record type being defined.
+All modifications must be given by constant expressions, allowing them to be evaluated.
+
+For example:
+```
+record 'R'
+  Real 'x' = 1; /* Constant value is stored as part of the type 'R'. */
+end 'R';
+
+record 'S'
+  'R' 'r1';          /* Keeps modification from component type. */
+  'R' 'r2'('x' = 2); /* Overrides modification from component type. */
+end 'S';
+```
+
+Note that in the example above, a tool's internal representation of the record type 'S' does not need to remember the origin of the modifications; it is sufficient to just remember that the modification of `'r1'.'x'` is `1`, and that the modification of `'r2'.'x'` is `2`.
+
+#### Model component declarations
+
+A value modification in a model component declaration is equivalent to having a normal equation for the record member.
+
+Example (omitting the `package` wrapper for brevity):
+```
+record 'R'
+  Real 'x';
+  Real 'y' = 1;
+end 'R';
+
+function 'makeR'
+  output 'R' 'r'('x' = 2);
+end 'makeR'
+
+model 'M'
+  'R' 'r1';
+  'R' 'r2';
+  'R' 'r3' = 'makeR'(); /* OK: Declaration equation removes all modifications. */
+equation
+  'r1'.'x' = 2; /* OK, making 'r1' fully determined. */
+  'r2' = 'makeR'(); /* Error: 'r2'.'y' becomes overdetermined. */
+end 'M'
+```
+
+#### Function input component declarations
+
+All value modifications of a function input component declaration are ignored.
+
+For example, this is valid:
+```
+record 'R'
+  Real x;
+end 'R';
+
+function 'foo'
+  input 'R' 'u'('x' = 10); /* Value modification is ignored. */
+  output Real 'y' = 'u'.'x'; /* Completely determined by record passed to function. */
+end 'foo';
+```
+
+It follows that record types containing value modifications are usable in function input component declarations, but that the value modifications do not make any difference here.
+
+Note the analogy between the example above and the following:
+```
+pure function 'makeR10' "Pure constant function returning value of type 'R'"
+  output 'R' 'r'('x' = 10);
+end 'makeR10';
+
+function 'foo'
+  input 'R' 'u' = 'makeR10'(); /* Not a default; declaration equation is ignored. */
+  output Real 'y' = 'u'.'x'; /* Completely determined by record passed to function. */
+end 'foo';
+```
+
+#### Function output and protected component declarations
+
+For output and protected function component declarations the value modifications are used for initial assignments, and are then ignored during the remaining part of the function call evaluation.
+
+For example:
+```
+record 'R'
+  Real 'x';
+  Real 'y';
+end 'R';
+
+function 'f'
+  output 'R' 'result'('y' = 5); /* Assigning initial value to 'result'.'y'. */
+algorithm
+  'result'.'x' = 6;
+end 'f';
+```
+
+For the purpose of analyzing uninitialized use of variables in functions, a record variable is considered assigned when all it's members have been assigned.
+(A record-valued assignment to the entire variable is a special case of this, with all record members being assigned at once.)
+It follows that a function output (of record type) can be completely determined using only modifications in the component declaration.
+
+Note that one consequence of the initial assignment semantics is that this is valid:
+```
+record 'R'
+  Real 'x' = 1;
+end 'R';
+
+function 'f'
+  output 'R' 'result'; /* Hidden initial assignment to 'result'.'x', making 'result' fully assigned. */
+end 'f';
+```
+
+
 ## Variability of expressions
 
 ### Constant expressions
