@@ -83,7 +83,7 @@ package 'M'
   function '-M.f:1,3' "Automatically generated helper for passing only the first and third arguments to 'M.f'"
     input Real 'a';
     input Real 'c';
-    output Real 'y' = 'M.f'('a', 'b', 'c'); /* Is 'b' in scope here? If not, assign in algorithm. */
+    output Real 'y' = 'M.f'('a', 'b', 'c');
   protected
     Real 'b' = 'a' + 1;
   end '-M.f:1,3';
