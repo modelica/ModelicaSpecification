@@ -95,7 +95,7 @@ end 'M';
 ```
 
 Note the name chosen for the automatically generated helper, `'-M.f:1,3'`.
-Due to the leading hyphen, it belongs to the part of the variable namespace that is a vailable for automatically generated names, meaning that there is no risk of collision with names coming from the original full Modelica source.
+Due to the leading hyphen, it belongs to the part of the variable namespace that is available for automatically generated names, meaning that there is no risk of collision with names coming from the original full Modelica source.
 
 A Flat Modelica function may still have declaration equations on its inputs, but unlike full Modelica, these are ignored.
 They are only allowed for the sake of consistency with how deeper value modifiers on functions inputs are handled, see [record construction](#record-construction).
