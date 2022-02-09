@@ -44,35 +44,49 @@ c := f_{\mathrm{c}}(\mathit{relation}(v))
 \end{subequations}
 and where
 \begin{itemize}
-\item $p$:
-Modelica variables declared as \lstinline!parameter! or \lstinline!constant!, i.e., variables without any time-dependency.
+\item
+  $p$:
+  Modelica variables declared as \lstinline!parameter! or \lstinline!constant!, i.e., variables without any time-dependency.
 
-\item $t$:
-Modelica variable \lstinline!time!, the independent (real) variable.
+\item
+  $t$:
+  Modelica variable \lstinline!time!, the independent (real) variable.
 
-\item $x(t)$:
-Modelica variables of type \lstinline!Real!, appearing differentiated.
+\item
+  $x(t)$:
+  Modelica variables of type \lstinline!Real!, appearing differentiated.
 
-\item $y(t)$:
-Continuous-time modelica variables of type \lstinline!Real! that do not appear differentiated (= algebraic variables).
+\item
+  $y(t)$:
+  Continuous-time modelica variables of type \lstinline!Real! that do not appear differentiated (= algebraic variables).
 
-\item $z(t_{\mathrm{e}})$:
-Discrete-time modelica variables of type \lstinline!Real!.  These variables change their value only at event instants $t_{\mathrm{e}}$.  \lstinline!pre(z)! are the values of $z$ immediately before the current event occurred.
+\item
+  $z(t_{\mathrm{e}})$:
+  Discrete-time modelica variables of type \lstinline!Real!.
+  These variables change their value only at event instants $t_{\mathrm{e}}$.
+  \lstinline!pre(z)! are the values of $z$ immediately before the current event occurred.
 
-\item $m(t_{\mathrm{e}})$:
-Modelica variables of discrete-valued types (\lstinline!Boolean!, \lstinline!Integer!, etc) which are unknown.  These variables change their value only at event instants $t_{\mathrm{e}}$.  \lstinline!pre(m)! are the values of $m$ immediately before the current event occurred.
+\item
+  $m(t_{\mathrm{e}})$:
+  Modelica variables of discrete-valued types (\lstinline!Boolean!, \lstinline!Integer!, etc) which are unknown.
+  These variables change their value only at event instants $t_{\mathrm{e}}$.
+  \lstinline!pre(m)! are the values of $m$ immediately before the current event occurred.
 
-\item $c(t_{\mathrm{e}})$:
-The conditions of all \lstinline!if!-expressions generated including \lstinline!when!-clauses after conversion, see \cref{when-equations}).
+\item
+  $c(t_{\mathrm{e}})$:
+  The conditions of all \lstinline!if!-expressions generated including \lstinline!when!-clauses after conversion, see \cref{when-equations}).
 
-\item $\mathit{relation}(v)$:
-A relation containing variables $v_{i}$, e.g.\ $v_{1} > v_{2}$, $v_{3} \geq 0$.
+\item
+  $\mathit{relation}(v)$:
+  A relation containing variables $v_{i}$, e.g.\ $v_{1} > v_{2}$, $v_{3} \geq 0$.
 \end{itemize}
 
-For simplicity, the special cases of \lstinline!noEvent! and \lstinline!reinit! are not contained in the equations
-above and are not discussed below.
+For simplicity, the special cases of \lstinline!noEvent! and \lstinline!reinit! are not contained in the equations above and are not discussed below.
 
-The key difference between the two groups of discrete-time variables $z$ and and $m$ here is how they are determined.  The interpretation of the solved form of \eqref{eq:dae-discrete-valued} is that given values for everything else, there is a closed-form solution for $m$ in the form of a sequence of assignments to each of the variables of $m$ in turn -- there must be no cyclic dependencies between the equations used to solve for $m$.  Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in solved form, at most requiring flipping sides of the equation to obtain the used assignment form.  The interpretation of the non-solved form of \eqref{eq:dae-discrete-real} at events, on the other hand, is that at events, the discrete-time \lstinline!Real! variables $z$ are solved together with the continuous-time variables using \eqref{eq:dae} and \eqref{eq:dae-discrete-real}.
+The key difference between the two groups of discrete-time variables $z$ and and $m$ here is how they are determined.
+The interpretation of the solved form of \eqref{eq:dae-discrete-valued} is that given values for everything else, there is a closed-form solution for $m$ in the form of a sequence of assignments to each of the variables of $m$ in turn -- there must be no cyclic dependencies between the equations used to solve for $m$.
+Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in solved form, at most requiring flipping sides of the equation to obtain the used assignment form.
+The interpretation of the non-solved form of \eqref{eq:dae-discrete-real} at events, on the other hand, is that at events, the discrete-time \lstinline!Real! variables $z$ are solved together with the continuous-time variables using \eqref{eq:dae} and \eqref{eq:dae-discrete-real}.
 
 \begin{example}
 The following model is illegal since there is no equation in solved form that can be used in \eqref{eq:dae-discrete-valued} to solve for the discrete-valued variable \lstinline!y!:
@@ -94,39 +108,26 @@ Such types of systems are called \firstuse[hybrid DAE]{hybrid DAEs}.
 Simulation is performed in the following way:
 \begin{enumerate}
 \item\label{perform-simulation-integrate}
-  The DAE \eqref{eq:dae} is solved by a numerical integration method. In this
-  phase the conditions $c$ of the if- and \lstinline!when!-clauses, as well as the
-  discrete-time variables $z$ and $m$ are kept constant. Therefore, \eqref{eq:dae} is a
-  continuous function of continuous variables and the most basic
-  requirement of numerical integrators is fulfilled.
+  The DAE \eqref{eq:dae} is solved by a numerical integration method.
+  In this phase the conditions $c$ of the if- and \lstinline!when!-clauses, as well as the discrete-time variables $z$ and $m$ are kept constant.
+  Therefore, \eqref{eq:dae} is a continuous function of continuous variables and the most basic requirement of numerical integrators is fulfilled.
 \item
-  During integration, all relations from \eqref{eq:crossing} are monitored. If one of
-  the relations changes its value an event is triggered, i.e., the exact
-  time instant of the change is determined and the integration is
-  halted. As discussed in \cref{events-and-synchronization}, relations which depend only on
-  time are usually treated in a special way, because this allows
-  determining the time instant of the next event in advance.
+  During integration, all relations from \eqref{eq:crossing} are monitored.
+  If one of the relations changes its value an event is triggered, i.e., the exact time instant of the change is determined and the integration is halted.
+  As discussed in \cref{events-and-synchronization}, relations which depend only on time are usually treated in a special way, because this allows determining the time instant of the next event in advance.
 \item
   At an event instant, \eqref{eq:hydrid-dae} is a mixed set of algebraic equations which is solved for the \lstinline!Real!, \lstinline!Boolean! and \lstinline!Integer! unknowns.
 \item
-  After an event is processed, the integration is restarted with \ref{perform-simulation-integrate}.
+  After an event is processed, the integration is restarted at phase~\ref{perform-simulation-integrate}.
 \end{enumerate}
 
-Note, that both the values of the conditions $c$ as well as the values of
-$z$ and $m$ (all discrete-time \lstinline!Real!, \lstinline!Boolean! and \lstinline!Integer! variables) are only changed at
-an event instant and that these variables remain constant during
-continuous integration. At every event instant, new values of the
-discrete-time variables $z$ and $m$, as well as of new initial values for the states $x$, are
-determined. The change of discrete-time variables may characterize a new
-structure of a DAE where elements of the state vector $x$ are
-\emph{disabled}. In other words, the number of state variables,
-algebraic variables and residue equations of a DAE may change at event
-instants by disabling the appropriate part of the DAE. For clarity of
-the equations, this is not explicitly shown by an additional index in
-\eqref{eq:hydrid-dae}.
+Note, that both the values of the conditions $c$ as well as the values of $z$ and $m$ (all discrete-time \lstinline!Real!, \lstinline!Boolean! and \lstinline!Integer! variables) are only changed at an event instant and that these variables remain constant during continuous integration.
+At every event instant, new values of the discrete-time variables $z$ and $m$, as well as of new initial values for the states $x$, are determined.
+The change of discrete-time variables may characterize a new structure of a DAE where elements of the state vector $x$ are \emph{disabled}.
+In other words, the number of state variables, algebraic variables and residue equations of a DAE may change at event instants by disabling the appropriate part of the DAE.
+For clarity of the equations, this is not explicitly shown by an additional index in \eqref{eq:hydrid-dae}.
 
-At an event instant, including the initial event, the model equations
-are reinitialized according to the following iteration procedure:
+At an event instant, including the initial event, the model equations are reinitialized according to the following iteration procedure:
 \begin{lstlisting}[language=modelica]
 known  variables: x, t, p
 unkown variables: dx/dt, y, z, m, pre(z), pre(m), c
@@ -156,18 +157,9 @@ Another problem is the handling of idealized elements, such as ideal diodes or C
 These elements lead to mixed systems of equations having both \lstinline!Real! and \lstinline!Boolean! unknowns.
 Specialized algorithms are needed to solve such systems.
 
-To summarize, symbolic transformation techniques are needed to transform
-\eqref{eq:hydrid-dae} into a set of equations which can be numerically solved reliably. Most
-important, the algorithm of Pantelides should to be applied to
-differentiate certain parts of the equations in order to reduce the
-index. Note, that also explicit integration methods, such as Runge-Kutta
-algorithms, can be used to solve \eqref{eq:dae}, after the index of \eqref{eq:dae} has been
-reduced by the Pantelides algorithm: During continuous integration, the
-integrator provides $x$ and $t$. Then, \eqref{eq:dae} is a linear or nonlinear system
-of equations to compute the algebraic variables $y$ and the state
-% TODO: Structured formatting of inline "upright 'd' fraction".
-derivatives $\mathrm{d}x/\mathrm{d}t$ and the model returns $\mathrm{d}x/\mathrm{d}t$ to the integrator by
-solving these systems of equations. Often, \eqref{eq:dae} is just a linear system
-of equations in these unknowns, so that the solution is straightforward.
-This procedure is especially useful for real-time simulation where
-usually explicit one-step methods are used.
+To summarize, symbolic transformation techniques are needed to transform \eqref{eq:hydrid-dae} into a set of equations which can be numerically solved reliably.
+Most important, the algorithm of Pantelides should to be applied to differentiate certain parts of the equations in order to reduce the index.
+Note, that also explicit integration methods, such as Runge-Kutta algorithms, can be used to solve \eqref{eq:dae}, after the index of \eqref{eq:dae} has been reduced by the Pantelides algorithm: During continuous integration, the integrator provides $x$ and $t$.
+Then, \eqref{eq:dae} is a linear or nonlinear system of equations to compute the algebraic variables $y$ and the state derivatives $\udfrac{x}{t}$ and the model returns $\udfrac{x}{t}$ to the integrator by solving these systems of equations.
+Often, \eqref{eq:dae} is just a linear system of equations in these unknowns, so that the solution is straightforward.
+This procedure is especially useful for real-time simulation where usually explicit one-step methods are used.
