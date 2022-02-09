@@ -350,239 +350,12 @@ end HasCycles;
 \end{lstlisting}
 \end{example}
 
+
 \subsection{Component Variability Prefixes}\label{component-variability-prefixes-discrete-parameter-constant}
 
-The prefixes \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant! of a component declaration are called \firstuse[variability!prefix]{variability prefixes}\index{component variability}\index{declared variability}\index{variability!declared|see{declared variability}} and define in which situation the variable values of a component are initialized (see \cref{events-and-synchronization} and \cref{initialization-initial-equation-and-initial-algorithm}) and when they are changed during transient analysis (i.e., solution of initial value problem of the hybrid DAE):
-\begin{itemize}
-\item
-  A variable \lstinline!vc! declared with \lstinline!constant!\indexinline{constant} prefix remains constant during transient analysis, with a value that is unaffected by the initialization problem (i.e., determined during translation).
-  This is called a \firstuse[---]{constant}, or \firstuse[constant!variable]{constant variable}\index{component variability!constant}.
-\item
-  A variable \lstinline!ep! is called a \firstuse[parameter!evaluable]{evaluable parameter variable}\index{component variability!evaluable parameter} if all of the following applies:
-  \begin{itemize}
-  \item
-    It is declared with the \lstinline!parameter!\indexinline{parameter} prefix.
-  \item
-    It has \lstinline!fixed = true!.
-  \item
-    It does not have annotation \lstinline!Evaluate = false!.
-  \item
-    The declaration equation -- or \lstinline!start! attribute if no declaration equation is given (see \cref{initialization-initial-equation-and-initial-algorithm}) -- is given by an evaluable expression (\cref{evaluable-expressions}).
-  \end{itemize}
-  It is also simply called an \firstuse[---]{evaluable parameter}.
-  An evaluable parameter remains constant during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{normal parameter}, see item below).
-  At which of these stages the value is determined is tool dependent.
-\item
-  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!normal]{normal parameter variable}\index{component variability!normal parameter} unless it is an evaluable parameter.
-  It is also simply called a \firstuse[---]{normal parameter}.
-  It remains constant during transient analysis, with a value determined by the initialization problem.
-\item
-  A \firstuse[discrete-time!variable]{discrete-time variable}\index{component variability!discrete-time} \lstinline!vd! is a variable that is discrete-valued (that is, not of \lstinline!Real! type) or assigned in a \lstinline!when!-clause.
-  The \lstinline!discrete!\indexinline{discrete} prefix may be used to clarify that a variable is discrete-time.
-  It has a vanishing time derivative between events.
-  Note that this is not the same as saying that \lstinline!der(vd) = 0! almost everywhere, as the derivative is not even defined at the events.
-  It is not allowed to apply \lstinline!der! to discrete-time variables.
-  During transient analysis the variable can only change its value at event instants (see \cref{events-and-synchronization}).
-\item
-  A \firstuse[continuous-time!variable]{continuous-time variable}\index{component variability!continuous-time} is a \lstinline!Real! variable without any prefix that is not assigned in a \lstinline!when!-clause.
-  A continuous-time variable \lstinline!vn! may have a non-vanishing time derivative (provided \lstinline!der(vn)! is allowed this can be expressed as \lstinline!der(vn) <> 0!) and may also change its value discontinuously at any time during transient analysis (see \cref{events-and-synchronization}).
-  It may also contain a combination of these effects.
-  Regarding existence of \lstinline!der(vn)!, see \cref{modelica:der}.
-\end{itemize}
+The prefixes \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant! of a component declaration are called \firstuse[variability!prefix]{variability prefixes} and are the basis for defining in which situation the variable values of a component are initialized (see \cref{events-and-synchronization} and \cref{initialization-initial-equation-and-initial-algorithm}) and when they are changed during transient analysis (i.e., solution of initial value problem of the hybrid DAE).
+Further details on how the prefixes relate to component variability, as well as rules applying to components the different variabilities, are given in \cref{component-variability}.
 
-Components declared as \lstinline!constant! shall have an associated declaration equation with a constant expression, if the constant is directly in the simulation model, or used in the simulation model.
-The value of a constant can be modified after it has been given a value, unless the constant is declared \lstinline!final! or modified with a \lstinline!final! modifier.
-A constant without an associated declaration equation can be given one by using a modifier.
-
-The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either a normal or evaluable parameter variable.
-
-\begin{nonnormative}
-With every normal parameter, there is at least one reason why it isn't an evaluable parameter.
-This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of evaluable expression variability is detected.
-For example:
-\begin{lstlisting}[language=modelica]
-  parameter Integer n =
-    if b then 1 else 2;        // Normal parameter due to variability of b.
-  parameter Boolean b(fixed = false); // Normal parameter due to fixed = false.
-  Real[n] x;                   // Variability error: n must be evaluable.
-initial equation
-  b = n > 3;
-\end{lstlisting}
-Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a normal parameter is that it has a dependency on the normal parameter \lstinline!b!.
-
-(Would evaluable and normal parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the evaluable component declarations instead.)
-\end{nonnormative}
-
-\begin{nonnormative}
-For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is an evaluable or normal parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
-To see this, note that \lstinline!Evaluate = false! makes it a normal parameter by definition, and that \lstinline!Evaluate = true! would trigger the warning if the parameter is normal.
-\end{nonnormative}
-
-By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that the value of a constant or evaluable parameter to be used in simplifications is possible to obtain by evaluation of an evaluable expression where values are available for all component subexpressions.
-
-\begin{example}
-A particularly demanding aspect of this evaluation is the potential presence of external functions.
-Hence, if it is known that a parameter won't be used by an evaluable expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
-\begin{lstlisting}[language=modelica]
-import length = Modelica.Utilities.Strings.length; /* Pure external function */
-parameter Integer n = length("Hello");             /* Evaluable parameter */
-parameter Integer p = length("Hello")
-  annotation(Evaluate = false);                    /* Normal parameter */
-parameter Boolean b = false;                       /* Evaluable parameter */
-
-/* Fulfillment of acyclic binding rule might cause evaluation of n;
- * to break the cycle, a tool might evaluate either b, n, or both:
- */
-parameter Real x = if b and n < 3 then 1 - x else 0;
-
-/* Fulfillment of acyclic binding rule cannot cause evaluation of p;
- * to break the cycle, evaluation of b is the only option:
- */
-parameter Real y = if b and p < 3 then 1 - y else 0;
-\end{lstlisting}
-\end{example}
-
-\begin{nonnormative}
-Related to evaluable parameters, the term \firstuse{structural parameter} is also used in the Modelica community.
-This term has no meaning defined by the specification, and the meaning may vary from one context to another.
-One common meaning, however, is that in the context of a given tool, a parameter is called \emph{structural} if the tool has decided to evaluate it because it controls some variation of the equation structure that the tool is unable to leave undecided during translation.
-With this interpretation of \emph{structural parameter}, it follows that such a structural parameter must also be an evaluable parameter, while there are typically many evaluable parameters that are not structural.
-\end{nonnormative}
-
-If a \lstinline!Real! variable is declared with the prefix \lstinline!discrete!\indexinline{discrete} it must in a simulation model be assigned in a \lstinline!when!-clause, either by an assignment or an equation.
-The variable assigned in a \lstinline!when!-clause shall not be defined in a sub-component of \lstinline!model! or \lstinline!block! specialized class.
-(This is to keep the property of balanced models.)
-
-A \lstinline!Real! variable assigned in a \lstinline!when!-clause is a discrete-time variable,
-even though it was not declared with the prefix \lstinline!discrete!. A \lstinline!Real!
-variable not assigned in any \lstinline!when!-clause and without any type prefix is
-a continuous-time variable.
-
-The default variability for \lstinline!Integer!, \lstinline!String!,
-\lstinline!Boolean!, or \lstinline!enumeration!
-variables is discrete-time, and it is not possible to declare
-continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or
-\lstinline!enumeration! variables.
-
-\begin{nonnormative}
-The restriction that discrete-valued variables (of type \lstinline!Boolean!, etc) cannot be
-declared with continuous-time variability is one of the foundations of the expression variability rules
-that will ensure that any discrete-valued expression has at most discrete-time variability, see \cref{variability-of-expressions}.
-\end{nonnormative}
-
-The variability of expressions and restrictions on variability for declaration equations is given in \cref{variability-of-expressions}.
-
-\begin{nonnormative}
-Note that discrete-time \emph{expressions} include parameter expressions, whereas discrete-time \emph{variables} do not include parameter variables.
-The reason can intuitively be explained as follows
-\begin{itemize}
-\item When discussing variables we also want to consider them as left-hand-side variables in assignments, and thus a lower variability would be a problem.
-\item When discussing expressions we only consider them as right-hand-side expressions in those assignment, and thus a lower variability can automatically be included; and additionally we have sub-expressions where lower variability is not an issue.
-\end{itemize}
-
-For \lstinline!Real! variables we can distinguish two subtly different categories: discrete-time and piecewise constant, where the discrete-time variables are a subset of all piecewise constant variables.
-The \lstinline!Real! variables declared with the prefix \lstinline!discrete! is a subset of the discrete-time \lstinline!Real! variables.
-For a \lstinline!Real! variable, being discrete-time is equivalent to being assigned in a \lstinline!when!-clause.
-A variable used as argument to \lstinline!pre! outside a \lstinline!when!-clause must be discrete-time.
-
-\begin{lstlisting}[language=modelica]
-model PiecewiseConstantReals
-  discrete Real xd1 "Must be assigned in a when-clause, discrete-time";
-  Real xd2 "Assigned in a when-clause (below) and thus discrete-time";
-  Real xc3 "Not discrete-time, but piecewise constant";
-  Real x4 "Piecewise constant, but changes between events";
-equation
-  when sample(1, 1) then
-    xd1 = pre(xd1) + 1;
-    xd2 = pre(xd2) + 1;
-  end when;
-  // It is legal to use pre for a discrete-time variable outside of when
-  xc3 = xd1 + pre(xd2);
-  // But pre(xc3) would not be legal
-  x4 = if noEvent(cos(time) > 0.5) then 1.0 else -1.0;
-end PiecewiseConstantReals;
-\end{lstlisting}
-
-Tools may optimize code to only compute and store discrete-time variables at events.
-Tools may extend that optimization to piece-wise constant variables that only change at events (in the example above \lstinline!xc3!).
-As shown above variables can be piecewise constant, but change at times that are not events (in the example above \lstinline!x4!).
-It is not clear how a tool could detect and optimize the latter case.
-
-A \lstinline!parameter! variable is constant during simulation.
-This prefix gives the library designer the possibility to express that the physical equations in a library are only valid if some of the used components are constant during simulation.
-The same also holds for discrete-time and constant variables.
-Additionally, the \lstinline!parameter! prefix allows a convenient graphical user interface in an experiment environment, to support quick changes of the most important constants of a compiled model.
-In combination with an \lstinline!if!-equation, a \lstinline!parameter! prefix allows removing parts of a model before the symbolic processing of a model takes place in order to avoid variable causalities in the model (similar to \lstinline!#ifdef! in C).
-Class parameters can be sometimes used as an alternative.
-
-Example:
-\begin{lstlisting}[language=modelica]
-model Inertia
-  parameter Boolean state = true;
-  $\ldots$
-equation
-  J*a = t1 - t2;
-  if state then // code which is removed during symbolic
-    der(v) = a; // processing, if state=false
-    der(r) = v;
-   end if;
-end Inertia;
-\end{lstlisting}
-
-A constant variable is similar to a parameter with the difference
-that constants cannot be changed after translation and usually not
-changed after they have been given a value. It can be used to represent
-mathematical constants, e.g.
-\begin{lstlisting}[language=modelica]
-final constant Real PI=4*atan(1);
-\end{lstlisting}
-
-There are no continuous-time \lstinline!Boolean!, \lstinline!Integer! or \lstinline!String!
-variables. In the rare cases they are needed they can be
-faked by using \lstinline!Real! variables, e.g.:
-\begin{lstlisting}[language=modelica]
-  Boolean off1, off1a;
-  Real off2;
-equation
-  off1 = s1 < 0;
-  off1a = noEvent(s1 < 0); // error, since off1a is discrete
-  off2 = if noEvent(s2 < 0) then 1 else 0; // possible
-  u1 = if off1 then s1 else 0; // state events
-  u2 = if noEvent(off2 > 0.5) then s2 else 0; // no state events
-\end{lstlisting}
-
-Since \lstinline!off1! is a discrete-time variable, state events are
-generated such that \lstinline!off1! is only changed at event instants.
-Variable \lstinline!off2! may change its value during continuous integration.
-Therefore, \lstinline!u1! is guaranteed to be continuous during continuous
-integration whereas no such guarantee exists for \lstinline!u2!.
-\end{nonnormative}
-
-\subsubsection{Variability of Structured Entities}\label{variability-of-structured-entities}
-
-For elements of structured entities with variability prefixes the most
-restrictive of the variability prefix and the variability of the
-component wins (using the default variability for the component if there
-is no variability prefix on the component).
-
-\begin{example}
-\begin{lstlisting}[language=modelica]
-record A
-  constant Real pi=3.14;
-  Real y;
-  Integer i;
-end A;
-
-parameter A a;
-  // a.pi is a constant
-  // a.y and a.i are parameters
-
-A b;
-  // b.pi is a constant
-  // b.y is a continuous-time variable
-  // b.i is a discrete-time variable
-\end{lstlisting}
-\end{example}
 
 \subsection{Conditional Component Declaration}\label{conditional-component-declaration}
 
@@ -631,6 +404,252 @@ variables the connector must be connected from the outside.
 The reason for this restriction is that the default flow equation is probably incorrect (since it could otherwise
 be an unconditional connector) and the model cannot check that connector is connected.
 \end{nonnormative}
+
+
+\section{Component Variability}\label{component-variability}
+
+As briefly mentioned in \cref{component-variability-prefixes-discrete-parameter-constant}, the component variability prefixes are the basis for defining \firstuse{component variability}\index{declared variability}\index{variability!declared|see{declared variability}}.
+Combined with some other information about the components and analysis of expression variability (\cref{variability-of-expressions}), they define the component variabilities as follows:
+\begin{itemize}
+\item
+  A variable \lstinline!vc! declared with \lstinline!constant!\indexinline{constant} prefix remains constant during transient analysis, with a value that is unaffected by the initialization problem (i.e., determined during translation).
+  This is called a \firstuse[---]{constant}, or \firstuse[constant!variable]{constant variable}\index{component variability!constant}.
+  For further details, see \ref{constants}.
+\item
+  A variable \lstinline!ep! is called a \firstuse[parameter!evaluable]{evaluable parameter variable}\index{component variability!evaluable parameter} if all of the following applies:
+  \begin{itemize}
+  \item
+    It is declared with the \lstinline!parameter!\indexinline{parameter} prefix.
+  \item
+    It has \lstinline!fixed = true!.
+  \item
+    It does not have annotation \lstinline!Evaluate = false!.
+  \item
+    The declaration equation -- or \lstinline!start! attribute if no declaration equation is given (see \cref{initialization-initial-equation-and-initial-algorithm}) -- is given by an evaluable expression (\cref{evaluable-expressions}).
+  \end{itemize}
+  It is also simply called an \firstuse[---]{evaluable parameter}.
+  An evaluable parameter remains constant during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{normal parameter}, see item below).
+  At which of these stages the value is determined is tool dependent.
+  For further details, see \ref{parameters}.
+\item
+  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!normal]{normal parameter variable}\index{component variability!normal parameter} unless it is an evaluable parameter.
+  It is also simply called a \firstuse[---]{normal parameter}.
+  It remains constant during transient analysis, with a value determined by the initialization problem.
+  For further details, see \ref{parameters}.
+\item
+  A \firstuse[discrete-time!variable]{discrete-time variable}\index{component variability!discrete-time} \lstinline!vd! is a variable that is discrete-valued (that is, not of \lstinline!Real! type) or assigned in a \lstinline!when!-clause.
+  The \lstinline!discrete!\indexinline{discrete} prefix may be used to clarify that a variable is discrete-time.
+  During transient analysis the variable can only change its value at event instants (see \cref{events-and-synchronization}).
+  For further details, see \ref{discrete-time-variables}.
+\item
+  A \firstuse[continuous-time!variable]{continuous-time variable}\index{component variability!continuous-time} is a \lstinline!Real! variable without any prefix that is not assigned in a \lstinline!when!-clause.
+  The variable can change both continuously and discontinuously at any time.
+  For further details, see \ref{continuous-time-variables}.
+\end{itemize}
+
+The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either a normal or evaluable parameter variable.
+
+The variability of expressions and restrictions on variability for declaration equations is given in \cref{variability-of-expressions}.
+
+\begin{nonnormative}
+Note that discrete-time \emph{expressions} include parameter expressions, whereas discrete-time \emph{variables} do not include parameter variables.
+The reason can intuitively be explained as follows:
+\begin{itemize}
+\item When discussing variables we also want to consider them as left-hand-side variables in assignments, and thus a lower variability would be a problem.
+\item When discussing expressions we only consider them as right-hand-side expressions in those assignment, and thus a lower variability can automatically be included; and additionally we have sub-expressions where lower variability is not an issue.
+\end{itemize}
+
+For \lstinline!Real! variables we can distinguish two subtly different categories: discrete-time and piecewise constant, where the discrete-time variables are a subset of all piecewise constant variables.
+The \lstinline!Real! variables declared with the prefix \lstinline!discrete! is a subset of the discrete-time \lstinline!Real! variables.
+For a \lstinline!Real! variable, being discrete-time is equivalent to being assigned in a \lstinline!when!-clause.
+A variable used as argument to \lstinline!pre! outside a \lstinline!when!-clause must be discrete-time.
+
+\begin{lstlisting}[language=modelica]
+model PiecewiseConstantReals
+  discrete Real xd1 "Must be assigned in a when-clause, discrete-time";
+  Real xd2 "Assigned in a when-clause (below) and thus discrete-time";
+  Real xc3 "Not discrete-time, but piecewise constant";
+  Real x4 "Piecewise constant, but changes between events";
+equation
+  when sample(1, 1) then
+    xd1 = pre(xd1) + 1;
+    xd2 = pre(xd2) + 1;
+  end when;
+  // It is legal to use pre for a discrete-time variable outside of when
+  xc3 = xd1 + pre(xd2);
+  // But pre(xc3) would not be legal
+  x4 = if noEvent(cos(time) > 0.5) then 1.0 else -1.0;
+end PiecewiseConstantReals;
+\end{lstlisting}
+
+Tools may optimize code to only compute and store discrete-time variables at events.
+Tools may extend that optimization to piece-wise constant variables that only change at events (in the example above \lstinline!xc3!).
+As shown above variables can be piecewise constant, but change at times that are not events (in the example above \lstinline!x4!).
+It is not clear how a tool could detect and optimize the latter case.
+
+A \lstinline!parameter! variable is constant during simulation.
+This prefix gives the library designer the possibility to express that the physical equations in a library are only valid if some of the used components are constant during simulation.
+The same also holds for discrete-time and constant variables.
+Additionally, the \lstinline!parameter! prefix allows a convenient graphical user interface in an experiment environment, to support quick changes of the most important constants of a compiled model.
+In combination with an \lstinline!if!-equation, a \lstinline!parameter! prefix allows removing parts of a model before the symbolic processing of a model takes place in order to avoid variable causalities in the model (similar to \lstinline!#ifdef! in C).
+Class parameters can be sometimes used as an alternative.
+
+Example:
+\begin{lstlisting}[language=modelica]
+model Inertia
+  parameter Boolean state = true;
+  $\ldots$
+equation
+  J * a = t1 - t2;
+  if state then // code which is removed during symbolic
+    der(v) = a; // processing, if state=false
+    der(r) = v;
+   end if;
+end Inertia;
+\end{lstlisting}
+
+A constant variable is similar to a parameter with the difference that constants cannot be changed after translation and usually not changed after they have been given a value.
+It can be used to represent mathematical constants, e.g.
+\begin{lstlisting}[language=modelica]
+final constant Real PI = 4 * atan(1);
+\end{lstlisting}
+
+There are no continuous-time \lstinline!Boolean!, \lstinline!Integer! or \lstinline!String! variables.
+In the rare cases they are needed they can be faked by using \lstinline!Real! variables, e.g.:
+\begin{lstlisting}[language=modelica]
+  Boolean off1, off1a;
+  Real off2;
+equation
+  off1 = s1 < 0;
+  off1a = noEvent(s1 < 0); // error, since off1a is discrete
+  off2 = if noEvent(s2 < 0) then 1 else 0; // possible
+  u1 = if off1 then s1 else 0; // state events
+  u2 = if noEvent(off2 > 0.5) then s2 else 0; // no state events
+\end{lstlisting}
+
+Since \lstinline!off1! is a discrete-time variable, state events are generated such that \lstinline!off1! is only changed at event instants.
+Variable \lstinline!off2! may change its value during continuous integration.
+Therefore, \lstinline!u1! is guaranteed to be continuous during continuous integration whereas no such guarantee exists for \lstinline!u2!.
+\end{nonnormative}
+
+
+\subsection{Constants}\label{constants}
+
+Constant variables (defined in \cref{component-variability}) shall have an associated declaration equation with a constant expression, if the constant is directly in the simulation model, or used in the simulation model.
+The value of a constant can be modified after it has been given a value, unless the constant is declared \lstinline!final! or modified with a \lstinline!final! modifier.
+A constant without an associated declaration equation can be given one by using a modifier.
+
+By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that the value of a constant (or evaluable parameter, see below) to be used in simplifications is possible to obtain by evaluation of an evaluable expression where values are available for all component subexpressions.
+
+
+\subsection{Parameters}\label{parameters}
+
+Parameter variables are divided into evaluable parameter variables and normal parameter variables, both defined in \cref{component-variability}.
+
+By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that a value for an evaluable parameter is possible to obtain during translation, compare \cref{constants}.
+Making use of that value during translation turns the evaluable parameter into an evaluated parameter, and it must be ensured that the parameter cannot be assigned a different value after translation, as this would invalidate the use of the original value during translation.
+
+\begin{example}
+A particularly demanding aspect of this evaluation is the potential presence of external functions.
+Hence, if it is known that a parameter won't be used by an evaluable expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
+\begin{lstlisting}[language=modelica]
+import length = Modelica.Utilities.Strings.length; /* Pure external function */
+parameter Integer n = length("Hello");             /* Evaluable parameter */
+parameter Integer p = length("Hello")
+  annotation(Evaluate = false);                    /* Normal parameter */
+parameter Boolean b = false;                       /* Evaluable parameter */
+
+/* Fulfillment of acyclic binding rule might cause evaluation of n;
+ * to break the cycle, a tool might evaluate either b, n, or both:
+ */
+parameter Real x = if b and n < 3 then 1 - x else 0;
+
+/* Fulfillment of acyclic binding rule cannot cause evaluation of p;
+ * to break the cycle, evaluation of b is the only option:
+ */
+parameter Real y = if b and p < 3 then 1 - y else 0;
+\end{lstlisting}
+\end{example}
+
+\begin{nonnormative}
+For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is an evaluable or normal parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
+To see this, note that \lstinline!Evaluate = false! makes it a normal parameter by definition, and that \lstinline!Evaluate = true! would trigger the warning if the parameter is normal.
+\end{nonnormative}
+
+\begin{nonnormative}
+With every normal parameter, there is at least one reason why it isn't an evaluable parameter.
+This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of evaluable expression variability is detected.
+For example:
+\begin{lstlisting}[language=modelica]
+  parameter Integer n =
+    if b then 1 else 2;        // Normal parameter due to variability of b.
+  parameter Boolean b(fixed = false); // Normal parameter due to fixed = false.
+  Real[n] x;                   // Variability error: n must be evaluable.
+initial equation
+  b = n > 3;
+\end{lstlisting}
+Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a normal parameter is that it has a dependency on the normal parameter \lstinline!b!.
+
+(Would evaluable and normal parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the evaluable component declarations instead.)
+\end{nonnormative}
+
+\begin{nonnormative}
+Related to evaluable parameters, the term \firstuse{structural parameter} is also used in the Modelica community.
+This term has no meaning defined by the specification, and the meaning may vary from one context to another.
+One common meaning, however, is that in the context of a given tool, a parameter is called \emph{structural} if the tool has decided to evaluate it because it controls some variation of the equation structure that the tool is unable to leave undecided during translation.
+With this interpretation of \emph{structural parameter}, it follows that such a structural parameter must also be an evaluable parameter, while there are typically many evaluable parameters that are not structural.
+\end{nonnormative}
+
+
+\subsection{Discrete-Time Variables}\label{discrete-time-variables}
+
+A discrete-time variable (defined in \cref{component-variability}) has a vanishing time derivative between events.
+Note that this is not the same as saying that \lstinline!der(vd) = 0! almost everywhere, as the derivative is not even defined at the events.
+It is not allowed to apply \lstinline!der! to discrete-time variables.
+
+If a \lstinline!Real! variable is declared with the prefix \lstinline!discrete!\indexinline{discrete} it must in a simulation model be assigned in a \lstinline!when!-clause, either by an assignment or an equation.
+The variable assigned in a \lstinline!when!-clause shall not be defined in a sub-component of \lstinline!model! or \lstinline!block! specialized class.
+(This is to keep the property of balanced models.)
+
+A \lstinline!Real! variable assigned in a \lstinline!when!-clause is a discrete-time variable, even though it was not declared with the prefix \lstinline!discrete!. A \lstinline!Real! variable not assigned in any \lstinline!when!-clause and without any type prefix is a continuous-time variable.
+
+The default variability for \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or \lstinline!enumeration! variables is discrete-time, and it is not possible to declare continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or \lstinline!enumeration! variables.
+
+\begin{nonnormative}
+The restriction that discrete-valued variables (of type \lstinline!Boolean!, etc) cannot be declared with continuous-time variability is one of the foundations of the expression variability rules that will ensure that any discrete-valued expression has at most discrete-time variability, see \cref{variability-of-expressions}.
+\end{nonnormative}
+
+
+\subsection{Continuous-Time Variables}\label{continuous-time-variables}
+
+A continuous-time variable (defined in \cref{component-variability}) \lstinline!vn! may have a non-vanishing time derivative (provided \lstinline!der(vn)! is allowed this can be expressed as \lstinline!der(vn) <> 0!) and may also change its value discontinuously at any time during transient analysis (see \cref{events-and-synchronization}).
+It may also contain a combination of these effects.
+Regarding existence of \lstinline!der(vn)!, see \cref{modelica:der}.
+
+
+\subsection{Variability of Structured Entities}\label{variability-of-structured-entities}
+
+For elements of structured entities with variability prefixes the most restrictive of the variability prefix and the variability of the component wins (using the default variability for the component if there is no variability prefix on the component).
+
+\begin{example}
+\begin{lstlisting}[language=modelica]
+record A
+  constant Real pi = 3.14;
+  Real y;
+  Integer i;
+end A;
+
+parameter A a;
+  // a.pi is a constant
+  // a.y and a.i are parameters
+
+A b;
+  // b.pi is a constant
+  // b.y is a continuous-time variable
+  // b.i is a discrete-time variable
+\end{lstlisting}
+\end{example}
+
 
 \section{Class Declarations}\label{class-declarations}
 
