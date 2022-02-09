@@ -564,6 +564,76 @@ end Test2;
 \end{lstlisting}
 \end{example}
 
+\subsection{Removing Modifiers -- break}\label{removing-modifiers-break}
+Modifications may contain the special keyword \lstinline!break! instead of an expression.
+The intention of \lstinline!break! is to remove the value.
+
+The modifiers using \lstinline!break! are merged using the same rule as other modifications, and follow the same restrictions so they cannot override a final modifier.
+During flattening of an instantiated model, remaining \lstinline!break! modifications (i.e., the ones that are not further overriden) are treated as if the expression was missing.
+The \lstinline!break! modifier for a variable of a simple type can be applied to the value and/or to specific attributes.
+It can override nothing, either because there was no expression originally or because \lstinline!break! override another \lstinline!break!.
+
+\begin{nonnormative}
+In a dialog, a tool may hide the keyword \lstinline!break! and show an empty input field, without the inherited modification.
+It should also be possible to remove this modifier to restore the inherited modification.
+
+There are also other uses the keyword \lstinline!break!, but importantly it is not an expression and thus it cannot be used as a sub-expression.
+\end{nonnormative}
+
+\begin{example}
+Remove unwanted defaults for parameters:
+\begin{lstlisting}
+partial model PartialStraightPipe
+  parameter Real roughness = 2.5e-5 "Average height of surface asperities";
+  parameter Real height_ab (unit = "m" ) = 0 "Height between a and b";
+  ...
+end PartialStraightPipe;
+
+model StaticPipe
+  extends PartialStraightPipe;
+  parameter Real p_a_start = system.p_start;
+  ...
+end StaticPipe;
+
+model MyPipe "Without defaults"
+  extends StaticPipe(
+    p_a_start = break,
+    roughness = break,
+    height_ab = break);
+end MyPipe;
+\end{lstlisting}
+Replace a given parameter value by an initial computation:
+\begin{lstlisting}
+model A
+  parameter Real diameter  = 1;
+  final parameter radius = diameter / 2;
+end A;
+
+model B "Initial equation for diameter"
+  extends A( diameter(fixed = false) = break );
+  parameter Real square=2;
+initial equation 
+  //  solving equation below for diameter
+  square = f(diameter); 
+end B;
+\end{lstlisting}
+Replace a value for an inherited variable with an value computed from an algorithm:
+\begin{lstlisting}
+model A
+  Real x = 1;
+end A;
+
+model B "Computing x instead"
+  extends A(x=break);
+algorithm
+  x:=0;
+  while ...
+    x := x + ...
+  end while;
+end B;
+\end{lstlisting}
+\end{example}
+
 \section{Redeclaration}\label{redeclaration}
 
 A \lstinline!redeclare!\indexinline{redeclare} construct in a modifier replaces the declaration of a local class or component with another declaration.
