@@ -1,6 +1,6 @@
 \chapter{Equations}\label{equations}
 
-An \firstuse{equation}\index{equation} is part of a class definition.
+An \firstuse{equation} is part of a class definition.
 A scalar equation relates scalar variables, i.e., constrains the values that these variables can take simultaneously.
 When $n$-1 variables of an equation containing $n$ variables are known, the value of the $n$th variable can be inferred (solved for).
 In contrast to an algorithm section, there is no order between the equations in an equation section and they can be solved separately.
@@ -10,13 +10,13 @@ In contrast to an algorithm section, there is no order between the equations in 
 Equations in Modelica can be classified into different categories depending on the syntactic context in which they occur:
 \begin{itemize}
 \item
-  Normal equality equations occurring in equation sections, including connect-equations and other equation types of special syntactic form (\cref{equations-in-equation-sections}).
+  Normal equality equations occurring in equation sections, including \lstinline!connect!-equations and other equation types of special syntactic form (\cref{equations-in-equation-sections}).
 \item
   Declaration equations\index{declaration equation|hyperpageit}, which are part of variable, parameter, or constant declarations (\cref{declaration-equations}).
 \item
   Modification equations\index{modification equation|hyperpageit}, which are commonly used to modify attributes of classes (\cref{modifications}).
 \item
-  \firstuse{Binding equations}\index{binding equation}, which include both declaration equations and element modification for the value of the variable itself.
+  \firstuse[binding equation]{Binding equations}, which include both declaration equations and element modification for the value of the variable itself.
   These are considered equations when appearing outside functions, and then a component with a binding equation has its value bound to some expression.
   (Binding equations can also appear in functions, see \cref{initialization-and-binding-equations-of-components-in-functions}.)
 \item
@@ -26,11 +26,9 @@ Equations in Modelica can be classified into different categories depending on t
 
 \section{Flattening and Lookup in Equations}\label{flattening-and-lookup-in-equations}
 
-A flattened equation is identical to the corresponding nonflattened
-equation.
+A flattened equation is identical to the corresponding nonflattened equation.
 
-Names in an equation shall be found by looking up in the partially
-flattened enclosing class of the equation.
+Names in an equation shall be found by looking up in the partially flattened enclosing class of the equation.
 
 \section{Equations in Equation Sections}\label{equations-in-equation-sections}
 
@@ -41,36 +39,31 @@ equation-section :
    [ initial ] equation { equation ";" }
 \end{lstlisting}
 
-The following kinds of equations may occur in equation sections. The
-syntax is defined as follows:
+The following kinds of equations may occur in equation sections.
+The syntax is defined as follows:
 \begin{lstlisting}[language=grammar]
 equation :
-( simple-expression "=" expression
-   | if-equation
-   | for-equation
-   | connect-clause
-   | when-equation
-   | component-reference function-call-args )
-   comment
+   ( simple-expression "=" expression
+     | if-equation
+     | for-equation
+     | connect-clause
+     | when-equation
+     | component-reference function-call-args
+   )
+   description
 \end{lstlisting}
-No statements are allowed in equation sections, including the assignment
-statement using the := operator.
+No statements are allowed in equation sections, including the assignment statement using the := operator.
 
 \subsection{Simple Equality Equations}\label{simple-equality-equations}
 
-Simple equality equations are the traditional kinds of equations known
-from mathematics that express an equality relation between two
-expressions. There are two syntactic forms of such equations in
-Modelica. The first form below is \emph{equality} equations between two
-expressions, whereas the second form is used when calling a function
-with \emph{several} results. The syntax for simple equality equations is
-as follows:
+Simple equality equations are the traditional kinds of equations known from mathematics that express an equality relation between two expressions.
+There are two syntactic forms of such equations in Modelica.
+The first form below is \emph{equality} equations between two expressions, whereas the second form is used when calling a function with \emph{several} results.
+The syntax for simple equality equations is as follows:
 \begin{lstlisting}[language=grammar]
 simple-expression "=" expression
 \end{lstlisting}
-The types of the left-hand-side and the right-hand-side of an equation
-need to be compatible in the same way as two arguments of binary
-operators (\cref{type-compatible-expressions}).
+The types of the left-hand-side and the right-hand-side of an equation need to be compatible in the same way as two arguments of binary operators (\cref{type-compatible-expressions}).
 
 Three examples:
 \begin{itemize}
@@ -80,38 +73,41 @@ Three examples:
 \end{itemize}
 
 \begin{nonnormative}
-Note: According to the grammar the if-then-else expression in
-the second example needs to be enclosed in parentheses to avoid parsing
-ambiguities. Also compare with \cref{assignments-from-called-functions-with-multiple-results} about calling
-functions with several results in assignment statements.
+Note: According to the grammar the if-then-else expression in the second example needs to be enclosed in parentheses to avoid parsing ambiguities.
+Also compare with \cref{assignments-from-called-functions-with-multiple-results} about calling functions with several results in assignment statements.
 \end{nonnormative}
 
 \subsection{For-Equations -- Repetitive Equation Structures}\label{for-equations-repetitive-equation-structures}
 
-The syntax of a for-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation} is as follows:
+The syntax of a \lstinline!for!-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation@\robustinline{for}-equation} is as follows:
 \begin{lstlisting}[language=grammar]
 for for-indices loop
-   { equation ";" }
-   end for ";"
+  { equation ";" }
+end for ";"
 \end{lstlisting}
 
-For-equations may optionally use several iterators (for-indices)\index{in@\robustinline{in}!for-equation}, see \cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
+A \lstinline!for!-equation may optionally use several iterators (\lstinline[language=grammar]!for-indices!)\index{in@\robustinline{in}!for-equation@\robustinline{for}-equation}, see \cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
 \begin{lstlisting}[language=grammar]
 for-indices:
-   for-index {"," for-index}
+   for-index { "," for-index }
 
 for-index:
    IDENT [ in expression ]
 \end{lstlisting}
 
-The following is one example of a prefix of a for-equation:
+The following is one example of a prefix of a \lstinline!for!-equation:
 \begin{lstlisting}[language=grammar]
 for IDENT in expression loop
 \end{lstlisting}
 
 \subsubsection{Explicit Iteration Ranges of For-Equations}\label{explicit-iteration-ranges-of-for-equations}
 
-The \lstinline!expression! of a for-equation shall be a vector expression, where more general array expressions are treated as vector of vectors or vector of matrices.  It is evaluated once for each for-equation, and is evaluated in the scope immediately enclosing the for-equation.  The expression of a for-equation shall be a parameter expression.  The iteration range of a for-equation can also be specified as \lstinline!Boolean! or as an enumeration type, see \cref{types-as-iteration-ranges} for more information.  The loop-variable (\lstinline!IDENT!) is in scope inside the loop-construct and shall not be assigned to.  For each element of the evaluated vector expression, in the normal order, the loop-variable gets the value of that element and that is used to evaluate the body of the for-loop.
+The \lstinline!expression! of a \lstinline!for!-equation shall be a vector expression, where more general array expressions are treated as vector of vectors or vector of matrices.
+It is evaluated once for each \lstinline!for!-equation, and is evaluated in the scope immediately enclosing the \lstinline!for!-equation.
+The expression of a \lstinline!for!-equation shall be a parameter expression.
+The iteration range of a \lstinline!for!-equation can also be specified as \lstinline!Boolean! or as an enumeration type, see \cref{types-as-iteration-ranges} for more information.
+The loop-variable (\lstinline!IDENT!) is in scope inside the loop-construct and shall not be assigned to.
+For each element of the evaluated vector expression, in the normal order, the loop-variable gets the value of that element and that is used to evaluate the body of the \lstinline!for!-loop.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -122,7 +118,8 @@ for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two
                                // for TwoEnums = enumeration(one,two)
 \end{lstlisting}
 
-The loop-variable may hide other variables as in the following example.  Using another name for the loop-variable is, however, strongly recommended.
+The loop-variable may hide other variables as in the following example.
+Using another name for the loop-variable is, however, strongly recommended.
 \begin{lstlisting}[language=modelica]
   constant Integer j = 4;
   Real x[j]
@@ -136,7 +133,8 @@ equation
 
 \subsubsection{Implicit Iteration Ranges of For-Equations}\label{implicit-iteration-ranges-of-for-equations}
 
-The iteration range of a loop-variable may sometimes be inferred from its use as an array index.  See \cref{implicit-iteration-ranges} for more information.
+The iteration range of a loop-variable may sometimes be inferred from its use as an array index.
+See \cref{implicit-iteration-ranges} for more information.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -149,58 +147,62 @@ end for;
 
 \subsection{Connect-Equations}\label{connect-equations}
 
-A connect-equation has the following syntax:
+A \lstinline!connect!-equation has the following syntax:
 \begin{lstlisting}[language=grammar]
 connect "(" component-reference "," component-reference ")" ";"
 \end{lstlisting}
 
-These can be placed inside for-equations and if-equations; provided the indices of the for-loop and conditions of the if-clause are parameter expressions that do not depend on \lstinline!cardinality!, \lstinline!rooted!, \lstinline!Connections.rooted!, or \lstinline!Connections.isRoot!.  The for-equations/if-equations are expanded.  Connect-equations are described in detail in \cref{connect-equations-and-connectors}.
+These can be placed inside \lstinline!for!-equations and \lstinline!if!-equations; provided the indices of the \lstinline!for!-loop and conditions of the \lstinline!if!-equation are parameter expressions that do not depend on \lstinline!cardinality!, \lstinline!rooted!, \lstinline!Connections.rooted!, or \lstinline!Connections.isRoot!.
+The \lstinline!for!-equations/\lstinline!if!-equations are expanded.
+\lstinline!connect!-equations are described in detail in \cref{connect-equations-and-connectors}.
 
 The same restrictions apply to \lstinline!Connections.branch!, \lstinline!Connections.root!, and \lstinline!Connections.potentialRoot!; which after expansion are handled according to \cref{equation-operators-for-overconstrained-connection-based-equation-systems1}.
 
 \subsection{If-Equations}\label{if-equations}
 
-If-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation}\index{else@\robustinline{else}!if-equation}\index{elseif@\robustinline{elseif}!if-equation} have the following syntax:
+The \lstinline!if!-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 if expression then
-   { equation ";" }
+  { equation ";" }
 { elseif expression then
-   { equation ";" }    }
+  { equation ";" }
+}
 [ else
-   { equation ";" }
+  { equation ";" }
 ]
 end if ";"
 \end{lstlisting}
 
-The \lstinline!expression! of an if- or elseif-clause must be a scalar \lstinline!Boolean! expression.  One if-clause, and zero or more elseif-clauses, and an optional else-clause together form a list of branches.  One or zero of the bodies of these if-, elseif- and else-clauses is selected, by evaluating the conditions of the if- and elseif-clauses sequentially until a condition that evaluates to true is found.  If none of the conditions evaluate to true the body of the else-clause is selected (if an else-clause exists, otherwise no body is selected).  In an equation section, the equations in the body are seen as equations that must be satisfied.  The bodies that are not selected have no effect on that model evaluation.
+The \lstinline!expression! of an \lstinline!if!- or \lstinline!elseif!-clause must be a scalar \lstinline!Boolean! expression.
+One \lstinline!if!-clause, and zero or more \lstinline!elseif!-clauses, and an optional \lstinline!else!-clause together form a list of branches.
+One or zero of the bodies of these \lstinline!if!-, \lstinline!elseif!- and \lstinline!else!-clauses is selected, by evaluating the conditions of the \lstinline!if!- and \lstinline!elseif!-clauses sequentially until a condition that evaluates to true is found.
+If none of the conditions evaluate to true the body of the \lstinline!else!-clause is selected (if an \lstinline!else!-clause exists, otherwise no body is selected).
+In an equation section, the equations in the body are seen as equations that must be satisfied.
+The bodies that are not selected have no effect on that model evaluation.
 
-If-equations in equation sections which do not have exclusively
-parameter expressions as switching conditions shall have the same number
-of equations in each branch (a missing else is counted as zero equations
-and the number of equations is defined after expanding the equations to
-scalar equations).
+The \lstinline!if!-equations in equation sections which do not have exclusively parameter expressions as switching conditions shall have the same number of equations in each branch (a missing else is counted as zero equations and the number of equations is defined after expanding the equations to scalar equations).
 
 \begin{nonnormative}
-If this condition is violated, the single assignment rule would not hold, because the number of equations may change during simulation
-although the number of unknowns remains the same.
+If this condition is violated, the single assignment rule would not hold, because the number of equations may change during simulation although the number of unknowns remains the same.
 \end{nonnormative}
 
 \subsection{When-Equations}\label{when-equations}
 
-When-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation} have the following syntax:
+The \lstinline!when!-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation@\robustinline{when}-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation@\robustinline{when}-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 when expression then
-   { equation ";" }
+  { equation ";" }
 { elsewhen expression then
-   { equation ";" } }
+  { equation ";" }
+}
 end when ";"
 \end{lstlisting}
 
-The \lstinline!expression! of a when-equation shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
-The equations within a when-equation are activated only at the instant when the scalar expression or any of the elements of the vector expression becomes true.
+The \lstinline!expression! of a \lstinline!when!-equation shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
+The equations within a \lstinline!when!-equation are activated only at the instant when the scalar expression or any of the elements of the vector expression becomes true.
 
 \begin{example}
-The order between the equations in a when-equation does not matter, e.g.
+The order between the equations in a \lstinline!when!-equation does not matter, e.g.
 \begin{lstlisting}[language=modelica]
 equation
   when x > 2 then
@@ -213,7 +215,7 @@ equation
 
 \subsubsection{Defining When-Equations by If-Expressions in Equality Equations}\label{defining-when-equations-by-if-expressions-in-equality-equations}
 
-A when-equation:
+A \lstinline!when!-equation:
 \begin{lstlisting}[language=modelica]
 equation
   when x > 2 then
@@ -221,7 +223,7 @@ equation
     v2 = expr2;
   end when;
 \end{lstlisting}
-is conceptually equivalent to the following equations containing special if-expressions
+is conceptually equivalent to the following equations containing special \lstinline!if!-expressions
 \begin{lstlisting}[language=modelica]
   // Not correct Modelica
   Boolean b(start = x.start > 2);
@@ -232,7 +234,8 @@ equation
 \end{lstlisting}
 
 \begin{nonnormative}
-The equivalence is conceptual since \lstinline!pre($\ldots$)! of a non discrete-time \lstinline!Real! variable or expression can only be used within a when-clause.  Example:
+The equivalence is conceptual since \lstinline!pre($\ldots$)! of a non discrete-time \lstinline!Real! variable or expression can only be used within a \lstinline!when!-clause.
+Example:
 \begin{lstlisting}[language=modelica]
   /* discrete */ Real x;
   input Real u;
@@ -245,26 +248,26 @@ equation
 \end{lstlisting}
 
 Here, \lstinline!x! is a discrete-time variable (whether it is declared with the \lstinline!discrete! prefix or not), but \lstinline!u! and \lstinline!y! cannot be discrete-time variables
-(since they are not assigned in when-clauses).  However, \lstinline!pre(u)! is legal within the when-clause, since the body of the when-clause is only evaluated at events, and thus all expressions
-are discrete-time expressions.
+(since they are not assigned in \lstinline!when!-clauses).
+However, \lstinline!pre(u)! is legal within the \lstinline!when!-clause, since the body of the \lstinline!when!-clause is only evaluated at events, and thus all expressions are discrete-time expressions.
 \end{nonnormative}
 
-The start-values of the introduced \lstinline!Boolean! variables are defined by the taking the start-value of the when-condition, as above where \lstinline!b! is a parameter
-variable.  The start-value of the special functions \lstinline!initial!, \lstinline!terminal!, and \lstinline!sample! is \lstinline!false!.
+The start values of the introduced \lstinline!Boolean! variables are defined by the taking the start value of the when-condition, as above where \lstinline!b! is a parameter variable.
+The start value of the special functions \lstinline!initial!, \lstinline!terminal!, and \lstinline!sample! is \lstinline!false!.
 
-\subsubsection{Restrictions on Where a When-Equation may Occur}\label{restrictions-on-where-a-when-equation-may-occur}
+\subsubsection{Where a When-Equation May Occur}\label{restrictions-on-where-a-when-equation-may-occur}\label{where-a-when-equation-may-occur}
+
 \begin{itemize}
 \item
-  When-equations shall not occur inside initial equations.
+  \lstinline!when!-equations shall not occur inside initial equations.
 \item
-  When-equations cannot be nested.
+  \lstinline!when!-equations cannot be nested.
 \item
-  When-equations can only occur within if-equations and for-equations if
-  the controlling expressions are exclusively parameter expressions.
+  \lstinline!when!-equations can only occur within \lstinline!if!-equations and \lstinline!for!-equations if the controlling expressions are exclusively parameter expressions.
 \end{itemize}
 
 \begin{example}
-The following when-equation is invalid:
+The following \lstinline!when!-equation is invalid:
 \begin{lstlisting}[language=modelica]
 when x > 2 then
   when y1 > 3 then
@@ -274,9 +277,9 @@ end when;
 \end{lstlisting}
 \end{example}
 
-\subsubsection{Restrictions on Equations within When-Equations}\label{restrictions-on-equations-within-when-equations}
+\subsubsection{Equations within When-Equations}\label{restrictions-on-equations-within-when-equations}\label{equations-within-when-equations}
 
-The equations within the when-equation must have one of the following forms:
+The equations within the \lstinline!when!-equation must have one of the following forms:
 \begin{itemize}
 \item
   \lstinline!v = expr;!
@@ -285,18 +288,17 @@ The equations within the when-equation must have one of the following forms:
 \item
   Operators \lstinline!assert!, \lstinline!terminate!, \lstinline!reinit!.
 \item
-  For- and if-equations if the equations within the for- and if-equations satisfy these requirements.
+  The \lstinline!for!- and \lstinline!if!-equations if the equations within the \lstinline!for!- and \lstinline!if!-equations satisfy these requirements.
 \item
   The different branches of \lstinline!when!/\lstinline!elsewhen! must have the same set of component references on the left-hand side.
 \item
-  The branches of an if-then-else clause inside when-equations must have the same set of component references on the left-hand side, unless the if-then-else have exclusively parameter expressions as switching conditions.
+  The branches of an \lstinline!if!-equation inside \lstinline!when!-equations must have the same set of component references on the left-hand side, unless all switching conditions of the \lstinline!if!-equation are parameter expressions.
 \end{itemize}
 
-Any left hand side reference, (\lstinline!v!, \lstinline!out1!, \ldots), in a when-clause must
-be a component reference, and any indices must be parameter expressions.
+Any left hand side reference, (\lstinline!v!, \lstinline!out1!, \ldots), in a \lstinline!when!-clause must be a component reference, and any indices must be parameter expressions.
 
 \begin{nonnormative}
-The needed restrictions on equations within a when-equation becomes apparent with the following example:
+The needed restrictions on equations within a \lstinline!when!-equation becomes apparent with the following example:
 \begin{lstlisting}[language=modelica]
   Real x, y;
 equation
@@ -306,7 +308,7 @@ equation
   end when;
 \end{lstlisting}
 
-When the equations of the when-equation are not activated it is not clear which variable to hold constant, either \lstinline!x! or \lstinline!y!.
+When the equations of the \lstinline!when!-equation are not activated it is not clear which variable to hold constant, either \lstinline!x! or \lstinline!y!.
 A corrected version of this example is:
 \begin{lstlisting}[language=modelica]
   Real x,y;
@@ -316,13 +318,11 @@ equation
     y = 7 - 2 * x; // fine
   end when;
 \end{lstlisting}
-Here, variable \lstinline!y! is held constant when the when-equation is
-deactivated and \lstinline!x! is computed from the first equation using the
-value of \lstinline!y! from the previous event instant.
+Here, variable \lstinline!y! is held constant when the \lstinline!when!-equation is deactivated and \lstinline!x! is computed from the first equation using the value of \lstinline!y! from the previous event instant.
 \end{nonnormative}
 
 \begin{example}
-The restrictions for if-equations mean that both of the following variants are illegal:
+The restrictions for \lstinline!if!-equations mean that both of the following variants are illegal:
 \begin{lstlisting}[language=modelica]
   Real x, y;
 equation
@@ -360,20 +360,16 @@ equation
 \end{lstlisting}
 \end{example}
 
-\subsubsection{Application of the Single-assignment Rule to When-Equations}\label{application-of-the-single-assignment-rule-to-when-equations}
+\subsubsection{Single Assignment Rule Applied to When-Equations}\label{application-of-the-single-assignment-rule-to-when-equations}\label{single-assignment-rule-applied-to-when-equations}
 
-The Modelica single-assignment rule (\cref{synchronous-data-flow-principle-and-single-assignment-rule}) has implications for
-when-equations:
+The Modelica single-assignment rule (\cref{synchronous-data-flow-principle-and-single-assignment-rule}) has implications for \lstinline!when!-equations:
 \begin{itemize}
 \item
-  Two when-equations shall \emph{not} define the same variable.
+  Two \lstinline!when!-equations shall \emph{not} define the same variable.
 
 \begin{nonnormative}
-Without this rule this may actually happen for the erroneous
-model \lstinline!DoubleWhenConflict! below, since there are two equations
-(\lstinline!close = true; close = false;!) defining the same variable
-\lstinline!close!. A conflict between the equations will occur if both
-conditions would become \lstinline!true! at the same time instant.
+Without this rule this may actually happen for the erroneous model \lstinline!DoubleWhenConflict! below, since there are two equations (\lstinline!close = true; close = false;!) defining the same variable \lstinline!close!.
+A conflict between the equations will occur if both conditions would become \lstinline!true! at the same time instant.
 \begin{lstlisting}[language=modelica]
 model DoubleWhenConflict
   Boolean close;   // Erroneous model: close defined by two equations!
@@ -390,29 +386,23 @@ equation
 end DoubleWhenConflict;
 \end{lstlisting}
 
-One way to resolve the conflict would be to give one of the two
-when-equations higher priority. This is possible by rewriting the
-when-equation using \lstinline!elsewhen!, as in the \lstinline!WhenPriority! model
-below or using the statement version of the when-construct, see \cref{when-statements}.
+One way to resolve the conflict would be to give one of the two \lstinline!when!-equations higher priority.
+This is possible by rewriting the \lstinline!when!-equation using \lstinline!elsewhen!, as in the \lstinline!WhenPriority! model below or using the statement version of the \lstinline!when!-construct, see \cref{when-statements}.
 \end{nonnormative}
 
 \item
-  When-equations involving elsewhen-parts can be used to resolve
-  assignment conflicts since the first of the when/elsewhen parts are
-  given higher priority than later ones:
+  A \lstinline!when!-equation involving elsewhen-parts can be used to resolve assignment conflicts since the first of the when/elsewhen parts are given higher priority than later ones:
 \begin{nonnormative}
-Below it is well defined what happens if both conditions
-become \lstinline!true! at the same time instant since \lstinline!condition1! with
-associated conditional equations has a higher priority than \lstinline!condition2!.
+Below it is well defined what happens if both conditions become \lstinline!true! at the same time instant since \lstinline!condition1! with associated conditional equations has a higher priority than \lstinline!condition2!.
 \begin{lstlisting}[language=modelica]
 model WhenPriority
   Boolean close;   // Correct model: close defined by two equations!
 algorithm
   $\ldots$
   when condition1 then
-    close = true;
+    close := true;
   elsewhen condition2 then
-    close = false;
+    close := false;
   end when;
   $\ldots$
 end WhenPriority;
@@ -422,25 +412,25 @@ end WhenPriority;
 
 \subsection{reinit}\label{reinit}
 
-\lstinline!reinit! can only be used in the body of a when-equation.  It has the following syntax:
+\lstinline!reinit! can only be used in the body of a \lstinline!when!-equation.
+It has the following syntax:
 \begin{lstlisting}[language=modelica]
 reinit(x, expr);
 \end{lstlisting}
 
-The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.  \lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.  \lstinline!expr! needs to be type-compatible with \lstinline!x!.  \lstinline!reinit! can for the same variable (resp.\ array of variables) only be applied (either as an individual variable or as part of an array of variables) in one equation (having \lstinline!reinit! of the same variable in when and else-when of the same variable is allowed).  In case of \lstinline!reinit! active during initialization (due to when initial), see \cref{initialization-initial-equation-and-initial-algorithm}.
+The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
+\lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
+\lstinline!expr! needs to be type-compatible with \lstinline!x!.
+\lstinline!reinit! can for the same variable (resp.\ array of variables) only be applied (either as an individual variable or as part of an array of variables) in one equation (having \lstinline!reinit! of the same variable in \lstinline!when! and \lstinline!elsewhen! of the same variable is allowed).
+In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
 
 \lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value,
-then at the end of the current event iteration step it assigns this value to \lstinline!x! (this copying from values to reinitialized state(s) is
-done after all other evaluations of the model and before copying \lstinline!x! to \lstinline!pre(x)!).
+then at the end of the current event iteration step it assigns this value to \lstinline!x! (this copying from values to reinitialized state(s) is done after all other evaluations of the model and before copying \lstinline!x! to \lstinline!pre(x)!).
 
 \begin{example}
-If a higher index system is present, i.e., constraints between
-state variables, some state variables need to be redefined to non-state
-variables. During simulation, non-state variables should be chosen in
-such a way that variables with an applied \lstinline!reinit! are
-selected as states at least when the corresponding when-clauses become
-active. If this is not possible, an error occurs, since otherwise
-\lstinline!reinit! would be applied to a non-state variable.
+If a higher index system is present, i.e., constraints between state variables, some state variables need to be redefined to non-state variables.
+During simulation, non-state variables should be chosen in such a way that variables with an applied \lstinline!reinit! are selected as states at least when the corresponding \lstinline!when!-clauses become active.
+If this is not possible, an error occurs, since otherwise \lstinline!reinit! would be applied to a non-state variable.
 
 Example for the usage of \lstinline!reinit! (bouncing ball):
 \begin{lstlisting}[language=modelica]
@@ -490,46 +480,39 @@ If the \lstinline!condition! evaluates to false, different actions are taken dep
   \lstinline!message! indicates the cause of the warning.
   \begin{nonnormative}
   It is recommended to report the warning only once when the condition becomes false, and it is reported that the condition is no longer violated when the condition returns to true.
-  The \lstinline!assert! statement shall have no influence on the behavior of the model.
+  The \lstinline!assert!-statement shall have no influence on the behavior of the model.
   For example, by evaluating the condition and reporting the message only after accepted integrator steps.
   \lstinline!condition! needs to be implicitly treated with \lstinline!noEvent! since otherwise events might be triggered that can lead to slightly changed simulation results.
   \end{nonnormative}
 \end{itemize}
 
 \begin{nonnormative}
-The \lstinline!AssertionLevel.error! case can be used to avoid evaluating a
-model outside its limits of validity; for instance, a function to
-compute the saturated liquid temperature cannot be called with a
-pressure lower than the triple point value.
+The \lstinline!AssertionLevel.error! case can be used to avoid evaluating a model outside its limits of validity; for instance, a function to compute the saturated liquid temperature cannot be called with a pressure lower than the triple point value.
 
-The \lstinline!AssertionLevel.warning! case can be used when the boundary of
-validity is not hard: for instance, a fluid property model based on a
-polynomial interpolation curve might give accurate results between
-temperatures of 250 K and 400 K, but still give reasonable results in
-the range 200 K and 500 K. When the temperature gets out of the smaller
-interval, but still stays in the largest one, the user should be warned,
-but the simulation should continue without any further action. The
-corresponding code would be:
+The \lstinline!AssertionLevel.warning! case can be used when the boundary of validity is not hard: for instance, a fluid property model based on a polynomial interpolation curve might give accurate results between temperatures of 250 K and 400 K, but still give reasonable results in the range 200 K and 500 K.
+When the temperature gets out of the smaller interval, but still stays in the largest one, the user should be warned, but the simulation should continue without any further action.
+The corresponding code would be:
 \begin{lstlisting}[language=modelica]
-assert(T > 250 and T < 400, "Medium model outside full accuracy range", AssertionLevel.warning);
+assert(T > 250 and T < 400, "Medium model outside full accuracy range",
+       AssertionLevel.warning);
 assert(T > 200 and T < 500, "Medium model outside feasible region");
 \end{lstlisting}
 \end{nonnormative}
 
 \subsection{terminate}\label{terminate}
 
-The \lstinline!terminate!\index{terminate@\robustinline{terminate}!equation} equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also \cref{assert}.
+The \lstinline!terminate!\index{terminate@\robustinline{terminate}!equation@\robustinline{equation}}-equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also \cref{assert}.
 The termination is not immediate at the place where it is defined since not all variable results might be available that are necessary for a successful stop.
 Instead, the termination actually takes place when the current integrator step is successfully finalized or at an event instant after the event handling has been completed before restarting the integration.
 
-The \lstinline!terminate! statement has a string argument indicating the reason for the success.
+\lstinline!terminate! takes a string argument indicating the reason for the success.
 
 \begin{example}
-The intention of the \lstinline!terminate! statement is to give more complex stopping criteria than a fixed point in time:
+The intention of \lstinline!terminate! is to give more complex stopping criteria than a fixed point in time:
 \begin{lstlisting}[language=modelica]
 model ThrowingBall
-  Real x(start=0);
-  Real y(start=1);
+  Real x(start = 0);
+  Real y(start = 1);
 equation
   der(x) = $\ldots$;
   der(y) = $\ldots$;
@@ -545,10 +528,9 @@ end ThrowingBall;
 
 See \cref{equation-operators-for-overconstrained-connection-based-equation-systems1} for a description of this topic.
 
-\section{Synchronous Data-flow Principle and Single Assignment Rule}\label{synchronous-data-flow-principle-and-single-assignment-rule}
+\section{Synchronous Data-Flow Principle and Single Assignment Rule}\label{synchronous-data-flow-principle-and-single-assignment-rule}
 
-Modelica is based on the synchronous data flow principle and the single
-assignment rule, which are defined in the following way:
+Modelica is based on the synchronous data flow principle and the single assignment rule, which are defined in the following way:
 \begin{enumerate}
 \item Discrete-time variables keep their values until these variables are explicitly changed.
 Differentiated variables have \lstinline!der(x)! corresponding to the time-derivative of \lstinline!x!,
@@ -563,28 +545,22 @@ the equations express relations between variables which have to be fulfilled con
 If computation or communication time has to be simulated, this property has to be explicitly modeled.
 \end{nonnormative}
 
-\item There must exist a perfect matching of variables to equations after flattening, where a variable can only
-be matched to equations that can contribute to solving for the variable
-(\firstuse{perfect matching rule}\index{perfect matching rule} -- previously called \emph{single assignment rule}\index{single assignment rule|see{perfect matching rule}}); see also globally balanced \cref{balanced-models}.
+\item There must exist a perfect matching of variables to equations after flattening, where a variable can only be matched to equations that can contribute to solving for the variable
+(\firstuse{perfect matching rule} -- previously called \emph{single assignment rule}\index{single assignment rule|see{perfect matching rule}}); see also globally balanced \cref{balanced-models}.
 \end{enumerate}
 
 \section{Events and Synchronization}\label{events-and-synchronization}
 
-An \firstuse{event}\index{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
-Events are for example defined by the condition occurring in a when-clause, if-clause, or if-expression.
+An \firstuse{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
+Events are for example defined by the condition occurring in a \lstinline!when!-clause, \lstinline!if!-equation, or \lstinline!if!-expression.
 
-The integration is halted and an event occurs whenever an event
-generation expression, e.g.\ \lstinline!x > 2! o or \lstinline!floor(x)!, changes
-its value. An event generating expression has an internal buffer, and
-the value of the expression can only be changed at event instants. If
-the evaluated expression is inconsistent with the buffer, that will
-trigger an event and the buffer will be updated with a new value at the
-event instant. During continuous integration event generation expression
-has the constant value of the expression from the last event instant.
+The integration is halted and an event occurs whenever an event generation expression, e.g.\ \lstinline!x > 2! o or \lstinline!floor(x)!, changes its value.
+An event generating expression has an internal buffer, and the value of the expression can only be changed at event instants.
+If the evaluated expression is inconsistent with the buffer, that will trigger an event and the buffer will be updated with a new value at the event instant.
+During continuous integration event generation expression has the constant value of the expression from the last event instant.
 
 \begin{nonnormative}
-A root finding mechanism is needed which determines a small time interval in which the expression changes its value; the event occurs
-at the right side of this interval.
+A root finding mechanism is needed which determines a small time interval in which the expression changes its value; the event occurs at the right side of this interval.
 \end{nonnormative}
 
 \begin{example}
@@ -592,12 +568,12 @@ at the right side of this interval.
 y = if u > uMax then uMax else if u < uMin then uMin else u;
 \end{lstlisting}
 
-During continuous integration always the same if-branch is
-evaluated. The integration is halted whenever \lstinline!u-uMax! or \lstinline!u-uMin!
-crosses zero. At the event instant, the correct if-branch is
-selected and the integration is restarted.
+During continuous integration always the same \lstinline!if!-branch is evaluated.
+The integration is halted whenever \lstinline!u-uMax! or \lstinline!u-uMin! crosses zero.
+At the event instant, the correct \lstinline!if!-branch is selected and the integration is restarted.
 
-Numerical integration methods of order $n$ ($n \geq 1$) require continuous model equations which are differentiable up to order $n$.  This requirement can be fulfilled if \lstinline!Real! elementary relations are not treated literally but as defined above, because discontinuous changes can only occur at event instants and no longer during continuous integration.
+Numerical integration methods of order $n$ ($n \geq 1$) require continuous model equations which are differentiable up to order $n$.
+This requirement can be fulfilled if \lstinline!Real! elementary relations are not treated literally but as defined above, because discontinuous changes can only occur at event instants and no longer during continuous integration.
 \end{example}
 
 \begin{nonnormative}
@@ -606,12 +582,13 @@ It is a quality of implementation issue that the following special relations
 time >= discrete expression
 time < discrete expression
 \end{lstlisting}
-trigger a time event at \lstinline!time! = \emph{discrete expression}, i.e., the
-event instant is known in advance and no iteration is needed to find the
-exact event instant.
+trigger a time event at \lstinline!time! = \emph{discrete expression}, i.e., the event instant is known in advance and no iteration is needed to find the exact event instant.
 \end{nonnormative}
 
-Relations are taken literally also during continuous integration, if the relation or the expression in which the relation is present, are the argument of \lstinline!noEvent!.  \lstinline!smooth! also allows relations used as argument to be taken literally.  The \lstinline!noEvent! feature is propagated to all subrelations in the scope of the \lstinline!noEvent! application.  For \lstinline!smooth! the liberty to not allow literal evaluation is propagated to all subrelations, but the smoothness property itself is not propagated.
+Relations are taken literally also during continuous integration, if the relation or the expression in which the relation is present, are the argument of \lstinline!noEvent!.
+\lstinline!smooth! also allows relations used as argument to be taken literally.
+The \lstinline!noEvent! feature is propagated to all subrelations in the scope of the \lstinline!noEvent! application.
+For \lstinline!smooth! the liberty to not allow literal evaluation is propagated to all subrelations, but the smoothness property itself is not propagated.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -620,35 +597,38 @@ y = noEvent(  if u > uMax then uMax elseif u < uMin then uMin else u);
 z = smooth(0, if u > uMax then uMax elseif u < uMin then uMin else u);
 \end{lstlisting}
 
-In this case \lstinline!x = y = z!, but a tool might generate events for \lstinline!z!.  The if-expression is taken literally without inducing state events.
+In this case \lstinline!x = y = z!, but a tool might generate events for \lstinline!z!.
+The \lstinline!if!-expression is taken literally without inducing state events.
 
-The \lstinline!smooth! operator is useful, if e.g.\ the modeler can guarantee that the used if-clauses fulfill at least the continuity requirement of integrators.  In this case the simulation speed is improved, since no state event iterations occur during integration.  The \lstinline!noEvent! operator is used to guard against \emph{outside domain} errors, e.g.\ \lstinline!y = if noEvent(x >= 0) then sqrt(x) else 0.!
+The \lstinline!smooth! operator is useful, if e.g.\ the modeler can guarantee that the used \lstinline!if!-expressions fulfill at least the continuity requirement of integrators.
+In this case the simulation speed is improved, since no state event iterations occur during integration.
+The \lstinline!noEvent! operator is used to guard against \emph{outside domain} errors, e.g.\ \lstinline!y = if noEvent(x >= 0) then sqrt(x) else 0.!
 \end{example}
 
-All equations and assignment statements within when-clauses and all assignment statements within \lstinline!function! classes are implicitly treated with \lstinline!noEvent!, i.e., relations within the scope of these operators never induce state or time events.
+All equations and assignment statements within \lstinline!when!-clauses and all assignment statements within \lstinline!function! classes are implicitly treated with \lstinline!noEvent!, i.e., relations within the scope of these operators never induce state or time events.
 
 \begin{nonnormative}
-Using state events in when-clauses is unnecessary because the body of a when-clause is not evaluated during continuous integration.
+Using state events in \lstinline!when!-clauses is unnecessary because the body of a \lstinline!when!-clause is not evaluated during continuous integration.
 \end{nonnormative}
 
 \begin{example}
+Two different errors caused by non-discrete-time expressions:
 \begin{lstlisting}[language=modelica]
-Limit1 = noEvent(x1 > 1);  // Error since Limit1 is a discrete-time variable
-when noEvent(x1>1) or x2>10 then // error, when-conditions is not a discrete-time expression
-  Close = true;
+when noEvent(x1 > 1) or x2 > 10 then // When-condition must be discrete-time
+  close = true;
 end when;
+above1 = noEvent(x1 > 1);            // Boolean equation must be discrete-time
 \end{lstlisting}
+The when-condition rule is stated in \cref{when-equations}, and the rule for a non-\lstinline!Real! equation is stated in \cref{discrete-time-expressions}.
 \end{example}
 
 Modelica is based on the synchronous data flow principle (\cref{synchronous-data-flow-principle-and-single-assignment-rule}).
 
 \begin{nonnormative}
-The rules for the synchronous data flow principle guarantee
-that variables are always defined by a unique set of equations. It is
-not possible that a variable is e.g.\ defined by two equations, which
-would give rise to conflicts or non-deterministic behavior. Furthermore,
-the continuous and the discrete parts of a model are always
-automatically ``synchronized''. Example:
+The rules for the synchronous data flow principle guarantee that variables are always defined by a unique set of equations.
+It is not possible that a variable is e.g.\ defined by two equations, which would give rise to conflicts or non-deterministic behavior.
+Furthermore, the continuous and the discrete parts of a model are always automatically ``synchronized''.
+Example:
 \begin{lstlisting}[language=modelica]
 equation // Illegal example
   when condition1 then
@@ -660,11 +640,9 @@ equation // Illegal example
   end when;
 \end{lstlisting}
 
-This is not a valid model because rule 4 is violated since there
-are two equations for the single unknown variable close. If this would
-be a valid model, a conflict occurs when both conditions become true at
-the same time instant, since no priorities between the two equations are
-assigned. To become valid, the model has to be changed to:
+This is not a valid model because rule 4 is violated since there are two equations for the single unknown variable close.
+If this would be a valid model, a conflict occurs when both conditions become true at the same time instant, since no priorities between the two equations are assigned.
+To become valid, the model has to be changed to:
 \begin{lstlisting}[language=modelica]
 equation
   when condition1 then
@@ -674,17 +652,14 @@ equation
   end when;
 \end{lstlisting}
 
-Here, it is well-defined if both conditions become true at the
-same time instant (\lstinline!condition1! has a higher priority than
-\lstinline!condition2!).
+Here, it is well-defined if both conditions become true at the same time instant (\lstinline!condition1! has a higher priority than \lstinline!condition2!).
 \end{nonnormative}
 
-There is no guarantee that two different events occur at the same time
-instant.
+There is no guarantee that two different events occur at the same time instant.
 
 \begin{nonnormative}
-As a consequence, synchronization of events has to be
-explicitly programmed in the model, e.g.\ via counters. Example:
+As a consequence, synchronization of events has to be explicitly programmed in the model, e.g.\ via counters.
+Example:
 \begin{lstlisting}[language=modelica]
   Boolean fastSample, slowSample;
   Integer ticks(start=0);
@@ -705,40 +680,35 @@ algorithm
   end when;
 \end{lstlisting}
 
-The \lstinline!slowSample! when-clause is evaluated at every 5th occurrence of the
-\lstinline!fastSample! when-clause.
+The \lstinline!slowSample! \lstinline!when!-clause is evaluated at every 5th occurrence of the \lstinline!fastSample! \lstinline!when!-clause.
 \end{nonnormative}
 
 \begin{nonnormative}
-The single assignment rule and the requirement to explicitly
-program the synchronization of events allow a certain degree of model
-verification already at compile time.
+The single assignment rule and the requirement to explicitly program the synchronization of events allow a certain degree of model verification already at compile time.
 \end{nonnormative}
+
 
 \section{Initialization, initial equation, and initial algorithm}\label{initialization-initial-equation-and-initial-algorithm}
 
 Before any operation is carried out with a Modelica model (e.g., simulation or linearization), initialization takes place to assign consistent values for all variables present in the model.
-During this phase, called the \firstuse{initialization problem}\index{initialization problem}, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!), are interpreted as unknown algebraic variables.
+During this phase, called the \firstuse{initialization problem}, also the derivatives (\lstinline!der!), and the pre-variables (\lstinline!pre!), are interpreted as unknown algebraic variables.
 The initialization uses all equations and algorithms that are utilized in the intended operation (such as simulation or linearization).
 
-The equations of a when-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
-\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).  In this case, the when-clause equations remain active during the
-whole initialization phase.  In case of a \lstinline!reinit(x, expr)! being active during initialization (due to being inside \lstinline!when initial()!) this is interpreted as adding
-\lstinline!x = expr! (the \lstinline!reinit!-equation) as an initial equation.
+The equations of a \lstinline!when!-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).
+In this case, the \lstinline!when!-clause equations remain active during the whole initialization phase.
+In case of a \lstinline!reinit(x, expr)! being active during initialization (due to being inside \lstinline!when initial()!) this is interpreted as adding \lstinline!x = expr! (the \lstinline!reinit!-equation) as an initial equation.
 
 \begin{nonnormative}
-If a when-clause equation \lstinline!v = expr;! is not active during the initialization phase, the equation \lstinline!v = pre(v)! is added for
-initialization.  This follows from the mapping rule of when-clause equations.  If the condition of the when-clause contains \lstinline!initial()!,
-but not in one of the specific forms, the when-clause is not active during initialization: \lstinline!when not initial() then print("simulation started"); end when;!
+If a \lstinline!when!-clause equation \lstinline!v = expr;! is not active during the initialization phase, the equation \lstinline!v = pre(v)! is added for initialization.
+This follows from the mapping rule of \lstinline!when!-clause equations.
+If the condition of the \lstinline!when!-clause contains \lstinline!initial()!,
+but not in one of the specific forms, the \lstinline!when!-clause is not active during initialization: \lstinline!when not initial() then print("simulation started"); end when;!
 \end{nonnormative}
 
-The algorithmic statements within a when-statement are active during initialization, if and only they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms
-\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!. In this case, the algorithmic statements within the when-statement remain active during the whole
-initialization phase.
+The algorithmic statements within a \lstinline!when!-statement are active during initialization, if and only they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
+In this case, the algorithmic statements within the \lstinline!when!-statement remain active during the whole initialization phase.
 
-An active when-clause inactivates the following \lstinline!elsewhen! (similarly as for when-clauses during simulation), but apart from that
-the first \lstinline!elsewhen initial() then! or \lstinline!elsewhen {$\ldots$, initial(), $\ldots$} then! is similarly active during initialization as
-\lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
+An active \lstinline!when!-clause inactivates the following \lstinline!elsewhen! (similarly as for \lstinline!when!-clauses during simulation), but apart from that the first \lstinline!elsewhen initial() then! or \lstinline!elsewhen {$\ldots$, initial(), $\ldots$} then! is similarly active during initialization as \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
 
 \begin{nonnormative}
 That means that any subsequent \lstinline!elsewhen initial()! has no effect,
@@ -746,78 +716,80 @@ similarly as \lstinline!when false then!.
 \end{nonnormative}
 
 \begin{nonnormative}
-There is no special handling of inactive when-statements during initialization, instead
-variables assigned in when-statements are initialized using \lstinline!v := pre(v)!
-before the body of the algorithm (since they are discrete), see \cref{execution-of-an-algorithm-in-a-model}.
+There is no special handling of inactive \lstinline!when!-statements during initialization, instead variables assigned in \lstinline!when!-statements are initialized using \lstinline!v := pre(v)! before the body of the algorithm (since they are discrete), see \cref{execution-of-an-algorithm-in-a-model}.
 \end{nonnormative}
 
-Further constraints, necessary to determine the initial values of all
-variables, can be defined in the following ways:
+Further constraints, necessary to determine the initial values of all variables (depending on the component variability, see \cref{component-variability-prefixes-discrete-parameter-constant} for definitions), can be defined in the following ways:
 \begin{enumerate}
 \item
   As equations in an \lstinline!initial equation!\indexinline{initial equation} section or as assignments in an \lstinline!initial algorithm!\indexinline{initial algorithm} section.
   The equations and assignments in these initial sections are purely algebraic, stating constraints between the variables at the initial time instant.
-  It is not allowed to use when-clauses in these sections.
+  It is not allowed to use \lstinline!when!-clauses in these sections.
 \item
-  For a non-discrete (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!pre(vc) = vc! is added to the initialization equations.
+  For a continuous-time \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!pre(vc) = vc! is added to the initialization equations.
   \begin{nonnormative}
   If \lstinline!pre(vc)! is not present in the flattened model, a tool may choose not to introduce this equation, or if it was introduced
   it can eliminate it (to avoid the introduction of many dummy variables \lstinline!pre(vc)!).
   \end{nonnormative}
 \item
-  Implicitly by using the \lstinline!start! attribute for variables with \lstinline!fixed = true!.  With \lstinline!start! given by \lstinline!startExpression!:
+  Implicitly by using the \lstinline!start!-attribute for variables with \lstinline!fixed = true!.
+  With \lstinline!start! given by \lstinline!startExpression!:
   \begin{itemize}
   \item
-    For a non-discrete-time (that is continuous-time) \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
+    For a variable declared as \lstinline!constant! or \lstinline!parameter!, no equation is added to the initialization equations.
   \item
     For a discrete-time variable \lstinline!vd!, the equation \lstinline!pre(vd) = startExpression! is added to the initialization equations.
   \item
-    For a variable declared as \lstinline!constant! or \lstinline!parameter!, no equation is added to the initialization equations.
+    For a continuous-time \lstinline!Real! variable \lstinline!vc!, the equation \lstinline!vc = startExpression! is added to the initialization equations.
   \end{itemize}
 \end{enumerate}
 
-For constants and parameters, the attribute \lstinline!fixed! defaults to \lstinline!true!, which is the only allowed value for a constant.  For other variables,
-\lstinline!fixed! defaults to \lstinline!false!.
+Constants shall be determined by declaration equations (see \cref{component-variability-prefixes-discrete-parameter-constant}), and \lstinline!fixed = false! is not allowed.
+For parameters, \lstinline!fixed! defaults to \lstinline!true!.
+For other variables, \lstinline!fixed! defaults to \lstinline!false!.
 
 \lstinline!start!-values of variables having \lstinline!fixed = false! can be used as initial guesses, in case iterative solvers are used in the initialization phase.
 
 \begin{nonnormative}
-In case of iterative solver failure, it is recommended to specially report those variables for which the solver needs an initial guess, but which only have the default
-value of the \lstinline!start! attribute as defined in \cref{predefined-types-and-classes}, since the lack of appropriate initial guesses is a likely cause of the solver failure.
+In case of iterative solver failure, it is recommended to specially report those variables for which the solver needs an initial guess, but which only have the default value of the \lstinline!start!-attribute as defined in \cref{predefined-types-and-classes}, since the lack of appropriate initial guesses is a likely cause of the solver failure.
 \end{nonnormative}
 
-If a parameter has a modifier for the \lstinline!start! attribute, does not have \lstinline!fixed = false!, and neither has a binding equation nor is part of a record having a binding equation,
-the modifier for the \lstinline!start! attribute can be used to add a parameter binding equation assigning the parameter to that \lstinline!start! value.  In this case a diagnostic message is
-recommended in a simulation model.
+If a parameter has a modifier for the \lstinline!start!-attribute, does not have \lstinline!fixed = false!, and neither has a binding equation nor is part of a record having a binding equation, the modifier for the \lstinline!start!-attribute can be used to add a parameter binding equation assigning the parameter to that \lstinline!start! value.
+In this case a diagnostic message is recommended in a simulation model.
 
 \begin{nonnormative}
-This is used in libraries to give non-zero defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters
-that need to be set.
+This is used in libraries to give non-zero defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters that need to be set.
 \end{nonnormative}
 
-All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e.\ there must be additional equations for them -- and
-the \lstinline!start!-value can be used as a guess-value during initialization.
+All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e.\ there must be additional equations for them -- and the \lstinline!start!-value can be used as a guess-value during initialization.
 
 \begin{nonnormative}
-In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostics is recommended, but the parameter should be solved from the binding equation.
+In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostic is recommended, but the parameter should be solved from the binding equation.
 
-Non-discrete (that is continuous-time) \lstinline!Real! variables \lstinline!vc! have exactly one initialization value since the rules above assure that during initialization
-\lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed = true!).
+Continuous-time \lstinline!Real! variables \lstinline!vc! have exactly one initialization value since the rules above assure that during initialization \lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed = true!).
 
-Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!. If this is not the case for some variables
-\lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
+Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!.
+If this is not the case for some variables \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
 
-A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.  This may require to differentiate equations for index
-reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.  This whole set of equations, together with the additional constraints
-defined above, should lead to an algebraic system of equations where the number of equations and the number of all variables (including \lstinline!der! and \lstinline!pre!
-variables) is equal.  Often, this is a nonlinear system of equations and therefore it may be necessary to provide appropriate guess values (i.e., \lstinline!start! values and
-\lstinline!fixed = false!) in order to compute a solution numerically.
+A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.
+This may require to differentiate equations for index reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.
+This whole set of equations, together with the additional constraints defined above, should lead to an algebraic system of equations where the number of equations and the number of all variables (including \lstinline!der! and \lstinline!pre! variables) is equal.
+Often, this is a nonlinear system of equations and therefore it may be necessary to provide appropriate guess values (i.e., \lstinline!start! values and \lstinline!fixed = false!) in order to compute a solution numerically.
 
-It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index. A tool may add or remove initial equations
-automatically such that the resulting system is structurally nonsingular.  In these cases diagnostics are appropriate since the result is not unique and not necessarily what the user
-expects.  A missing initial value of a discrete-time variable which does not influence the simulation result, may be automatically set to the \lstinline!start! value or its default without
-informing the user.  For example, variables assigned in a when-clause which are not accessed outside of the when-clause and where \lstinline!pre! is not explicitly
-used on these variables, do not have an effect on the simulation.
+It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index.
+\end{nonnormative}
+
+These non-normative considerations are addressed as follows.
+A tool may add or remove initial equations automatically according to the rules below such that the resulting system is structurally nonsingular:
+\begin{itemize}
+\item A missing initial value of a discrete-time variable (see \cref{component-variability-prefixes-discrete-parameter-constant} -- this does not include parameter and constant variables) which does not influence the simulation result, may be automatically set to the start value or its default without informing the user.
+For example, variables assigned in a \lstinline!when!-clause which are not accessed outside of the \lstinline!when!-clause and where \lstinline!pre! is not explicitly used on these variables, do not have an effect on the simulation.
+\item A \lstinline!start!-attribute that is not fixed may be treated as fixed with a diagnostic.
+\item A consistent start value or initial equation may be removed with a diagnostic.
+\end{itemize}
+
+\begin{nonnormative}
+The goal is to be able to initialize the model, while satisfying the initial equations and fixed start values.
 \end{nonnormative}
 
 \begin{example}
@@ -887,16 +859,12 @@ pre(y) := y;
 \end{lstlisting}
 \end{example}
 
-\subsection{The Number of Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}
+\subsection{Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}\label{equations-needed-for-initialization}
 
 \begin{nonnormative}
-In general, for the case of a pure (first order) ordinary
-differential equation (ODE) system with $n$ state variables and $m$ output
-variables, we will have $n+m$ unknowns in the simulation problem. The ODE
-initialization problem has $n$ additional unknowns corresponding to the
-derivative variables. At initialization of an ODE we will need to find
-the values of $2n+m$ variables, in contrast to just $n+m$ variables to be
-solved for during simulation.
+In general, for the case of a pure (first order) ordinary differential equation (ODE) system with $n$ state variables and $m$ output variables, we will have $n+m$ unknowns in the simulation problem.
+The ODE initialization problem has $n$ additional unknowns corresponding to the derivative variables.
+At initialization of an ODE we will need to find the values of $2n+m$ variables, in contrast to just $n+m$ variables to be solved for during simulation.
 \end{nonnormative}
 
 \begin{example}
@@ -907,40 +875,73 @@ der(x2) = f2(x2);
 y = x1+x2+u;
 \end{lstlisting}
 
-Here we have three variables with unknown values: two dynamic
-variables that also are state variables, \lstinline!x1! and \lstinline!x2!, i.e.,
-$n=2$, one output variable \lstinline!y!, i.e., $m=1$, and one input variable \lstinline!u! with
-known value. A consistent solution of the initial value problem
-providing initial values for \lstinline!x1!, \lstinline!x2!, \lstinline!der(x1)!,
-\lstinline!der(x2)!, and \lstinline!y! needs to be found. Two additional initial
-equations thus need to be provided to solve the initialization problem.
+Here we have three variables with unknown values: two dynamic variables that also are state variables, \lstinline!x1! and \lstinline!x2!, i.e., $n=2$, one output variable \lstinline!y!, i.e., $m=1$, and one input variable \lstinline!u! with known value.
+A consistent solution of the initial value problem providing initial values for \lstinline!x1!, \lstinline!x2!, \lstinline!der(x1)!, \lstinline!der(x2)!, and \lstinline!y! needs to be found.
+Two additional initial equations thus need to be provided to solve the initialization problem.
 
-Regarding DAEs, only that at most $n$ additional equations are
-needed to arrive at $2n+m$ equations in the initialization system. The
-reason is that in a higher index DAE problem the number of dynamic
-continuous-time state variables might be less than the number of state
-variables $n$. As noted in \cref{initialization-initial-equation-and-initial-algorithm} a tool may add/remove
-initial equations to fulfill this requirement, if appropriate
-diagnostics are given.
+Regarding DAEs, only that at most $n$ additional equations are needed to arrive at $2n+m$ equations in the initialization system.
+The reason is that in a higher index DAE problem the number of dynamic continuous-time state variables might be less than the number of state variables $n$.
+As noted in \cref{initialization-initial-equation-and-initial-algorithm} a tool may add/remove initial equations to fulfill this requirement, if appropriate diagnostics are given.
 \end{example}
 
-\subsection{Recommended selection of start-values}\label{recommended-selection-of-start-values}
+\subsection{Start Value Recommended Priority}\label{recommended-selection-of-start-values}\label{start-value-recommended-priority}
 
-In general many variables have start-values that are not fixed and
-selecting a sub-set of these can give a consistent set of start-values
-close to the user-expectations. The following gives a non-normative
-procedure for finding such a sub-set.
+In general many variables have \lstinline!start!-attributes that are not fixed and selecting a subset of these can give a consistent set of start values close to the user-expectations.
+The following gives a non-normative procedure for finding such a subset.
 
 \begin{nonnormative}
-A model has a hierarchical component structure. Each component
-of a model can be given a unique model component hierarchy level number.
-The top level model has a level number of 1. The level number increases
-by 1 for each level down in the model component hierarchy. The model
-component hierarchy level number is used to give start values a
-confidence number, where a lower number means that the start value is
-more confident. Loosely, if the start value is set or modified on level
-i then the confidence number is i. If a start value is set by a possibly
-hierarchical modifier at the top level, then this start value has the
-highest confidence, namely 1 irrespectively on what level, the variable
-itself is declared.
+A model has a hierarchical component structure.
+Each component of a model can be given a unique model component hierarchy level number.
+The top-level model has a level number of 1.
+The level number increases by 1 for each level down in the model component hierarchy.
+The model component hierarchy level number is used to give \lstinline!start!-attribute a confidence number, where a lower number means that the \lstinline!start!-attribute is more confident.
+Loosely, if the \lstinline!start!-attribute is set or modified on level $i$ then the confidence number is $i$.
+If a \lstinline!start!-attribute is set by a possibly hierarchical modifier at the top level, then this \lstinline!start!-attribute has the highest confidence, namely 1 irrespectively on what level, the variable itself is declared.
+If the \lstinline!start!-attribute is set equal to a parameter, which may be equal to another parameter (etc), the lowest confidence number of these bindings are used.
+(In almost all cases that is the confidence number of the last parameter binding in the chain.)
+Note that this is only applied if the expression is exactly the parameter -- not an expression depending on one or more parameters.
+In case the confidence number considering parameter bindings is tied the confidence number of the \lstinline!start!-attribute is used to break the tie, if unequal.
+\begin{example}
+Simplified examples showing the priority of start-values.
+The example \lstinline!M3! shows that it is important that parameter-confidence is used directly and not only when the other priority is tied.
+\begin{lstlisting}[language=modelica]
+model M1
+  Real x(start = 4.0);
+  Real y(start = 5.0);
+equation
+  x = y;
+end M1;
+model M2
+  parameter Real xStart = 4.0;
+  parameter Real yStart = 5.0;
+  Real x(start = xStart);
+  Real y(start = yStart);
+equation
+  x = y;
+end M2;
+model M3
+  model MLocal
+    parameter Real xStart = 4.0;
+    Real x(start = xStart);
+  end MLocal;
+  model MLocalWrapped
+    parameter Real xStart = 4.0;
+    MLocal m(xStart = xStart);
+  end MLocalWrapped;
+  MLocal mx;
+  MLocalWrapped my(xStart = 3.0);
+equation
+  mx.x = my.y;
+end M3;
+M1 m1(x(start = 3.0));
+// Using m1.x.start = 3.0 with confidence number 1
+// over m1.y.start = 5.0 with confidence number 2
+M2 m2(xStart = 3.0);
+// Using m2.x.start = m2.xStart = 3.0 with confidence number 1
+// over m2.y.start = m2.yStart = 5.0 with confidence number 2
+M3 m3;
+// Using m3.my.x = m3.my.xStart = 3.0 with confidence number 1
+// over m3.mx.x = m3.mx.xStart = 4.0 with confidence number 2
+\end{lstlisting}
+\end{example}
 \end{nonnormative}

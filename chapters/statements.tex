@@ -1,19 +1,17 @@
 \chapter{Statements and Algorithm Sections}\label{statements-and-algorithm-sections}
 
-Whereas equations are very well suited for physical modeling, there are
-situations where computations are more conveniently expressed as
-algorithms, i.e., sequences of statements. In this chapter we describe
-the algorithmic constructs that are available in Modelica.
+Whereas equations are very well suited for physical modeling, there are situations where computations are more conveniently expressed as algorithms, i.e., sequences of statements.
+In this chapter we describe the algorithmic constructs that are available in Modelica.
 
 Statements are imperative constructs allowed in algorithm sections.
 
 \section{Algorithm Sections}\label{algorithm-sections}
 
-An \firstuse{algorithm section}\index{algorithm!section} is a part of a class definition comprised of the keyword \lstinline!algorithm!\index{algorithm@\robustinline{algorithm}} followed by a sequence of statements.
+An \firstuse[algorithm!section]{algorithm section} is a part of a class definition comprised of the keyword \lstinline!algorithm!\index{algorithm@\robustinline{algorithm}} followed by a sequence of statements.
 The formal syntax is as follows:
 \begin{lstlisting}[language=grammar]
 algorithm-section :
-   [ initial ] algorithm { statement ";" | annotation ";" }
+   [ initial ] algorithm { statement ";" }
 \end{lstlisting}
 
 Like an equation, an algorithm section relates variables, i.e., constrains the values that these variables can take simultaneously.
@@ -28,103 +26,82 @@ Equation equality \lstinline!=! or any other kind of equation (see \cref{equatio
 See \cref{initialization-initial-equation-and-initial-algorithm} for a description of both initial algorithm sections and
 initial equation sections.
 
-\subsection{Execution of an algorithm in a model}\label{execution-of-an-algorithm-in-a-model}
+\subsection{An Algorithm in a Model}\label{execution-of-an-algorithm-in-a-model}\label{an-algorithm-in-a-model}
 
-An algorithm section is conceptually a code fragment that remains
-together and the statements of an algorithm section are executed in the
-order of appearance. Whenever an algorithm section is invoked, all
-variables appearing on the left hand side of the assignment operator
-\lstinline!:=! are initialized (at least conceptually):
+An algorithm section is conceptually a code fragment that remains together and the statements of an algorithm section are executed in the order of appearance.
+Whenever an algorithm section is invoked, all variables appearing on the left hand side of the assignment operator \lstinline!:=! are initialized (at least conceptually):
 \begin{itemize}
 \item
-  A continuous-time variable is initialized with its start value (i.e.\ the
-  value of the \lstinline!start! attribute).
+  A continuous-time variable is initialized with the value of its \lstinline!start!-attribute.
 \item
   A discrete-time variable \lstinline!v! is initialized with \lstinline!pre(v)!.
 \item
-  If at least one element of an array appears on the left hand side of
-  the assignment operator, then the complete array is initialized in
-  this algorithm section.
+  If at least one element of an array appears on the left hand side of the assignment operator, then the complete array is initialized in this algorithm section.
 \item
-  A parameter assigned in an initial algorithm, \cref{initialization-initial-equation-and-initial-algorithm},
-  is initialized with its start-value (i.e.\ the value of the \lstinline!start! attribute).
+  A parameter assigned in an initial algorithm, \cref{initialization-initial-equation-and-initial-algorithm}, is initialized with the value of its \lstinline!start!-attribute.
 \end{itemize}
 
 \begin{nonnormative}
-Initialization is performed, in order that an algorithm section
-cannot introduce a ``memory'' (except in the case of discrete-time variables assigned in the algorithm), which could invalidate the assumptions of a
-numerical integration algorithm. Note, a Modelica tool may change the
-evaluation of an algorithm section, provided the result is identical to
-the case, as if the above conceptual processing is performed.
+Initialization is performed, in order that an algorithm section cannot introduce a ``memory'' (except in the case of discrete-time variables assigned in the algorithm), which could invalidate the assumptions of a numerical integration algorithm.
+Note, a Modelica tool may change the evaluation of an algorithm section, provided the result is identical to the case, as if the above conceptual processing is performed.
 
-An algorithm section is treated as an atomic vector-equation,
-which is sorted together with all other equations. For the sorting
-process (BLT), every algorithm section with N different left-hand side
-variables, is treated as an atomic N-dimensional vector-equation
-containing all variables appearing in the algorithm section. This
-guarantees that all N equations end up in an algebraic loop and the
-statements of the algorithm section remain together.
+An algorithm section is treated as an atomic vector-equation, which is sorted together with all other equations.
+For the sorting process (BLT), every algorithm section with N different left-hand side variables, is treated as an atomic N-dimensional vector-equation containing all variables appearing in the algorithm section.
+This guarantees that all N equations end up in an algebraic loop and the statements of the algorithm section remain together.
 
 Example:
 \begin{lstlisting}[language=modelica]
 model Test // wrong Modelica model (has 4 equations for 2 unknowns)
-  Real x[2](start={-11, -22});
-algorithm // conceptually: x = {1,-22}
+  Real x[2](start = {-11, -22});
+algorithm // conceptually: x = {1, -22}
   x[1] := 1;
-algorithm // conceptually: x = {-11,2}
+algorithm // conceptually: x = {-11, 2}
   x[2] := 2;
 end Test;
 \end{lstlisting}
 
-The conceptual part indicate that if the variable is assigned unconditionally
-in the algorithm before it is used the initialization can be omitted.
-This is usually the case, except for algorithms with when-statements,
-and especially for initial algorithms.
+The conceptual part indicate that if the variable is assigned unconditionally in the algorithm before it is used the initialization can be omitted.
+This is usually the case, except for algorithms with \lstinline!when!-statements, and especially for initial algorithms.
 \end{nonnormative}
 
-\subsection{Execution of the algorithm in a function}\label{execution-of-the-algorithm-in-a-function}
+\subsection{The Algorithm in a Function}\label{execution-of-the-algorithm-in-a-function}\label{the-algorithm-in-a-function}
 
 See \crefnameref{initialization-and-binding-equations-of-components-in-functions}.
 
 \section{Statements}\label{statements}
 
-Statements are imperative constructs allowed in algorithm sections. A
-flattened statement is identical to the corresponding nonflattened
-statement.
+Statements are imperative constructs allowed in algorithm sections.
+A flattened statement is identical to the corresponding nonflattened statement.
 
 Names in statements are found as follows:
 \begin{itemize}
 \item
-  If the name occurs inside an expression: it is first found among the
-  lexically enclosing reduction functions (see \cref{reduction-functions-and-operators}) in order
-  starting from the inner-most, and if not found it proceeds as if it
-  were outside an expression:
+  If the name occurs inside an expression: it is first found among the lexically enclosing reduction functions (see \cref{reduction-functions-and-operators}) in order starting from the inner-most, and if not found it proceeds as if it were outside an expression:
 \item
-  Names in a statement are first found among the lexically enclosing
-  for-statements in order starting from the inner-most, and if not
-  found:
+  Names in a statement are first found among the lexically enclosing \lstinline!for!-statements in order starting from the inner-most, and if not found:
 \item
-  Names in a statement shall be found by looking up in the partially
-  flattened enclosing class of the algorithm section.
+  Names in a statement shall be found by looking up in the partially flattened enclosing class of the algorithm section.
 \end{itemize}
 
 The syntax of statements is as follows:
 \begin{lstlisting}[language=grammar]
 statement :
-  ( component-reference ( ":=" expression | function-call-args )
-    | "(" output-expression-list ")" ":=" component-reference function-call-args
-    | break
-    | return
-    | if-statement
-    | for-statement
-    | while-statement
-    | when-statement )
-  comment
+   ( component-reference ( ":=" expression | function-call-args )
+     | "(" output-expression-list ")" ":="
+       component-reference function-call-args
+     | break
+     | return
+     | if-statement
+     | for-statement
+     | while-statement
+     | when-statement
+   )
+   description
 \end{lstlisting}
 
 \subsection{Simple Assignment Statements}\label{simple-assignment-statements}
 
-The syntax of \firstuse{simple assignment statement}\index{assignment statement!simple} is as follows:
+The syntax of \firstuse[assignment statement!simple]{simple assignment statement} is as follows:
 \begin{lstlisting}[language=grammar]
 component-reference ":=" expression
 \end{lstlisting}
@@ -135,7 +112,6 @@ The resulting value is stored into the variable denoted by \lstinline[language=g
 The \lstinline!expression! must not have higher variability than the assigned component, see \cref{variability-of-expressions}.
 
 Assignment to array variables with subscripts is described in \cref{array-indexing}.
-
 
 \subsubsection{Assignments from Called Functions with Multiple Results}\label{assignments-from-called-functions-with-multiple-results}
 
@@ -158,50 +134,48 @@ The function \lstinline!f! called below has three results and two inputs:
 (a, b, c) := f(1.0, 2.0);
 (x[1], x[2], x[1]) := f(3, 4);
 \end{lstlisting}
-In the second example above \lstinline!x[1]! is assigned twice: first with the first output, and then with the third output.  For that case the following will give the same result:
+In the second example above \lstinline!x[1]! is assigned twice: first with the first output, and then with the third output.
+For that case the following will give the same result:
 \begin{lstlisting}[language=modelica]
 (, x[2], x[1]) := f(3,4);
 \end{lstlisting}
 \end{example}
 
-The syntax of an assignment statement with a call to a function with
-multiple results is as follows:
+The syntax of an assignment statement with a call to a function with multiple results is as follows:
 \begin{lstlisting}[language=grammar]
 "(" output-expression-list ")" ":=" component-reference function-call-args
 \end{lstlisting}
 
 \begin{nonnormative}
-Also see \cref{simple-equality-equations} regarding calling functions with
-multiple results within equations.
+Also see \cref{simple-equality-equations} regarding calling functions with multiple results within equations.
 \end{nonnormative}
 
-\subsubsection{Restrictions on assigned variables}\label{restrictions-on-assigned-variables}
+\subsubsection{Assigned Variables - Restrictions}\label{restrictions-on-assigned-variables}\label{assigned-variables-restrictions}
 
 Only components of the specialized classes \lstinline!type!, \lstinline!record!, \lstinline!operator record!, and \lstinline!connector! may appear as left-hand-side in algorithms.
 This applies both to simple assignment statements, and the parenthesized, comma-separated list of variables for functions with multiple results.
 
-\subsection{For-statement}\label{for-statement}
+\subsection{For-Statement}\label{for-statement}
 
-The syntax of a for-statement\index{for@\robustinline{for}!statement}\index{loop@\robustinline{loop}!for-statement} is as follows:
+The syntax of a \lstinline!for!-statement\index{for@\robustinline{for}!statement}\index{loop@\robustinline{loop}!for-statement@\robustinline{for}-statement} is as follows:
 \begin{lstlisting}[language=grammar]
 for for-indices loop
   { statement ";" }
 end for
 \end{lstlisting}
-For-statements may optionally use several iterators (\lstinline!for-indices!), see
-\cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
+A \lstinline!for!-statement may optionally use several iterators (\lstinline!for-indices!), see \cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
 \begin{lstlisting}[language=grammar]
 for-indices:
-   for-index {"," for-index}
+   for-index { "," for-index }
 
 for-index:
    IDENT [ in  expression ]
 \end{lstlisting}
-The following is an example of a prefix of a for-statement:
+The following is an example of a prefix of a \lstinline!for!-statement:
 \begin{lstlisting}[language=modelica]
 for IDENT in expression loop
 \end{lstlisting}
-The rules for for-statements are the same as for for-expressions in \cref{explicit-iteration-ranges-of-for-equations} -- except that the \lstinline!expression! of a for-statement is not restricted to a parameter expression.
+The rules for \lstinline!for!-statements are the same as for \lstinline!for!-expressions in \cref{explicit-iteration-ranges-of-for-equations} -- except that the \lstinline!expression! of a \lstinline!for!-statement is not restricted to a parameter-expression.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -209,9 +183,10 @@ for i in 1 : 10 loop // i takes the values 1, 2, 3, $\ldots$, 10
 for r in 1.0 : 1.5 : 5.5 loop // r takes the values 1.0, 2.5, 4.0, 5.5
 for i in {1, 3, 6, 7} loop // i takes the values 1, 3, 6, 7
 for i in TwoEnums loop // i takes the values TwoEnums.one, TwoEnums.two
-        // for TwoEnums = enumeration(one, two)
+                       // for TwoEnums = enumeration(one, two)
 \end{lstlisting}
-The loop-variable may hide other variables as in the following example.  Using another name for the loop-variable is, however, strongly recommended.
+The loop-variable may hide other variables as in the following example.
+Using another name for the loop-variable is, however, strongly recommended.
 \begin{lstlisting}[language=modelica]
   constant Integer j = 4;
   Real x[j];
@@ -224,10 +199,12 @@ equation
 
 \subsubsection{Implicit Iteration Ranges}\label{implicit-iteration-ranges}
 
-An iterator \lstinline!IDENT in range-expr! without the \lstinline!in range-expr! requires that the \lstinline!IDENT! appears as the subscript of one or several subscripted expressions, where the expressions are not part of an array in a component of an expandable connector.  The dimension size of the array expression in the indexed position is used to deduce the \lstinline!range-expr! as \lstinline!1:size(array-expression,indexpos)! if the indices are a subtype of \lstinline!Integer!, or as \lstinline!E.e1:E.en! if the indices are of an enumeration type \lstinline!E = enumeration(e1, $\ldots$, en)!, or as \lstinline!false:true! if the indices are of type \lstinline!Boolean!.  If it is used to subscript several expressions, their ranges must be identical.  The \lstinline!IDENT! may also, inside a reduction-expression, array constructor expression, for-statement, or for-equation, occur freely outside of subscript positions, but only as a reference to the variable \lstinline!IDENT!, and not for deducing ranges.
+An iterator \lstinline!IDENT in range-expr! without the \lstinline!in range-expr! requires that the \lstinline!IDENT! appears as the subscript of one or several subscripted expressions, where the expressions are not part of an array in a component of an expandable connector.
+The dimension size of the array expression in the indexed position is used to deduce the \lstinline!range-expr! as \lstinline!1:size(array-expression,indexpos)! if the indices are a subtype of \lstinline!Integer!, or as \lstinline!E.e1:E.en! if the indices are of an enumeration type \lstinline!E = enumeration(e1, $\ldots$, en)!, or as \lstinline!false:true! if the indices are of type \lstinline!Boolean!.
+If it is used to subscript several expressions, their ranges must be identical.
+The \lstinline!IDENT! may also, inside a reduction expression, array constructor expression, \lstinline!for!-statement, or \lstinline!for!-equation, occur freely outside of subscript positions, but only as a reference to the variable \lstinline!IDENT!, and not for deducing ranges.
 
-The \lstinline!IDENT! may also be used as a subscript for an array in a component of an expandable connector
-but it is only seen as a reference to the variable \lstinline!IDENT! and cannot be used for deducing ranges.
+The \lstinline!IDENT! may also be used as a subscript for an array in a component of an expandable connector but it is only seen as a reference to the variable \lstinline!IDENT! and cannot be used for deducing ranges.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -255,11 +232,13 @@ Real xsquared5[FourEnums] = {x[i] * x[i] for i};
 \end{lstlisting}
 \end{example}
 
-The size of an array -- the iteration range -- is evaluated on entry to the for-loop and the array size shall not change during the execution of the for-loop.
+The size of an array -- the iteration range -- is evaluated on entry to the \lstinline!for!-loop and the array size shall not change during the execution of the \lstinline!for!-loop.
 
 \subsubsection{Types as Iteration Ranges}\label{types-as-iteration-ranges}
 
-The iteration range can be specified as \lstinline!Boolean! or as an enumeration type.  This means iteration over the type from min to max, i.e.\ for \lstinline!Boolean! it is the same as \lstinline!false:true! and for an enumeration \lstinline!E! it is the same as \lstinline!E.min:E.max!. This can be used for \lstinline!for! loops and reduction expressions.
+The iteration range can be specified as \lstinline!Boolean! or as an enumeration type.
+This means iteration over the type from min to max, i.e.\ for \lstinline!Boolean! it is the same as \lstinline!false:true! and for an enumeration \lstinline!E! it is the same as \lstinline!E.min:E.max!.
+This can be used for \lstinline!for!-loops and reduction expressions.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -276,13 +255,9 @@ equation
 
 \subsubsection{Nested For-Loops and Reduction Expressions with Multiple Iterators}\label{nested-for-loops-and-reduction-expressions-with-multiple-iterators}
 
-The notation with several iterators is a shorthand notation for nested
-for-statements or for-equations (or reduction-expressions). For
-for-statements or for-equations it can be expanded into the usual form
-by replacing each `\lstinline!,!' by ``\lstinline!loop for!'' and adding extra ``\lstinline!end for!''. For
-reduction-expressions it can be expanded into the usual form by
-replacing each `\lstinline!,!' by ``\lstinline!) for!'' and prepending the reduction-expression
-with ``\lstinline!functionName(!''.
+The notation with several iterators is a shorthand notation for nested \lstinline!for!-statements or \lstinline!for!-equations (or reduction expressions).
+For \lstinline!for!-statements or \lstinline!for!-equations it can be expanded into the usual form by replacing each `\lstinline!,!' by ``\lstinline!loop for!'' and adding extra ``\lstinline!end for!''.
+For reduction expressions it can be expanded into the usual form by replacing each `\lstinline!,!' by ``\lstinline!) for!'' and prepending the reduction expression with ``\lstinline!functionName(!''.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -298,27 +273,28 @@ algorithm
 
 \subsection{While-Statement}\label{while-statement}
 
-The while-statement\index{while@\robustinline{while}!statement}\index{loop@\robustinline{loop}!while-statement} has the following syntax:
+The \lstinline!while!-statement\index{while@\robustinline{while}!statement}\index{loop@\robustinline{loop}!while-statement@\robustinline{while}-statement} has the following syntax:
 \begin{lstlisting}[language=grammar]
 while expression loop
   { statement ";" }
 end while
 \end{lstlisting}
-The \lstinline!expression! of a while-statement shall be a scalar \lstinline!Boolean! expression.  The while-statement corresponds to while-statements in programming languages, and is formally defined as follows:
+The \lstinline!expression! of a \lstinline!while!-statement shall be a scalar \lstinline!Boolean! expression.
+The \lstinline!while!-statement corresponds to while-statements in programming languages, and is formally defined as follows:
 \begin{enumerate}
-\item The \lstinline!expression! of the while-statement is evaluated.
-\item If the \lstinline!expression! of the while-statement is false, the execution
-continues after the while-statement.
-\item If the \lstinline!expression! of the while-statement is true, the entire body of
-the while-statement is executed (except if a break-statement, see
-\cref{break-statement}, or a return-statement, see \cref{return-statements}, is executed),
-and then execution proceeds at step 1.
+\item
+  \label{while-execution-top}
+  The \lstinline!expression! of the \lstinline!while!-statement is evaluated.
+\item
+  If the \lstinline!expression! of the \lstinline!while!-statement is false, the execution continues after the \lstinline!while!-statement.
+\item
+  If the \lstinline!expression! of the \lstinline!while!-statement is true, the entire body of the \lstinline!while!-statement is executed (except if a \lstinline!break!-statement, see \cref{break-statement}, or a \lstinline!return!-statement, see \cref{return-statements}, is executed), and then execution proceeds at step~\ref{while-execution-top}.
 \end{enumerate}
 
 \subsection{Break-Statement}\label{break-statement}
 
-The break-statement\index{break@\robustinline{break}} breaks the execution of the innermost while- or for-loop enclosing the break-statement and continues execution after the while- or for-loop.
-It can only be used in a while- or for-loop in an algorithm section.
+The \lstinline!break!-statement\index{break@\robustinline{break}} breaks the execution of the innermost \lstinline!while!- or \lstinline!for!-loop enclosing the \lstinline!break!-statement and continues execution after the \lstinline!while!- or \lstinline!for!-loop.
+It can only be used in a \lstinline!while!- or \lstinline!for!-loop in an algorithm section.
 It has the following syntax:
 \begin{lstlisting}[language=modelica]
 break;
@@ -350,34 +326,40 @@ Can only be used inside functions, see \cref{function-return-statements}.
 
 \subsection{If-Statement}\label{if-statement}
 
-If-statements\index{if@\robustinline{if}!statement}\index{then@\robustinline{then}!if-statement}\index{else@\robustinline{else}!if-statement}\index{elseif@\robustinline{elseif}!if-statement} have the following syntax:
+The \lstinline!if!-statements\index{if@\robustinline{if}!statement}\index{then@\robustinline{then}!if-statement@\robustinline{if}-statement}\index{else@\robustinline{else}!if-statement@\robustinline{if}-statement}\index{elseif@\robustinline{elseif}!if-statement@\robustinline{if}-statement} have the following syntax:
 \begin{lstlisting}[language=grammar]
 if expression then
   { statement ";" }
-  { elseif expression then
-    { statement ";" }
-  }
-  [ else
-    { statement ";" }
-  ]
-end if;
+{ elseif expression then
+  { statement ";" }
+}
+[ else
+  { statement ";" }
+]
+end if
 \end{lstlisting}
 
-The \lstinline!expression! of an if- or elseif-clause must be scalar \lstinline!Boolean! expression.  One if-clause, and zero or more elseif-clauses, and an optional else-clause together form a list of branches.  One or zero of the bodies of these if-, elseif- and else-clauses is selected, by evaluating the conditions of the if- and elseif-clauses sequentially until a condition that evaluates to true is found.  If none of the conditions evaluate to true the body of the else-clause is selected (if an else-clause exists, otherwise no body is selected).  In an algorithm section, the selected body is then executed.  The bodies that are not selected have no effect on that model evaluation.
+The \lstinline!expression! of an \lstinline!if!- or \lstinline!elseif!-clause must be scalar \lstinline!Boolean! expression.
+One \lstinline!if!-clause, and zero or more \lstinline!elseif!-clauses, and an optional \lstinline!else!-clause together form a list of branches.
+One or zero of the bodies of these \lstinline!if!-, \lstinline!elseif!- and \lstinline!else!-clauses is selected, by evaluating the conditions of the \lstinline!if!- and \lstinline!elseif!-clauses sequentially until a condition that evaluates to true is found.
+If none of the conditions evaluate to true the body of the \lstinline!else!-clause is selected (if an \lstinline!else!-clause exists, otherwise no body is selected).
+In an algorithm section, the selected body is then executed.
+The bodies that are not selected have no effect on that model evaluation.
 
 \subsection{When-Statements}\label{when-statements}
 
-A when-statement\index{when@\robustinline{when}!statement}\index{then@\robustinline{then}!when-statement}\index{elsewhen@\robustinline{elsewhen}!when-statement} has the following syntax:
+A \lstinline!when!-statement\index{when@\robustinline{when}!statement}\index{then@\robustinline{then}!when-statement@\robustinline{when}-statement}\index{elsewhen@\robustinline{elsewhen}!when-statement@\robustinline{when}-statement} has the following syntax:
 \begin{lstlisting}[language=grammar]
 when expression then
   { statement ";" }
-  { elsewhen expression then
-  { statement ";" } }
+{ elsewhen expression then
+  { statement ";" }
+}
 end when
 \end{lstlisting}
 
-The \lstinline!expression! of a when-statement shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
-The statements within a when-statement are activated only at the instant when the scalar or any one of the elements of the vector-expression becomes true.
+The \lstinline!expression! of a \lstinline!when!-statement shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
+The statements within a \lstinline!when!-statement are activated only at the instant when the scalar or any one of the elements of the vector expression becomes true.
 
 \begin{example}
 Algorithms are activated when \lstinline!x! becomes \textgreater{} 2:
@@ -387,18 +369,14 @@ when x > 2 then
   y3 := 2*x + y1+y2;
 end when;
 \end{lstlisting}
-The statements inside the when-statement are activated on the positive edge of any of the expressions
-\lstinline!x > 2!, \lstinline!sample(0, 2)!, or \lstinline!x < 5!:
+The statements inside the \lstinline!when!-statement are activated on the positive edge of any of the expressions \lstinline!x > 2!, \lstinline!sample(0, 2)!, or \lstinline!x < 5!:
 \begin{lstlisting}[language=modelica]
-when {x > 2, sample(0,2), x < 5} then
+when {x > 2, sample(0, 2), x < 5} then
   y1 := sin(x);
   y3 := 2*x + y1+y2;
 end when;
 \end{lstlisting}
-For when-statements in algorithm sections the order is significant
-and it is advisable to have only one assignment within the
-when-statement and instead use several algorithm sections having
-when-statements with identical conditions, e.g.:
+For \lstinline!when!-statements in algorithm sections the order is significant and it is advisable to have only one assignment within the \lstinline!when!-statement and instead use several algorithm sections having \lstinline!when!-statements with identical conditions, e.g.:
 \begin{lstlisting}[language=modelica]
 algorithm
   when x > 2 then
@@ -408,29 +386,27 @@ equation
   y2 = sin(y1);
 algorithm
   when x > 2 then
-    y3 := 2*x +y1+y2;
+    y3 := 2 * x + y1 + y2;
   end when;
 \end{lstlisting}
-Merging the when-statements can lead to less efficient code and
-different models with different behavior depending on the order of the
-assignment to \lstinline!y1! and \lstinline!y3! in the algorithm.
+Merging the \lstinline!when!-statements can lead to less efficient code and different models with different behavior depending on the order of the assignment to \lstinline!y1! and \lstinline!y3! in the algorithm.
 \end{example}
 
-\subsubsection{Restrictions on Where a When-statement may occur}\label{restrictions-on-where-a-when-statement-may-occur}
+\subsubsection{Where a When-Statement May Occur}\label{restrictions-on-where-a-when-statement-may-occur}\label{where-a-when-statement-may-occur}
+
 \begin{itemize}
 \item
-  A when-statement shall not be used within a function.
+  A \lstinline!when!-statement shall not be used within a function.
 \item
-  When-statements shall not occur inside initial algorithms.
+  A \lstinline!when!-statement shall not occur inside an initial algorithm.
 \item
-  When-statements cannot be nested.
+  A \lstinline!when!-statement cannot be nested inside another \lstinline!when!-statement.
 \item
-  When-statements shall not occur inside while, if, and for-clauses in
-  algorithms.
+  \lstinline!when!-statements shall not occur inside \lstinline!while!-loops, \lstinline!for!-loops, or \lstinline!if!-statements in algorithms.
 \end{itemize}
 
 \begin{example}
-The following nested when-statement is invalid:
+The following nested \lstinline!when!-statement is invalid:
 \begin{lstlisting}[language=modelica]
 when x > 2 then
   when y1 > 3 then
@@ -440,28 +416,24 @@ end when;
 \end{lstlisting}
 \end{example}
 
-\subsubsection{Restrictions on Statements within When-Statements}\label{restrictions-on-statements-within-when-statements}
+\subsubsection{Statements within When-Statements}\label{restrictions-on-statements-within-when-statements}\label{statements-within-when-statements}
 
 \begin{nonnormative}
-In contrast to when-equations, \cref{restrictions-on-equations-within-when-equations},
-there are no additional restrictions within when-statements:
+In contrast to \lstinline!when!-equations, \cref{restrictions-on-equations-within-when-equations}, there are no additional restrictions within \lstinline!when!-statements:
 \begin{itemize}
 \item
   In algorithms, all assignment statements are already restricted to left-hand-side variables.
 \item
-  If at least one element of an array appears on the left-hand-side of the assignment operator inside
-  a when-statement, it is as if the entire array appears in the left-hand-side
-  according to \cref{execution-of-an-algorithm-in-a-model}.
-  Thus, there is no need to restrict the indices to parameter expressions.
+  If at least one element of an array appears on the left-hand-side of the assignment operator inside a \lstinline!when!-statement, it is as if the entire array appears in the left-hand-side according to \cref{execution-of-an-algorithm-in-a-model}.
+  Thus, there is no need to restrict the indices to parameter-expressions.
 \item
-  For-clauses and if-clauses are not problematic inside when-statements in algorithms, since
-  all left-hand-side variables inside when-statements are assigned to their pre-values
-  before the start of the algorithm, according to \cref{execution-of-an-algorithm-in-a-model}.
+  The \lstinline!for!-loops and \lstinline!if!-statements are not problematic inside \lstinline!when!-statements in algorithms, since all left-hand-side variables inside \lstinline!when!-statements are assigned to their pre-values before the start of the algorithm, according to \cref{execution-of-an-algorithm-in-a-model}.
 \end{itemize}
 \end{nonnormative}
+
 \subsubsection{Defining When-Statements by If-Statements}\label{defining-when-statements-by-if-statements}
 
-A when-statement:
+A \lstinline!when!-statement:
 \begin{lstlisting}[language=modelica]
 algorithm
   when {x > 1, $\ldots$, y > p} then
@@ -470,8 +442,7 @@ algorithm
     $\ldots$
   end when;
 \end{lstlisting}
-is similar to the following special if-statement, where \lstinline!Boolean b1[N];! and \lstinline!Boolean b2;! are necessary because \lstinline!edge! can
-only be applied to variables
+is similar to the following special \lstinline!if!-statement, where \lstinline!Boolean b1[N];! and \lstinline!Boolean b2;! are necessary because \lstinline!edge! can only be applied to variables
 \begin{lstlisting}[language=modelica]
   Boolean b1[N](start = {x.start > 1, $\ldots$, y.start > p});
   Boolean b2(start = x.start > y.start);
@@ -484,19 +455,20 @@ algorithm
     $\ldots$
   end if;
 \end{lstlisting}
-with \lstinline!edge(A) = A and not pre(A)! and the additional guarantee, that the statements within this special if-statement are only evaluated at event instants.
-The difference compared to the when-statements is that e.g.\ \lstinline!pre! may only be used on continuous-time real variables inside the body of a when-clause and not inside these if-statements.
+with \lstinline!edge(A) = A and not pre(A)! and the additional guarantee, that the statements within this special \lstinline!if!-statement are only evaluated at event instants.
+The difference compared to the when-statements is that e.g.\ \lstinline!pre! may only be used on continuous-time real variables inside the body of a \lstinline!when!-clause and not inside these if-statements.
 
 \subsection{Special Statements}\label{special-statements}
 
-These special statements have the same form and semantics as the
-corresponding equations, apart from the general difference in semantics
-between equations and statements.
+These special statements have the same form and semantics as the corresponding equations, apart from the general difference in semantics between equations and statements.
 
-\subsubsection{Assert Statement}\label{assert-statement}
+\subsubsection{Assert-Statement}\label{assert-statement}
 
-See \cref{assert}.  A failed \lstinline!assert!\index{assert@\robustinline{assert}!statement} stops the execution of the current algorithm.
+See \cref{assert}.
+A failed \lstinline!assert!\index{assert@\robustinline{assert}!statement@\robustinline{statement}} stops the execution of the current algorithm.
 
-\subsubsection{Terminate Statement}\label{terminate-statement}
+\subsubsection{Terminate-Statement}\label{terminate-statement}
 
-See \cref{terminate}.  The \lstinline!terminate!\index{terminate@\robustinline{terminate}!statement} statement shall not be in functions.  In an algorithm outside a function it does not stop the execution of the current algorithm.
+See \cref{terminate}.
+The \lstinline!terminate!\index{terminate@\robustinline{terminate}!statement@\robustinline{statement}}-statement shall not be used in functions.
+In an algorithm outside a function it does not stop the execution of the current algorithm.

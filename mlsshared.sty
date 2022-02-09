@@ -6,6 +6,19 @@
 % characters to also produce an \allowbreak{} following the directory separator.
 \newcommand{\filename}[1]{\mbox{\textsf{#1}}}
 
+% Pick a tt font that meets all of the following requirements:
+% - Not too wide (to reduce need for manual breaking of long lines)
+% - Has boldface variant that is distinctively heavier than its medium weight variant.
+% - Medium weight variant is heavy enough to not make non-black colors blend too much with the
+%   white background due to anti-aliasing and similar effects.
+% Warning: Note that changing to a font with different width -- especially a wider one -- means
+% that existing manual line breaks are potentially becoming out of place.
+% Finally, don't use newtexttt in listings in the LaTeXML build, see:
+% - https://github.com/brucemiller/LaTeXML/issues/1713
+\ifpdf
+\usepackage{newtxtt}
+\fi
+
 \usepackage{listings}
 \usepackage{color}
 \usepackage[table]{xcolor}
@@ -34,30 +47,40 @@
 % Note that Integer is both a predefined type and a function; we cannot treat them differently.
 % Another solution would be to remove this completely.
 \lstdefinelanguage{modelica}{% Language for use with the lstlisting environment.
-    basicstyle=\upshape\smallifpdf\ttfamily, % Font size for displayed code listings.
+    basicstyle=\upshape\ttfamily\smallifpdf, % Font size for displayed code listings.
     alsoletter={},
 %   otherkeywords={-, =, +, [, ], (, ), \{, \}, :, *, !},%
-    morekeywords=[1]{}, % blue Keywords
-    morekeywords=[2]{% blue + bold keywords
-        annotation,assert,block,break,class,connector,constant,constrainedby,discrete,%
-        each,encapsulated,enumeration,else,elseif,elsewhen,end,%
-        expandable,extends,external,final,flow,for,%
-        function,if,in,inner,initial,input,import,loop,model,operator,outer,%
-        output,package,parameter,partial,record,redeclare,replaceable,return,%
-        size,% Not a keyword, right?
-        stream,terminate,then,type,when,while,within,algorithm,equation,%
-        protected,public,and,false,not,or,true,pure,impure,%
-        transition,% Not a keyword
-        initialState% Not a keyword.  What about all the other operators in statemachines.tex?
+    morekeywords=[1]{% Keywords not used to define code structure
+        der,connect,assert,terminate,break,return,%
+        false,true,and,not,or,%
+        final,each,%
+        flow,stream,%
+        input,output,%
+        discrete,parameter,constant,%
+    },
+    morekeywords=[2]{% Keywords used to define code structure
+        annotation,block,class,connector,constrainedby,%
+        encapsulated,enumeration,else,elseif,elsewhen,end,%
+        expandable,extends,external,for,%
+        function,if,in,inner,initial,import,loop,model,operator,outer,%
+        package,partial,record,redeclare,replaceable,%
+        then,type,when,while,within,algorithm,equation,%
+        protected,public,pure,impure,%
     },%
     % Note: initial is in both variants - depending on context, use first variant
-    morekeywords=[3]{% red keywords - only special functions and classes: 3.7.2 #derivative-and-special-purpose-operators-with-function-syntax
-    % 3.7.3 #event-related-operators-with-function-syntax (except initial) and 4.8 #predefined-types-and-classes
-        connect,% This is a keyword!
-        der,delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName,%
+    morekeywords=[3]{% Selected recognized names that are not actual keywords, including:
+        % 3.7.2 #derivative-and-special-purpose-operators-with-function-syntax
+        delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName,%
         terminal,noEvent,smooth,sample,pre,edge,change,reinit,%
+        % 3.7.3 #event-related-operators-with-function-syntax (except initial)
         previous,hold,subSample,superSample,shiftSample,backSample,noClock,firstTick,interval,%
-        Real,Integer,Boolean,String},%
+        % 4.8 #predefined-types-and-classes
+        Real,Integer,Boolean,String,%
+        % Highlights from #built-in-array-functions
+        promote,ndims,size,%
+        % Assorted things from #state-machines -- what about all the other operators in this chapter?
+        transition,initialState,%
+    },%
     sensitive=true, % just in case
     comment=[l]{//}, % comment lines
     morecomment=[s]{/*}{*/}, % comment blocs
@@ -77,25 +100,42 @@
 
 % Note: within only a keyword in grammar
 \lstdefinelanguage{grammar}{%
-    basicstyle=\upshape\smallifpdf\ttfamily, % size of fonts used for the code
-    alsoletter={},
+    basicstyle=\upshape\ttfamily\smallifpdf, % size of fonts used for the code
+    identifierstyle=\itshape,
     alsodigit={-},
     breaklines=true,
     breakatwhitespace=true,
-    morekeywords=[2]{%
-        letters,annotation,assert,block,break,class,connector,constant,constrainedby,discrete,%
-        each,encapsulated,else,elseif,elsewhen,end,expandable,extends,external,final,flow,for,%
-        function,if,in,inner,initial,input,import,loop,model,operator,outer,%
-        output,package,parameter,partial,record,redeclare,replaceable,return,%
-        size,stream,terminate,then,type,when,while,algorithm,equation,%
-        protected,public,and,false,not,or,true,pure,impure,stream,transition,initialState,%
-        within},
-    morekeywords=[1]{|}
+    morekeywords=[1]{%
+        % Keywords corresponding to morekeywords=[1] for language=modelica
+        der,connect,assert,terminate,break,return,%
+        false,true,and,not,or,%
+        final,each,%
+        flow,stream,%
+        input,output,%
+        discrete,parameter,constant,%
+        % Keywords corresponding to morekeywords=[2] for language=modelica
+        annotation,block,class,connector,constrainedby,%
+        encapsulated,enumeration,else,elseif,elsewhen,end,%
+        expandable,extends,external,for,%
+        function,if,in,inner,initial,import,loop,model,operator,outer,%
+        package,partial,record,redeclare,replaceable,%
+        then,type,when,while,within,algorithm,equation,%
+        protected,public,pure,impure,%
+    },
+    % Instead of using color to highlight BNF syntactical constructs as below, the production rule names
+    % are set in italics, so that the syntactical constructs stand out by having upright shape.
+%   alsoletter={|,\{,\},[,],(,)},
+%   morekeywords=[2]{|,\{,\},[,],(,)},
+    morekeywords=[3]{%
+        letters,%
+    },
+    morestring=[b]{"},
+    stringstyle=\color{keywordcolor1}, % For the grammar, fixed strings and keywords are the same kind of token.
 }[keywords,comments,strings]
 
 % Duplicate this definition here to avoid issue
 \lstdefinelanguage{FORTRAN77}{% Define custom language to avoid collision with predefined [77]Fortran.
-    basicstyle=\upshape\smallifpdf\ttfamily, % size of fonts used for the code
+    basicstyle=\upshape\ttfamily\smallifpdf, % size of fonts used for the code
     morekeywords=[1]{%
         ASSIGN,BACKSPACE,CALL,CHARACTER,%
         CLOSE,COMMON,COMPLEX,CONTINUE,DATA,DIMENSION,DO,DOUBLE,%
@@ -124,7 +164,7 @@
 }[keywords,comments,strings]
 
 \lstdefinelanguage[MLS]{C}{% Define new dialect to avoid collision with predefined dialects of C.
-    basicstyle=\upshape\smallifpdf\ttfamily, % size of fonts used for the code
+    basicstyle=\upshape\ttfamily\smallifpdf, % size of fonts used for the code
     morekeywords=[1]{%
         auto,break,case,char,const,continue,default,do,double,%
         else,enum,extern,float,for,goto,if,int,long,register,return,%
@@ -149,7 +189,7 @@
   breaklines=true,                 % automatic line breaking only at white-space
   keepspaces,                      % don't remove space such as those after closing parenthesis
   captionpos=b,                    % sets the caption-position to bottom
-  commentstyle=\color{commentcolor}\sffamily, % comment style
+  commentstyle=\color{commentcolor}\sffamily,
   keywordstyle=\color{red},        % Unused keyword style in bright red to make it easy to detect and fix.
   keywordstyle=[1]\color{keywordcolor1},
   keywordstyle=[2]\color{keywordcolor1}\bfseries,
