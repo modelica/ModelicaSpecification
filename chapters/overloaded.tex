@@ -1,31 +1,38 @@
-\chapter{Overloaded Operators}\label{overloaded-operators}
+\chapter{Overloaded Operators}\doublelabel{overloaded-operators}
 
-A Modelica \lstinline!operator record!\indexinline{operator record} can overload the behavior for operations such as constructing, adding, multiplying etc.
+A Modelica \lstinline!operator record! can define the behavior for
+operations such as constructing, adding, multiplying etc. This is done
+using the specialized class \lstinline!operator! (a restricted class
+similar to \lstinline!package!, see \autoref{specialized-classes}) comprised of functions
+implementing different variants of the operation for the record class in
+which the respective \lstinline!operator! definition resides.
 
-The overloading is defined in such a way that ambiguities are not allowed and give an error.
-Furthermore, it is sufficient to define overloading for scalars.
+\begin{nonnormative}
+The overloading is defined in such a way that ambiguities are not allowed and give an error.  Furthermore, it is sufficient to define overloading for scalars.
 Overloaded array operations are automatically deduced from the overloaded scalar operations.
+\end{nonnormative}
 
-\section{Overview of overloaded operators}\label{overview-of-overloaded-operators}
-
-In an \lstinline!operator record! the definition of operations are done using the specialized class \lstinline!operator! (a specialized class similar to \lstinline!package!, see \cref{specialized-classes}) followed by the name of the operation.
-Each \lstinline!operator! class is comprised of functions implementing different variants of the operation for the \lstinline!operator record! class in which the definition resides.
+The \lstinline!operator! keyword is followed by the name of the operation:
 % This was something weird that could be seen as a table originally,
 % that is somewhat awkward - but keeping it.
 %
 % Changing to use itemize was attempted, but currently fails in LaTeXML
 % https://github.com/brucemiller/LaTeXML/issues/1057
 % (Note: It's pure coincide that this issue occured for this case.)
-\begin{itemize}
-\item Overloaded constructors, see \cref{overloaded-constructors}:\\ \lstinline!'constructor'!, \lstinline!'0'!
-\item Overloaded string conversions, see \cref{overloaded-string-conversions}:\\ \lstinline!'String'!
-\item Overloaded binary operations, see \cref{overloaded-binary-operations}:\\
-\lstinline!'+'!, \lstinline!'-'! (subtraction), \lstinline!'*'!, \lstinline!'/'!, \lstinline!'^'!,\\
- \lstinline!'=='!, \lstinline!'<='!', \lstinline!'>'!, \lstinline!'<'!,
-\lstinline!'>='!, \lstinline!'<='!, \lstinline!'and'!, \lstinline!'or'!
-\item Overloaded unary operations, see \cref{overloaded-unary-operations}:\\
-\lstinline!'-'! (negation), \lstinline!'not'!
-\end{itemize}
+\begin{longtable}[c]{@{}|ll|@{}}
+\hline\endhead
+\multicolumn{2}{|l|}{Overloaded constructors, see \autoref{overloaded-constructors}:}\\
+& \lstinline!'constructor'!, \lstinline!'0'!\\
+\multicolumn{2}{|l|}{Overloaded string conversions, see \autoref{overloaded-string-conversions}:}\\
+& \lstinline!'String'! \\
+\multicolumn{2}{|l|}{Overloaded binary operations, see \autoref{overloaded-binary-operations}:}\\
+& \lstinline!'+'!, \lstinline!'-'! (subtraction), \lstinline!'*'!, \lstinline!'/'!, \lstinline!'^'!,\\
+& \lstinline!'=='!, \lstinline!'<='!', \lstinline!'>'!, \lstinline!'<'!,
+\lstinline!'>='!, \lstinline!'<='!, \lstinline!'and'!, \lstinline!'or'!\\
+\multicolumn{2}{|l|}{Overloaded unary operations, see \autoref{overloaded-unary-operations}:}\\
+& \lstinline!'-'! (negation), \lstinline!'not'!\\
+\hline
+\end{longtable}
 
 The functions defined in the operator-class must take at least one
 component of the record class as input, except for the
@@ -46,41 +53,52 @@ operator record.
 
 If an operator record was derived by a short class definition, the
 overloaded operators of this operator record are the operators that are
-defined in its base class, for subtyping see \cref{interface-or-type-relationships}.
+defined in its base class, for subtyping see \autoref{interface-or-type-relationships}.
 
 The precedence and associativity of the overloaded operators is
-identical to the one defined in \cref{tab:operator-precedence} in \cref{operator-precedence-and-associativity}.
+identical to the one defined in Table 3.1 in \autoref{operator-precedence-and-associativity}.
 
 \begin{nonnormative}
 Note, the operator overloading as defined in this section is
 only a short hand notation for function calls.
 \end{nonnormative}
 
-\section{Matching Function}\label{matching-function}
+\section{Matching Function}\doublelabel{matching-function}
 
-All functions defined inside the \lstinline!operator! class must return one output (based on the restriction above), and may include functions with optional arguments, i.e.\ functions of the form
-\begin{lstlisting}[language=modelica]
+All functions defined inside the \lstinline!operator! class must return one
+output (based on the restriction above), and may include functions with
+optional arguments, i.e. functions of the form
+
+\begin{lstlisting}[language=modelica,mathescape=true]
 function f
   input $A_1$ $u_1$;
-  $\ldots$
-  input $A_{m}$ $u_{m}$ := $a_{m}$;
-  $\ldots$
+  ...
+  input $A_{m}$ $u_{m}$ := $A_{m}$;
+  ...
   input $A_{n}$ $u_{n}$;
   output B y;
 algorithm
-  $\ldots$
+  ...
 end f;
 \end{lstlisting}
+The vector P indicates whether argument m of f has a default value
+(\lstinline!true! for default value, \lstinline!false! otherwise). A call
+f($A_1$, $a_{2}$,\ldots{}, $a_{k}$,
+$b_{1}$ = $w_{1}$ ,\ldots{}, $b_{p}$=
+$w_{p}$) with distinct names $b_{j}$ is a valid
+match for the function f, provided (treating Integer and Real as the
+same type)
 
-The vector $P$ indicates whether argument $m$ of \lstinline!f! has a default value (\lstinline!true! for default value, \lstinline!false! otherwise).
-A call \lstinline!f($a_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$ = $w_{1}$, $\ldots$, $b_{p}$ = $w_{p}$)! with distinct names $b_{j}$ is a valid match for the function \lstinline!f!, provided (treating \lstinline!Integer! and \lstinline!Real! as the same type)
 \begin{itemize}
 \item
-  $A_{i}$ = typeOf($a_{i}$) for $1 \leq i \leq k$,
+  $A_{i}$ = typeOf($A_{i}$) for 1 $\le$ i $\le$ k,
 \item
-  the names $b_{j}$ = $u_{Q_{j}}$, $Q_{j} > k$, $A_{Q_{j}}$ = typeOf($w_{j}$) for $1 \leq j \leq p$, and
+  the names $b_{j}$ = $u_{Qj}$, Qj \textgreater{}
+  k, $A_{Qj}$ =typeOf($w_{i}$) for 1 $\le$ j $\le$ p, and
 \item
-  if the union of $\{i: 1 \leq i \leq k \}$, $\{Q_{j}: 1 \leq j \leq p\}$, and $\{m: P_{m} \text{ is \lstinline!true! and } 1 \leq m \leq n \}$ is the set $\{i: 1 \leq i \leq n\}$.
+  if the union of \{i: 1 $\le$ i $\le$ k \}, \{Qj: 1 $\le$ j $\le$ p\}, and \{m:
+  $P_{m}$ \lstinline!true! and 1 $\le$ m $\le$ n \} is the set \{i: 1 $\le$
+  i $\le$ n\}.
 \end{itemize}
 
 \begin{nonnormative}
@@ -92,21 +110,28 @@ defines a valid call, but does not explicitly define the set of
 domains.
 \end{nonnormative}
 
-\section{Overloaded Constructors}\label{overloaded-constructors}
+\section{Overloaded Constructors}\doublelabel{overloaded-constructors}
 
-Let \lstinline!C! denote an operator record class and consider an expression
-\lstinline!C($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!.
+Let C denote an operator record class and consider an expression
+C($A_1$, $a_{2}$,\ldots{}, $a_{k}$,
+$b_{1}$= $w_{1}$ ,\ldots{}, $b_{p}$=
+$w_{p}$).
 
 \begin{enumerate}
-\item\label{overloaded-constructor-unique}
-  If there exists a unique function $f$ in \lstinline!C.'constructor'! such that
-  ($A_1$, $a_{2}$, \ldots{}, $a_{k}$, $b_{1}$=$w_{1}$, \ldots{}, $b_{p}$=$w_{p}$)
-  is a valid match for the function $f$, then
-  \lstinline!C($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!
-  is resolved to
-  \lstinline!C.'constructor'.$f$($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!.
 \item
-  If there is no operator \lstinline!C.'constructor'! the automatically generated record constructor is called.
+  If there exists a {unique} function f in C.'constructor' such that
+  ($A_1$, $a_{2}$,\ldots{}, $a_{k}$,
+  $b_{1}$= $w_{1}$ ,\ldots{}, $b_{p}$=
+  $w_{p}$) is a valid match for the function f, then
+  C($A_1$, $a_{2}$,\ldots{}, $a_{k}$,
+  $b_{1}$= $w_{1}$ ,\ldots{}, $b_{p}$=
+  $w_{p}$) is resolved to\\
+  C.'constructor'.f($A_1$, $a_{2}$,\ldots{},
+  $a_{k}$, $b_{1}$= $w_{1}$ ,\ldots{},
+  $b_{p}$= $w_{p}$).
+\item
+  If there is no operator C. 'constructor' the automatically generated
+  record constructor is called.
 \item
   Otherwise the expression is erroneous.
 \end{enumerate}
@@ -114,32 +139,49 @@ Let \lstinline!C! denote an operator record class and consider an expression
 Restrictions:
 \begin{itemize}
 \item
-  The operator \lstinline!C.'constructor'! shall only contain functions that declare one output component, which shall be of the operator record class \lstinline!C!.
+  The operator C.'constructor' shall only contain functions that declare
+  one output component, which shall be of the operator record class C.
 \item
-  For an operator recordclass there shall not exist any potential call that lead to multiple matches in \cref{overloaded-constructor-unique} above.
+  For an operator recordclass there shall not exist any potential call
+  that lead to multiple matches in (1) above.
   \begin{nonnormative}
   How to verify this is not specified.
   \end{nonnormative}
 \item
-  For a pair of operator record classes \lstinline!C! and \lstinline!D! and components \lstinline!c! and \lstinline!d! of these classes both of \lstinline!C.'constructor'(d)! and \lstinline!D.'constructor'(c)! shall not both be legal.
+  For a pair of operator record classes \lstinline!C! and \lstinline!D! and components \lstinline!c! and \lstinline!d!
+  of these classes both of \lstinline!C.'constructor'(d)! and \lstinline!D.'constructor'(c)!
+  shall not both be legal.
   \begin{nonnormative}
    Hence, one of the two definitions must be removed.
   \end{nonnormative}
 \end{itemize}
 
 \begin{nonnormative}
-By the last restriction the following problem for binary operators is avoided:
+By the last restriction the following problem for binary
+operators is avoided:
 
-Assume there are two operator record classes \lstinline!C! and \lstinline!D! that both have a constructor from \lstinline!Real!.  If we want to extend \lstinline!c + c! and \lstinline!d + d! to support mixed operations, one variant would be to define \lstinline!c + d! and \lstinline!d + c!; but then \lstinline!c + 2! becomes ambiguous (since it is not clear which instance should be converted to).  Without mixed operations expressions such as \lstinline!c + d! are only ambiguous if both conversion from \lstinline!C! to \lstinline!D! and back from \lstinline!D! to \lstinline!C! are both available, and this possibility is not allowed by the restriction above.
+Assume there are two operator record classes C and D that both
+have a constructor from Real. If we want to extend c+c and d+d to
+support mixed operations, one variant would be to define c+d and d+c;
+but then c+2 becomes ambiguous (since it is not clear which instance
+should be converted to). Without mixed operations expressions such as
+c+d are only ambiguous if both conversion from C to D and back from D to
+C are both available, and this possibility is not allowed by the
+restriction above.
 \end{nonnormative}
 
-Additionally there is an operator \lstinline!'0'! defining the zero-value which can also be used to construct an element.  The operator \lstinline!'0'! for an operator record \lstinline!C! can
-contain only one function, having zero inputs and one output of type \lstinline!C! (the called function is therefore unambiguous).  It should return the identity element of addition, and is used for
-generating flow-equations for \lstinline!connect!-equations and zero elements for matrix multiplication.
+Additionally there is an operator \lstinline!'0'! defining the zero-value which can
+also be used to construct an element. The operator \lstinline!'0'! for an operator
+record C can contain only one function, having zero inputs and one
+output -- of class C (the called function is therefore unambiguous). It
+should return the identity element of addition, and is used for
+generating flow-equations for connect-equations and zero elements for
+matrix-multiplication.
 
-\section{Overloaded String Conversions}\label{overloaded-string-conversions}
+\section{Overloaded String Conversions}\doublelabel{overloaded-string-conversions}
 
-Consider an expression \lstinline!String($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!, $k \geq 1$ where $A_1$ is an element of class \lstinline!A!.
+Consider an expression \lstinline[mathescape=true]!String($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!,
+$k \ge 1$ where $A_1$ is an element of class \lstinline!A!.
 
 \begin{enumerate}
 \item
@@ -149,11 +191,11 @@ Consider an expression \lstinline!String($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{
 \item
   If \lstinline!A! is an operator record class and there exists a unique function
   $f$ in \lstinline!A.'String'! such that
-  \lstinline!A.'String'.$f$($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!
+  \lstinline[mathescape=true]!A.'String'.$f$($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!
   is a valid match for $f$, then
-  \lstinline!String($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!
+  \lstinline[mathescape=true]!String($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!
   is evaluated to\\
-  \lstinline!A.'String'.$f$($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!.
+  \lstinline[mathescape=true]!A.'String'.$f$($A_1$, $a_{2}$, $\ldots$, $a_{k}$, $b_{1}$=$w_{1}$, $\ldots$, $b_{p}$=$w_{p}$)!.
 \item
   Otherwise the expression is erroneous.
 \end{enumerate}
@@ -172,69 +214,77 @@ Restrictions:
   \end{nonnormative}
 \end{itemize}
 
-\section{Overloaded Binary Operations}\label{overloaded-binary-operations}
+\section{Overloaded Binary Operations}\doublelabel{overloaded-binary-operations}
 
 % Can't use \mathit{op} in the \lstinline math due to issue reported here:
-%   https://github.com/brucemiller/LaTeXML/issues/1274 (marked as fixed as of commit 80d7940)
+%   https://github.com/brucemiller/LaTeXML/issues/1274
 %\newcommand{\theop}{\mathit{op}}
 \newcommand{\theop}{X}
 
 Let $\theop$ denote a binary operator and consider an expression
-\lstinline!a $\theop$ b! where \lstinline!a! is an instance or array of instances of
+\lstinline[mathescape=true]!a $\theop$ b! where \lstinline!a! is an instance or array of instances of
 class \lstinline!A! and \lstinline!b! is an instance or array of instances of
 class \lstinline!B!.
 
 \begin{enumerate}
-\item\label{overloaded-binary-predefined}
-  If \lstinline!A! and \lstinline!B! are predefined types of such, then the corresponding built-in operation is performed.
+\item
+  If \lstinline!A! and \lstinline!B! are predefined types of such, then the
+  corresponding built-in operation is performed.
 \item
   Otherwise, if there exists \emph{exactly one} function $f$ in the
-  union of \lstinline!A.$\theop$! and \lstinline!B.$\theop$! such that
-  \lstinline!$f$(a, b)! is a valid match for the function $f$, then
-  \lstinline!a $\theop$ b! is evaluated using this function. It is an error, if
-  multiple functions match. If \lstinline!A! is not an operator record class, \lstinline!A.$\theop$!
+  union of \lstinline[mathescape=true]!A.$\theop$! and \lstinline[mathescape=true]!B.$\theop$! such that
+  \lstinline[mathescape=true]!$f$(a, b)! is a valid match for the function $f$, then
+  \lstinline[mathescape=true]!a $\theop$ b! is evaluated using this function. It is an error, if
+  multiple functions match. If \lstinline!A! is not an operator record class, \lstinline[mathescape=true]!A.$\theop$!
   is seen as the empty set, and similarly for \lstinline!B!.
   \begin{nonnormative}
   Having a union of the operators ensures that if \lstinline!A! and \lstinline!B! are the same, each function only appears once.
   \end{nonnormative}
 \item
-  Otherwise, consider the set given by $f$ in \lstinline!A.$\theop$!
+  Otherwise, consider the set given by $f$ in \lstinline[mathescape=true]!A.$\theop$!
   and an operator record class \lstinline!C! (different from \lstinline!B!) with a
-  constructor, $g$, such that \lstinline!C.'constructor'.$g$(b)! is a valid match, and
-  \lstinline!f(a, C.'constructor'.$g$(b))! is a valid match; and another set given by
-  $f$ in \lstinline!B.$\theop$! and an operator record class \lstinline!D!
+  constructor, $g$, such that \lstinline[mathescape=true]!C.'constructor'.$g$(b)! is a valid match, and
+  \lstinline[mathescape=true]!f(a, C.'constructor'.$g$(b))! is a valid match; and another set given by
+  $f$ in \lstinline[mathescape=true]!B.$\theop$! and an operator record class \lstinline!D!
   (different from \lstinline!A!) with a constructor, $h$, such that
-  \lstinline!D.'constructor'.$h$(a)! is a valid match and \lstinline!$f$(D.'constructor'.$h$(a), b)!
+  \lstinline[mathescape=true]!D.'constructor'.$h$(a)! is a valid match and \lstinline[mathescape=true]!$f$(D.'constructor'.$h$(a), b)!
   is a valid match. If the sum of the sizes of these sets is one this
   gives the unique match. If the sum of the sizes is larger than one it
   is an error.
 \begin{nonnormative}
-  Informally, this means: If there is no direct match of \lstinline!a $\theop$ b!, then it is tried to find a direct match by automatic type casts of \lstinline!a! or \lstinline!b!, by converting either \lstinline!a! or \lstinline!b! to the needed type using an appropriate constructor function from one of the operator record classes used as arguments of the overloaded \lstinline!op! functions.  Example using the \lstinline!Complex!-definition below:
+  Informally, this means: If there is no direct match of \lstinline[mathescape=true]!a $\theop$ b!, then it is tried to find a direct match by automatic type casts
+  of \lstinline!a! or \lstinline!b!, by converting either \lstinline!a! or \lstinline!b! to the needed
+  type using an appropriate constructor function from one of the
+  operator record classes used as arguments of the overloaded \lstinline!op!
+  functions. Example using the Complex-definition below:
 \begin{lstlisting}[language=modelica]
-Real a;
-Complex b;
-Complex c = a * b; // interpreted as:
-// Complex.'*'.multiply(Complex.'constructor'.fromReal(a),b);
+   Real a;
+  Complex b;
+  Complex c = a*b; // interpreted as:
+  // Complex.'*'.multiply(Complex.'constructor'.fromReal(a),b);
 \end{lstlisting}
 \end{nonnormative}
-\item\label{overloaded-binary-arrays}
+\item
   Otherwise, if \lstinline!a! or \lstinline!b! is an array expression, then the expression is
-  conceptually evaluated according to the rules of \cref{scalar-vector-matrix-and-array-operator-functions} with the
-  following exceptions concerning \cref{matrix-and-vector-multiplication-of-numeric-arrays}:
+  conceptually evaluated according to the rules of \autoref{scalar-vector-matrix-and-array-operator-functions} with the
+  following exceptions concerning \autoref{matrix-and-vector-multiplication-of-numeric-arrays}:
   \begin{enumerate}
   \def\labelenumii{(\alph{enumii})}
   \item
-    \lstinline!$\mathit{vector}$ * $\mathit{vector}$! should be left undefined.
+    vector*vector should be left undefined.
     \begin{nonnormative}
-    The scalar product of \cref{tab:product} does not generalize to the expected linear and conjugate linear scalar product of complex numbers.
+    The scalar product of \autoref{tab:product} does not generalize to the expected linear and conjugate linear scalar product of complex numbers.
     \end{nonnormative}
   \item
-    \lstinline!$\mathit{vector}$ * $\mathit{matrix}$! should be left undefined.
+    vector*matrix should be left undefined.
     \begin{nonnormative}
-    The corresponding definition of \cref{tab:product} does not generalize to complex numbers in the expected way.
+    The corresponding definition of \autoref{tab:product} does not generalize to complex numbers in the expected way.
     \end{nonnormative}
   \item
-    If the inner dimension for \lstinline!$\mathit{matrix}$ * $\mathit{vector}$! or \lstinline!$\mathit{matrix}$ * $\mathit{matrix}$! is zero, this uses the overloaded \lstinline!'0'! operator of the result array element type.  If the operator \lstinline!'0'! is not defined for that class it is an error if the inner dimension is zero.
+    If the inner dimension for matrix*vector or matrix*matrix is zero,
+    this uses the overloaded \lstinline!'0'! operator of the result array element
+    type. If the operator \lstinline!'0'! is not defined for that class it is an
+    error if the inner dimension is zero.
   \end{enumerate}
 
 \begin{nonnormative}
@@ -243,11 +293,12 @@ form a non-commutative ring that does not necessarily have a
 multiplicative identity.
 \end{nonnormative}
 
-\item\label{overloaded-binary-error}
+\item
   Otherwise the expression is erroneous.
 \end{enumerate}
 
-For an element-wise operator, \lstinline!a .op b!, items~\ref{overloaded-binary-predefined}, \ref{overloaded-binary-arrays}, and~\ref{overloaded-binary-error} are used; e.g.\ the operator \lstinline!.+! will always be defined in terms of \lstinline!'+'!.
+For an element-wise operator, a .op b, items 1, 4, and 5 are used; e.g.
+the operator \lstinline!.+! will always be defined in terms of \lstinline!'+'!.
 
 Restrictions:
 \begin{itemize}
@@ -261,11 +312,11 @@ Restrictions:
   (potential) call that lead to multiple matches in (2) above.
 \end{itemize}
 
-\section{Overloaded Unary Operations}\label{overloaded-unary-operations}
+\section{Overloaded Unary Operations}\doublelabel{overloaded-unary-operations}
 
 Let $\theop$ denote a unary operator and consider an expression
-\lstinline!$\theop$ a! where \lstinline!a! is an instance or array of instances of class
-\lstinline!A!. Then \lstinline!$\theop$ a! is evaluated in the following way.
+\lstinline[mathescape=true]!$\theop$ a! where \lstinline!a! is an instance or array of instances of class
+\lstinline!A!. Then \lstinline[mathescape=true]!$\theop$ a! is evaluated in the following way.
 
 \begin{enumerate}
 \item
@@ -273,12 +324,12 @@ Let $\theop$ denote a unary operator and consider an expression
   operation is performed.
 \item
   If \lstinline!A! is an operator record class and there exists a unique
-  function $f$ in \lstinline!A.$\theop$! such that \lstinline!A.$\theop$.$f$(a)! is a valid
-  match, then \lstinline!$\theop$ a! is evaluated to \lstinline!A.$\theop$.$f$(a)!. It is an
+  function $f$ in \lstinline[mathescape=true]!A.$\theop$! such that \lstinline[mathescape=true]!A.$\theop$.$f$(a)! is a valid
+  match, then \lstinline[mathescape=true]!$\theop$ a! is evaluated to \lstinline[mathescape=true]!A.$\theop$.$f$(a)!. It is an
   error, if there are multiple valid matches.
 \item
   Otherwise, if \lstinline!a! is an array expression, then the expression
-  is conceptually evaluated according to the rules of \cref{scalar-vector-matrix-and-array-operator-functions}.
+  is conceptually evaluated according to the rules of \autoref{scalar-vector-matrix-and-array-operator-functions}.
 \item
   Otherwise the expression is erroneous.
 \end{enumerate}
@@ -300,7 +351,7 @@ Restrictions:
   (negation) and binary (subtraction) operator.
 \end{itemize}
 
-\section{Example of Overloading for Complex Numbers}\label{example-of-overloading-for-complex-numbers}
+\section{Example of Overloading for Complex Numbers}\doublelabel{example-of-overloading-for-complex-numbers}
 
 \begin{example}
 The rules in the previous subsections are demonstrated at hand
@@ -320,7 +371,7 @@ operator record Complex "Record defining a Complex number"
     end fromReal;
   end 'constructor';
 
-  encapsulated operator function '+' // short hand notation, see !\cref{specialized-classes}!
+  encapsulated operator function '+' // short hand notation, see !\autoref{specialized-classes}!
     import Complex;
     input Complex c1;
     input Complex c2;
@@ -441,21 +492,21 @@ algorithm
 
 How overloaded operators can be symbolically processed. Example:
 \begin{lstlisting}[language=modelica]
-Real a;
-Complex b;
-Complex c = a + b;
+  Real a;
+  Complex b;
+  Complex c = a + b;
 \end{lstlisting}
 Due to inlining of functions, the equation for \lstinline!c! is
 transformed to:
 \begin{lstlisting}[language=modelica]
 c = Complex.'+'.add(Complex.'constructor'.fromReal(a), b);
-  = Complex.'+'.add(Complex(re = a, im = 0), b)
-  = Complex(re = a + b.re, im = b.im);
+  = Complex.'+'.add(Complex(re=a,im=0), b)
+  = Complex(re=a+b.re, im=b.im);
 \end{lstlisting}
 or
 \begin{lstlisting}[language=modelica]
-c.re = a + b.re;
-c.im = b.im;
+  c.re = a + b.re;
+  c.im = b.im;
 \end{lstlisting}
 These equations can be symbolically processed as other equations.
 
@@ -469,29 +520,33 @@ Complex can be used in a connector:
     flow ComplexCurrent i;
   end ComplexPin;
 
-  ComplexPin p1, p2, p3;
+  ComplexPin p1,p2,p3;
 equation
-  connect(p1, p2);
-  connect(p1, p3);
+  connect(p1,p2);
+  connect(p1,p3);
 \end{lstlisting}
-The two \lstinline!connect!-equations result in the following connection equations:
+The two connect equations result in the following connection
+equations:
 \begin{lstlisting}[language=modelica]
-p1.v = p2.v;
-p1.v = p3.v;
-p1.i + p2.i + p3.i = Complex.'0'();
-// Complex.'+'(p1.i, Complex.'+'(p2.i, p3.i)) = Complex.'0'();
+  p1.v = p2.v;
+  p1.v = p3.v;
+  p1.i + p2.i + p3.i = Complex.'0'();
+  // Complex.'+'(p1.i, Complex.'+'(p2.i, p3.i)) = Complex.'0'();
 \end{lstlisting}
-The restrictions on extends are intended to avoid combining two variants inheriting from the same operator record, but with possibly different operations; thus \lstinline!ComplexVoltage! and \lstinline!ComplexCurrent! still use the operations from \lstinline!Complex!.  The restriction that it is not legal to extend from any of its enclosing scopes implies that:
+The restrictions on extends are intended to avoid combining two
+variants inheriting from the same operator record, but with possibly
+different operations; thus ComplexVoltage and ComplexCurrent still use
+the operations from Complex. The restriction that it is not legal to
+extend from any of its enclosing scopes implies that:
 \begin{lstlisting}[language=modelica]
 package A
-  extends Icon; // Ok
-  operator record B $\ldots$ end B;
-end A;
+  extends Icon; //Ok.
+  operator record B ... end B;
+  end A;
 
-package A2
-  extends A($\ldots$); // Not legal
-end A2;
-
-package A3 = A($\ldots$); // Not legal
+  package A2
+    extends A(...); // Not legal
+  end A2;
+  package A3=A(...); // Not legal
 \end{lstlisting}
 \end{example}
