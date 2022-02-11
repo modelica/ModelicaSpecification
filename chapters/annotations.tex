@@ -34,7 +34,7 @@ for the \lstinline!Rectangle! primitive using the simple variant of
 vendor-specific annotations.
 \end{example}
 
-\section{Annotations for Documentation}\label{annotations-for-documentation}
+\section{Documentation}\label{annotations-for-documentation}\label{documentation}
 
 The \fmtannotationindex{Documentation} annotation has the following contents, where the \lstinline!info! and \lstinline!revisions! annotations are described in \cref{annotation-info-revisions}, and the \lstinline!figures! annotation is described in \cref{annotations-for-figures}:
 \begin{lstlisting}[language=modelica]
@@ -72,7 +72,7 @@ Example:
 <a href="modelica://MultiBody.Joints.Revolute#info">Revolute</a>
 \end{lstlisting}
 
-\subsection{Annotations for Figures}\label{annotations-for-figures}
+\subsection{Figures}\label{annotations-for-figures}\label{figures}
 
 Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
 \begin{lstlisting}[language=modelica]
@@ -191,15 +191,23 @@ record Curve
 end Curve;
 \end{lstlisting}
 
-The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be component references referring to a scalar variable or \lstinline!time!.
-It is an error if \lstinline!x! or \lstinline!y! does not designate a scalar variable.
+The mandatory \lstinline!x! and \lstinline!y! expressions are restricted to be result references in the form of \lstinline[language=grammar]!result-reference! in the grammar (\cref{expressions1}), referring to a scalar variable (or a derivative thereof) or \lstinline!time!.
+It is an error if \lstinline!x! or \lstinline!y! does not designate a scalar result.
+If \lstinline!x! or \lstinline!y! is a derivative, \lstinline!der(v, $n$)!, then $n$ must not exceed the maximum amount of differentiation applied to \lstinline!v! in the model.
+A diagnostic is recommended in case the simulation result is missing a trajectory for a valid result reference.
+
+\begin{nonnormative}
+While the syntax for referring to a second order derivative is \lstinline!der(v, 2)!, the appearance is left for tools to decide.
+For example, a tool might choose to present this as \lstinline!der(der(v))!.
+\end{nonnormative}
+
 When the \lstinline!unit! of an \lstinline!Axis! is non-empty, it is an error if the unit of the corresponding \lstinline!x! or \lstinline!y! expression (i.e., a variable's \lstinline!unit!, or second for \lstinline!time!) is incompatible with the axis unit.
 
 When \lstinline!legend! is not provided, the tool produces a default based on \lstinline!x! and/or \lstinline!y!.
 Providing the empty string as \lstinline!legend! means that the curve shall be omitted from the plot legend.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!legend!.
 
-\subsubsection{Escape sequences}\label{text-markup-escape-sequences}
+\subsubsection{Escape Sequences}\label{text-markup-escape-sequences}
 
 In an attribute inside a figure where the variable replacements of \cref{variable-replacements} or the text markup of \cref{text-markup-in-captions} can be used, the following use of \firstuse[text markup escape sequence]{text markup escape sequences}\index{escape sequence!text markup} applies.
 These escape sequences are applied after the application of other markup, and is not applied at all inside some of the other markup, see details for the respective markup.
@@ -244,7 +252,8 @@ This is similar to the \lstinline!Text! graphical primitive in \cref{text}.
 \end{center}
 \end{table}
 
-In \lstinline!%{$\mathit{variable}$}!, text markup escape sequences don't apply inside the $\mathit{variable}$, which has the form of \lstinline[language=grammar]!component-reference! in the grammar (\cref{expressions1}).  This means that a complete \lstinline[language=grammar]!component-reference! shall be scanned before looking for the terminating closing brace.
+In \lstinline!%{$\mathit{variable}$}!, text markup escape sequences don't apply inside the $\mathit{variable}$, which has the form of \lstinline[language=grammar]!result-reference!.
+This means that a complete \lstinline[language=grammar]!result-reference! shall be scanned before looking for the terminating closing brace.
 
 \begin{example}
 The variable replacement \lstinline!%{'%%'}! references the variable \lstinline!'%%'!, not the variable \lstinline!'%'!.
@@ -269,7 +278,7 @@ In addition to variable replacements, a very restricted form of text markup is u
 Links take the form \lstinline!%[$\mathit{text}$]($\mathit{link}$)!, where the \lstinline![$\mathit{text}$]! part is optional, and text markup escape sequences don't apply inside the $\mathit{link}$.  The $\mathit{link}$ can be in either of the following forms, where the interpretation is given by the first matching form:
 \begin{itemize}
 \item
-A \lstinline!variable:$\mathit{id}$!, where $\mathit{id}$ is a component reference in the form of \lstinline[language=grammar]!component-reference! in the grammar, such as \lstinline!inertia1.w!.
+A \lstinline!variable:$\mathit{id}$!, where $\mathit{id}$ is a component reference in the form of \lstinline[language=grammar]!result-reference! in the grammar, such as \lstinline!inertia1.w!.
 \item
 % The 'plot:id' form below should be deprecated in favor of using an improved form of Modelica URI reference in the future, making 'variable:id' the only non-URI reference.
 A \lstinline!plot:$\mathit{id}$!, where $\mathit{id}$ is the identifier of a \lstinline!Plot! in the current \lstinline!Figure!.
@@ -334,7 +343,7 @@ One application of vendor-specific markup is to prototype a feature that can lat
 In a similar way, vendor-specific markup can be used to prototype a link for future inclusion in the link markup (either by extending the meaning of Modelica URIs, or by introducing another pseudo-scheme similar to \lstinline!variable:!).  This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
 \end{example}
 
-\section{Annotations for Symbolic Processing}\label{annotations-for-symbolic-processing}
+\section{Symbolic Processing}\label{annotations-for-symbolic-processing}\label{symbolic-processing}
 
 The annotation listed below, in addition to annotations described in \crefrange{derivatives-and-inverses-of-functions}{function-inlining-and-event-generation}, can influence the symbolic processing.
 \begin{center}
@@ -369,7 +378,7 @@ If \lstinline!Evaluate = false!, the model developer proposes to not utilize the
 \end{annotationdefinition}
 
 
-\section{Annotations for Simulations}\label{annotations-for-simulations}
+\section{Simulations}\label{annotations-for-simulations}\label{simulations}
 
 The annotations listed below define how models can be checked, translated, and simulated.
 \begin{center}
@@ -438,7 +447,7 @@ This annotation can both be used for models intended as test-cases for implement
 \end{annotationdefinition}
 
 
-\section{Annotation for Single Use of Class}\label{annotation-for-single-use-of-class}
+\section{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
 For state machines it is useful to have single instances of local classes.
 This can be done using:
@@ -450,7 +459,7 @@ The annotation \fmtannotationindex{singleInstance} in a class indicates that the
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
 
 
-\section{Annotations for Graphical Objects}\label{annotations-for-graphical-objects}
+\section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
 A graphical representation of a class consists of two abstraction
 layers, icon layer and diagram layer showing graphical objects,
@@ -683,7 +692,8 @@ record Placement
   Transformation transformation "Placement in the diagram layer";
 
   Boolean iconVisible "Visible in icon layer; for public connector";
-  Transformation iconTransformation "Placement in the icon layer; for public connector";
+  Transformation iconTransformation
+    "Placement in the icon layer; for public connector";
 end Placement;
 \end{lstlisting}%
 \annotationindex{Placement}
@@ -711,7 +721,7 @@ layer. Public connectors are shown in both the diagram layer and the
 icon layer. Non-connector components are only shown in the diagram
 layer.
 
-\subsection{Extends-clause}\label{extends-clause}
+\subsection{Extends-Clause}\label{extends-clause}
 
 Each \lstinline!extends!-clause (and short class definition, as stated in \cref{annotations-for-graphical-objects}) may have layer specific annotations which describe the rendering of the base class' icon and diagram layers in the derived class.
 
@@ -808,7 +818,7 @@ Draws a connection line and adds the text \emph{axisControlBus1} ending at $(-6,
 Using a height of zero, such as \lstinline!extent = [-6, 3; -6, 3]! is deprecated, but gives similar result.
 \end{example}
 
-\subsection{Graphical primitives}\label{graphical-primitives}
+\subsection{Graphical Primitives}\label{graphical-primitives}
 
 This section describes the graphical primitives that can be used to
 define the graphical objects in an annotation.
@@ -883,9 +893,11 @@ record Ellipse
   Extent extent;
   Real startAngle(quantity = "angle", unit = "deg") = 0;
   Real endAngle(quantity = "angle", unit = "deg") = 360;
-  EllipseClosure closure = if startAngle == 0 and endAngle == 360
-  then EllipseClosure.Chord
-  else EllipseClosure.Radial;
+  EllipseClosure closure =
+    if startAngle == 0 and endAngle == 360 then
+      EllipseClosure.Chord
+    else
+      EllipseClosure.Radial;
 end Ellipse;
 \end{lstlisting}%
 \annotationindex{Ellipse}
@@ -1027,11 +1039,11 @@ annotation(Icon(graphics = {
 \end{lstlisting}
 \end{example}
 
-\subsection{User input}\label{user-input}
+\subsection{User Input}\label{user-input}
 
 It is possible to interactively modify variables during a simulation.  The variables may either be parameters, discrete-time variables or states.  New numeric values can be given, a mouse click can change a \lstinline!Boolean! variable or a mouse movement can change a \lstinline!Real! variable.  Input fields may be associated with a \lstinline!GraphicItem! or a component as an array named \lstinline!interaction!.  The \lstinline!interaction! array may occur as an attribute of a graphic primitive, an attribute of a component annotation or as an attribute of the layer annotation of a class.
 
-\subsubsection{Mouse input}\label{mouse-input}
+\subsubsection{Mouse Input}\label{mouse-input}
 
 A \lstinline!Boolean! variable can be changed when the cursor is held over a graphical item or component and the selection button is pressed if the interaction annotation contains \fmtannotationindex{OnMouseDownSetBoolean}:
 \begin{lstlisting}[language=modelica]
@@ -1088,7 +1100,7 @@ record OnMouseMoveYSetReal
 end OnMouseMoveYSetReal;
 \end{lstlisting}
 
-\subsubsection{Edit input}\label{edit-input}
+\subsubsection{Edit Input}\label{edit-input}
 
 The \fmtannotationindex{OnMouseDownEditInteger} interaction object presents an input field when the graphical item or component is clicked on.
 The field shows the actual value of the variable and allows changing the value.
@@ -1116,17 +1128,16 @@ record OnMouseDownEditString
 end OnMouseDownEditString;
 \end{lstlisting}
 
-\section{Annotations for the Graphical User Interface}\label{annotations-for-the-graphical-user-interface}
+\section{Graphical User Interface}\label{annotations-for-the-graphical-user-interface}\label{graphical-user-interface}
 
 This section describes the annotations that are used to define properties of the graphical user interface.
 
-\begin{lstlisting}[language=grammar]
-  preferred-view-annotation:
-     annotation "(" preferredView "=" ("info" | "diagram" | "text") ")"
+\begin{lstlisting}[language=modelica]
+annotation(preferredView = $\mathit{view}$)
 \end{lstlisting}
 
 The \fmtannotationindex{preferredView} annotation defines the default view when selecting the class.
-\lstinline!info! means info layer, i.e., the documentation of the class, \lstinline!diagram! means diagram layer and \lstinline!text! means the Modelica text layer.
+The $\mathit{view}$ is a \lstinline!String! literal where \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
 
 \begin{lstlisting}[language=grammar]
   documentation-class-annotation:
@@ -1481,7 +1492,7 @@ equation
 \end{lstlisting}
 \end{nonnormative}
 
-\section{Annotations for Version Handling}\label{annotations-for-version-handling}
+\section{Versions}\label{annotations-for-version-handling}\label{versions}
 
 A top-level package or model can specify the version of top-level
 classes it uses, its own version number, and if possible how to convert
@@ -1542,33 +1553,34 @@ The annotations \lstinline!uses! and \lstinline!conversion! may contain several 
 \begin{lstlisting}[language=modelica]
 package Modelica
   $\ldots$
-  annotation(version="3.1",
-  conversion(noneFromVersion="3.1 Beta 1",
-  noneFromVersion="3.1 Beta 2",
-  from(version={"2.1", "2.2", "2.2.1"},
-  script="convertTo3.mos"),
-  from(version="1.5",
-  script="convertFromModelica1_5.mos")));
+  annotation(
+    version = "3.1",
+    conversion(
+      noneFromVersion = "3.1 Beta 1",
+      noneFromVersion = "3.1 Beta 2",
+      from(version = {"2.1", "2.2", "2.2.1"},
+           script = "convertTo3.mos"),
+      from(version = "1.5",
+           script = "convertFromModelica1_5.mos")));
 end Modelica;
 
 model A
   $\ldots$
-  annotation(version="1.0",
-  uses(Modelica(version="1.5")));
+  annotation(
+    version = "1.0",
+    uses(Modelica(version = "1.5")));
 end A;
 
 model B
   $\ldots$
-  annotation(uses(Modelica(version="3.1 Beta 1")));
+  annotation(
+    uses(Modelica(version = "3.1 Beta 1")));
 end B;
 \end{lstlisting}
-In this example the model \lstinline!A! uses an older version of the
-Modelica library and can be upgraded using the given script, and model
-\lstinline!B! uses an older version of the Modelica library but no changes are
-required when upgrading.
+In this example the model \lstinline!A! uses an older version of the Modelica library and can be upgraded using the given script, and model \lstinline!B! uses an older version of the Modelica library but no changes are required when upgrading.
 \end{example}
 
-\subsubsection{Conversion rules}\label{conversion-rules}
+\subsubsection{Conversion Rules}\label{conversion-rules}
 
 % Using mbox to avoid having line starting with ","
 There are a number of functions: \lstinline!convertClass!, \lstinline!convertClassIf!,
@@ -1717,64 +1729,65 @@ In case a parameter is simply renamed it is preferable to use \lstinline!convert
 using the parameter.
 \end{nonnormative}
 
-
 \begin{example}
 The conversion
 \begin{lstlisting}[language=modelica]
 convertClass("Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe",
              "Modelica.Thermal.FluidHeatFlow.Components.Pipe");
 convertModifiers({"Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe"},
-   fill("",0), {"useHeatPort=false"});
+                 fill("", 0), {"useHeatPort=false"});
 
 convertClass("Modelica.StateGraph.Temporary.NumericValue",
              "Modelica.Blocks.Interaction.Show.RealValue");
 convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
-   {"Value"}, {"number=%Value%"});
+                 {"Value"}, {"number=%Value%"});
 convertModifiers("Modelica.StateGraph.Temporary.NumericValue",
-   {"hideConnector"}, {"use_numberPort=not %hideConnector%"});
+                 {"hideConnector"}, {"use_numberPort=not %hideConnector%"});
 
 convertModifiers("Modelica.Blocks.Math.LinearDependency",
    {"y0=0", "k1=0", "k2=0"}, {"y0=%y0%", "k1=%y0%*%k1%", "k2=%y0%*%k2%"},
    true);
-convertClass(
-   "Modelica.Electrical.Machines.BasicMachines.QuasiStationaryDCMachines",
-   "Modelica.Electrical.Machines.BasicMachines.QuasiStaticDCMachines");
-convertElement("Modelica.Electrical.Machines.Interfaces.PartialBasicDCMachine",
-                "quasiStationary", "quasiStatic");
-convertElement("Modelica.Electrical.Machines.BasicMachines.QuasiStationaryDCMachines.DC_ElectricalExcited",
-                "quasiStationary", "quasiStatic");
+
+convertClass("My.Library.BadPackage",
+             "My.Library.Package");
+convertElement("My.Library.BadPackage.PartialBase",
+               "bad", "correct");
+convertElement("My.Library.BadPackage.ActualClass",
+               "bad", "correct");
 \end{lstlisting}
 converts
 \begin{lstlisting}[language=modelica]
 Modelica.Thermal.FluidHeatFlow.Components.IsolatedPipe pipe1;
-Modelica.StateGraph.Temporary.NumericValue tempValue(Value=10,
-   hideConnector=true);
-Modelica.Blocks.Math.LinearDependency linearDep(y0=2, k2=1);
+Modelica.StateGraph.Temporary.NumericValue tempValue(
+  Value = 10, hideConnector = true);
+Modelica.Blocks.Math.LinearDependency linearDep(y0 = 2, k2 = 1);
 model A
-  import Modelica.Electrical.Machines.BasicMachines;
-  extends BasicMachines.QuasiStationaryDCMachines.DC_ElectricalExcited;
+  import My.Library;
+  extends Library.BadPackage.ActualClass;
 end A;
 model B
   extends A;
-  Boolean b=quasiStationary;
+  Boolean b = bad;
 end B;
 \end{lstlisting}
 to
 \begin{lstlisting}[language=modelica]
-Modelica.Thermal.FluidHeatFlow.Components.Pipe pipe1(useHeatPort=false);
-Modelica.Blocks.Interaction.Show.RealValue(number=10, use_numberPort=not true);
-Modelica.Blocks.Math.LinearDependency linearDep(y0=2, k1=0, k2=2);
+Modelica.Thermal.FluidHeatFlow.Components.Pipe pipe1(useHeatPort = false);
+Modelica.Blocks.Interaction.Show.RealValue(
+  number = 10, use_numberPort = not true);
+Modelica.Blocks.Math.LinearDependency linearDep(y0 = 2, k1 = 0, k2 = 2);
 model A
-  import Modelica.Electrical.Machines.BasicMachines;
-  extends BasicMachines.QuasiStaticDCMachines.DC_ElectricalExcited;
+  import My.Library;
+  extends Library.Package.ActualClass;
 end A;
 model B
   extends A;
-  Boolean b=a.quasiStatic;
+  Boolean b = correct;
 end B;
 \end{lstlisting}
-The \lstinline!convertElement! call for \lstinline!DC_ElectricalExcited! is needed to avoid relying on base classes in the original library where \lstinline!DC_ElectricalExcited! inherits from \lstinline!PartialBasicDCMachine!.
+The \lstinline!convertElement! call for \lstinline!ActualClass! is needed to avoid relying on base classes in the original library where \lstinline!ActualClass! inherits from \lstinline!PartialBase!.
 However, the inheritance among the models to convert (in this case \lstinline!B! inherits from \lstinline!A!) should be handled.
+Note that conversion works regardless of the import of \lstinline!My.Library!.
 \end{example}
 
 \paragraph*{convertMessage("OldClass", "Failed Message")}\label{convertmessageoldclass-failed-message}\annotationindex{convertMessage}
@@ -1796,7 +1809,7 @@ could not be applied with the given message.
 This is useful if there is no possibility to convert a specific parameter (or other element), especially if it rarely modified.  If the parameter had no impact on the model it can be removed using \lstinline!convertModifiers!, see \cref{convertmodifiers}.
 \end{nonnormative}
 
-\subsection{Mapping of Versions to File System}\label{mapping-of-versions-to-file-system}
+\subsection{Versions in the File System}\label{mapping-of-versions-to-file-system}\label{versions-in-the-File-System}
 
 A top-level class, \lstinline!IDENT!, with version \lstinline!VERSION-NUMBER! can be stored in
 one of the following ways in a directory given in the \lstinline!MODELICAPATH!:
@@ -1836,19 +1849,22 @@ String revisionId    "Revision identifier of the version management system used
 \begin{lstlisting}[language=modelica,mathescape=false]
 package Modelica
   $\ldots$
-  annotation(version = "3.0.1",
-  versionDate = "2008-04-10",
-  versionBuild = 4,
-  dateModified = "2009-02-15 16:33:14Z",
-  revisionId = "$Id:: package.mo 2566 2009-05-26 13:25:54Z #$");
+  annotation(
+    version = "3.0.1",
+    versionDate = "2008-04-10",
+    versionBuild = 4,
+    dateModified = "2009-02-15 16:33:14Z",
+    revisionId = "$Id:: package.mo 2566 2009-05-26 13:25:54Z #$");
 end Modelica;
 
 model M1
-  annotation(uses(Modelica(version = "3.0.1"))); // Common case
+  annotation(
+    uses(Modelica(version = "3.0.1"))); // Common case
 end M1
 
 model M2
-  annotation(uses(Modelica(version = "3.0.1", versionBuild = 4)));
+  annotation(
+    uses(Modelica(version = "3.0.1", versionBuild = 4)));
 end M2
 \end{lstlisting}
 \end{example}
@@ -1898,7 +1914,7 @@ the \lstinline!uses! annotation (together with the version number).
 It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
 \end{nonnormative}
 
-\section{Annotations for Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}
+\section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
 
 This section presents annotations to define the protection and the
 licensing of packages. The goal is to unify basic mechanisms to control
@@ -2161,11 +2177,11 @@ end MyLibraryAuthorization_Tool;
 \end{example}
 
 
-\section{Annotations for Functions}\label{annotations-for-functions}
+\section{Functions}\label{annotations-for-functions}
 
 See \crefnameref{derivatives-and-inverses-of-functions}, \crefnameref{function-inlining-and-event-generation}, and \crefnameref{annotations-for-external-libraries-and-include-files}.
 
 
-\section{Annotation Choices for Modifications and Redeclarations}\label{annotation-choices-for-modifications-and-redeclarations}
+\section{Choices for Modifications and Redeclarations}\label{annotation-choices-for-modifications-and-redeclarations}\label{choices-for-modifications-and-redeclarations}
 
 See \crefnameref{annotation-choices-for-suggested-redeclarations-and-modifications}.

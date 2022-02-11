@@ -10,7 +10,7 @@ However, the graphical part is optional and found in \cref{annotations}.
 Connections between objects are introduced by \lstinline!connect!-equations in the equation part of a class.
 A \lstinline!connect!-equation\index{connect@\robustinline{connect}!equation} has the following syntax:
 \begin{lstlisting}[language=grammar]
-connect(component-reference, component-reference);
+connect "(" component-reference "," component-reference ")" ";"
 \end{lstlisting}
 
 \begin{nonnormative}
@@ -20,20 +20,13 @@ A \emph{connector} is an instance of a \lstinline!connector!\indexinline{connect
 The \lstinline!connect!-equation construct takes two references to connectors, each of which is either of the following forms:
 \begin{itemize}
 \item
-  $c_1.c_2\ldots{}c_n$,
-  where $c_1$ is a connector of the class,
-  $n$\textgreatereq 1 and $c_{i+1}$ is a connector element of
-  $c_i$ for \lstinline!i=1:(n-1)!.
+  \lstinline!$c_1$.$c_2$.$\ldots{}$.$c_n$!, where $c_1$ is a connector of the class, $n \geq 1$ and $c_{i+1}$ is a connector element of $c_i$ for $i = 1,\, \ldots,\, (n - 1)$.
 \item
-  \lstinline!m.c!, where \lstinline!m! is a non-connector element in the class and \lstinline!c! is a
-  connector element of \lstinline!m!.
+  \lstinline!m.c!, where \lstinline!m! is a non-connector element in the class and \lstinline!c! is a connector element of \lstinline!m!.
 \end{itemize}
 
-There may optionally be array subscripts on any of the components; the
-array subscripts shall be parameter expressions or the special operator
-\lstinline!:!. If the connect construct references array of connectors, the
-array dimensions must match, and each corresponding pair of elements
-from the arrays is connected as a pair of scalar connectors.
+There may optionally be array subscripts on any of the components; the array subscripts shall be parameter expressions or the special operator \lstinline!:!.
+If the connect construct references array of connectors, the array dimensions must match, and each corresponding pair of elements from the arrays is connected as a pair of scalar connectors.
 
 \begin{example}
 Array usage:
@@ -109,8 +102,7 @@ connect(d, m7.c);   // d is an outside connector, m7.c is an inside connector
 If the \lstinline!expandable!\indexinline{expandable} qualifier is present on a connector definition, all instances of that connector are referred to as \firstuse[expandable connector]{expandable connectors}.
 Instances of connectors that do not possess this qualifier will be referred to as \firstuse[non-expandable connector]{non-expandable connectors}.
 
-Before generating \willintroduce{connection equations}, non-parameter scalar variables and non-parameter array elements declared in expandable connectors are marked as only being
-potentially present.
+Before generating \willintroduce{connection equations}, non-parameter scalar variables and non-parameter array elements declared in expandable connectors are marked as only being potentially present.
 A non-parameter array element may be declared with array dimensions \lstinline!:! indicating that the size is unknown (note that the size of such a dimension cannot be determined using \lstinline!size!, see \cref{array-dimension-and-size-functions}).
 This applies to both variables of simple types, and variables of structured types.
 
@@ -120,10 +112,10 @@ Then connections containing expandable connectors are elaborated:
   One connector in the \lstinline!connect!-equation must reference a declared component, and if the other connector is an undeclared element in a declared expandable connector it is handled as follows (elements that are only potentially present are not seen as declared):
   \begin{itemize}
   \item
-    The expandable connector instance is automatically augmented with a
-    new component having the used name and corresponding type.
+    The expandable connector instance is automatically augmented with a new component having the used name and corresponding type.
   \item
-    If the undeclared component is subscripted, an array variable is created, and a connection to the specific array element is performed.  Introducing elements in an array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e.\ as if they were only potentially present, and the same note regarding the use of \lstinline!size! also applies here).
+    If the undeclared component is subscripted, an array variable is created, and a connection to the specific array element is performed.
+    Introducing elements in an array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e.\ as if they were only potentially present, and the same note regarding the use of \lstinline!size! also applies here).
   \item
     If the variable on the other side of the \lstinline!connect!-equation is \lstinline!input! or \lstinline!output! the new component will be either \lstinline!input! or \lstinline!output! to satisfy the restrictions in \cref{restrictions-of-connections-and-connectors} for a non-expandable connector.
     \begin{nonnormative}
@@ -133,7 +125,8 @@ Then connections containing expandable connectors are elaborated:
   \end{itemize}
 
 \item
-  When two expandable connectors are connected, each is augmented with the variables that are only declared in the other expandable connector (the new variables are neither \lstinline!input! nor \lstinline!output!).  This is repeated until all connected expandable connector instances have matching variables.
+  When two expandable connectors are connected, each is augmented with the variables that are only declared in the other expandable connector (the new variables are neither \lstinline!input! nor \lstinline!output!).
+  This is repeated until all connected expandable connector instances have matching variables.
   \begin{nonnormative}
   I.e.\ each of the connector instances is expanded to be the union of all connector variables.
   \end{nonnormative}
@@ -142,7 +135,8 @@ Then connections containing expandable connectors are elaborated:
   The variables introduced in the elaboration follow additional rules for generating connection sets (given in \cref{generation-of-connection-equations}).
 
 \item
-  If a variable appears as an \lstinline!input! in one expandable connector, it should appear as a non-\lstinline!input! in at least one other expandable connector instance in the same augmentation set.  An augmentation set is defined as the set of connected expandable connector instances that through the elaboration will have matching variables.
+  If a variable appears as an \lstinline!input! in one expandable connector, it should appear as a non-\lstinline!input! in at least one other expandable connector instance in the same augmentation set.
+  An augmentation set is defined as the set of connected expandable connector instances that through the elaboration will have matching variables.
 \begin{example}
 \begin{lstlisting}[language=modelica]
 expandable connector EngineBus
@@ -167,8 +161,7 @@ end Engine;
 \end{example}
 
 \item
-  All components in an expandable connector are seen as connector
-  instances even if they are not declared as such.
+  All components in an expandable connector are seen as connector instances even if they are not declared as such.
   \begin{nonnormative}
   I.e.\ it is possible to connect to e.g.\ a \lstinline!Real! variable.
   \end{nonnormative}
@@ -268,43 +261,32 @@ end Engine;
 \end{lstlisting}
 \end{example}
 
-After this elaboration the expandable connectors are treated as normal
-connector instances, and the connections as normal connections, and all
-potentially present variables and array elements that are not actually
-present are undefined. It is an error if there
-are expressions referring to potentially present variables or array
-elements that are not actually present or non-declared variables. This
-elaboration implies that expandable connectors can be connected even if
-they do not contain the same components.
+After this elaboration the expandable connectors are treated as normal connector instances, and the connections as normal connections, and all potentially present variables and array elements that are not actually present are undefined.
+It is an error if there are expressions referring to potentially present variables or array elements that are not actually present or non-declared variables.
+This elaboration implies that expandable connectors can be connected even if they do not contain the same components.
 
 \begin{nonnormative}
 A tool may remove undefined variables in an expandable connector, or set them to the default value, e.g.\ zero for \lstinline!Real! variables.
 \end{nonnormative}
 
 \begin{nonnormative}
-Expressions can only ``read'' variables from the bus that
-are actually declared and present in the connector, in order that the
-types of the variables can be determined in the local scope.
+Expressions can only ``read'' variables from the bus that are actually declared and present in the connector, in order that the types of the variables can be determined in the local scope.
 \end{nonnormative}
 
 \begin{nonnormative}
-Note that the introduction of variables, as described above, is
-conceptual and does not necessarily impact the flattening hierarchy in
-any way. Furthermore, it is important to note that these elaboration
-rules must consider:
+Note that the introduction of variables, as described above, is conceptual and does not necessarily impact the flattening hierarchy in any way.
+Furthermore, it is important to note that these elaboration rules must consider:
 \begin{enumerate}
-\item Expandable connectors nested hierarchically. This means that
-both outside and inside connectors must be included at every level of
-the hierarchy in this elaboration process.
-\item When processing an expandable connector that possesses the
-\lstinline!inner! scope qualifier, all outer instances must also be taken into
-account during elaboration.
+\item
+  Expandable connectors nested hierarchically.
+  This means that  both outside and inside connectors must be included at every level of the hierarchy in this elaboration process.
+\item
+  When processing an expandable connector that possesses the \lstinline!inner! scope qualifier, all outer instances must also be taken into account during elaboration.
 \end{enumerate}
 \end{nonnormative}
 
 \begin{example}
-Engine system with sensors, controllers, actuator and plant that
-exchange information via a bus (i.e.\ via expandable connectors):
+Engine system with sensors, controllers, actuator and plant that exchange information via a bus (i.e.\ via expandable connectors):
 \begin{lstlisting}[language=modelica]
 import Modelica.Units.SI;
 import Modelica.Blocks.Interfaces.RealInput;
@@ -349,8 +331,7 @@ equation
   end for;
 end I4;
 \end{lstlisting}
-Due to the above connection, conceptually a connector consisting
-of the union of all connectors is introduced.
+Due to the above connection, conceptually a connector consisting of the union of all connectors is introduced.
 
 The \lstinline!engine_bus! contains the following variable declarations:
 \begin{lstlisting}[language=modelica]
@@ -372,11 +353,14 @@ For every use of the \lstinline!connect!-equation
 \begin{lstlisting}[language=modelica]
 connect(a, b);
 \end{lstlisting}
-the primitive components of \lstinline!a! and \lstinline!b! form a connection set, together with an indication of whether they are from an inside or an outside connector.  The primitive elements are
-of simple types or of types defined as \lstinline!operator record! (i.e.\ a component of an \lstinline!operator record! type is not split into sub-components).  The elements of the connection sets
-are tuples of primitive variables together with an indication of inside or outside; if the same tuple belongs to two connection sets those two sets are merged, until every tuple is only present in
-one set.  Composite connector types are broken down into primitive components.  The \lstinline!outer! components are handled by mapping the objects to the corresponding \lstinline!inner! components,
-and the inside indication is not influenced.  The outer connectors are handled by mapping the objects to the corresponding inner connectors, and they are always treated as outside connectors.
+the primitive components of \lstinline!a! and \lstinline!b! form a connection set, together with an indication of whether they are from an inside or an outside connector.
+\begin{definition}[Primitive elements]\label{primitive-elements}\index{primitive element}\index{element!primitive}
+The primitive elements are of simple types or of types defined as \lstinline!operator record! (i.e.\ a component of an \lstinline!operator record! type is not split into sub-components).
+\end{definition}
+The elements of the connection sets are tuples of primitive variables together with an indication of inside or outside; if the same tuple belongs to two connection sets those two sets are merged, until every tuple is only present in one set.
+Composite connector types are broken down into primitive components.
+The \lstinline!outer! components are handled by mapping the objects to the corresponding \lstinline!inner! components, and the inside indication is not influenced.
+The outer connectors are handled by mapping the objects to the corresponding inner connectors, and they are always treated as outside connectors.
 
 \begin{nonnormative}
 Rationale: The inside/outside as part of the connection sets ensure that connections from different hierarchical levels are treated separately.
@@ -385,41 +369,35 @@ All variables in one connection set will either be flow variables or non-flow va
 The mapping from an \lstinline!outer! to an \lstinline!inner! element must occur before merging the sets in order to get one zero-sum equation, and ensures that the equations for the \lstinline!outer! elements are all given for one side of the connector, and the \lstinline!inner! element can define the other side.
 \end{nonnormative}
 
-The following connection sets with just one member are also present (and
-merged):
+The following connection sets with just one member are also present (and merged):
 \begin{itemize}
 \item
   Each primitive flow variable as inside connector.
 \item
-  Each flow variable \emph{added} during augmentation of expandable
-  connectors, both as inside and as outside.
+  Each flow variable \emph{added} during augmentation of expandable connectors, both as inside and as outside.
   \begin{nonnormative}
   Note that the flow variable is not directly in the expandable connector, but in a connector inside the expandable connector.
   \end{nonnormative}
 \end{itemize}
 
 \begin{nonnormative}
-Rationale: If these variables are not connected they will
-generate a set comprised only of this element, and thus they will be
-implicitly set to zero (see below). If connected, this set will be
-merged and adding this at the start has no impact.
+Rationale: If these variables are not connected they will generate a set comprised only of this element, and thus they will be implicitly set to zero (see below).
+If connected, this set will be merged and adding this at the start has no impact.
 \end{nonnormative}
 
-Each connection set is used to generate equations for potential and flow
-(zero-sum) variables of the form
+Each connection set is used to generate equations for potential and flow (zero-sum) variables of the form
 \begin{itemize}
 \item
-$a_{1} = a_{2} = \ldots = a_{n}$ (neither flow nor stream variables)
+  $a_{1} = a_{2} = \ldots = a_{n}$ (neither flow nor stream variables)
 \item
-$z_{1} + z_{2} + (-z_{3}) + \ldots + z_{n} = \mathbf{0}$ (flow variables)
+  $z_{1} + z_{2} + (-z_{3}) + \ldots + z_{n} = \mathbf{0}$ (flow variables)
 \end{itemize}
 
-The bold-face $\mathbf{0}$ represents an array or scalar zero of
-appropriate dimensions (i.e.\ the same size as $z$).
+The bold-face $\mathbf{0}$ represents an array or scalar zero of appropriate dimensions (i.e.\ the same size as $z$).
 
 For an \lstinline!operator record! type this uses the operator \lstinline!'0'! -- which must be defined in the operator record -- and all of the flow variables for the \lstinline!operator record!
-must be of the same \lstinline!operator record! type.  This implies that in order to have flow variables of an \lstinline!operator record! type the \lstinline!operator record! must define addition,
-negation, and \lstinline!'0'!; and these operations should define an additive group.
+must be of the same \lstinline!operator record! type.
+This implies that in order to have flow variables of an \lstinline!operator record! type the \lstinline!operator record! must define addition, negation, and \lstinline!'0'!; and these operations should define an additive group.
 
 In order to generate equations for flow variables (using the \lstinline!flow!\indexinline{flow} prefix), the sign used for the connector variable $z_{i}$ above is +1 for inside connectors and -1 for outside connectors ($z_{3}$ in the example above).
 
@@ -562,52 +540,43 @@ This corresponds to a direct connection of the resistor.
 \item
   The matched primitive components of the two connectors must have the same primitive types, and flow variables may only connect to other flow variables, stream variables only to other stream variables, and causal variables (\lstinline!input!/\lstinline!output!) only to causal variables (\lstinline!input!/\lstinline!output!).
 \item
-  A connection set of causal variables (\lstinline!input!/\lstinline!output!) may at most
-  contain variables from one inside \lstinline!output! connector (for state-machines extended as specified in \cref{merging-connections-to-multiple-outputs}) or one public
-  outside \lstinline!input! connector.
+  A connection set of causal variables (\lstinline!input!/\lstinline!output!) may at most contain variables from one inside \lstinline!output! connector (for state-machines extended as specified in \cref{merging-connections-to-multiple-outputs}) or one public outside \lstinline!input! connector.
   \begin{nonnormative}
   I.e., a connection set may at most contain one source of a signal.
   \end{nonnormative}
 \item
-  At least one of the following must hold for a connection set
-  containing causal variables generated for a non-partial model or
-  block:
+  At least one of the following must hold for a connection set containing causal variables generated for a non-partial model or block:
 \begin{enumerate}
-\item the connection set includes variables from an outside public
-  expandable connector,
-\item the set contains variables from protected
-  outside connectors,
-\item it contains variables from one inside \lstinline!output!
-  connector, or
-\item from one public outside \lstinline!input! connector, or
-\item the  set is comprised solely of one variable from one inside \lstinline!input!
-  connector that is not part of an expandable connector. \label{enum:exc-conn-case}
+\item
+  the connection set includes variables from an outside public expandable connector,
+\item
+  the set contains variables from protected outside connectors,
+\item
+  it contains variables from one inside \lstinline!output! connector, or
+\item
+  from one public outside \lstinline!input! connector, or
+\item\label{enum:exc-conn-case}%
+  the  set is comprised solely of one variable from one inside \lstinline!input! connector that is not part of an expandable connector.
 \end{enumerate}
 \begin{nonnormative}
-I.e., a connection set must -- unless the model or block is partial -- contain one source of a signal (\cref{enum:exc-conn-case}
-covers the case where a connector of a component is left unconnected and the source given textually).
+I.e., a connection set must -- unless the model or block is partial -- contain one source of a signal (\cref{enum:exc-conn-case} covers the case where a connector of a component is left unconnected and the source given textually).
 \end{nonnormative}
 \item
-  Variables from a protected outside connector must be part of a
-  connection set containing at least one inside connector or one
-  declared public outside connector (i.e.\ it shall not be an implicitly
-  defined part of an expandable connector).
+  Variables from a protected outside connector must be part of a connection set containing at least one inside connector or one declared public outside connector (i.e.\ it shall not be an implicitly defined part of an expandable connector).
   \begin{nonnormative}
   Otherwise it would not be possible to deduce the causality for the expandable connector element.
   \end{nonnormative}
 \item
-  In a connection set all variables having non-empty quantity attribute
-  must have the same quantity attribute.
+  In a connection set all variables having non-empty quantity attribute must have the same quantity attribute.
 \item
-  A \lstinline!connect!-equation shall not (directly or indirectly) connect two
-  connectors of \lstinline!outer! elements.
+  A \lstinline!connect!-equation shall not (directly or indirectly) connect two connectors of \lstinline!outer! elements.
   \begin{nonnormative}
-  Indirectly is similar to them being part of the same connection set.  However, connections to \lstinline!outer! elements are ``moved up'' before forming
-  connection sets.  Otherwise the connection sets could contain redundant information breaking the equation count for locally balanced models and blocks.
+  Indirectly is similar to them being part of the same connection set.
+  However, connections to \lstinline!outer! elements are ``moved up'' before forming connection sets.
+  Otherwise the connection sets could contain redundant information breaking the equation count for locally balanced models and blocks.
   \end{nonnormative}
 \item
-  Subscripts in a connector reference shall be parameter expressions or
-  the special operator \lstinline!:!.
+  Subscripts in a connector reference shall be parameter expressions or the special operator \lstinline!:!.
 \item
   Constants or parameters in connected components yield the appropriate \lstinline!assert!-statements to check that they have the same value; connections are not generated.
 \item
@@ -616,30 +585,22 @@ covers the case where a connector of a component is left unconnected and the sou
 
 \subsection{Balancing Restriction and Size of Connectors}\label{balancing-restriction-and-size-of-connectors}
 
-For each non-partial non-expandable connector class the number of flow variables shall
-be equal to the number of variables that are neither \lstinline!parameter!,
-\lstinline!constant!, \lstinline!input!, \lstinline!output!, \lstinline!stream!
-nor \lstinline!flow!. The \emph{number of variables} is
-the number of all elements in the connector class after expanding all
-records and arrays to a set of scalars of primitive types. The number of
-variables of an overdetermined type or record class (see \cref{overconstrained-equation-operators-for-connection-graphs})
-is the size of the output argument of the corresponding
-\lstinline!equalityConstraint!() function.
+For each non-partial non-expandable connector class the number of flow variables shall be equal to the number of variables that are neither \lstinline!parameter!, \lstinline!constant!, \lstinline!input!, \lstinline!output!, \lstinline!stream! nor \lstinline!flow!.
+The \emph{number of variables} is the number of all elements in the connector class after expanding all records and arrays to a set of scalars of primitive types.
+The number of variables of an overdetermined type or record class (see \cref{overconstrained-equation-operators-for-connection-graphs}) is the size of the output argument of the corresponding \lstinline!equalityConstraint!() function.
 \begin{nonnormative}
 Expandable connector classes are excluded from this, since their component declarations are only a form of constraint.
 \end{nonnormative}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-connector Pin // a physical connector of
-  Modelica.Electrical.Analog
+connector Pin // A physical connector of Modelica.Electrical.Analog
   Real v;
   flow Real i;
 end Pin;
 
-connector Plug // a hierarchical connector of
-  Modelica.Electrical.MultiPhase
-  parameter Integer m=3;
+connector Plug // A hierarchical connector of Modelica.Electrical.MultiPhase
+  parameter Integer m = 3;
   Pin p[m];
 end Plug;
 
@@ -658,7 +619,9 @@ connector Frame_Illegal
 end Frame_Illegal;
 \end{lstlisting}
 
-The \lstinline!Frame_Illegal! connector (intended to be used in a simple multi-body package without over-determined connectors) is illegal since the number of flow and non-flow variables do not match. The solution is to create two connector classes, where two 3-vectors (e.g., \lstinline!a! and \lstinline!z!) are acausal \lstinline!Real! and the other variables are matching pairs of \lstinline!input! and \lstinline!output!.  This ensures that the models can only be connected in a tree-structure or require a ``loop-breaker'' joint for every closed kinematic loop:
+The \lstinline!Frame_Illegal! connector (intended to be used in a simple multi-body package without over-determined connectors) is illegal since the number of flow and non-flow variables do not match.
+The solution is to create two connector classes, where two 3-vectors (e.g., \lstinline!a! and \lstinline!z!) are acausal \lstinline!Real! and the other variables are matching pairs of \lstinline!input! and \lstinline!output!.
+This ensures that the models can only be connected in a tree-structure or require a ``loop-breaker'' joint for every closed kinematic loop:
 \begin{lstlisting}[language=modelica]
 connector Frame_a "correct connector"
   input Modelica.Units.SI.Position r0[3];
@@ -683,13 +646,9 @@ connector Frame_b "correct connector"
 end Frame_b;
 \end{lstlisting}
 
-The subsequent connectors \lstinline!Plug_Expanded! and \lstinline!PlugExpanded2!
-are correct, but \lstinline!Plug_Expanded_Illegal! is illegal since
-the number of non-flow and flow variables is different if \lstinline!n! and \lstinline!m! are different. It is not clear how a tool can detect in
-general that connectors such as \lstinline!Plug_Expanded_Illegal! are
-illegal. However, it is always possible to detect this defect after
-actual values of parameters and constants are provided in the simulation
-model.
+The subsequent connectors \lstinline!Plug_Expanded! and \lstinline!PlugExpanded2! are correct, but \lstinline!Plug_Expanded_Illegal! is illegal since the number of non-flow and flow variables is different if \lstinline!n! and \lstinline!m! are different.
+It is not clear how a tool can detect in general that connectors such as \lstinline!Plug_Expanded_Illegal! are illegal.
+However, it is always possible to detect this defect after actual values of parameters and constants are provided in the simulation model.
 
 \begin{lstlisting}[language=modelica]
 connector Plug_Expanded "correct connector"
@@ -714,54 +673,33 @@ end Plug_Expanded_Illegal;
 \end{lstlisting}
 \end{example}
 
-\section{Equation Operators for Overconstrained Connection-Based Equation Systems}\label{equation-operators-for-overconstrained-connection-based-equation-systems1}
+\section{Overconstrained Connections}\label{equation-operators-for-overconstrained-connection-based-equation-systems1}\label{overconstrained-connections}
 
-There is a special problem regarding equation systems resulting from
-\emph{loops} in connection graphs where the connectors contain
-\emph{non-flow} (i.e., potential) variables \emph{dependent} on each
-other. When a loop structure occurs in such a graph, the resulting
-equation system will be \emph{overconstrained}, i.e., have more
-equations than variables, since there are implicit constraints between
-certain non-flow variables in the connector in addition to the
-connection equations around the loop. At the current state-of-the-art,
-it is not possible to automatically eliminate the unneeded equations
-from the resulting equation system without additional information from
-the model designer.
+There is a special problem regarding equation systems resulting from \emph{loops} in connection graphs where the connectors contain \emph{non-flow} (i.e., potential) variables \emph{dependent} on each other.
+When a loop structure occurs in such a graph, the resulting equation system will be \emph{overconstrained}, i.e., have more equations than variables, since there are implicit constraints between certain non-flow variables in the connector in addition to the connection equations around the loop.
+At the current state-of-the-art, it is not possible to automatically eliminate the unneeded equations from the resulting equation system without additional information from the model designer.
 
-This section describes a set of equation operators for such
-overconstrained connection-based equation systems, that makes it
-possible for the model designer to specify enough information in the
-model to allow a Modelica environment to automatically remove the
-superfluous equations.
+This section describes a set of equation operators for such overconstrained connection-based equation systems, that makes it possible for the model designer to specify enough information in the model to allow a Modelica environment to automatically remove the superfluous equations.
 
 \begin{nonnormative}
-Connectors may contain redundant variables. For example, the
-orientation between two coordinate systems in $3$ dimensions can be
-described by $3$ independent variables. However, every description of
-orientation with $3$ variables has at least one singularity in the region
-where the variables are defined. It is therefore not possible to declare
-only $3$ variables in a connector. Instead $n$ variables ($n > 3$) have to be used. These variables are no longer independent from each
-other and there are $n - 3$ constraint equations that have to be fulfilled.
-A proper description of a redundant set of variables with constraint
-equations does no longer have a singularity. A model that has loops in
-the connection structure formed by components and connectors with
-redundant variables, may lead to a differential algebraic equation
-system that has more equations than unknown variables. The superfluous
-equations are usually consistent with the rest of the equations, i.e., a
-unique mathematical solution exists. Such models cannot be treated with
-the currently known symbolic transformation methods. To overcome this
-situation, operators are defined in order that a Modelica translator can
-remove the superfluous equations. This is performed by replacing the
-equality equations of non-flow variables from connection sets by a
-reduced number of equations in certain situations.
+Connectors may contain redundant variables.
+For example, the orientation between two coordinate systems in $3$ dimensions can be described by $3$ independent variables.
+However, every description of orientation with $3$ variables has at least one singularity in the region where the variables are defined.
+It is therefore not possible to declare only $3$ variables in a connector.
+Instead $n$ variables ($n > 3$) have to be used.
+These variables are no longer independent from each other and there are $n - 3$ constraint equations that have to be fulfilled.
+A proper description of a redundant set of variables with constraint equations does no longer have a singularity.
+A model that has loops in the connection structure formed by components and connectors with redundant variables, may lead to a differential algebraic equation system that has more equations than unknown variables.
+The superfluous equations are usually consistent with the rest of the equations, i.e., a unique mathematical solution exists.
+Such models cannot be treated with the currently known symbolic transformation methods.
+To overcome this situation, operators are defined in order that a Modelica translator can remove the superfluous equations.
+This is performed by replacing the equality equations of non-flow variables from connection sets by a reduced number of equations in certain situations.
 
-This section handles a certain class of overdetermined systems due
-to connectors that have a redundant set of variables. There are other
-causes of overdetermined systems, e.g., explicit zero-sum equations for
-flow variables, that are not handled by the method described below.
+This section handles a certain class of overdetermined systems due to connectors that have a redundant set of variables.
+There are other causes of overdetermined systems, e.g., explicit zero-sum equations for flow variables, that are not handled by the method described below.
 \end{nonnormative}
 
-\subsection{Overconstrained Equation Operators for Connection Graphs}\label{overconstrained-equation-operators-for-connection-graphs}
+\subsection{Connection Graphs and Their Operators}\label{overconstrained-equation-operators-for-connection-graphs}\label{connection-graphs-and-their-operators}
 
 A type or record declaration may have an optional definition of function \lstinline!equalityConstraint!\indexinline{equalityConstraint} that shall have the following prototype:
 % TODO: Can't have angle brackets and \emph in the same mathescape due to LaTeXML issue:
@@ -821,7 +759,8 @@ The edges of the virtual connection graph are implicitly defined by \lstinline!c
 \lstinline!Connections! is a built-in package in global scope containing built-in operators.
 Additionally, corresponding nodes of the virtual connection graph have to be defined as roots or as potential roots with functions \lstinline!Connections.root! and \lstinline!Connections.potentialRoot!, respectively.
 
-The overconstrained equation operators for connection graphs are listed below.  Here, \lstinline!A! and \lstinline!B! are connector instances that may be hierarchically structured, e.g., \lstinline!A! may be an abbreviation for \lstinline!EnginePort.Frame!.
+The overconstrained equation operators for connection graphs are listed below.
+Here, \lstinline!A! and \lstinline!B! are connector instances that may be hierarchically structured, e.g., \lstinline!A! may be an abbreviation for \lstinline!EnginePort.Frame!.
 \begin{center}
 \begin{tabular}{l|l l}
 \hline
@@ -886,7 +825,8 @@ Connections.potentialRoot(A.R, priority=$p$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 The overdetermined type or record instance \lstinline!R! in connector instance \lstinline!A! is a \firstuse{potential root node}\index{root node!potential} in a virtual connection graph with priority \lstinline!p! ($p \geq 0$).
-If no second argument is provided, the priority is zero. \lstinline!p! shall be a parameter expression of type \lstinline!Integer!.
+If no second argument is provided, the priority is zero.
+\lstinline!p! shall be a parameter expression of type \lstinline!Integer!.
 In a virtual connection subgraph without a \lstinline!Connections.root! definition, one of the potential roots with the lowest priority number is selected as root.
 
 \begin{nonnormative}
@@ -910,7 +850,8 @@ Connections.rooted(A.R)
 rooted(A.R) // deprecated!
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-If the operator \lstinline!Connections.rooted(A.R)! is used, or the equivalent but deprecated operator \lstinline!rooted(A.R)!, then there must be exactly one \lstinline!Connections.branch(A.R, B.R)! involving \lstinline!A.R! (the argument of \lstinline!Connections.rooted! must be the first argument of \lstinline!Connections.branch!).  In that case \lstinline!Connections.rooted(A.R)! returns true, if \lstinline!A.R! is closer to the root of the spanning tree than \lstinline!B.R!; otherwise false is returned.
+If the operator \lstinline!Connections.rooted(A.R)! is used, or the equivalent but deprecated operator \lstinline!rooted(A.R)!, then there must be exactly one \lstinline!Connections.branch(A.R, B.R)! involving \lstinline!A.R! (the argument of \lstinline!Connections.rooted! must be the first argument of \lstinline!Connections.branch!).
+In that case \lstinline!Connections.rooted(A.R)! returns true, if \lstinline!A.R! is closer to the root of the spanning tree than \lstinline!B.R!; otherwise false is returned.
 
 \begin{nonnormative}
 This operator can be used to avoid equation systems by providing analytic inverses, see\linebreak[4] \lstinline!Modelica.Mechanics.MultiBody.Parts.FixedRotation!.
@@ -919,13 +860,12 @@ This operator can be used to avoid equation systems by providing analytic invers
 \end{operatordefinition}
 
 \begin{nonnormative}
-Note, that \lstinline!Connections.branch!, \lstinline!Connections.root!,
-\lstinline!Connections.potentialRoot! do not generate equations. They only
-generate nodes and edges in the virtual graph for analysis purposes.
+Note, that \lstinline!Connections.branch!, \lstinline!Connections.root!, \lstinline!Connections.potentialRoot! do not generate equations.
+They only generate nodes and edges in the virtual graph for analysis purposes.
 \end{nonnormative}
 
 
-\subsection{Converting the Connection Graph into Trees and Generating Connection Equations}\label{converting-the-connection-graph-into-trees-and-generating-connection-equations}
+\subsection{Generation of Connection Graph Equations}\label{generation-of-connection-graph-equations}
 
 Before connection equations are generated, the virtual connection graph is transformed into a set of spanning trees by removing optional spanning tree edges from the graph.
 This is performed in the following way:
@@ -933,21 +873,15 @@ This is performed in the following way:
 \item
   Every root node defined via the \lstinline!Connections.root!-equation is a definite root of one spanning tree.
 \item
-  The virtual connection graph may consist of sets of subgraphs that are
-  not connected together. Every subgraph in this set shall have at least
-  one root node or one potential root node in a simulation model. If a
-  graph of this set does not contain any root node, then one potential
-  root node in this subgraph that has the lowest priority number is
-  selected to be the root of that subgraph. The selection can be
-  inquired in a class with function \lstinline!Connections.isRoot!, see table
-  above.
+  The virtual connection graph may consist of sets of subgraphs that are not connected together.
+  Every subgraph in this set shall have at least one root node or one potential root node in a simulation model.
+  If a graph of this set does not contain any root node, then one potential root node in this subgraph that has the lowest priority number is selected to be the root of that subgraph.
+  The selection can be inquired in a class with function \lstinline!Connections.isRoot!, see table above.
 \item
-  If there are n selected roots in a subgraph, then optional spanning-tree edges
-  have to be removed such that the result shall be a set of n spanning
-  trees with the selected root nodes as roots.
+  If there are n selected roots in a subgraph, then optional spanning-tree edges have to be removed such that the result shall be a set of n spanning trees with the selected root nodes as roots.
 \end{enumerate}
 
-After this analysis, the \firstuse[connection equations!overconstrained]{connection equations} are generated in the following way:
+After this analysis, the \firstuse{connection graph equations}\index{connection equations!connection graph} are generated in the following way:
 \begin{enumerate}
 \item
   For every optional spanning-tree edge (i.e., a \lstinline!connect(A, B)! equation), in one of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}.
@@ -956,7 +890,7 @@ After this analysis, the \firstuse[connection equations!overconstrained]{connect
   Here the equations \lstinline!0 = R.equalityConstraint(A.R, B.R)! are generated instead of \lstinline!A.R = B.R!.
 \end{enumerate}
 
-\subsection{Examples of Overconstrained Connection Graphs}\label{examples-of-overconstrained-connection-graphs}
+\subsection{Examples}\label{examples-of-overconstrained-connectors}
 
 \begin{example}
 \begin{figure}[H]
@@ -967,11 +901,10 @@ After this analysis, the \firstuse[connection equations!overconstrained]{connect
 \end{figure}
 \end{example}
 
-\subsubsection{An Overdetermined Connector for Power Systems}\label{an-overdetermined-connector-for-power-systems}
+\subsubsection{A Power Systems Overdetermined Connector}\label{an-overdetermined-connector-for-power-systems}\label{a-power-systems-overdetermined-connector}
 
 \begin{nonnormative}
-An overdetermined connector for power systems based on the
-transformation theory of Park may be defined as:
+An overdetermined connector for power systems based on the transformation theory of Park may be defined as:
 \begin{lstlisting}[language=modelica]
 type AC_Angle "Angle of source, e.g., rotor of generator"
   extends Modelica.Units.SI.Angle; // AC_Angle is a Real number
@@ -993,16 +926,11 @@ connector AC_Plug "3-phase alternating current connector"
   flow SI.Current i[3] "Currents resolved in AC_Angle frame";
 end AC_Plug;
 \end{lstlisting}
-The currents and voltages in the connector are defined relatively
-to the harmonic, high-frequency signal of a power source that is
-essentially described by angle theta of the rotor of the source. This
-allows much faster simulations, since the basic high frequency signal of
-the power source is not part of the differential equations. For example,
-when the source and the rest of the line operates with constant
-frequency (= nominal case), then \lstinline!AC_Plug.v! and \lstinline!AC_Plug.i!
-are constant. In this case a variable step integrator can select
-large time steps. An element, such as a 3-phase inductor, may be
-implemented as:
+The currents and voltages in the connector are defined relatively to the harmonic, high-frequency signal of a power source that is essentially described by angle theta of the rotor of the source.
+This allows much faster simulations, since the basic high frequency signal of the power source is not part of the differential equations.
+For example, when the source and the rest of the line operates with constant frequency (= nominal case), then \lstinline!AC_Plug.v! and \lstinline!AC_Plug.i! are constant.
+In this case a variable step integrator can select large time steps.
+An element, such as a 3-phase inductor, may be implemented as:
 \begin{lstlisting}[language=modelica]
 model AC_Inductor
   parameter Real X[3,3], Y[3,3]; // component constants
@@ -1018,24 +946,20 @@ equation
   X*der(p.i) + omega*Y*p.i = p.v - n.v;
 end AC_Inductor
 \end{lstlisting}
-At the place where the source frequency, i.e., essentially
-variable theta, is defined, a \lstinline!Connections.root! must be present:
+At the place where the source frequency, i.e., essentially variable theta, is defined, a \lstinline!Connections.root! must be present:
 \begin{lstlisting}[language=modelica]
   AC_Plug p;
 equation
   Connections.root(p.theta);
   der(p.theta) = 2*Modelica.Constants.pi*50 // 50 Hz;
 \end{lstlisting}
-The graph analysis performed with the virtual connection graph
-identifies the connectors, where the \lstinline!AC_Angle! needs not to be
-passed between components, in order to avoid redundant equations.
+The graph analysis performed with the virtual connection graph identifies the connectors, where the \lstinline!AC_Angle! needs not to be passed between components, in order to avoid redundant equations.
 \end{nonnormative}
 
-\subsubsection{An Overdetermined Connector for 3-dimensional Mechanical Systems}\label{an-overdetermined-connector-for-3-dimensional-mechanical-systems}
+\subsubsection{A 3-Dimensional Mechanical Systems Overdetermined Connector}\label{an-overdetermined-connector-for-3-dimensional-mechanical-systems}\label{a-3-dimensional-mechanical-systems-overdetermined-connector}
 
 \begin{nonnormative}
-An overdetermined connector for 3-dimensional mechanical systems
-may be defined as:
+An overdetermined connector for 3-dimensional mechanical systems may be defined as:
 \begin{lstlisting}[language=modelica]
 type TransformationMatrix = Real[3,3];
 type Orientation "Orientation from frame 1 to frame 2"
@@ -1087,11 +1011,8 @@ equation
   zeros(3) = frame_a.t + frame_b.t + cross(r, frame_b.f);
 end FixedTranslation;
 \end{lstlisting}
-Since the transformation matrix \lstinline!frame_a.R! is algebraically
-coupled with \lstinline!frame_b.R!, an edge in the virtual connection graph
-has to be defined. At the inertial system, the orientation is
-consistently initialized and therefore the orientation in the inertial
-system connector has to be defined as root:
+Since the transformation matrix \lstinline!frame_a.R! is algebraically coupled with \lstinline!frame_b.R!, an edge in the virtual connection graph has to be defined.
+At the inertial system, the orientation is consistently initialized and therefore the orientation in the inertial system connector has to be defined as root:
 \begin{lstlisting}[language=modelica]
 model InertialSystem
   Frame frame_b;

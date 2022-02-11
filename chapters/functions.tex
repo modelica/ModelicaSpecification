@@ -78,7 +78,7 @@ end $\mathit{functionname}$;
 \end{lstlisting}
 \end{example}
 
-\subsection{Function return-statements}\label{function-return-statements}
+\subsection{Function Return-Statements}\label{function-return-statements}
 
 The \lstinline!return!-statement\indexinline{return} terminates the current function call, see \cref{function-call}.
 It can only be used in an algorithm section of a function.
@@ -315,7 +315,8 @@ With the prefix keyword \lstinline!impure!\indexinline{impure} it is stated that
 \item
   A \lstinline!when!-statement.
 \item
-  \lstinline!pure(impureFunctionCall($\ldots$))! -- which allows calling impure functions in any pure context.
+  \lstinline!pure(impureFunction($\ldots$))! -- which allows calling impure functions in any pure context.
+  The wrapping in \lstinline!pure($\ldots$)! only by-passes the purity checking of the callee \lstinline!impureFunction!; the argument expressions of the function call are not affected.
 \item
   Initial equations and initial algorithms.
 \item
@@ -404,7 +405,7 @@ algorithm
 Function classes and record constructors (\cref{record-constructor-functions}) and enumeration type
 conversions (\cref{type-conversion-of-integer-to-enumeration-values}) can be called as described in this section.
 
-\subsection{Positional or Named Input Arguments of Functions}\label{positional-or-named-input-arguments-of-functions}
+\subsection{Positional or Named Input Arguments}\label{positional-or-named-input-arguments-of-functions}
 
 A function call has optional positional arguments followed by zero, one
 or more named arguments, such as
@@ -472,29 +473,23 @@ RealToString(2.0, 6, precision=6); // error: slot is used twice
 \end{lstlisting}
 \end{example}
 
-\subsection{Functional Input Arguments to Functions}\label{functional-input-arguments-to-functions}
+\subsection{Functional Input Arguments}\label{functional-input-arguments-to-functions}
 
-A functional input argument to a function is an argument of function
-type. The declared type of such an input formal parameter in a function
-can be the type-specifier of a partial function that has no replaceable
-elements. It cannot be the type-specifier of a record or enumeration
-(i.e., record constructor functions and enumeration type
-conversions are not allowed in this context). Such an input formal
-parameter of function type can also have an optional functional default
-value.
+A functional input argument to a function is an argument of function type.
+The declared type of such an input formal parameter in a function can be the type-specifier of a partial function that has no replaceable elements.
+It cannot be the type-specifier of a record or enumeration (i.e., record constructor functions and enumeration type conversions are not allowed in this context).
+Such an input formal parameter of function type can also have an optional functional default value.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-function quadrature "Integrate function y=integrand(x) from x1 to x2"
+function quadrature "Integrate function y = integrand(x) from x1 to x2"
   input Real x1;
   input Real x2;
-  input Integrand integrand; // Integrand is a partial function,
-  see below
-  // With default: input Integrand integrand =
-  Modelica.Math.sin;
+  input Integrand integrand; // Integrand is a partial function, see below
+  // With default: input Integrand integrand = Modelica.Math.sin;
   output Real integral;
 algorithm
-  integral :=(x2-x1)*(integrand(x1) + integrand(x2))/2;
+  integral := (x2 - x1) * (integrand(x1) + integrand(x2)) / 2;
 end quadrature;
 
 partial function Integrand
@@ -504,44 +499,44 @@ end Integrand;
 \end{lstlisting}
 \end{example}
 
-A functional argument can be provided in one of the following forms to
-be passed to a scalar formal parameter of function type in a function
-call:
+A functional argument can be provided in one of the following forms to be passed to a scalar formal parameter of function type in a function call:
 \begin{enumerate}
-\def\labelenumi{\alph{enumi})}
-\item
+% Don't mess with item style while enumitem.sty is not in use (or we'd have to also fix the \ref commands to produce the correct item labels).
+% Check preamble.tex for current status.
+%\def\labelenumi{\alph{enumi}.}
+\item\label{functional-argument:type-specifier}
   as a function type-specifier (\lstinline!Parabola! example below),
 \item
   as a function partial application (\cref{function-partial-application} below),
-\item
+\item\label{functional-argument:component}
   as a function that is a component (i.e., a formal parameter of function type of the enclosing function),
 \item
-  as a function partial application of a function that is a component
-  (example in \cref{function-partial-application} below).
+  as a function partial application of a function that is a component (example in \cref{function-partial-application} below).
 \end{enumerate}
 
 In all cases the provided function must be function-compatible (\cref{function-compatibility}) with the corresponding formal parameter of function type.
 
 \begin{example}
-A function as a positional input argument according to case (a):
+A function as a positional input argument according to case~\ref{functional-argument:type-specifier}:
 \begin{lstlisting}[language=modelica]
 function Parabola
   extends Integrand;
 algorithm
-  y := x*x;
+  y := x * x;
 end Parabola;
 area = quadrature(0, 1, Parabola);
 \end{lstlisting}
-The \lstinline!quadrature2! example below uses a function \lstinline!integrand! that is a
-component as input argument according to case (c):
+The \lstinline!quadrature2! example below uses a function \lstinline!integrand! that is a component as input argument according to case~\ref{functional-argument:component}:
 \begin{lstlisting}[language=modelica]
-function quadrature2 "Integrate function y=integrand(x) from x1 to x2"
+function quadrature2 "Integrate function y = integrand(x) from x1 to x2"
   input Real x1;
   input Real x2;
   input Integrand integrand; // Integrand is a partial function type
   output Real integral;
 algorithm
-  integral := quadrature(x1, (x1+x2)/2, integrand)+  quadrature((x1+x2)/2, x2, integrand);
+  integral :=
+    quadrature(x1, (x1 + x2) / 2, integrand) +
+    quadrature((x1 + x2) / 2, x2, integrand);
 end quadrature2;
 \end{lstlisting}
 \end{example}
@@ -656,7 +651,7 @@ end surfaceQuadrature;
 \end{lstlisting}
 \end{example}
 
-\subsection{Output Formal Parameters of Functions}\label{output-formal-parameters-of-functions}
+\subsection{Output Formal Parameters}\label{output-formal-parameters-of-functions}
 
 A function may have more than one output component, corresponding to
 multiple return values. The only way to use more than the first return
@@ -730,7 +725,7 @@ The following are illegal:
 \end{lstlisting}
 \end{example}
 
-\subsection{Initialization and Binding Equations of Components in Functions}%
+\subsection{Initialization and Binding Equations}%
 \label{initialization-and-binding-equations-of-components-in-functions}%
 \label{initialization-and-declaration-assignments-of-components-in-functions}
 
@@ -775,7 +770,7 @@ The properties of components in functions described in this
 section are also briefly described in \cref{function-as-a-specialized-class}.
 \end{nonnormative}
 
-\subsection{Flexible Array Sizes and Resizing of Arrays in Functions}\label{flexible-array-sizes-and-resizing-of-arrays-in-functions}
+\subsection{Flexible Array Sizes and Resizing of Arrays}\label{flexible-array-sizes-and-resizing-of-arrays-in-functions}
 
 \begin{nonnormative}
 Flexible setting of array dimension sizes of arrays in
@@ -822,7 +817,7 @@ end collectPositive;
 \end{lstlisting}
 \end{example}
 
-\subsection{Scalar Functions Applied to Array Arguments}\label{scalar-functions-applied-to-array-arguments}
+\subsection{Automatic Vectorization}\label{scalar-functions-applied-to-array-arguments}\label{automatic-vectorization}
 
 Functions with one scalar return value can be applied to arrays element-wise, e.g.\ if \lstinline!A! is a vector of reals, then \lstinline!sin(A)! is a vector where each element is the result of applying the function \lstinline!sin! to the corresponding element in \lstinline!A!.
 Only \lstinline!function! classes that are transitively non-replaceable (\cref{transitively-non-replaceable} and \cref{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}) may be called vectorized.
@@ -981,7 +976,7 @@ Examples:
 
   function add
     input Complex u, v;
-    output Complex w(re=u.re + v.re, im=u.im+v.re);
+    output Complex w(re = u.re + v.re, im = u.im + v.re);
   end add;
 
   Complex c1, c2;
@@ -1078,7 +1073,9 @@ package Demo;
     input Real r5 = 5.0;
     input Real r6[n1];
     input Real r7[n2];
-    output Record2 $\mathit{result}$(r0=r0,c2=c2,n1=n1,n2=n2,r1=r1,r2=r2,r4=r4,r5=r5,r6=r6,r7=r7);
+    output Record2 $\mathit{result}$(
+      r0 = r0, c2 = c2, n1 = n1, n2 = n2,
+      r1 = r1, r2 = r2, r4 = r4, r5 = r5, r6 = r6, r7 = r7);
   protected
     final constant Real c1 = 2.0; // referenced from r2
     final parameter Real r3 = Modelica.Math.cos(r2);
@@ -1088,9 +1085,13 @@ end Demo;
 and can be applied in the following way
 % henrikt-ma: TODO: Fix too long lines.
 \begin{lstlisting}[language=modelica]
-Demo.Record2 r1 = Demo.Record2(r0=1, c2=2, n1=2, n2=3, r1=1, r2=2,r4=5, r5=5, r6={1,2}, r7={1,2,3});
-Demo.Record2 r2 = Demo.Record2(1,2,2,3,1,2,5,5,{1,2},{1,2,3});
-parameter Demo.Record2 r3 = Demo.Record2(c2=2, n2=1, r1=1,r4=4, r6=1:5, r7={1});
+Demo.Record2 r1 =
+  Demo.Record2(r0 = 1, c2 = 2, n1 = 2, n2 = 3, r1 = 1, r2 = 2, r4 = 5, r5 = 5,
+               r6 = {1, 2}, r7 = {1, 2, 3});
+Demo.Record2 r2 =
+  Demo.Record2(1, 2, 2, 3, 1, 2, 5, 5, {1, 2}, {1, 2, 3});
+parameter Demo.Record2 r3 =
+  Demo.Record2(c2 = 2, n2 = 1, r1 = 1, r4 = 4, r6 = 1 : 5, r7 = {1});
 \end{lstlisting}
 
 The above example is only used to show the different variants
@@ -1482,7 +1483,7 @@ DensityDerivative d_rho2 = der(rho2);
 
 \begin{itemize}
 \item
-  \lstinline[language=grammar]!zeroDerivative = $\mathit{inputVar}_{1}$ { , zeroDerivative = $\mathit{inputVar}_{2}$ }!
+  \lstinline[language=grammar]!"zeroDerivative" "=" $\mathit{inputVar}_{1}$ { "," "zeroDerivative" "=" $\mathit{inputVar}_{2}$ }!
 \end{itemize}
 
 The derivative function is only valid if $\mathit{inputVar}_{1}$ (and $\mathit{inputVar}_{2}$ etc.) are independent of the variables the function call is differentiated with respect to (i.e.\ that the derivative of $\mathit{inputVar}_{1}$ is zero).
@@ -1562,7 +1563,7 @@ In the example above \lstinline!zeroDerivative=y! and \lstinline!zeroDerivative=
 
 \begin{itemize}
 \item
-  \lstinline[language=grammar]!noDerivative = $\mathit{inputVar}_{1}$!
+  \lstinline[language=grammar]!"noDerivative" "=" $\mathit{inputVar}_{1}$!
 \end{itemize}
 
 The derivative of $\mathit{inputVar}_{1}$ is excluded from the argument list of the derivative-function.
@@ -1880,10 +1881,17 @@ This annotation cannot be combined with annotations \lstinline!Inline! and \lsti
 "GenerateEvents" "=" ( false | true )
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Has only an effect within a function declaration
+Has only an effect within a function declaration.
 
-If \lstinline!GenerateEvents = true!, the model developer proposes that crossing functions in the function should generate events (one possibility of doing this is to inline the function and generate events for the inlined function).
+By default, \lstinline!GenerateEvents = false! and expressions in the function body that would normally be event-generating shall not generate events, similar to inlining the function body while wrapping all expressions in \lstinline!noEvent!, see \cref{modelica:noEvent}.
+By specifying \lstinline!GenerateEvents = true!, event-generating expressions in the function body shall generate events as normal, similar to inlining the function body without wrapping all expressions in \lstinline!noEvent!.
+Having \lstinline!GenerateEvents = true! implies \lstinline!Inline = true! unless overridden by specifying one of the inlining annotations with value \lstinline!true! (in particular, \lstinline!GenerateEvents = true! cannot be combined with \lstinline!Inline = false!).
 
+\begin{nonnormative}
+In case a given inlining annotation proposes to inline at a stage when the tool cannot process \lstinline!GenerateEvents = true!, it is recommended to give a diagnostic and instead perform inlining of the function at the nearest stage where \lstinline!GenerateEvents = true! can still be respected.
+
+If the function is called in a context where events will not be generated (e.g., inside another function without \lstinline!GenerateEvents = true!) no special action is needed.
+\end{nonnormative}
 \end{semantics}
 \end{annotationdefinition}
 
@@ -2008,7 +2016,7 @@ Enumeration type & \lstinline[language=C]!int! & \lstinline[language=C]!int *!\\
 
 An exception is made when the argument is of the form \lstinline!size($\ldots$, $\ldots$)!. In this case the corresponding C type is \lstinline!size_t!.
 
-Strings are \textsc{nul}-terminated (i.e., terminated by \lstinline[language=C]!'\0'!) to facilitate calling of C functions.
+Strings are \textsc{nul}-terminated (i.e., terminated by \lstinline[language=C]!'\0'!) and are encoded using UTF-8 (assuming \lstinline[language=C]!CHAR_BIT==8! in C) to facilitate calling of C functions.
 The valid return values for an external function returning a \lstinline!String! are:
 \begin{itemize}
 \item A string given as \lstinline!String! input to the external function.
@@ -2045,10 +2053,9 @@ Enumeration type & \lstinline[language=FORTRAN77]!INTEGER! & \lstinline[language
 \end{tabular}
 \end{center}
 
-Sending string literals to FORTRAN~77 subroutines/functions is supported
-for Lapack/Blas-routines, and the strings are \textsc{nul}-terminated for
-compatibility with C. Returning strings from FORTRAN~77
-subroutines/functions is currently not supported.
+Sending string literals to FORTRAN~77 subroutines/functions is supported for LAPACK/BLAS-routines, and the strings are \textsc{nul}-terminated for compatibility with C.
+String are UTF-8 encoded, even though the support for non-ASCII characters in FORTRAN~77 is unclear and it is not relevant for the LAPACK/BLAS-routines.
+Returning strings from FORTRAN~77 subroutines/functions is currently not supported.
 
 Enumeration types used as arguments are mapped to type int when calling an external C function, and to type \lstinline!INTEGER! when calling an external FORTRAN function.
 The $i$th enumeration literal is mapped to integer value $i$, starting at 1.
@@ -2352,7 +2359,7 @@ myfoo_(&a, &temp1, &b);
 The use of the function \lstinline!foo! in Modelica is uninfluenced by these considerations.
 \end{example}
 
-\subsection{Annotations for External Libraries and Include Files}\label{annotations-for-external-libraries-and-include-files}
+\subsection{Annotations for External Functions}\label{annotations-for-external-libraries-and-include-files}
 
 The following annotations are useful in the context of calling external functions from Modelica, and they should occur on the \lstinline!external!-clause and no other standard annotations should occur on the \lstinline!external!-clause.
 They can all specify either a scalar value or an array of values as indicated below for the \lstinline!Library! annotation:
@@ -2464,8 +2471,8 @@ package MyExternalFunctions
 end MyExternalFunctions;
 \end{lstlisting}
 Directory structure:
-% Adding paragraph break above tabbing environment to work around LaTeXML issue:
-% - https://github.com/brucemiller/LaTeXML/issues/1719
+% Adding paragraph break above tabbing environment to work around LaTeXML issue (fixed on master 2021-12-17):
+% - https://github.com/brucemiller/LaTeXML/issues/1719 (marked as fixed as of commit 3e8e2e15)
 \ifpdf
 \else
 \par
@@ -2495,8 +2502,8 @@ Directory structure:
 \filename{MyExternalFunctions}\\
 \quad\filename{package.mo}% No line break on last line!
 \end{tabbing}}
-% Adding paragraph break (line break isn't allowed after empty line) below tabbing environment to work around LaTeXML issue:
-% - https://github.com/brucemiller/LaTeXML/issues/1719
+% Adding paragraph break (line break isn't allowed after empty line) below tabbing environment to work around LaTeXML issue (fixed on master 2021-12-17):
+% - https://github.com/brucemiller/LaTeXML/issues/1719 (marked as fixed as of commit 3e8e2e15)
 \ifpdf
 \else
 \par
@@ -2609,7 +2616,7 @@ myfoo(2.4, &z1, 3, &i2);
 \end{lstlisting}
 \end{example}
 
-\subsubsection{External Function with Both Function Value and Output Variable}\label{external-function-with-both-function-value-and-output-variable}
+\subsubsection{Both Function Value and Output Variable}\label{external-function-with-both-function-value-and-output-variable}\label{both-function-value-and-output-variable}
 
 \begin{example}
 The following external function returns two results: one
@@ -2643,7 +2650,7 @@ z1 = myfoo(2.4, 3, &i2);
 
 This section describes the utility functions declared in \filename{ModelicaUtilities.h}, which can be called in external Modelica functions written in C.
 
-\subsubsection{Utility Functions for Reporting Errors}\label{utility-functions-for-reporting-errors}
+\subsubsection{Error Reporting Utility Functions}\label{utility-functions-for-reporting-errors}\label{error-reporting-utility-functions}
 
 The functions listed below produce a message in different ways.
 \begin{center}
@@ -2715,7 +2722,7 @@ Output the message under the same format control as the C function \lstinline[la
 \end{semantics}
 \end{functiondefinition*}
 
-\subsubsection{Utility Functions for Allocating Strings}\label{utility-functions-for-allocating-strings}
+\subsubsection{String Allocation Utility Functions}\label{utility-functions-for-allocating-strings}\label{string-allocation-utility-functions}
 
 The functions listed below are related to string allocation.
 \begin{center}
