@@ -421,7 +421,7 @@ reinit(x, expr);
 The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
 \lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
 \lstinline!expr! needs to be type-compatible with \lstinline!x!.
-\lstinline!reinit! can for the same variable (resp.\ array of variables) only be applied (either as an individual variable or as part of an array of variables) in one equation (having \lstinline!reinit! of the same variable in \lstinline!when! and \lstinline!elsewhen! of the same variable is allowed).
+For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several \lstinline!when!- or \lstinline!elsewhen!-clauses of the same \lstinline!when!-equation is allowed).
 In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
 
 \lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value,
@@ -697,6 +697,8 @@ The initialization uses all equations and algorithms that are utilized in the in
 The equations of a \lstinline!when!-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).
 In this case, the \lstinline!when!-clause equations remain active during the whole initialization phase.
 In case of a \lstinline!reinit(x, expr)! being active during initialization (due to being inside \lstinline!when initial()!) this is interpreted as adding \lstinline!x = expr! (the \lstinline!reinit!-equation) as an initial equation.
+The \lstinline!reinit! handling applies both if directly inside \lstinline!when!-clause or inside an \lstinline!if!-equation in the \lstinline!when!-clause.
+In particular, \lstinline!reinit(x, expr)! needs to be counted as the equation \lstinline!x = expr;! for the purpose of balancing of \lstinline!if!-equations inside \lstinline!when!-clauses that are active during initialization, see \cref{if-equations}.
 
 \begin{nonnormative}
 If a \lstinline!when!-clause equation \lstinline!v = expr;! is not active during the initialization phase, the equation \lstinline!v = pre(v)! is added for initialization.
@@ -857,6 +859,40 @@ with the solution:
 y := (b * u) / (1 - a);
 pre(y) := y;
 \end{lstlisting}
+\end{example}
+
+\begin{example}
+Resettable continuous-time controller initialized either in steady-state or by providing a \lstinline!start! value for state \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+  parameter Boolean steadyState = true;
+  parameter Real y0 = 0 "start and reset value for y, if not steadyState";
+  input Boolean reset "For resetting integrator to y0";
+  Real y;
+equation
+  der(y) = a * y + b * u;
+  when {initial(), reset} then
+    if not (initial() and steadyState) then
+      reinit(y, y0);
+    end if;
+  end when;
+initial equation
+  if steadyState then
+    der(y) = 0;
+  end if;
+\end{lstlisting}
+If \lstinline!not steadyState! this will add \lstinline!y = y0! during the initialization; if not the \lstinline!reinit! is ignored during initialization and the initial equation is used.
+This model can be written in various ways, this particular way makes it clear that the reset is equal to the normal initialization.
+
+During initialization this gives the following equations
+\begin{lstlisting}[language=modelica]
+  if not steadyState then
+    y = y0;
+  end if;
+  if steadyState then
+    der(y) = 0;
+  end if;
+\end{lstlisting}
+if \lstinline!steadyState! had not been a parameter-expression both of those equations would have been illegal according to the restrictions in \cref{if-equations}.
 \end{example}
 
 \subsection{Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}\label{equations-needed-for-initialization}
