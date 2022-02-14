@@ -16,6 +16,7 @@ and have the state-updating as part of the model (and not as some tool-specific 
 | 2020-07-08 | Hans Olsson. Updated with reinit. |
 | 2020-09-25 | Hans Olsson. Updated with new semantics. |
 | 2021-04-29 | Hans Olsson. Added test-cases and more complete proposal. |
+| 2022-02-14 | Hans Olsson. More test-cases. |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -97,8 +98,9 @@ This is not ideal as it uses words like "treated as", and variables are changed 
 
 ## Discretization method semantics
 The operator is only legal in a "Clocked Discretized Continuous-Time Partition", and only as the entire declaration equation for a variable.
+The variable must be a scalar or array variable that is a subtype of Real.
 
-The meaning is that
+The meaning of Real x=reinit(xs); is that
 1. StateSelect.always is set for the variable x.
 2. Therefore it is a state and thus participate in the usual index reduction and state selection.
 3. During discretization the state is equal to the new value xs during the entire step, instead of using the discretization method
@@ -125,7 +127,7 @@ However, as noted in the paper the procedure for using it is still slightly mess
  - Have parameters for those integrators etc.
 That could be automated in tools.
 
-(Note: The reinit-variant in Dymola 2022 and earlier requires that the argument to reinit must be declared before reinit, that will be corrected in the next release.)
+(Note: The reinit-variant in Dymola 2022 and earlier requires that the argument to reinit must be declared before reinit, that was corrected in Dymola 2022x.)
 
 ## Test-cases
 The package [TestSettingStates](TestSettingStates.mo) contain a trivial example showing how the model is supposed to be handled, with relevant details, and the previously constructed test-case.
