@@ -1,95 +1,104 @@
-\chapter{Modelica Concrete Syntax}\doublelabel{modelica-concrete-syntax}
-\section{Lexical conventions}\doublelabel{lexical-conventions}
+\chapter{Modelica Concrete Syntax}\label{modelica-concrete-syntax}
+
+\section{Lexical conventions}\label{lexical-conventions}
 
 The following syntactic meta symbols are used (extended BNF):
-\begin{lstlisting}[language=grammar]
-[ ] optional
-{ } repeat zero or more times
-| or
-"text" The text is treated as a single token (no whitespace between any characters)
-\end{lstlisting}
+\begin{center}
+\begin{tabular}{c l}
+\hline
+\tablehead{Syntax} & \tablehead{Description}\\
+\hline
+\hline
+\lstinline[language=grammar]![ $\ldots$ ]! & Optional\\
+\lstinline[language=grammar]!{ $\ldots$ }! & Repeat zero or more times\\
+\lstinline[language=grammar]!$\ldots$ | $\ldots$! & Alternatives\\
+\lstinline[language=grammar]!"$\mathit{text}$"! & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
+\hline
+\end{tabular}
+\end{center}
 
-The following lexical units are defined (the ones in boldface are the
-ones used in the grammar, the rest are just internal to the definition
-of other lexical units):
+The following lexical units are defined:
+% Beware that the first lines of the lexing rules below are duplicated in \cref{identifiers}, and must be kept in sync.
 \begin{lstlisting}[language=grammar]
-IDENT = NONDIGIT { DIGIT | NONDIGIT } | Q-IDENT
-Q-IDENT = "'" ( Q-CHAR | S-ESCAPE ) { Q-CHAR | S-ESCAPE | """ } "'"
-NONDIGIT = "_" | letters "a" to "z" | letters "A" to "Z"
+IDENT = NON-DIGIT { DIGIT | NON-DIGIT } | Q-IDENT
+Q-IDENT = "'" { Q-CHAR | S-ESCAPE } "'"
+NON-DIGIT = "_" | letters "a" $\ldots$ "z" | letters "A" $\ldots$ "Z"
+DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+Q-CHAR = NON-DIGIT | DIGIT | "!" | "#" | "$\mbox{\textdollar}$" | "%" | "&" | "(" | ")"
+   | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | ">" | "="
+   | "?" | "@" | "[" | "]" | "^" | "{" | "}" | "|" | "~" | " " | """
+S-ESCAPE = "\'" | "\"" | "\?" | "\\"
+   | "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
 STRING = """ { S-CHAR | S-ESCAPE } """
 S-CHAR = see below
-Q-CHAR = NONDIGIT | DIGIT | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," |
-         "-" | "." | "/" | ":" | ";" | "<" | ">" | "=" | "?" | "@" | "[" | "]" | "^" |
-        "{" | "}" | "|" | "~" | " "
-S-ESCAPE = "\'" | "\"" | "\?" | "\\" |
-         "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
-DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 UNSIGNED-INTEGER = DIGIT { DIGIT }
-UNSIGNED-REAL = UNSIGNED-INTEGER  "." [ UNSIGNED-INTEGER ]
-     |  UNSIGNED_INTEGER [ "." [ UNSIGNED_INTEGER ] ] ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER
-     |   "."  UNSIGNED-INTEGER [ ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER ]
+UNSIGNED-REAL =
+   UNSIGNED-INTEGER  "." [ UNSIGNED-INTEGER ]
+   | UNSIGNED_INTEGER [ "." [ UNSIGNED_INTEGER ] ]
+     ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER
+   | "."  UNSIGNED-INTEGER [ ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER ]
 \end{lstlisting}
-\textrm{S-CHAR} is any member of the Unicode character set
-(\url{http://www.unicode.org}; see \autoref{mapping-package-class-structures-to-a-hierarchical-file-system} for storing as UTF-8 on files) except double-quote """, and backslash "\textbackslash{}"
+\lstinline[language=grammar]!S-CHAR! is any member of the Unicode character set (\url{http://www.unicode.org}; see \cref{mapping-package-class-structures-to-a-hierarchical-file-system} for storing as UTF-8 on files) except double-quote `"', and backslash `\textbackslash{}'.
 
-For identifiers the redundant escapes (`\lstinline!\?!' and `\lstinline!\"!') are the same as the corresponding non-escaped
-variants (`\lstinline!?!' and '\lstinline!"!').  The single quotes are part of an identifier. E.g. \lstinline!'x'! and
-\lstinline!x! are different IDENTs.
+For identifiers the redundant escapes (`\lstinline!\?!' and `\lstinline!\"!') are the same as the corresponding non-escaped variants (`\lstinline!?!' and '\lstinline!"!').
+The single quotes are part of an identifier.
+For example, the identifiers \lstinline!'x'! and \lstinline!x! are different.
 
 Note:
 \begin{itemize}
 \item
-  Whitespace and comments can be used between separate lexical units
-  and/or symbols, and also separates them. Each lexical unit will consume the maximum number of characters from the input stream.
-  Whitespace and comments
-  cannot be used inside other lexical units, except for STRING and
-  Q-IDENT where they are treated as part of the STRING or Q-IDENT
-  lexical unit.
+  White-space and comments can be used between separate lexical units and/or symbols, and also separates them. Each lexical unit will consume the maximum number of characters from the input stream.
+  White-space and comments cannot be used inside other lexical units, except for \lstinline[language=grammar]!STRING! and \lstinline[language=grammar]!Q-IDENT! where they are treated as part of the \lstinline[language=grammar]!STRING! or \lstinline[language=grammar]!Q-IDENT! lexical unit.
 \item
-  String constant concatenation \lstinline!"a" "b"! becoming \lstinline!"ab"! (as in C) is
-  replaced by the \lstinline!"+"! operator in Modelica.
+  Concatenation of string literals requires a binary expression.
+  For example, \lstinline!"a" + "b"! evaluates to \lstinline!"ab"!.
+  There is no support for the C/C++ style of concatenating adjacent string literal tokens (for example, \lstinline[language=C]!"a" "b"! becoming \lstinline[language=C]!"ab"!).
 \item
-  Modelica uses the same comment syntax as C++ and Java (i.e., \lstinline!//!
-  signals the start of a line comment and \lstinline!/*! .... \lstinline!*/! is a multi-line
-  comment); comments may contain any Unicode character. Modelica also
-  has structured comments in the form of annotations and string
-  comments.
+  Modelica uses the same comment syntax as C++ and Java (i.e., \lstinline!//! signals the start of a line comment and \lstinline!/* $\ldots$ */! is a multi-line comment); comments may contain any Unicode character.
+  Modelica also has structured comments in the form of annotations and string comments.
 \item
-  Each description-string or string in annotations (= STRING with production annotation-clause in the
-  grammar) may contain any member of the Unicode character set. All
-  other strings have to contain only the sub-set of Unicode characters
-  identical with the 7-bit US-ASCII character set.
+  Each description-string or string in annotations (= \lstinline[language=grammar]!STRING! with production annotation-clause in the grammar) may contain any member of the Unicode character set.
+  All other strings have to contain only the subset of Unicode characters identical with the 7-bit US-ASCII character set.
   \begin{nonnormative}
-  As a consequence, operators like `\textgreater{}' or `\textless{}', and external functions only operate on ASCII strings and not on Unicode-strings.
-  Within a description-string the tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define optionally begin
-  and end of content that is HTML encoded.
+  As a consequence, operators like `\lstinline!>!' or `\lstinline!<!', and external functions only operate on ASCII strings and not on Unicode-strings.
+  Within a description-string the tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define optionally begin and end of content that is HTML encoded.
   \end{nonnormative}
 \item
   Boldface denotes keywords of the Modelica language. Keywords are
-  reserved words and may not be used as identifiers.
+  reserved words and shall not be used as identifiers.
 \item
   Productions use hyphen as separator both in the grammar and in the
   text. Previously the grammar used underscore.
 \end{itemize}
 
-\section{Grammar}\doublelabel{grammar}
-\subsection{Stored Definition -- Within}\doublelabel{stored-definition-within}
+\section{Grammar}\label{grammar}
+
+\subsection{Stored Definition -- Within}\label{stored-definition-within}
+
 \begin{lstlisting}[language=grammar]
-stored-definition:
+stored-definition :
    [ within [ name ] ";" ]
    { [ final ] class-definition ";" }
 \end{lstlisting}
 
-\subsection{Class Definition}\doublelabel{class-definition}
+\subsection{Class Definition}\label{class-definition}
+
 \begin{lstlisting}[language=grammar]
 class-definition :
-   [ encapsulated ] class-prefixes
-   class-specifier
+   [ encapsulated ] class-prefixes class-specifier
 
 class-prefixes :
    [ partial ]
-   ( class | model | [ operator ] record | block | [ expandable ] connector | type |
-   package | [ pure | impure ] [ operator ] function | operator )
+   ( class
+     | model
+     | [ operator ] record
+     | block
+     | [ expandable ] connector
+     | type
+     | package
+     | [ pure | impure ] [ operator ] function
+     | operator
+   )
 
 class-specifier :
    long-class-specifier | short-class-specifier | der-class-specifier
@@ -97,29 +106,31 @@ class-specifier :
 long-class-specifier :
    IDENT description-string composition end IDENT
    | extends IDENT [ class-modification ] description-string composition
-   end IDENT
+     end IDENT
 
 short-class-specifier :
    IDENT "=" base-prefix type-specifier [ array-subscripts ]
-   [ class-modification ] comment
-   | IDENT "=" enumeration "(" ( [ enum-list ] | ":" ) ")" comment
+   [ class-modification ] description
+   | IDENT "=" enumeration "(" ( [ enum-list ] | ":" ) ")" description
 
 der-class-specifier :
-   IDENT "=" der "(" type-specifier "," IDENT { "," IDENT } ")" comment
+   IDENT "=" der "(" type-specifier "," IDENT { "," IDENT } ")" description
 
 base-prefix :
    [ input | output ]
 
-enum-list : enumeration-literal { "," enumeration-literal}
+enum-list :
+   enumeration-literal { "," enumeration-literal }
 
-enumeration-literal : IDENT comment
+enumeration-literal :
+   IDENT description
 
 composition :
    element-list
-   { public element-list |
-     protected element-list |
-     equation-section |
-     algorithm-section
+   { public element-list
+     | protected element-list
+     | equation-section
+     | algorithm-section
    }
    [ external [ language-specification ]
    [ external-function-call ] [ annotation-clause ] ";" ]
@@ -136,23 +147,30 @@ element-list :
    { element ";" }
 
 element :
-   import-clause |
-   extends-clause |
-   [ redeclare ]
-   [ final ]
-   [ inner ] [ outer ]
-   ( class-definition | component-clause |
-   replaceable ( class-definition | component-clause )
-   [ constraining-clause comment ] )
+   import-clause
+   | extends-clause
+   | [ redeclare ]
+     [ final ]
+     [ inner ] [ outer ]
+     ( class-definition
+       | component-clause
+       | replaceable ( class-definition | component-clause )
+         [ constraining-clause description ]
+     )
 
 import-clause :
-   import ( IDENT "=" name | name [ ".*" | "." ( "*" | "{" import-list "}" ) ] ) comment
+   import
+   ( IDENT "=" name
+     | name [ ".*" | "." ( "*" | "{" import-list "}" ) ]
+   )
+   description
 
 import-list :
    IDENT { "," IDENT }
 \end{lstlisting}
 
-\subsection{Extends}\doublelabel{extends}
+\subsection{Extends}\label{extends}
+
 \begin{lstlisting}[language=grammar]
 extends-clause :
    extends type-specifier [ class-modification ] [ annotation-clause ]
@@ -161,28 +179,32 @@ constraining-clause :
    constrainedby type-specifier [ class-modification ]
 \end{lstlisting}
 
-\subsection{Component Clause}\doublelabel{component-clause}
+\subsection{Component Clause}\label{component-clause}
+
 \begin{lstlisting}[language=grammar]
-component-clause:
+component-clause :
    type-prefix type-specifier [ array-subscripts ] component-list
 
 type-prefix :
    [ flow | stream ]
-   [ discrete | parameter | constant ] [ input | output ]
+   [ discrete | parameter | constant ]
+   [ input | output ]
+
 component-list :
    component-declaration { "," component-declaration }
 
 component-declaration :
-   declaration [ condition-attribute ] comment
+   declaration [ condition-attribute ] description
 
-condition-attribute:
+condition-attribute :
    if expression
 
 declaration :
    IDENT [ array-subscripts ] [ modification ]
 \end{lstlisting}
 
-\subsection{Modification}\doublelabel{modification}
+\subsection{Modification}\label{modification}
+
 \begin{lstlisting}[language=grammar]
 modification :
    class-modification [ "=" expression ]
@@ -199,7 +221,7 @@ argument :
    element-modification-or-replaceable
    | element-redeclaration
 
-element-modification-or-replaceable:
+element-modification-or-replaceable :
    [ each ] [ final ] ( element-modification | element-replaceable )
 
 element-modification :
@@ -209,7 +231,7 @@ element-redeclaration :
    redeclare [ each ] [ final ]
    ( short-class-definition | component-clause1 | element-replaceable )
 
-element-replaceable:
+element-replaceable :
    replaceable ( short-class-definition | component-clause1 )
    [ constraining-clause ]
 
@@ -217,13 +239,14 @@ component-clause1 :
    type-prefix type-specifier component-declaration1
 
 component-declaration1 :
-   declaration comment
+   declaration description
 
 short-class-definition :
    class-prefixes short-class-specifier
 \end{lstlisting}
 
-\subsection{Equations}\doublelabel{equations1}
+\subsection{Equations}\label{equations1}
+
 \begin{lstlisting}[language=grammar]
 equation-section :
    [ initial ] equation { equation ";" }
@@ -237,19 +260,22 @@ equation :
      | for-equation
      | connect-clause
      | when-equation
-     | component-reference function-call-args )
-   comment
+     | component-reference function-call-args
+   )
+   description
 
 statement :
    ( component-reference ( ":=" expression | function-call-args )
-     | "(" output-expression-list ")" ":=" component-reference function-call-args
+     | "(" output-expression-list ")" ":="
+       component-reference function-call-args
      | break
      | return
      | if-statement
      | for-statement
      | while-statement
-     | when-statement )
-   comment
+     | when-statement
+   )
+   description
 
 if-equation :
    if expression then
@@ -284,9 +310,9 @@ for-statement :
    end for
 
 for-indices :
-   for-index {"," for-index}
+   for-index { "," for-index }
 
-for-index:
+for-index :
    IDENT [ in expression ]
 
 while-statement :
@@ -298,25 +324,30 @@ when-equation :
    when expression then
      { equation ";" }
    { elsewhen expression then
-     { equation ";" } }
+     { equation ";" }
+   }
    end when
 
 when-statement :
    when expression then
      { statement ";" }
    { elsewhen expression then
-     { statement ";" } }
+     { statement ";" }
+   }
    end when
 
 connect-clause :
    connect "(" component-reference "," component-reference ")"
 \end{lstlisting}
-\subsection{Expressions}\doublelabel{expressions1}
+
+\subsection{Expressions}\label{expressions1}
+
 \begin{lstlisting}[language=grammar]
 expression :
    simple-expression
-   | if expression then expression { elseif expression then expression }
-   else expression
+   | if expression then expression
+     { elseif expression then expression }
+     else expression
 
 simple-expression :
    logical-expression [ ":" logical-expression [ ":" logical-expression ] ]
@@ -363,11 +394,14 @@ primary :
    | "{" array-arguments "}"
    | end
 
-UNSIGNED-NUMBER : UNSIGNED-INTEGER | UNSIGNED-REAL
+UNSIGNED-NUMBER :
+   UNSIGNED-INTEGER | UNSIGNED-REAL
 
-type-specifier : ["."] name
+type-specifier :
+   ["."] name
 
-name : IDENT { "." IDENT }
+name :
+   IDENT { "." IDENT }
 
 component-reference :
    [ "." ] IDENT [ array-subscripts ] { "." IDENT [ array-subscripts ] }
@@ -376,7 +410,7 @@ function-call-args :
    "(" [ function-arguments ] ")"
 
 function-arguments :
-expression [ "," function-arguments-non-first | for for-indices ]
+   expression [ "," function-arguments-non-first | for for-indices ]
    | function-partial-application [ "," function-arguments-non-first ]
    | named-arguments
 
@@ -400,7 +434,7 @@ function-argument :
 function-partial-application :
    function type-specifier "(" [ named-arguments ] ")"
 
-output-expression-list:
+output-expression-list :
    [ expression ] { "," [ expression ] }
 
 expression-list :
@@ -416,7 +450,7 @@ description :
    description-string [ annotation-clause ]
 
 description-string :
-[ STRING { "+" STRING } ]
+   [ STRING { "+" STRING } ]
 
 annotation-clause :
    annotation class-modification

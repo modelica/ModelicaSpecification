@@ -1,14 +1,14 @@
-\chapter{Scoping, Name Lookup, and Flattening}\doublelabel{scoping-name-lookup-and-flattening}
+\chapter{Scoping, Name Lookup, and Flattening}\label{scoping-name-lookup-and-flattening}
 
 This chapter describes the scope rules, and most of the name lookup and
 flattening of Modelica.
 
-\section{Flattening Context}\doublelabel{flattening-context}
+\section{Flattening Context}\label{flattening-context}
 
 Flattening is made in a context which consists of a modification
-environment (\autoref{modification-environment}) and an ordered set of enclosing classes.
+environment (\cref{modification-environment}) and an ordered set of enclosing classes.
 
-\section{Enclosing Classes}\doublelabel{enclosing-classes}
+\section{Enclosing Classes}\label{enclosing-classes}
 
 The classes lexically enclosing an element form an ordered set of
 enclosing classes. A class defined inside another class definition (the
@@ -16,7 +16,7 @@ enclosing class) precedes its enclosing class definition in this set.
 
 Enclosing all class definitions is an unnamed enclosing class that
 contains all top-level class definitions, and not-yet read classes
-defined externally as described in \autoref{mapping-package-class-structures-to-a-hierarchical-file-system}. The order of
+defined externally as described in \cref{mapping-package-class-structures-to-a-hierarchical-file-system}. The order of
 top-level class definitions in the unnamed enclosing class is undefined.
 
 During flattening, the enclosing class of an element being flattened is
@@ -28,8 +28,8 @@ For example, this means that a declaration can refer to a name inherited through
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-class C1 ... end C1;
-class C2 ... end C2;
+class C1 $\ldots$ end C1;
+class C2 $\ldots$ end C2;
 class C3
   Real x=3;
   C1 y;
@@ -47,7 +47,7 @@ and \lstinline!C3!. The set of enclosing classes of \lstinline!z! is \lstinline!
 enclosing class in that order.
 \end{example}
 
-\section{Static Name Lookup}\doublelabel{static-name-lookup}
+\section{Static Name Lookup}\label{static-name-lookup}
 
 Names are looked up at class flattening to find names of base classes,
 component types, etc. Implicitly defined names of record constructor
@@ -55,52 +55,39 @@ functions and enumeration type conversion functions are ignored during
 type name lookup. Names of record classes and enumeration types are ignored during function name lookup.
 
 \begin{nonnormative}
-The reason to ignore the implicitly defined names is that a record and the implicitly created record constructor function, see \autoref{record-constructor-functions},
-and an enumeration type and the implicitly created conversion function (\autoref{type-conversion-of-integer-to-enumeration-values}), have the same name.
+The reason to ignore the implicitly defined names is that a record and the implicitly created record constructor function, see \cref{record-constructor-functions},
+and an enumeration type and the implicitly created conversion function (\cref{type-conversion-of-integer-to-enumeration-values}), have the same name.
 \end{nonnormative}
 
-\subsection{Simple Name Lookup}\doublelabel{simple-name-lookup}
+\subsection{Simple Name Lookup}\label{simple-name-lookup}
 
-When an element, equation, or section is flattened, any simple name
-(not composed using dot notation) is first looked up sequentially among
-iteration variables (if any; see below), and then looked up sequentially in each
-member of the ordered set \emph{of instance scopes (see
-\autoref{the-class-tree}) corresponding to lexically enclosing classes} until a
-match is found or an enclosing class is encapsulated. In the latter case
-the lookup stops except for the predefined types, functions and
-operators defined in this specification. For these cases the lookup continues in the global scope, where they are defined.
+% Not adding 'encapsulated' as normal word to index; the keyword variant seems sufficient
+A class declared with the keyword \lstinline!encapsulated!\indexinline{encapsulated} (see \lstinline[language=grammar]!class-definition! in the grammar) is called an \firstuse{encapsulated} class.
+By restricting name lookup inside a restricted class in ways defined in this chapter, the meaning of the class is made independent of where it is placed in a package hierarchy.
 
-The iteration variables are the implicitly declared iteration variable(s) if inside
-the body of a for-loop, \autoref{for-equations-repetitive-equation-structures} and \autoref{for-statement},
-or the body of a reduction expression, \autoref{reduction-functions-and-operators}.
+When an element, equation, or section is flattened, any simple name (not composed using dot notation) is first looked up sequentially among iteration variables (if any; see below), and then looked up sequentially in each member of the ordered set \emph{of instance scopes (see \cref{the-class-tree}) corresponding to lexically enclosing classes} until a match is found or an enclosing class is encapsulated.
+In the latter case the lookup stops except for the predefined types, functions and operators defined in this specification.
+For these cases the lookup continues in the global scope, where they are defined.
 
-Reference to variables successfully looked up in an enclosing class is
-only allowed for variables declared as constant. The values of modifiers
-are thus resolved in the \emph{instance} scope of which the modifier
-appears; if the use is in a modifier on a short class definition, see \autoref{short-class-definitions}.
+The iteration variables are the implicitly declared iteration variable(s) if inside the body of a \lstinline!for!-loop, \cref{for-equations-repetitive-equation-structures} and \cref{for-statement}, or the body of a reduction expression, \cref{reduction-functions-and-operators}.
+
+Reference to variables successfully looked up in an enclosing class is only allowed for variables declared as \lstinline!constant!.  The values of modifiers are thus resolved in the \emph{instance} scope of which the modifier appears; if the use is in a modifier on a short class definition, see \cref{short-class-definitions}.
 
 This lookup in each \emph{instance} scope is performed as follows:
 \begin{itemize}
 \item
-  Among declared named elements (\lstinline!class-definition! and
-  \lstinline!component-declaration!) of the class (including elements inherited from
-  base-classes).
+  Among declared named elements (\lstinline!class-definition! and \lstinline!component-declaration!) of the class (including elements inherited from base classes).
 \item
-  Among the import names of qualified import statements in the
-  \emph{instance} scope. The import name of \lstinline!import A.B.C!; is \lstinline!C! and the
-  import name of \lstinline!import D=A.B.C;! is \lstinline!D!.
+  Among the import names of qualified import-clauses in the \emph{instance} scope.  The import name of \lstinline!import A.B.C!; is \lstinline!C! and the import name of \lstinline!import D=A.B.C;! is \lstinline!D!.
 \item
-  Among the public members of packages imported via unqualified
-  import-statements in the \emph{instance} scope. It is an error if
-  this step produces matches from several unqualified imports.
+  Among the public members of packages imported via unqualified import-clauses in the \emph{instance} scope.  It is an error if this step produces matches from several unqualified imports.
 \end{itemize}
 
-Import statements defined in inherited classes are ignored for the lookup, i.e. import statements are not inherited.
+The \lstinline!import!-clauses defined in inherited classes are ignored for the lookup, i.e.\ \lstinline!import!-clauses are not inherited.
 
-\subsection{Composite Name Lookup}\doublelabel{composite-name-lookup}
+\subsection{Composite Name Lookup}\label{composite-name-lookup}
 
-For a composite name of the form \lstinline!A.B! or \lstinline!A.B.C!, etc. lookup is performed
-as follows:
+For a composite name of the form \lstinline!A.B! or \lstinline!A.B.C!, etc.\ lookup is performed as follows:
 \begin{itemize}
 \item
   The first identifier (\lstinline!A!) is looked up as defined above.
@@ -118,44 +105,53 @@ as follows:
   identifiers of the rest of the name (e.g., B and B.C) must be
   classes.
 \item
-  If the identifier denotes a class, that class is temporarily flattened
-  (as if instantiating a component without modifiers of this class, see
-  \autoref{modification-environment}) and using the enclosing classes of the denoted class.
-  The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the
-  declared named elements of the temporary flattened class. If the class
-  does not satisfy the requirements for a package, the lookup is
-  restricted to encapsulated elements only. The class we look inside may
-  not be partial in a simulation model.
+  If the identifier denotes a class, that class is temporarily flattened (as if instantiating a component without modifiers of this class, see \cref{modification-environment}) and using the enclosing classes of the denoted class.
+  The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the declared named elements of the temporary flattened class.
+  If the class does not satisfy the requirements for a package, the lookup is restricted to encapsulated\indexinline{encapsulated} elements only.
+  The class we look inside shall not be partial in a simulation model.
 \end{itemize}
 
 \begin{nonnormative}
-The temporary class flattening performed for composite names
-follow the same rules as class flattening of the base class in an
-extends-clause, local classes and the type in a component clause, except
-that the environment is empty. See also \lstinline!MoistAir2! example in
-\autoref{redeclaration} for further explanations regarding looking inside
-partial packages.
+The temporary class flattening performed for composite names follow the same rules as class flattening of the base class in an extends-clause, local classes and the type in a \lstinline[language=grammar]!component-clause!, except that the environment is empty.
+See also \lstinline!MoistAir2! example in \cref{redeclaration} for further explanations regarding looking inside partial packages.
 \end{nonnormative}
+\begin{example}
+Components and classes are part of the same name-space and thus a component cannot
+have the same name as its class or the first part of the class-name as that
+would prevent lookup of the class name.
+\begin{lstlisting}[language=modelica]
+model A
+  M M;    // Illegal, component 'M' prevents finding class 'M'
+  P.Q P;  // Illegal, component 'P' prevents finding package 'P'
+  .R R;   // Legal, see next section
+  S.Q Q;  // Legal
 
-\subsection{Global Name Lookup}\doublelabel{global-name-lookup}
+  Y a;    // Illegal, component 'Y' (below) prevents finding class 'Y'
+  Y.X b;  // Illegal, component 'Y' (below) prevents finding package 'Y'
+  .Y c;   // Legal, see next section
+  Real Y;
+end A;
+\end{lstlisting}
+\end{example}
+
+\subsection{Global Name Lookup}\label{global-name-lookup}
 
 For a name starting with dot, e.g.: \lstinline!.A! (or \lstinline!.A.B!, \lstinline!.A.B.C! etc.) lookup is performed as follows:
 \begin{itemize}
 \item
-  The first identifier (\lstinline!A!) is looked up in the global scope. This is
-  possible even if the class is encapsulated and import statements are
-  not used for this. If there does not exist a class \lstinline!A! in global scope
-  this is an error.
+  The first identifier (\lstinline!A!) is looked up in the global scope.
+  This is possible even if the class is encapsulated\indexinline{encapsulated} and import-clauses are not used for this.
+  If there does not exist a class \lstinline!A! in global scope this is an error.
 \item
   If the name is simple then the class \lstinline!A! is the result of lookup.
 \item
   If the name is a composite name then the class \lstinline!A! is temporarily
-  flattened with an empty environment (i.e. no modifiers, see
-  \autoref{modification-environment}) and using the enclosing classes of the denoted class. The rest
+  flattened with an empty environment (i.e.\ no modifiers, see
+  \cref{modification-environment}) and using the enclosing classes of the denoted class. The rest
   of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the declared named
   elements of the temporary flattened class. If the class does not
   satisfy the requirements for a package, the lookup is restricted to
-  encapsulated elements only. The class we look inside may not be
+  encapsulated elements only. The class we look inside shall not be
   partial.
 \end{itemize}
 
@@ -164,19 +160,19 @@ The package-restriction ensures that global name lookup of
 component references can only find global constants.
 \end{nonnormative}
 
-\subsection{Lookup of Imported Names}\doublelabel{lookup-of-imported-names1}
+\subsection{Lookup of Imported Names}\label{lookup-of-imported-names1}
 
-See \autoref{lookup-of-imported-names}.
+See \cref{lookup-of-imported-names}.
 
-\section{Instance Hierarchy Name Lookup of Inner Declarations}\doublelabel{instance-hierarchy-name-lookup-of-inner-declarations}
+\section{Instance Hierarchy Name Lookup of Inner Declarations}\label{instance-hierarchy-name-lookup-of-inner-declarations}
 
-An element declared with the prefix \lstinline!outer! references an element instance
-with the same name but using the prefix \lstinline!inner! which is nearest in the
-enclosing instance hierarchy of the \lstinline!outer! element declaration.
+An element declared with the prefix \lstinline!outer!\indexinline{outer} references an element instance with the same name but using the prefix \lstinline!inner!\indexinline{inner} which is nearest in the enclosing instance hierarchy of the \lstinline!outer! element declaration.
 
-Outer component declarations may not have modifications (including binding equations).
+Outer component declarations shall not have modifications (including binding equations).
 Outer class declarations should be defined using short-class
-definitions without modifications. However, see also \autoref{simultaneous-inner-outer-declarations}.
+definitions without modifications. However, see also \cref{simultaneous-inner-outer-declarations}.
+
+If the outer component declaration is a disabled conditional component (\cref{conditional-component-declaration}) it is also ignored for the automatic creation of inner component (neither causing it; nor influencing the type of it).
 
 An \lstinline!outer! element reference in a simulation model requires that one
 corresponding \lstinline!inner! element declaration exist or can be created in a
@@ -190,12 +186,12 @@ unique way:
   If there is one (or more) \lstinline!outer! declarations of a partial class it is
   an error.
 \item
-  In other cases, i.e. if a unique non-partial class is used for all
+  In other cases, i.e.\ if a unique non-partial class is used for all
   \lstinline!outer! declarations of the same name lacking a matching inner
   declaration, then an \lstinline!inner! declaration of that class is automatically
   added at the top of the model and diagnostics is given.
 \item
-  The annotations defined in \autoref{annotations-for-the-graphical-user-interface} does not affect this process,
+  The annotations defined in \cref{annotations-for-the-graphical-user-interface} does not affect this process,
   other than that:
 
   \begin{itemize}
@@ -219,13 +215,13 @@ Simple Example:
 \begin{lstlisting}[language=modelica]
 class A
   outer Real T0;
-  ...
+  $\ldots$
 end A;
 class B
   inner Real T0=1;
   A a1, a2; // B.T0, B.a1.T0 and B.a2.T0 will have the same value
   A a3(T0=4); // Illegal as T0 is an outer variable.
-  ...
+  $\ldots$
 end B;
 \end{lstlisting}
 More complicated example:
@@ -290,7 +286,7 @@ end A;
 \end{lstlisting}
 \end{example}
 
-\subsection{Example of Field Functions using Inner/Outer}\doublelabel{example-of-field-functions-using-inner-outer}
+\subsection{Example of Field Functions using Inner/Outer}\label{example-of-field-functions-using-inner-outer}
 
 \begin{nonnormative}
 Inner declarations can be used to define field functions, such
@@ -304,12 +300,12 @@ end A;
 function B // B is a subtype of A
   extends A;
 algorithm
-  ...
+  $\ldots$
 end B;
 
 class D
   outer function fc = A;
-  ...
+  $\ldots$
 equation
   y = fc(u);
 end D;
@@ -321,7 +317,7 @@ end C;
 \end{lstlisting}
 \end{nonnormative}
 
-\section{Simultaneous Inner/Outer Declarations}\doublelabel{simultaneous-inner-outer-declarations}
+\section{Simultaneous Inner/Outer Declarations}\label{simultaneous-inner-outer-declarations}
 
 An element declared with both the prefixes \lstinline!inner! and \lstinline!outer! conceptually
 introduces two declarations with the same name: one that follows the
@@ -333,7 +329,7 @@ element in an enclosing scope with the prefix \lstinline!inner!.
 \end{nonnormative}
 
 Modifications of elements declared with both the prefixes \lstinline!inner! and \lstinline!outer!
-may have modfications, those modifications are only applied to the
+may have modifications, those modifications are only applied to the
 \lstinline!inner! declaration.
 
 \begin{example}
@@ -370,12 +366,9 @@ end System;
 \end{lstlisting}
 \end{example}
 
-\section{Flattening Process}\doublelabel{flattening-process}
+\section{Flattening Process}\label{flattening-process}
 
-In order to guarantee that elements can be used before they are declared
-and that elements do not depend on the order of their declaration
-(\autoref{declaration-order-and-usage-before-declaration}) in the enclosing class, the flattening proceeds in the
-following two major steps:
+In order to guarantee that elements can be used before they are declared and that elements do not depend on the order of their declaration (\cref{declaration-order-and-usage-before-declaration}) in the enclosing class, the \firstuse{flattening}\index{flattening} proceeds in the following two major steps:
 \begin{enumerate}
 \item
   Instantiation process
@@ -392,7 +385,7 @@ The constants, parameters and variables are defined by globally unique
 identifiers and all references are resolved to the identifier of the
 referenced variable. No other transformations are performed.
 
-\subsection{Instantiation}\doublelabel{instantiation}
+\subsection{Instantiation}\label{instantiation}
 
 The instantiation is performed in two steps. First a class tree is
 created and then from that an instance tree for a particular model is
@@ -406,28 +399,23 @@ instantiated the corresponding diagnostics can be omitted (or be given).
 However, errors that should only be reported in a simulation model must
 be omitted there, since they are not part of the simulation model.
 
-\subsubsection{The Class Tree}\doublelabel{the-class-tree}
+\subsubsection{The Class Tree}\label{the-class-tree}
 
-All necessary libraries including the model which is to be instantiated
-are loaded from e.g. file system and form a so called \firstuse{class tree}.
-This tree represents the syntactic information from the
-class definitions. It contains also all modifications at their original
-locations in syntactic form. The builtin classes are put into the unnamed root of the class tree.
+All necessary libraries including the model which is to be instantiated are loaded from e.g.\ file system and form a so called \firstuse{class tree}\index{class tree}.
+This tree represents the syntactic information from the class definitions.
+It contains also all modifications at their original locations in syntactic form.
+The builtin classes are put into the unnamed root of the class tree.
 
 \begin{nonnormative}
 The class tree is built up directly during parsing of the Modelica texts.  For each class a local tree is created which is then merged into the one big tree, according
 to the location of the class in the class hierarchy.  This tree can be seen as the abstract syntax tree (AST) of the loaded libraries.
 \end{nonnormative}
 
-\subsubsection{The Instance Tree}\doublelabel{the-instance-tree}
+\subsubsection{The Instance Tree}\label{the-instance-tree}
 
-The output of the instantiation process is an \firstuse{instance tree}.
-The instance tree consists of nodes representing the elements of a class
-definition from the class tree. For a component the subtree of a
-particular node is created using the information from the class of the
-component clause and a new modification environment as result of merging
-the current modification environment with the modifications from the
-current element declaration (see \autoref{merging-of-modifications}).
+The output of the instantiation process is an \firstuse{instance tree}\index{instance tree}.
+The instance tree consists of nodes representing the elements of a class definition from the class tree.
+For a component the subtree of a particular node is created using the information from the class of the \lstinline[language=grammar]!component-clause! and a new modification environment as result of merging the current modification environment with the modifications from the current element declaration (see \cref{merging-of-modifications}).
 
 The instance tree has the following properties:
 \begin{itemize}
@@ -464,12 +452,12 @@ elements syntactically defined in the class it is instantiated from. The
 instance scope is the starting point for name lookup.
 
 \begin{nonnormative}
-If the name is not found the lookup is continued in the instance scope corresponding to the lexically enclosing class.  Extends clauses are treated as unnamed nodes in the
-instance tree --- when searching for an element in an instance scope the search also recursively examines the elements of the extends clauses.  Except that inherited
-import-statements are ignored.
+If the name is not found the lookup is continued in the instance scope corresponding to the lexically enclosing class.
+\lstinline!extends!-clauses are treated as unnamed nodes in the instance tree -- when searching for an element in an instance scope the search also recursively examines the elements of the \lstinline!extends!-clauses.
+Except that inherited \lstinline!import!-clauses are ignored.
 \end{nonnormative}
 
-\subsubsection{The Instantiation Procedure.}\doublelabel{the-instantiation-procedure}
+\subsubsection{The Instantiation Procedure.}\label{the-instantiation-procedure}
 
 The instantiation is a recursive procedure with the following inputs:
 \begin{itemize}
@@ -491,15 +479,11 @@ starting from the instance scope of the current element. References in
 modifications and equations are resolved later (during generation of
 flat equation system) using the same lookup.
 
-\subsubsection{Steps of Instantiation}\doublelabel{steps-of-instantiation}
+\subsubsection{Steps of Instantiation}\label{steps-of-instantiation}
 
-\paragraph*{The element itself}\doublelabel{the-element-itself}
+\paragraph*{The element itself}\label{the-element-itself}
 
-A partially instantiated class or component is an element that is ready
-to be instantiated; a partially instantiated element (i.e. class or
-component) is comprised of a reference to the original element (from the
-class tree) and the modifiers for that element (including a possible
-redeclaration).
+A \firstuse{partially instantiated}\index{partially instantiated} class or component is an element that is ready to be instantiated; a partially instantiated element (i.e.\ class or component) is comprised of a reference to the original element (from the class tree) and the modifiers for that element (including a possible redeclaration).
 
 The possible redeclaration of the element itself takes effect.
 
@@ -508,7 +492,7 @@ tree (using the redeclaration if any), modifiers merged to that class
 forming a new partially instantiated class that is instantiated as
 below.
 
-\paragraph*{The local contents of the element}\doublelabel{the-local-contents-of-the-element}
+\paragraph*{The local contents of the element}\label{the-local-contents-of-the-element}
 
 For local classes and components in the current class, instance nodes
 are created and inserted into the current instance. Modifiers (including
@@ -524,22 +508,14 @@ Equations, algorithms, and annotations of the class and the component
 declaration are copied to the instance without merging.
 
 \begin{nonnormative}
-The annotations can be relevant for simulations, e.g. annotations for code generation (\autoref{annotations-for-code-generation}.), simulation experiments
-(\autoref{annotations-for-simulation-experiments}) or functions (\autoref{declaring-derivatives-of-functions}, \autoref{declaring-inverses-of-functions} and \autoref{external-function-interface}).
+The annotations can be relevant for simulations, e.g.\ annotations for symbolic processing (\cref{modelica:Evaluate}), simulation experiments (\cref{modelica:experiment}) or functions (\cref{derivatives-and-inverses-of-functions} and \cref{external-function-interface}).
 \end{nonnormative}
 
-Extends clauses are not looked up, but empty extends clause nodes are
-created and inserted into the current instance -- to be able to preserve
-the declaration order of components.
+The \lstinline!extends!-clauses are not looked up, but empty \lstinline!extends!-clause nodes are created and inserted into the current instance (to be able to preserve the declaration order of components).
 
-\paragraph*{The inherited contents of the element}\doublelabel{the-inherited-contents-of-the-element}
+\paragraph*{The inherited contents of the element}\label{the-inherited-contents-of-the-element}
 
-Classes of extends clauses of the current class are looked up in the
-instance tree, modifiers (including redeclarations) are merged, the
-contents of these classes are partially instantiated using the new
-modification environment, and are inserted into an extends clause node,
-which is an unnamed node in the current instance that only contains the
-inherited contents from that base-class.
+Classes of \lstinline!extends!-clauses of the current class are looked up in the instance tree, modifiers (including redeclarations) are merged, the contents of these classes are partially instantiated using the new modification environment, and are inserted into an \lstinline!extends!-clause node, which is an unnamed node in the current instance that only contains the inherited contents from that base class.
 
 The classes of extends-clauses are looked up before and after handling
 extends-clauses; and it is an error if those lookups generate different
@@ -553,7 +529,7 @@ and only the first one of them is kept.  It is an error if they are not identica
 Only keeping the first among the children with the same name is important for function arguments where the order matters.
 \end{nonnormative}
 
-\paragraph*{Recursive instantiation of components}\doublelabel{recursive-instantiation-of-components}
+\paragraph*{Recursive instantiation of components}\label{recursive-instantiation-of-components}
 
 Components (local and inherited) are recursively instantiated.
 
@@ -581,63 +557,63 @@ model M
 end M;
 \end{lstlisting}
 
-To recursively instantiate \lstinline!M! allowing the generation of flat
-equation system we have the following steps (not including checks):
+To recursively instantiate \lstinline!M! allowing the generation of flat equation system we have the following steps (not including checks):
 \begin{enumerate}
 \item
-  Instantiate \lstinline!M!: which partially instantiates \lstinline!B!, \lstinline!b!, \lstinline!C!, \lstinline!D!, and \lstinline!E!.
+  Instantiate \lstinline!M!, which partially instantiates \lstinline!B!, \lstinline!b!, \lstinline!C!, \lstinline!D!, and \lstinline!E!.
 \item
   Instantiate \lstinline!M.b!:
   \begin{enumerate}
   \item
     First find the class \lstinline!B! in \lstinline!M! (the partially instantiated elements have correct name allowing lookup)
   \item
-    instantiate the partially instantiated \lstinline!M.B! with the modifier \lstinline!redeclare model A=D(p=1)!
+    Instantiate the partially instantiated \lstinline!M.B! with the modifier \lstinline!redeclare model A=D(p=1)!.
   \item
-    partially instantiate \lstinline!M.b.a! (no modifier), and \lstinline!M.b.A! (with modifier \lstinline!=D(p=1)!)
+    Partially instantiate \lstinline!M.b.a! (no modifier), and \lstinline!M.b.A! (with modifier \lstinline!=D(p=1)!).
   \end{enumerate}
 \item
   Instantiate \lstinline!M.b.a!:
   \begin{enumerate}
   \item
-    First find the class \lstinline!A! in \lstinline!M.b! (the partially instantiated elements have correct name allowing lookup)
+    First find the class \lstinline!A! in \lstinline!M.b! (the partially instantiated elements have correct name allowing lookup).
   \item
     Instantiate the partially instantiated \lstinline!M.b.A! with the modifier \lstinline!=D(p=1)!.
     \begin{enumerate}
     \item
-      Find the base-class \lstinline!=D! from the modifier.  This performs lookup for \lstinline!D! in \lstinline!M!, and finds the partially instantiated class \lstinline!D!
+      Find the base class \lstinline!=D! from the modifier.
+      This performs lookup for \lstinline!D! in \lstinline!M!, and finds the partially instantiated class \lstinline!D!.
     \item
-      Instantiate the base-class \lstinline!M.D! with modifier \lstinline!p=1!, and insert as unnamed node in \lstinline!M.b.A!.
+      Instantiate the base class \lstinline!M.D! with modifier \lstinline!p=1!, and insert as unnamed node in \lstinline!M.b.A!.
       \begin{enumerate}
       \item
-        Partially instantiate the component \lstinline!p! with modifier \lstinline!=1!
+        Partially instantiate the component \lstinline!p! with modifier \lstinline!=1!.
       \item
-        Find the base-class \lstinline!C! in \lstinline!M.D!. Since there is no local element called \lstinline!C! the search is then continued in \lstinline!M! and finds
-        the partially instantiated class \lstinline!M.C!
+        Find the base class \lstinline!C! in \lstinline!M.D!.
+        Since there is no local element called \lstinline!C! the search is then continued in \lstinline!M! and finds the partially instantiated class \lstinline!M.C!.
       \item
-        Instantiate the base-class \lstinline!M.C! as below
+        Instantiate the base class \lstinline!M.C! as below.
       \end{enumerate}
     \end{enumerate}
   \end{enumerate}
 \item
-  Instantiate the base-class \lstinline!M.C! inserting the result into unnamed node in \lstinline!M.b.a!
+  Instantiate the base class \lstinline!M.C! inserting the result into unnamed node in \lstinline!M.b.a!:
   \begin{enumerate}
   \item
-    Partially instantiate \lstinline!e!
+    Partially instantiate \lstinline!e!.
   \item
-    Instantiate \lstinline!e! which requires finding \lstinline!E!.  First looking for \lstinline!E! in the un-named node for extends \lstinline!M.C!, and, since there is
-    no local element \lstinline!E! the search is then continued in \lstinline!M! (which lexically encloses \lstinline!M.C!) and finds \lstinline!E! class inheriting from
-    \lstinline!Real!.  The \lstinline!e! is then instantiated using class \lstinline!E! inheriting from \lstinline!Real!.
+    Instantiate \lstinline!e! which requires finding \lstinline!E!.
+    First looking for \lstinline!E! in the un-named node for \lstinline!extends M.C!, and, since there is no local element \lstinline!E! the search is then continued in \lstinline!M! (which lexically encloses \lstinline!M.C!) and finds \lstinline!E! class inheriting from \lstinline!Real!.
+    The \lstinline!e! is then instantiated using class \lstinline!E! inheriting from \lstinline!Real!.
   \end{enumerate}
 \item
-  Instantiate \lstinline!M.b.a.p!
+  Instantiate \lstinline!M.b.a.p!:
   \begin{enumerate}
   \item
     First the class \lstinline!E! in \lstinline!M.b.a! finding \lstinline!E! class inheriting from \lstinline!Integer!.
   \item
-    Instantiate the \lstinline!M.b.a.p! using the class \lstinline!E! inheriting from \lstinline!Integer! with modifier \lstinline!=1!
+    Instantiate the \lstinline!M.b.a.p! using the class \lstinline!E! inheriting from \lstinline!Integer! with modifier \lstinline!=1!.
   \item
-    Instantiate the base-class Integer with modifier \lstinline!=1!, and insert as unnamed node in \lstinline!M.b.a.p!.
+    Instantiate the base class \lstinline!Integer! with modifier \lstinline!=1!, and insert as unnamed node in \lstinline!M.b.a.p!.
   \end{enumerate}
 \end{enumerate}
 
@@ -647,7 +623,7 @@ Note that if \lstinline!D! was consistently replaced by \lstinline!A! in the exa
 classes called \lstinline!A!).
 \end{example}
 
-\subsection{Generation of the flat equation system}\doublelabel{generation-of-the-flat-equation-system}
+\subsection{Generation of the flat equation system}\label{generation-of-the-flat-equation-system}
 
 During this process, all references by name in conditional declarations,
 modifications, dimension definitions, annotations, equations and
@@ -656,26 +632,20 @@ to, and the names are replaced by the global unique identifier of the
 instance.
 
 \begin{nonnormative}
-This identifier is normally constructed from the names of the instances along a path in the instance tree (and omitting the unnamed nodes of extends clauses), separated
-by dots.  Either the referenced instance belongs to the model to be simulated the path starts at the model itself, or if not, it starts at the unnamed root of the instance
-tree, e.g. in case of a constant in a package.
+This identifier is normally constructed from the names of the instances along a path in the instance tree (and omitting the unnamed nodes of \lstinline!extends!-clauses), separated by dots.
+Either the referenced instance belongs to the model to be simulated the path starts at the model itself, or if not, it starts at the unnamed root of the instance tree, e.g.\ in case of a constant in a package.
 \end{nonnormative}
 
 \begin{nonnormative}
 To resolve the names, a name lookup using the instance tree is performed, starting at the instance scope (unless the name is fully qualified) of the modification, algorithm
 or equation.  If it is not found locally the search is continued at the instance of the lexically enclosing class of the scope (this is normally not equal to the parent of
-the current instance), and then continued with their parents as described in \autoref{static-name-lookup}.  If the found component is an outer declaration, the search is
-continued using the direct parents in the instance tree (see \autoref{instance-hierarchy-name-lookup-of-inner-declarations}).  If the lookup has to look into a class which
+the current instance), and then continued with their parents as described in \cref{static-name-lookup}.  If the found component is an outer declaration, the search is
+continued using the direct parents in the instance tree (see \cref{instance-hierarchy-name-lookup-of-inner-declarations}).  If the lookup has to look into a class which
 is not instantiated yet (or only partially instantiated), it is instantiated in place.
 \end{nonnormative}
 
-The flat equation system consists of a list of variables with
-dimensions, flattened equations and algorithms, and a list of called
-functions which are flattened separately. A flattened function consists
-of algorithm or external clause and top-level variables (variables
-directly declared in the function or one of its base-classes) -- which
-recursively can contain other variables; the list of non-top level
-variables is not needed.
+The flat equation system consists of a list of variables with dimensions, flattened equations and algorithms, and a list of called functions which are flattened separately.
+A flattened function consists of algorithm or external-clause and top-level variables (variables directly declared in the function or one of its base classes) -- which recursively can contain other variables; the list of non-top-level variables is not needed.
 
 The instance tree is recursively walked through as follows for elements
 of the class (if necessary a partially instantiated component is first
@@ -685,7 +655,6 @@ instantiated):
   At each visited component instance, the name is inserted into the
   variables list. Then the conditional declaration expression is
   evaluated if applicable.
-
   \begin{itemize}
   \item
     The variable list is updated with the actual instance
@@ -697,9 +666,8 @@ instantiated):
     instances are resolved and attached to the variable to define their
     complete dimension.
   \item
-    If it is of record or simple type (Boolean, Integer, enumeration,
-    Real, String, Clock, ExternalObject):
-
+    If it is of record or simple type (\lstinline!Boolean!, \lstinline!Integer!, enumeration,
+    \lstinline!Real!, \lstinline!String!, \lstinline!Clock!, \lstinline!ExternalObject!):
     \begin{itemize}
     \item
       In the modifications of \emph{value} attribute references are
@@ -707,16 +675,15 @@ instantiated):
       is formed from a reference to the name of the instance and the
       resolved modification value of the instance, and included into the
       equation system. Except if the value for an element of a record is
-      overridden by the value for an entire record; \autoref{merging-of-modifications}.
+      overridden by the value for an entire record; \cref{merging-of-modifications}.
     \end{itemize}
   \item
-    If it is of simple type (Boolean, Integer, enumeration, Real,
-    String, Clock, ExternalObject):
-
+    If it is of simple type (\lstinline!Boolean!, \lstinline!Integer!, enumeration, \lstinline!Real!,
+    \lstinline!String!, \lstinline!Clock!, \lstinline!ExternalObject!):
     \begin{itemize}
     \item
-      In the modifications of \emph{non-value} attributes, e.g. start,
-      fixed etc. references are resolved using the instance scope of the
+      In the modifications of \emph{non-value} attributes, e.g.\ \lstinline!start!,
+      \lstinline!fixed! etc.\ references are resolved using the instance scope of the
       modification. An equation is formed from a reference to the name
       of the instance appended by a dot and the attribute name and the
       resolved modification value of the instance, and included into the
@@ -726,12 +693,8 @@ instantiated):
     If it is of a non-simple type the instance is recursively handled.
   \end{itemize}
 \item
-  If there are equation or algorithm sections in the class definition of
-  the instance, references are resolved using the instance scope of the
-  instance and are included in the equation system. Some references --
-  in particular to non simple, non record objects like connectors in
-  connect statements and states in transition statements are not
-  resolved yet and handled afterwards.
+  If there are equation or algorithm sections in the class definition of the instance, references are resolved using the instance scope of the instance and are included in the equation system.
+  Some references -- in particular to non simple, non record objects like connectors in \lstinline!connect!-equations and states in \lstinline!transition!-equations are not resolved yet and handled afterwards.
 \item
   Instances of local classes are ignored.
 \item
@@ -739,7 +702,7 @@ instantiated):
   handled.
 \item
   If there are function calls encountered during this process, the call
-  is filled up with default arguments as defined in \autoref{positional-or-named-input-arguments-of-functions}. These are
+  is filled up with default arguments as defined in \cref{positional-or-named-input-arguments-of-functions}. These are
   built from the modifications of input arguments which are resolved
   using their instance scope. The called function itself is looked up in
   the instance tree. All used functions are flattened and put into the
@@ -748,28 +711,27 @@ instantiated):
   Conditional components with false condition are removed afterwards and
   they are not part of the simulation model.
   \begin{nonnormative}
-  Thus e.g. parameters don't need values in them. However, type-error can be detected.
+  Thus e.g.\ parameters don't need values in them. However, type-error can be detected.
   \end{nonnormative}
 \item
-  Each reference is checked, whether it is a valid reference, e.g. the
+  Each reference is checked, whether it is a valid reference, e.g.\ the
   referenced object belongs to or is an instance, where all existing
   conditional declaration expressions evaluate to true or it is a
   constant in a package.
   \begin{nonnormative}
-  Conditional components can be used in connect-statements, and if the component is conditionally disabled the connect-statement is removed.
+  Conditional components can be used in \lstinline!connect!-equations, and if the component is conditionally disabled the \lstinline!connect!-equation is removed.
   \end{nonnormative}
 \end{itemize}
 
-This leads to a flattened equation system, except for connect and transition statements. These have to be transformed as described in
-\autoref{connectors-and-connections} and \autoref{state-machines}.  This may lead to further changes in the instance tree (e.g. from expandable connectors
-(\autoref{expandable-connectors})) and additional equations in the flattened equation system (e.g. connect equations (\autoref{generation-of-connection-equations}),
-generated equations for state machine semantics (\autoref{semantics-summary})).
+This leads to a flattened equation system, except for \lstinline!connect!- and \lstinline!transition!-equations.
+These have to be transformed as described in \cref{connectors-and-connections} and \cref{state-machines}.
+This may lead to further changes in the instance tree (e.g.\ from expandable connectors (\cref{expandable-connectors})) and additional equations in the flattened equation system (e.g.\ connection equations (\cref{generation-of-connection-equations}), generated equations for state machine semantics (\cref{semantics-summary})).
 
 \begin{nonnormative}
 After flattening, the resulting equation system is self
 contained and covers all information needed to transform it to a
 simulatable model, but the class and instance trees are still needed: in
 the transformation process, there might be the need to instantiate
-further functions, e.g. from \lstinline!derivative! annotation or from \lstinline!inverse!
+further functions, e.g.\ from \lstinline!derivative! annotation or from \lstinline!inverse!
 annotation etc., on demand.
 \end{nonnormative}

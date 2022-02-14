@@ -1,4 +1,4 @@
-\chapter{Modelica DAE Representation}\doublelabel{modelica-dae-representation}
+\chapter{Modelica DAE Representation}\label{modelica-dae-representation}
 
 In this appendix, the mapping of a Modelica model into an appropriate
 mathematical description form is discussed.
@@ -9,151 +9,165 @@ Modelica simulation model into a ``flat'' set of Modelica
 used components by:
 \begin{itemize}
 \item
-  expanding all class definitions (flattening the inheritance tree) and
+  Expanding all class definitions (flattening the inheritance tree) and
   adding the equations and assignment statements of the expanded classes
   for every instance of the model.
 \item
-  replacing all connect-equations by the corresponding equations of the
-  connection set (see \autoref{generation-of-connection-equations}).
+  Replacing all \lstinline!connect!-equations by the corresponding equations of the connection set (see \cref{generation-of-connection-equations}).
 \item
-  mapping all algorithm sections to equation sets.
+  Mapping all algorithm sections to equation sets.
 \item
-  mapping all when-clauses to equation sets (see \autoref{when-equations}).
+  Mapping all \lstinline!when!-clauses to equation sets (see \cref{when-equations}).
 \end{itemize}
 
 As a result of this transformation process, a set of equations is
 obtained consisting of differential, algebraic and discrete equations of
-the following form where ($v:=\lbrack \dot{x}; x; y; t; m; \text{pre}(m); p\rbrack$ ):
+the following form where ($v := \lbrack p; t; \dot{x}; x; y; z; m; \text{\lstinline!pre!}(z); \text{\lstinline!pre!}(m)\rbrack$):
 \begin{subequations}
-\begin{equation}
-c:=f_c(relation(v))\label{eq:crossing}
+\begin{equation}\label{eq:dae}
+0 = f_{\mathrm{x}}(v, c)
 \end{equation}
-\begin{equation}
-\dot{m}:=f_m(v, v)
+\begin{equation}\label{eq:dae-discrete-real}
+0 =
+\begin{cases}
+f_{\mathrm{z}}(v, c) & \text{at events} \\
+z - \text{\lstinline!pre!}(z) & \text{otherwise}
+\end{cases}
 \end{equation}
-\begin{equation}
-0=f_x(v, v)\label{eq:dae}
+\begin{equation}\label{eq:dae-discrete-valued}
+m := f_{\mathrm{m}}(v, c)
+\end{equation}
+\begin{equation}\label{eq:crossing}
+c := f_{\mathrm{c}}(\mathit{relation}(v))
 \end{equation}
 \label{eq:hydrid-dae}
 \end{subequations}
 and where
+\begin{itemize}
+\item $p$:
+Modelica variables declared as \lstinline!parameter! or \lstinline!constant!, i.e., variables without any time-dependency.
 
-\begin{longtable}[]{|p{2cm}|p{12cm}|}
-\hline \endhead
-\textbf{p} & Modelica variables declared as \lstinline!parameter! or
-\lstinline!constant!, i.e., variables without any
-time-dependency.\\ \hline
-\emph{t} & Modelica variable \lstinline!time!, the independent (real)
-variable.\\ \hline
-\textbf{x}(t) & Modelica variables of type \lstinline!Real!, appearing
-differentiated.\\ \hline
-\textbf{m}(t\textsubscript{e}) & Modelica variables of type
-\lstinline!discrete Real!, \lstinline!Boolean!, \lstinline!Integer! which are unknown. These
-variables change their value only at event instants t\textsubscript{e}.
-\lstinline!pre(m)! are the values of m immediately before the current event
-occurred.\\ \hline
-\textbf{y}(t) & Modelica variables of type \lstinline!Real! which do not fall
-into any other category (= algebraic variables).\\ \hline
-c\textbf{(}t\textsubscript{e}) & The conditions of all if-expressions
-generated including when-clauses after conversion, see \autoref{when-equations}).\\ \hline
-\emph{relation}(\textbf{v}) & A relation containing variables
-v\textsubscript{i}, e.g. v\textsubscript{1} \textgreater{}
-v\textsubscript{2}, v\textsubscript{3} \textgreater{}= 0.\\ \hline
+\item $t$:
+Modelica variable \lstinline!time!, the independent (real) variable.
 
-\end{longtable}
+\item $x(t)$:
+Modelica variables of type \lstinline!Real!, appearing differentiated.
 
-For simplicity, the special cases of the \lstinline!noEvent()! operator and of the
-\lstinline!reinit()! operator are not contained in the equations above and are not
-discussed below.
+\item $y(t)$:
+Continuous-time modelica variables of type \lstinline!Real! that do not appear differentiated (= algebraic variables).
 
-The generated set of equations is used for simulation and other analysis
-activities. Simulation means that an initial value problem is solved,
-i.e., initial values have to be provided for the states x, \autoref{initialization-initial-equation-and-initial-algorithm}.
-The equations define a DAE (Differential Algebraic Equations) which may
-have discontinuities, a variable structure and/or which are controlled
-by a discrete-event system. Such types of systems are called
-\emph{hybrid DAEs}. Simulation is performed in the following way:
+\item $z(t_{\mathrm{e}})$:
+Discrete-time modelica variables of type \lstinline!Real!.  These variables change their value only at event instants $t_{\mathrm{e}}$.  \lstinline!pre(z)! are the values of $z$ immediately before the current event occurred.
+
+\item $m(t_{\mathrm{e}})$:
+Modelica variables of discrete-valued types (\lstinline!Boolean!, \lstinline!Integer!, etc) which are unknown.  These variables change their value only at event instants $t_{\mathrm{e}}$.  \lstinline!pre(m)! are the values of $m$ immediately before the current event occurred.
+
+\item $c(t_{\mathrm{e}})$:
+The conditions of all \lstinline!if!-expressions generated including \lstinline!when!-clauses after conversion, see \cref{when-equations}).
+
+\item $\mathit{relation}(v)$:
+A relation containing variables $v_{i}$, e.g.\ $v_{1} > v_{2}$, $v_{3} \geq 0$.
+\end{itemize}
+
+For simplicity, the special cases of \lstinline!noEvent! and \lstinline!reinit! are not contained in the equations
+above and are not discussed below.
+
+The key difference between the two groups of discrete-time variables $z$ and and $m$ here is how they are determined.  The interpretation of the solved form of \eqref{eq:dae-discrete-valued} is that given values for everything else, there is a closed-form solution for $m$ in the form of a sequence of assignments to each of the variables of $m$ in turn -- there must be no cyclic dependencies between the equations used to solve for $m$.  Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in solved form, at most requiring flipping sides of the equation to obtain the used assignment form.  The interpretation of the non-solved form of \eqref{eq:dae-discrete-real} at events, on the other hand, is that at events, the discrete-time \lstinline!Real! variables $z$ are solved together with the continuous-time variables using \eqref{eq:dae} and \eqref{eq:dae-discrete-real}.
+
+\begin{example}
+The following model is illegal since there is no equation in solved form that can be used in \eqref{eq:dae-discrete-valued} to solve for the discrete-valued variable \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+model M
+  Boolean x;
+  Boolean y;
+equation
+  x = time >= 1.0;
+  not y = x; /* Equation in solved form, but not with respect to y. */
+end M;
+\end{lstlisting}
+\end{example}
+
+The generated set of equations is used for simulation and other analysis activities.
+Simulation means that an initial value problem is solved, i.e., initial values have to be provided for the states $x$, \cref{initialization-initial-equation-and-initial-algorithm}.
+The equations define a DAE\index{DAE} (Differential Algebraic Equations) which may have discontinuities, a variable structure and/or which are controlled by a discrete-event system.
+Such types of systems are called \firstuse{hybrid DAEs}\index{hybrid DAE}.
+Simulation is performed in the following way:
 \begin{enumerate}
-\item
-  The DAE (\ref{eq:dae}) is solved by a numerical integration method. In this
-  phase the conditions c of the if- and when-clauses, as well as the
-  discrete variables m are kept constant. Therefore, (\ref{eq:dae}) is a
+\item\label{perform-simulation-integrate}
+  The DAE \eqref{eq:dae} is solved by a numerical integration method. In this
+  phase the conditions $c$ of the if- and \lstinline!when!-clauses, as well as the
+  discrete-time variables $z$ and $m$ are kept constant. Therefore, \eqref{eq:dae} is a
   continuous function of continuous variables and the most basic
   requirement of numerical integrators is fulfilled.
 \item
-  During integration, all relations from (\ref{eq:crossing}) are monitored. If one of
+  During integration, all relations from \eqref{eq:crossing} are monitored. If one of
   the relations changes its value an event is triggered, i.e., the exact
   time instant of the change is determined and the integration is
-  halted. As discussed in \autoref{events-and-synchronization}, relations which depend only on
-  time are usually treated in a special way, because this allows to
-  determine the time instant of the next event in advance.
+  halted. As discussed in \cref{events-and-synchronization}, relations which depend only on
+  time are usually treated in a special way, because this allows
+  determining the time instant of the next event in advance.
 \item
-  At an event instant, (\ref{eq:hydrid-dae}) is a mixed set of algebraic equations which
-  is solved for the Real, Boolean and Integer unknowns.
+  At an event instant, \eqref{eq:hydrid-dae} is a mixed set of algebraic equations which is solved for the \lstinline!Real!, \lstinline!Boolean! and \lstinline!Integer! unknowns.
 \item
-  After an event is processed, the integration is restarted with 1.
+  After an event is processed, the integration is restarted with \ref{perform-simulation-integrate}.
 \end{enumerate}
 
-Note, that both the values of the conditions c as well as the values of
-m (all \lstinline!discrete Real!, \lstinline!Boolean! and \lstinline!Integer! variables) are only changed at
+Note, that both the values of the conditions $c$ as well as the values of
+$z$ and $m$ (all discrete-time \lstinline!Real!, \lstinline!Boolean! and \lstinline!Integer! variables) are only changed at
 an event instant and that these variables remain constant during
 continuous integration. At every event instant, new values of the
-discrete variables m and of new initial values for the states x are
-determined. The change of discrete variables may characterize a new
-structure of a DAE where elements of the state vector x are
+discrete-time variables $z$ and $m$, as well as of new initial values for the states $x$, are
+determined. The change of discrete-time variables may characterize a new
+structure of a DAE where elements of the state vector $x$ are
 \emph{disabled}. In other words, the number of state variables,
 algebraic variables and residue equations of a DAE may change at event
 instants by disabling the appropriate part of the DAE. For clarity of
 the equations, this is not explicitly shown by an additional index in
-(\ref{eq:hydrid-dae}).
+\eqref{eq:hydrid-dae}.
 
 At an event instant, including the initial event, the model equations
 are reinitialized according to the following iteration procedure:
 \begin{lstlisting}[language=modelica]
-    known  variables: x, t, p
-    unkown variables: dx/dt, y, m, pre(m), c
+known  variables: x, t, p
+unkown variables: dx/dt, y, z, m, pre(z), pre(m), c
 
-   // pre(m) = value of m before event occured
-   loop
-      solve (1) for the unknowns, with pre(m) fixed
-      if m == pre(m) then break
-      pre(m) := m
-   end loop
+// pre(z) = value of z before event occured
+// pre(m) = value of m before event occured
+loop
+  solve (1) for the unknowns, with pre(z) and pre(m) fixed
+  if z == pre(z) and m == pre(m) then break
+  pre(z) := z
+  pre(m) := m
+end loop
 \end{lstlisting}
-Solving (\ref{eq:hydrid-dae}) for the unknowns is non-trivial, because this set of
-equations contains not only Real, but also Boolean and Integer unknowns.
-Usually, in a first step these equations are sorted and in many cases
-the Boolean and Integer unknowns can be just computed by a forward
-evaluation sequence. In some cases, there remain systems of equations
-(e.g. for ideal diodes, Coulomb friction elements) and specialized
-algorithms have to be used to solve them.
 
-Due to the construction of the equations by \emph{flattening} a Modelica
-model, the hybrid DAE (\ref{eq:hydrid-dae}) contains a huge number of sparse equations.
-Therefore, direct simulation of (\ref{eq:hydrid-dae}) requires sparse matrix methods.
-However, solving this initial set of equations directly with a numerical
-method is both unreliable and inefficient. One reason is that many
-Modelica models, like the mechanical ones, have a DAE index of 2 or 3,
-i.e., the overall number of states of the model is less than the sum of
-the states of the sub-components. In such a case, every direct numerical
-method has the difficulty that the numerical condition becomes worse, if
-the integrator step size is reduced and that a step size of zero leads
-to a singularity. Another problem is the handling of idealized elements,
-such as ideal diodes or Coulomb friction. These elements lead to mixed
-systems of equations having both Real and Boolean unknowns. Specialized
-algorithms are needed to solve such systems.
+Clocked variables are handled similarly as $z$ and $m$ (depending on type), but using \lstinline!previous! instead of \lstinline!pre! and only solved in the first event iteration.
+
+Solving \eqref{eq:hydrid-dae} for the unknowns is non-trivial, because this set of equations contains not only \lstinline!Real!, but also discrete-valued unknowns.
+Usually, in a first step these equations are sorted and in many cases the discrete-valued unknowns $m$ can be just computed by a forward evaluation sequence.
+In some cases, there remain systems of equations involving $m$ due to cyclic dependencies with $y$ and $z$ (e.g.\ for ideal diodes, Coulomb friction elements), and specialized algorithms have to be used to solve them.
+
+Due to the construction of the equations by \emph{flattening} a Modelica model, the hybrid DAE \eqref{eq:hydrid-dae} contains a huge number of sparse equations.
+Therefore, direct simulation of \eqref{eq:hydrid-dae} requires sparse matrix methods.
+However, solving this initial set of equations directly with a numerical method is both unreliable and inefficient.
+One reason is that many Modelica models, like the mechanical ones, have a DAE index of 2 or 3, i.e., the overall number of states of the model is less than the sum of the states of the sub-components.
+In such a case, every direct numerical method has the difficulty that the numerical condition becomes worse, if the integrator step size is reduced and that a step size of zero leads to a singularity.
+Another problem is the handling of idealized elements, such as ideal diodes or Coulomb friction.
+These elements lead to mixed systems of equations having both \lstinline!Real! and \lstinline!Boolean! unknowns.
+Specialized algorithms are needed to solve such systems.
 
 To summarize, symbolic transformation techniques are needed to transform
-(1) in a set of equations which can be numerically solved reliably. Most
+\eqref{eq:hydrid-dae} into a set of equations which can be numerically solved reliably. Most
 important, the algorithm of Pantelides should to be applied to
 differentiate certain parts of the equations in order to reduce the
 index. Note, that also explicit integration methods, such as Runge-Kutta
-algorithms, can be used to solve (\ref{eq:dae}), after the index of (\ref{eq:dae}) has been
+algorithms, can be used to solve \eqref{eq:dae}, after the index of \eqref{eq:dae} has been
 reduced by the Pantelides algorithm: During continuous integration, the
-integrator provides x and t. Then, (\ref{eq:dae}) is a linear or nonlinear system
-of equations to compute the algebraic variables y and the state
-derivatives dx/dt and the model returns dx/dt to the integrator by
-solving these systems of equations. Often, (\ref{eq:dae}) is just a linear system
+integrator provides $x$ and $t$. Then, \eqref{eq:dae} is a linear or nonlinear system
+of equations to compute the algebraic variables $y$ and the state
+% TODO: Structured formatting of inline "upright 'd' fraction".
+derivatives $\mathrm{d}x/\mathrm{d}t$ and the model returns $\mathrm{d}x/\mathrm{d}t$ to the integrator by
+solving these systems of equations. Often, \eqref{eq:dae} is just a linear system
 of equations in these unknowns, so that the solution is straightforward.
 This procedure is especially useful for real-time simulation where
 usually explicit one-step methods are used.
