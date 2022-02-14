@@ -47,12 +47,12 @@ At first there can be an optional comment describing the location (file name and
 
 Then, the `<context identifier>` behind the keyword `msgctxt` is the full name of the Modelica class (e.g. `Modelica.Blocks.Math.Sin` ) where the text appears in. Short class definitions do not appear here. Texts in such classes belong to the enclosing full class definition.
 
-After the `msgid` keyword the text string which shall be translated follows. [*Please regard that if a `msgid` string is given more than once in the same context, all occurrences are translated with the same (last) translation!*]
+After the `msgid` keyword the text string which shall be translated follows. It should exactly contain the same characters as the original string from the Modelica text representation, i.e. all spaces, control characters and sequences are kept. [*Please regard that if a `msgid` string is given more than once in the same context, all occurrences are translated with the same (last) translation!*]
 
 The keyword `msgstr` is followed by the translation of `msgid`. In the template file this string is empty by definition. If this is empty in a language specific file the contents of `msgid` may be used instead.
 
 The texts in following Modelica constructs should be translated: 
-* syntactical comments
+* description strings of component declarations and classes
 * strings in following annotations:
   * Text.string, Text.textString
   * missingInnerMessage, obsolete, unassignedMessage 
@@ -60,6 +60,8 @@ The texts in following Modelica constructs should be translated:
   * Dialog.[load|save]Selector.[caption|filter] 
   * Documentation.[info|revisions]
   * Figure.title, Plot.title, Curve.legend
+
+C-style and line comments are not translated.
 
 [*To support the translation of that strings a number of free and commercial tools exist in context of GNU gettext. 
 A Modelica tool should provide a function to create the initial template file from an existing Modelica library.*]
