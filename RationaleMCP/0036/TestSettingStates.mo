@@ -21,7 +21,7 @@ package TestSettingStates
     annotation (Documentation(info="<html>
 <p>The result of this model will be similar to:</p>
 <pre>
-when sample(1e-3) then
+when sample(1e-1) then
  /* without state reset */ 
  discretized1.u=time;
  discretized1.x=discretized1.x+...; // Euler discretization
