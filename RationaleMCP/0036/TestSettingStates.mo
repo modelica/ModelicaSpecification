@@ -639,8 +639,16 @@ Connector with one input signal of type Real.
         der(y)=u-y;
       end when;
     end DiscretizedIncorrect3;
-    model DiscretizedIncorrect4 "Using normal reinit is legal, but does not give desired result for y"
+    model DiscretizedIncorrect4 "Using normal reinit is legal, but does not give the desired result for y"
       model DiscretizedWithReinitOther "Using normal reinit instead, different result for y"
+        /*
+        Specifically the normal reinit semantics imply that x will be updated at the end of the step.
+        The clocked semantics normally only evaluate y once per step.
+        Combined this means one step delay in y.
+        There are also additional minor changes related to der(y) and using y during the calculation.
+        
+        (And normally reinit would be in a non-clocked when.)
+        */
         input Real u;
         Real x(stateSelect=StateSelect.always);
         Real y=2*x;
