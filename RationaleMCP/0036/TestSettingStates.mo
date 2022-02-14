@@ -40,6 +40,46 @@ end when;
 <p>In particular note that the relation between der_y and der_x is the same regardless of resetting states, i.e., it only influences the integration of x not the differentation before that.</p>
 </html>"));
   end TrivialDemonstration;
+  model TrialArrayDemonstration
+    model DiscretizedWithReinit
+      input Real u[:];
+      Real x[size(u,1)]=reinit(u);
+      Real y[:]=2*x;
+    equation
+      der(y)=u-y;
+    end DiscretizedWithReinit;
+
+    model Discretized
+      input Real u[:];
+      Real x[size(u,1)](each stateSelect=StateSelect.always);
+      Real y[:]=2*x;
+    equation
+      der(y)=u-y;
+    end Discretized;
+    Discretized discretized1(u={sample(time, Clock(Clock(1, 10), "ExplicitEuler"))});
+    DiscretizedWithReinit discretized2(u={sample(time, Clock(Clock(1, 10), "ExplicitEuler"))});
+    annotation (Documentation(info="<html>
+<p>The result of this model will be similar to:</p>
+<pre>
+when sample(1e-1) then
+ /* without state reset */ 
+ discretized1.u[1]=time;
+ discretized1.x[1]=discretized1.x[1]+...; // Euler discretization
+ discretized1.y[1]=2*discretized1.x[1];
+ discretized1.der_y[1]=time-discretized1.y[1];
+ discretized1.der_x[1]=0.5*discretized1.der_y[1];
+ 
+ /* with state reset */ 
+ discretized2.u[1]=time;
+ discretized2.x[1]=time; // Just using input!
+ discretized2.y[1]=2*discretized2.x[1];
+ discretized2.der_y[1]=time-discretized2.y[1];
+ discretized2.der_x[1]=0.5*discretized2.der_y[1];
+end when;
+</pre>
+<p>In particular note that the relation between der_y and der_x is the same regardless of resetting states, i.e., it only influences the integration of x not the differentation before that.</p>
+</html>"));
+  end TrialArrayDemonstration;
 
   package System
     model FeedforwardControl
