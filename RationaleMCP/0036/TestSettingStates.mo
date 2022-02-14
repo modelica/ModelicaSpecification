@@ -16,8 +16,8 @@ package TestSettingStates
     equation
       der(y)=u-y;
     end Discretized;
-    Discretized discretized1(u=sample(time, Clock(Clock(1, 1000), "ExplicitEuler")));
-    DiscretizedWithReinit discretized2(u=sample(time, Clock(Clock(1, 1000), "ExplicitEuler")));
+    Discretized discretized1(u=sample(time, Clock(Clock(1, 10), "ExplicitEuler")));
+    DiscretizedWithReinit discretized2(u=sample(time, Clock(Clock(1, 10), "ExplicitEuler")));
     annotation (Documentation(info="<html>
 <p>The result of this model will be similar to:</p>
 <pre>
@@ -45,7 +45,7 @@ end when;
     model FeedforwardControl
       extends Modelica.Clocked.Examples.Systems.ControlledMixingUnit(pro=1.1);
       annotation (Documentation(info="<html>
-<p>An example from Modelica Standard Library, but changed to have same difference between plant and plant in controller for easier comparison.</p>
+<p>An example from Modelica Standard Library, but changed to have some difference between plant and plant in controller for easier comparison.</p>
 <p>This does not need the possibility for setting states due to using a different controller.</p>
 </html>"));
     end FeedforwardControl;
@@ -572,5 +572,48 @@ Connector with one input signal of type Real.
 </html>"));
     end Utilities;
   end System;
+  package ErrorExamples
+    model DiscretizedIncorrect1 "Illegal since rhs must just be reinit, use reinit(-u) instead."
+      input Real u;
+      Real x=-reinit(u);
+    equation
+      when Clock(Clock(1,10), "ExplicitEuler") then
+        der(x)=u-x;
+      end when;
+    end DiscretizedIncorrect1;
+    model DiscretizedIncorrect2 "Illegal since reinit must be in a binding declaration"
+      input Real u;
+      Real x;
+    equation
+      when Clock(Clock(1,10), "ExplicitEuler") then
+        der(x)=u-x;
+        x=reinit(u);
+      end when;
+    end DiscretizedIncorrect2;
+    model DiscretizedIncorrect3 "Illegal, since cannot have both x and y as states"
+      input Real u;
+      Real x=reinit(u);
+      Real y(stateSelect=StateSelect.always)=2*x;
+    equation
+      when Clock(Clock(1,10), "ExplicitEuler") then
+        der(y)=u-y;
+      end when;
+    end DiscretizedIncorrect3;
+    model DiscretizedIncorrect4 "Using normal reinit is legal, but does not give desired result for y"
+      model DiscretizedWithReinitOther "Using normal reinit instead, different result for y"
+        input Real u;
+        Real x(stateSelect=StateSelect.always);
+        Real y=2*x;
+      equation 
+        der(y)=u-y;
+        when Clock() then
+          reinit(x,u);
+        end when;
+      end DiscretizedWithReinitOther;
+      DiscretizedWithReinitOther discretized3(u=sample(time, Clock(Clock(1, 10), "ExplicitEuler")));
+
+      extends TrivialDemonstration;
+    end DiscretizedIncorrect4;
+  end ErrorExamples;
   annotation (uses(Modelica(version="4.0.0")));
 end TestSettingStates;
