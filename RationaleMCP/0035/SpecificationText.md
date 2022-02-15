@@ -11,7 +11,7 @@ It contains all necessary information to translate all descriptions, but no tran
 
 The files consist of a header and a body. All text strings are in double quotes and encoded with UTF-8 characters. Comments start with an `#` and are continued until the end of line. Spaces outside strings are ignored and used as separators. The detailed format of these files is described in [GNU gettext](https://www.gnu.org/software/gettext/manual/gettext.pdf).
 
-The header looks like this:
+The header is marked with an empty msgid entry and looks like this:
 ```
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
@@ -47,9 +47,24 @@ At first there can be an optional comment describing the location (file name and
 
 Then, the `<context identifier>` behind the keyword `msgctxt` is the full name of the Modelica class (e.g. `Modelica.Blocks.Math.Sin` ) where the text appears in. Short class definitions do not appear here. Texts in such classes belong to the enclosing full class definition.
 
-After the `msgid` keyword the text string which shall be translated follows. It should exactly contain the same characters as the original string from the Modelica text representation, i.e. all spaces, control characters and sequences are kept. [*Please regard that if a `msgid` string is given more than once in the same context, all occurrences are translated with the same (last) translation!*]
+After the `msgid` keyword the text string which shall be translated follows. It should contain the original string from the Modelica text representation. 
+Since in Modelica control sequences also start with a backslash and another backslash is used to use sequences literally or to hide double quotes, no change is required here. 
+But Modelica allows strings to go over more than one line, gettext does not.
+Therefore, Modelica strings must be split into consecutive strings at the line breaks, and the line breaks must be encoded with a "\n" at the end of each string, e.g.
+```
+"A
+B"
+```
+is converted to
+```
+"A\n"
+"B"
+```
+These strings are concatenated when read.
+[*Please regard that if a `msgid` string is given more than once in the same context, all occurrences are translated with the same (last) translation!*]
 
-The keyword `msgstr` is followed by the translation of `msgid`. In the template file this string is empty by definition. If this is empty in a language specific file the contents of `msgid` may be used instead.
+The keyword `msgstr` is followed by the translation of `msgid`. With regard to control characters and line breaks, the same rules apply as for msgid. 
+In the template file this string is empty by definition. If this is empty in a language specific file the contents of `msgid` may be used instead.
 
 The texts in following Modelica constructs should be translated: 
 * description strings of component declarations and classes
