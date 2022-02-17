@@ -97,6 +97,33 @@ Named argument & none & \lstinline!$\mathit{ident}$ = $\mathit{expr}$! & \lstinl
 \end{center}
 \end{table}
 
+The postfix array index and postfix access operators are expression operators in the normal sense that \lstinline!a.b[1]! can be evaluated as \lstinline!a.(b[1])!.
+Instead, these operators need to be considered jointly to identify an entire \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) which is the smallest unit that can be seen as an expression in itself.
+Postfix array index and postifx access can only be applied immediately to a \lstinline[language=grammar]!component-reference!; not even parentheses around the left operand are allowed.
+
+\begin{example}
+Relative precedence of postfix array index and postfix access.
+Consider the following definition of the array variable \lstinline!a!:
+\begin{lstlisting}[language=modelica]
+record R
+  Real[2] x;
+end R;
+R[3] a;
+\end{lstlisting}
+These are some valid as well as invalid ways to using postfix array index and postfix access:
+\begin{lstlisting}[language=modelica]
+a[3].x[2] // OK: Component reference of type Real
+a[3].x    // OK: Component reference of type Real[2]
+a.x[2]    // OK: Component reference of type Real[3]
+a.x       // OK: Component reference of type Real[3, 2]
+(a.x)[2]  // Error: Invalid use of parentheses
+a[3]      // OK: Component reference of type R
+(a[3]).x  // Error: Invalid use of parentheses
+\end{lstlisting}
+The relation between \lstinline!a.x!, \lstinline!a.x[2]!, and \lstinline!(a.x)[2]! illustrates the effect of giving higher precedence to array index than postfix access.
+Had the precedence been equal, this would have changed the meaning of \lstinline!a.x[2]! to the same thing that \lstinline!(a.x)[2]! tries to express, being a component reference of type \lstinline!Real[2]!.
+\end{example}
+
 The additive unary expressions are only allowed in the first term of a sum, that is, not immediately to the right of any of the additive or elementwise additive operators.
 For example, \lstinline!1 + -1 + 1! is an invalid expression (not parseable according to \cref{modelica-concrete-syntax}), whereas both \lstinline!1 + (-1) + 1! and \lstinline!-1 + 1 + 1! are fine.
 
