@@ -22,17 +22,29 @@ The built-in array functions are given in \cref{array-dimension-lower-and-upper-
 
 \section{Operator Precedence and Associativity}\label{operator-precedence-and-associativity}
 
-Operator precedence determines the order of evaluation of operators in an expression.
-An operator with higher precedence is evaluated before an operator with lower precedence in the same expression.
-For example, `\lstinline!*!' having higher precedence than `\lstinline!+!' means that \lstinline!1 + 2 * 3! becomes evaluated as \lstinline!1 + (2 * 3)!.
+Operator precedence determines the implicit subexpression structure of expressions with operators.
+(Explicit subexpression structure can be expressed by wrapping the subexpression in parentheses.)
+An operator with higher precedence ties harder to its operands than an operator with lower precedence.
+For example, `\lstinline!*!' having higher precedence than `\lstinline!+!' means that \lstinline!1 + 2 * 3! is implicitly structured as \lstinline!1 + (2 * 3)!.
 
-Precedence group associativity is used to determine the order of evaluation when operators belong to the same group of equal precedence.
-Left associativity means that evaluation proceeds from left to right.
-For example, left associativity of binary additive operators means that \lstinline!1 - 2 - 3! becomes evaluated as \lstinline!(1 - 2) - 3!.
-Right associativity means evaluation from right to left, but there is no precedence group with this associativity in Modelica.
-A precedence group may also be non-associative, meaning that evaluation order cannot be determined based on associativity.
+Precedence group associativity is used to determine the implicit subexpression structure when operators belong to the same group of equal precedence.
+Left associativity means that subexpressions are formed from left to right.
+For example, left associativity of binary additive operators means that \lstinline!1 - 2 - 3! is implicitly structured as \lstinline!(1 - 2) - 3!.
+Right associativity means forming subexpressions from right to left, but there is no precedence group with this associativity in Modelica.
+A precedence group may also be non-associative, meaning that there is no implicit subexpression structure defined based on associativity.
 For example, non-associativity of relational operators means that \lstinline!1 < 2 < 3! is an invalid expression.
-Note that the operators don't need to be identical for associativity to matter; also \lstinline!1 == 2 < 3! is invalid, and \lstinline!1 - 2 + 3! becomes evaluated as \lstinline!(1 - 2) + 3!.
+Note that the operators don't need to be identical for associativity to matter; also \lstinline!1 == 2 < 3! is invalid, and \lstinline!1 - 2 + 3! is implicitly structured as \lstinline!(1 - 2) + 3!.
+
+\begin{nonnormative}
+Associativity of a precedence group is a property of the Modelica operator symbols, and is not the same concept as mathematical operator associativity.
+In the mathematical sense, none of the Modelica operator symbols are associative.
+For example, \lstinline!a * (b * c)! cannot directly be interpreted as \lstinline!a * b * c! (which has the implicit subexpression structure \lstinline!(a * b) * c!).
+
+Mathematical associativity is a property of the mathematical operations to which the Modelica operator symbols get mapped after the operand types have been determined.
+For example, if \lstinline!a!, \lstinline!b! and \lstinline!c! are all \lstinline!Real! (scalar) expressions, then the Modelica operator `\lstinline!*!' is mapped to multiplication of real numbers, which is an associative and commutative operator in the mathematical sense.
+As explained in \cref{evaluation-order}, this means that a tool is internally allowed to reorder the factors freely.
+On the other hand, if \lstinline!a! is a \lstinline!Real! (scalar) while \lstinline!b! and \lstinline!c! are \lstinline!Real[3]! vectors, then the first Modelica operator `\lstinline!*!' is mapped to scalar multiplication, while the second `\lstinline!*!' is mapped to vector scalar product, so although both are associative and commutative in the mathematical sense, they are not the same operation and it is clear that the meaning of \lstinline!a * b * c! (and hence \lstinline!(a * b) * c!) would be different.
+\end{nonnormative}
 
 The following table presents the precedence and associativity of all the expression operators, consistent with and complementing information that can be derived from the Modelica grammar in \cref{modelica-concrete-syntax}.
 \begin{table}[H]
@@ -97,7 +109,7 @@ Named argument & none & \lstinline!$\mathit{ident}$ = $\mathit{expr}$! & \lstinl
 \end{center}
 \end{table}
 
-The postfix array index and postfix access operators are expression operators in the normal sense that \lstinline!a.b[1]! can be evaluated as \lstinline!a.(b[1])!.
+The postfix array index and postfix access operators are not expression operators in the normal sense that \lstinline!a.b[1]! can be treated as \lstinline!a.(b[1])!.
 Instead, these operators need to be considered jointly to identify an entire \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) which is the smallest unit that can be seen as an expression in itself.
 Postfix array index and postifx access can only be applied immediately to a \lstinline[language=grammar]!component-reference!; not even parentheses around the left operand are allowed.
 
