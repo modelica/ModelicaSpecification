@@ -7,7 +7,7 @@ The files to support translation must be provided by the developer of the librar
 Two kind of files have to be provided:
 * a template file `<LibraryName>.pot`. 
 It contains all necessary information to translate all descriptions, but no translations. The pattern `<LibraryName>` denotes the toplevel class name of the library.
-* one file for each supported language with the name `<LibraryName>.<language>.po`. This file is a copy of the associated template file, but extended with the translations in the specified language. The pattern `<language>` stands for the ISO 639 language code, e.g. de or en.
+* one file for each supported language with the name `<LibraryName>.<language>.po`. This file is a copy of the associated template file, but extended with the translations in the specified language. The pattern `<language>` stands for the ISO 639-1 language code, e.g. de or en.
 
 The files consist of a header and a body. All text strings are in double quotes and encoded with UTF-8 characters. Comments start with an `#` and are continued until the end of line. Spaces outside strings are ignored and used as separators. The detailed format of these files is described in [GNU gettext](https://www.gnu.org/software/gettext/manual/gettext.pdf).
 
@@ -78,5 +78,5 @@ The texts in following Modelica constructs should be translated:
 
 C-style and line comments are not translated.
 
-[*To support the translation of that strings a number of free and commercial tools exist in context of GNU gettext. 
+[*To support the translation of these strings a number of free and commercial tools exist in context of GNU gettext. 
 A Modelica tool should provide a function to create the initial template file from an existing Modelica library.*]
