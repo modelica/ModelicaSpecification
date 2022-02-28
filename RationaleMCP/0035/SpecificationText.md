@@ -50,7 +50,9 @@ Then, the `<context identifier>` behind the keyword `msgctxt` is the full name o
 After the `msgid` keyword the text string which shall be translated follows. It should contain the original string from the Modelica text representation. 
 Since in Modelica control sequences also start with a backslash and another backslash is used to use sequences literally or to hide double quotes, no change is required here. 
 But Modelica allows strings to go over more than one line, gettext does not.
-Therefore, Modelica strings must be split into consecutive strings at the line breaks, and the line breaks must be encoded with a "\n" at the end of each string, e.g.
+Therefore, line breaks in Modelica must be encoded with "\n".
+
+In order to avoid long lines Modelica strings may be split into consecutive strings at the line breaks, and the line breaks encoded with a "\n" at the end of each string, e.g.
 ```
 "A
 B"
