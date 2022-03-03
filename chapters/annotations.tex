@@ -1272,6 +1272,49 @@ end Frame;
 \end{lstlisting}
 \end{example}
 
+A connector component declaration may have the following annotation:
+\begin{lstlisting}[language=modelica]
+annotation(mustBeConnected = "message");
+\end{lstlisting}%
+\annotationindex{mustBeConnected}
+
+If non-empty it indicates that a diagnostics should be given if the connector is not connected from the outside (for a conditional connector this check is only active if the connector is enabled).
+For an array of connectors it applies separately to each element.
+
+\begin{example}
+This can be used for some optional connectors that should be connected when conditionally enabled.
+\begin{lstlisting}[language=modelica]
+partial model PartialWithSupport
+  Flange_a flange_a;
+  Flange_b flange_b;
+  Support support($\ldots$)
+    if useSupport annotation(mustBeConnected = "Support connector should be connected if activated.");
+  $\ldots$
+end PartialWithSupport;
+\end{lstlisting}
+\end{example}
+
+A connector component declaration may have the following annotation:
+\begin{lstlisting}[language=modelica]
+annotation(mayOnlyConnectOnce = "message");
+\end{lstlisting}%
+\annotationindex{mayOnlyConnectOnce}
+
+If non-empty it indicates that a diagnostics should be given if the connector is connected more than once from the outside.
+For an array of connectors it applies separately to each element.
+
+\begin{example}
+This can be used for components that implement mixing of fluids where it is not desired to combine that with the normal stream-connector mixing.
+\begin{lstlisting}[language=modelica]
+model MultiPort
+  FluidPort_a port_a(redeclare package Medium=Medium);
+  FluidPorts_b ports_b[nPorts_b](redeclare each package Medium=Medium)
+    annotation (mayOnlyConnectOnce = "...");
+  $\ldots$
+end MultiPort;
+\end{lstlisting}
+\end{example}
+
 A component declaration or a short replaceable class definition may have the following annotation:
 \begin{lstlisting}[language=modelica]
 record Dialog
