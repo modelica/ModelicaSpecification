@@ -334,8 +334,10 @@ end 'fun';
 ```
 
 The following restriction applies to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
-- Modifiers must have constant variability.
-- Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
+- Attribute modifiers must have constant variability.
+- Value modifiers in types can only have constant variability due to Flat Modelica scoping rules.
+- Value modifiers in functions can make use of non-constant components in the same function definition, but with simplified semantics compared to full Modelica.
+- Attribute modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
 
 The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
 
@@ -374,7 +376,3 @@ end 'LineB';
 ```
 
 If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
-
-### Value modification
-
-(Placeholder text to be replaced by PR.)
