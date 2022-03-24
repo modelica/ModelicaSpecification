@@ -1,6 +1,44 @@
 # Semantical differences between Flat Modelica and Modelica
 This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
 
+## Lexical scoping inside record definitions
+
+Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there is more more restriction on top of that explained in this section.
+
+Inside a record definition, members of the same record are not in scope.
+
+For example, this is illegal:
+```
+package 'OutOfScope'
+  record 'R'
+    constant Integer 'n';
+    Real['n'] 'x';         /* Error: Unknown variable 'n'. */
+    parameter Real 'p';
+    Real 'y'(start = 'p'); /* Error: Unknown variable 'p'. */
+  end 'R';
+  model 'OutOfScope'
+    'R' 'r'('n' = 3);
+  end 'OutOfScope';
+end 'OutOfScope';
+```
+Instead, constants may need to be evaluated and modifications moved to the model component declarations:
+```
+package 'OutOfScope'
+  record _R1 "Automatically generated specialization of R(n = 3)"
+    constant Integer 'n' = 3;
+    Real[3] 'x';
+    parameter Real 'p';
+    Real 'y';
+  end _R1;
+  model 'OutOfScope'
+    _R1 'r'('y'(start = 'r'.'p'));
+  end 'OutOfScope';
+end 'OutOfScope';
+```
+
+One of the sought effects of this restriction is that all only constant modifications can be expressed in Flat Modelica type definitions, greatly simplifying reasoning about types and their representation in tools.
+
+
 ## Unbalanced if-equations
 In Flat Modelica, all branches of an `if`-equation must have the same equation size.
 Absence of an else branch is equivalent to having an empty else branch with equation size 0.
