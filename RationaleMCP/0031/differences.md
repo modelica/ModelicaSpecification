@@ -1,9 +1,30 @@
 # Semantical differences between Flat Modelica and Modelica
 This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
 
-## Lexical scoping inside record definitions
+## Lexical scoping and record definitions
 
-Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there is more more restriction on top of that explained in this section.
+Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there are two more restrictions on top of that explained in this section.
+
+Taken together, the two restrictions can be summarized concisely as follows:
+- In Flat Modelica, members of a record definition are never in lexical scope.
+  In other words, record members can only be accessed through instances of the record.
+
+### No package constant access for records
+
+Flat Modelica – unlike Full Modelica — doesn't allow a record to be treated as a package for purposes of lookup just because it satisfies the package restrictions.
+For example, this is illegal:
+```
+package 'RecordIsNotPackage'
+  record 'R' "Record fulfilling the requirements of a package"
+    constant Real 'c' = 1.5;
+  end 'R';
+  model 'RecordIsNotPackage'
+    Real 'x' = 'R'.'c'; /* Error: Illegal attempt to access member 'c' inside definition of record 'R'. */
+  end 'RecordIsNotPackage';
+end 'RecordIsNotPackage';
+```
+
+### Inside record definitions
 
 Inside a record definition, members of the same record are not in scope.
 
@@ -333,7 +354,7 @@ protected
 end 'fun';
 ```
 
-The following restriction applies to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
+The following restrictions apply to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
 - Attribute modifiers must have constant variability.
 - Value modifiers in types can only have constant variability due to Flat Modelica scoping rules.
 - Value modifiers in functions can make use of non-constant components in the same function definition, but with simplified semantics compared to full Modelica.
