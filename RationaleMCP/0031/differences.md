@@ -1,12 +1,74 @@
 # Semantical differences between Flat Modelica and Modelica
 This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
 
+
 ## Top level structure
 
 The top level structure (see [grammar](grammar.md#Start-rule)) of a Flat Modelica description can have several top level definitions, with a mandatory `model` definition at the end.
 The definitions before the `model` either define types or global constants.
 
+
+## Lexical scoping and record definitions
+
+Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there are two more restrictions on top of that explained in this section.
+
+Taken together, the two restrictions can be summarized concisely as follows:
+- In Flat Modelica, a member of a record can only be accessed through an instance of the record.
+  (This can also be described in terms of lexical look-up rules.)
+
+### No package constant access for records
+
+Flat Modelica – unlike Full Modelica — doesn't allow a record to be treated as a package for purposes of lookup just because it satisfies the package restrictions.
+For example, this is illegal:
+```
+package 'RecordIsNotPackage'
+  record 'R' "Record fulfilling the requirements of a package"
+    constant Real 'c' = 1.5;
+  end 'R';
+  model 'RecordIsNotPackage'
+    Real 'x' = 'R'.'c'; /* Error: Illegal attempt to access member 'c' inside definition of record 'R'. */
+  end 'RecordIsNotPackage';
+end 'RecordIsNotPackage';
+```
+
+### Inside record definitions
+
+Inside a record definition, members of the same record are not in scope.
+
+For example, this is illegal:
+```
+package 'OutOfScope'
+  record 'R'
+    constant Integer 'n';
+    Real['n'] 'x';         /* Error: Unknown variable 'n'. */
+    parameter Real 'p';
+    Real 'y'(start = 'p'); /* Error: Unknown variable 'p'. */
+  end 'R';
+  model 'OutOfScope'
+    'R' 'r'('n' = 3);
+  end 'OutOfScope';
+end 'OutOfScope';
+```
+Instead, constants may need to be evaluated and modifications moved to the model component declarations:
+```
+package 'OutOfScope'
+  record _R1 "Automatically generated specialization of R(n = 3)"
+    constant Integer 'n' = 3;
+    Real[3] 'x';
+    parameter Real 'p';
+    Real 'y';
+  end _R1;
+  model 'OutOfScope'
+    _R1 'r'('y'(start = 'r'.'p'));
+  end 'OutOfScope';
+end 'OutOfScope';
+```
+
+One of the sought effects of this restriction is that all only constant modifications can be expressed in Flat Modelica type definitions, greatly simplifying reasoning about types and their representation in tools.
+
+
 ## Unbalanced if-equations
+
 In Flat Modelica, all branches of an `if`-equation must have the same equation size.
 Absence of an else branch is equivalent to having an empty else branch with equation size 0.
 
@@ -25,6 +87,7 @@ Flat Modelica is designed to avoid such implicit evaluation of parameters, and t
 
 In Modelica a separate issue is that `if`-equations may contain connect and similar primitives
 that cannot easily be counted; but they are gone in Flat Modelica.
+
 
 ## Pure Modelica functions
 
@@ -49,6 +112,7 @@ The rule for `pure(impureFunctionCall(...))` needs to be rephrased to not say _a
 ### Reason for change
 
 This change was made to support the [changed definitions of _constant expression_](#Constant-expressions).
+
 
 ## Function default arguments
 
@@ -108,6 +172,7 @@ function 'f'
   output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and protected variables. */
 end 'f';
 ```
+
 
 ## Records
 
@@ -309,6 +374,7 @@ Seen this way, the rules about which functions may be called in the body of a fu
 
 This covers what one can currently express in full Modelica.  In the future, one might also introduce _pure discrete_ functions that don't have side effects, but that must be re-evaluated at events, even if the arguments are constant.
 
+
 ## Variability specification inside types
 
 In a record definition it is possible to have variability prefixes (`parameter` or `constant`) on the record member component declarations.  This results in a type containing variability specification, referred to as a _variability-constrained type_.  Unless clear from context, types that are not variability-constrained should be referred to as _variability-free types_.
@@ -328,6 +394,7 @@ It is expected that the restrictions on variability-constrained types will somet
 The last of the ways that an expression of variability-constrained type may be used – that is, in a solved equation or assignment – is an extension of full Modelica that is provided to mitigate potential problems caused by needing to have two Flat Modelica variants of the same full Modelica type.
 
 A [separate document](variability-constrained-types.md) gives examples of how variability-constrained types may arise in Flat Modelica, and how their constraints can be handled.
+
 
 ## Array size
 
@@ -422,7 +489,9 @@ In Flat Modelica, component declarations outside functions may only specify cons
 In Modelica, array sizes with parameter variability outside of functions are somehow allowed, at least not forbidden, but the semantics are not defined.
 So it is easier to forbid this feature for now. If introduced in Modelica, it is still possible to introduce them here with the same semantics. It would be impossible the other way around.
 
+
 ## Subscripting of general expressions
+
 In Flat Modelica it is possible to have a subscript on any (parenthesized) expression.
 The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such
 expressions and without the slight generalization we could not generate flat Modelica for them. It does not add any real complication
@@ -441,6 +510,7 @@ is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}`
 (assuming trailing subscripts can be skipped, otherwise it is illegal).
 It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`,
 and `foo()[1]` without causing any similar ambiguity - but it was not deemed necessary at the moment.
+
 
 ## Input output
 
@@ -480,6 +550,7 @@ end M;
 ```
 The Flat Modelica for `M` should only preserve input for `r`, `a`, `c.x` and output for `c.y`, `z`,
 and thus not preserve it for protected variables and for variables in `msub`.
+
 
 ## Simplify modifications
 
@@ -525,9 +596,11 @@ protected
 end 'fun';
 ```
 
-The following restriction applies to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
-- Modifiers must have constant variability.
-- Modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
+The following restrictions apply to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
+- Attribute modifiers must have constant variability.
+- Value modifiers in types can only have constant variability due to Flat Modelica scoping rules.
+- Value modifiers in functions can make use of non-constant components in the same function definition, but with simplified semantics compared to full Modelica.
+- Attribute modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
 
 The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
 
@@ -616,6 +689,7 @@ initial equation
 ```
 
 The handling of guess values needed to solve parameters from nonlinear equations is the same as for time-varying variables, and is described in the next section.
+
 
 ## Attributes `start`, `fixed`, and final modification of `start`
 
