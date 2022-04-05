@@ -89,6 +89,12 @@ In Modelica a separate issue is that `if`-equations may contain connect and simi
 that cannot easily be counted; but they are gone in Flat Modelica.
 
 
+## Conditional components
+
+Flat Modelica does not have conditional components (see `condition-attribute` in the [grammar](grammar.md)).
+All checks that apply to inactivated components in Full Modelica will need to be checked while generating Flat Modelica.
+
+
 ## Pure Modelica functions
 
 In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
