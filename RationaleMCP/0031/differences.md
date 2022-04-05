@@ -94,7 +94,7 @@ that cannot easily be counted; but they are gone in Flat Modelica.
 Flat Modelica does not have conditional components (see `condition-attribute` in the [grammar](grammar.md)).
 All checks that apply to inactivated components in Full Modelica will need to be checked while generating Flat Modelica.
 
-The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected make this restriction easier to handle when generating Flat Modelica.
+The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected to make this restriction easier to handle when generating Flat Modelica.
 
 
 ## Pure Modelica functions
