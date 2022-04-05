@@ -46,7 +46,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Principles for use of language constructs vs annotations.  [Design](annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459)
 - [x] Get rid of the obviously irrelevant parts of the grammar.  [Design](grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465)
 - [x] Get rid of `connect` equations.
-- [ ] Get rid of conditional components.  (The _condition-attribute_ is still present in grammar.) [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bconditional-component/RationaleMCP/0031/differences.md#conditional-components), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3149)
+- [x] Get rid of conditional components.  (The _condition-attribute_ is still present in grammar.) [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bconditional-component/RationaleMCP/0031/differences.md#conditional-components), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3149)
 - [x] Settle the top level structure. [Design](grammar.md#start-rule), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2469)
 - [x] List of supported built-in operators and functions. [Design](functions.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2513)
 - [x] Get rid of unbalanced `if`-equations. [Design](differences.md#unbalanced-if-equations)
