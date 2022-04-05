@@ -13,8 +13,8 @@ The definitions before the `model` either define types or global constants.
 Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there are two more restrictions on top of that explained in this section.
 
 Taken together, the two restrictions can be summarized concisely as follows:
-- In Flat Modelica, members of a record definition are never in lexical scope.
-  In other words, record members can only be accessed through instances of the record.
+- In Flat Modelica, a member of a record can only be accessed through an instance of the record.
+  (This can also be described in terms of lexical look-up rules.)
 
 ### No package constant access for records
 
