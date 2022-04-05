@@ -192,9 +192,9 @@ end _F;
 
 > _component-list_ → _component-declaration_ ( **,** _component-declaration_ )*
 
-> _component-declaration_ → _declaration_ _condition-attribute_? _comment_
+> _component-declaration_ → _declaration_ ~~_condition-attribute_?~~ _comment_
 
-> _condition-attribute_ → **if** _expression_
+> ~~_condition-attribute_ → **if** _expression_~~
 
 > _declaration_ → _IDENT_ _array-subscripts_? _modification_?
 
