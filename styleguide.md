@@ -71,7 +71,7 @@ As a general rule, when a concept is directly related to a construct in the Mode
 Examples:
 
 Appearance | LaTeX source | Comment
---- | ---
+--- | --- | ---
 `connect`-equation | `\lstinline!connect!-equation` |
 `if`-equation | `\lstinline!if!-equation` |
 `if`-expression | `\lstinline!if!-expression` |
