@@ -1,17 +1,11 @@
 \chapter{Modelica DAE Representation}\label{modelica-dae-representation}
 
-In this appendix, the mapping of a Modelica model into an appropriate
-mathematical description form is discussed.
+In this appendix, the mapping of a Modelica model into an appropriate mathematical description form is discussed.
 
-In a first step, a Modelica translator transforms a hierarchical
-Modelica simulation model into a ``flat'' set of Modelica
-``statements'', consisting of the equation and algorithm sections of all
-used components by:
+In a first step, a Modelica translator transforms a hierarchical Modelica simulation model into a ``flat'' set of Modelica ``statements'', consisting of the equation and algorithm sections of all used components by:
 \begin{itemize}
 \item
-  Expanding all class definitions (flattening the inheritance tree) and
-  adding the equations and assignment statements of the expanded classes
-  for every instance of the model.
+  Expanding all class definitions (flattening the inheritance tree) and adding the equations and assignment statements of the expanded classes for every instance of the model.
 \item
   Replacing all \lstinline!connect!-equations by the corresponding equations of the connection set (see \cref{generation-of-connection-equations}).
 \item
@@ -20,18 +14,16 @@ used components by:
   Mapping all \lstinline!when!-clauses to equation sets (see \cref{when-equations}).
 \end{itemize}
 
-As a result of this transformation process, a set of equations is
-obtained consisting of differential, algebraic and discrete equations of
-the following form where ($v := \lbrack p; t; \dot{x}; x; y; z; m; \text{\lstinline!pre!}(z); \text{\lstinline!pre!}(m)\rbrack$):
+As a result of this transformation process, a set of equations is obtained consisting of differential, algebraic and discrete equations of the following form where ($v := \lbrack p; t; \dot{x}; x; y; z; m; \text{\lstinline!pre!}(z); \text{\lstinline!pre!}(m)\rbrack$):
 \begin{subequations}
 \begin{equation}\label{eq:dae}
 0 = f_{\mathrm{x}}(v, c)
 \end{equation}
 \begin{equation}\label{eq:dae-discrete-real}
-0 =
+z =
 \begin{cases}
 f_{\mathrm{z}}(v, c) & \text{at events} \\
-z - \text{\lstinline!pre!}(z) & \text{otherwise}
+\text{\lstinline!pre!}(z) & \text{otherwise}
 \end{cases}
 \end{equation}
 \begin{equation}\label{eq:dae-discrete-valued}
@@ -71,6 +63,10 @@ and where
   Modelica variables of discrete-valued types (\lstinline!Boolean!, \lstinline!Integer!, etc) which are unknown.
   These variables change their value only at event instants $t_{\mathrm{e}}$.
   \lstinline!pre(m)! are the values of $m$ immediately before the current event occurred.
+
+  \begin{nonnormative}
+    For equations in \lstinline!when!-clauses with discrete-valued variables on the left-hand side, the form \eqref{eq:dae-discrete-valued} relies upon the conceptual rewriting of equations described in \cref{defining-when-equations-by-if-expressions-in-equality-equations}.
+  \end{nonnormative}
 
 \item
   $c(t_{\mathrm{e}})$:
