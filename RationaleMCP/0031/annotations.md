@@ -31,6 +31,8 @@ These are all the non-vendor specific annotations that are relevant for paramete
 - `hideResult` — Applied to a parameter or variable, implies the variable should not be included in the simulation output
 - `choices` — Applied to a parameter or variable, can be used to enumerate and tag different values for parameter input
 
+New modifications not present in full Modelica:
+- `evaluatedParameter = true` – TODO
 
 ## Vendor annotations
 Flat Modelica allows for vendor-specific annoations in the same way as in full Modelica.
