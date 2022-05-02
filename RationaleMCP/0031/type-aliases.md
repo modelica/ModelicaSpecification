@@ -172,4 +172,9 @@ type PositiveCone3D = [3] Length(min = 0.0);
 
 ## Conclusions
 
-(None yet.)
+While type aliases for scalars and records were deemed useful enough to be supported, it was decided to omit type aliases for arrays.
+
+The reasoning beind the decision to not support array type aliases was based on several things:
+- Array type aliases were not thought to add significant convenience for machine-generated Flat Modelica.
+- The full Modelica way of defining array type aliases comes with some confusion when used as the element type of another array type (see above).
+- The idea to introduce another notation for declaring array types (as in `[3, 4] Real`) was not popular in the MCP working group.
