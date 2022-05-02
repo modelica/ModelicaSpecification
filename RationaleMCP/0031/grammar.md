@@ -65,18 +65,26 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 ## Start rule
 > _flat-modelica_ →\
 > &emsp; _VERSION-HEADER_\
-> &emsp; _class-definition_*\
-> &emsp; **model** _long-class-specifier_ **;**
+> &emsp; **package** _IDENT_\
+> &emsp;&emsp; ( _class-definition_ **;**\
+> &emsp;&emsp; | _global-constant_ **;**\
+> &emsp;&emsp; )*\
+> &emsp;&emsp; **model** _long-class-specifier_ **;**\
+> &emsp; **end** _IDENT_ **;**
 
 Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
 > _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
 
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
+The _IDENT_ in the _flat-modelica_ rule must be the same identifier as in the _long-class-specifier_ following **model**.
+
 As an example of the _flat-modelica_ rule, this is a minimal valid Flat Modelica source:
 ```
 //! flat 3.5.0
-model _F
+package _F
+  model _F
+  end _F;
 end _F;
 ```
 
@@ -124,7 +132,8 @@ end _F;
 > &emsp; (_generic-element_ **;**)* \
 > &emsp; ( **public** (_generic-element_ **;**)* \
 > &emsp; | **protected** (_generic-element_ **;**)* \
-> &emsp; | **initial**? **equation** ( _equation_ **;** )* \
+> &emsp; | **equation** ( _equation_ **;** )* \
+> &emsp; | **initial** **equation** ( _initial-equation_ **;** )* \
 > &emsp; | **initial**? **algorithm** ( _statement_ **;** )* \
 > &emsp; )* \
 > &emsp; ( **external** _language-specification_?\
@@ -136,16 +145,23 @@ end _F;
 
 > _external-function-call_ → ( _component-reference_ **=** )? _IDENT_ `[(]` _expression-list_? `[)]`
 
-> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_
+> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_ | _parameter-equation_
 
 > _normal-element_ →\
 > &emsp; ~~**redeclare**?~~\
-> &emsp; **final**?\
+> &emsp; ~~**final**?~~\
 > &emsp; ~~**inner**? **outer**?~~\
 > &emsp; ( ~~_class-definition_~~\
 > &emsp; | _component-clause_\
 > &emsp; ~~| **replaceable** ( _class-definition_ | _component-clause_ ) ( _constraining-clause_ _comment_ )?~~\
 > &emsp; )
+
+> _parameter-equation_ →\
+> &emsp; **parameter** **equation** _guess-value_ **=**\
+> &emsp; ( _expression_ | _prioritize-expression_ )\
+> &emsp; _comment_
+
+> _guess-value_ → **guess** `[(]` _component-reference_ `[)]`
 
 > ~~_import-clause_ →\
 > &emsp; **import**\
@@ -167,6 +183,8 @@ end _F;
 ## B24 Component clause
 > _component-clause_ → _type-prefix_ _type-specifier_ _array-subscripts_? _component-list_
 
+> _global-constant_ → **constant** _type-specifier_ _array-subscripts_? _declaration_ _comment_
+
 > _type-prefix_ →\
 > &emsp; ( **flow** | **stream** )?\
 > &emsp; ( **discrete** | **parameter** | **constant** )?\
@@ -174,9 +192,9 @@ end _F;
 
 > _component-list_ → _component-declaration_ ( **,** _component-declaration_ )*
 
-> _component-declaration_ → _declaration_ _condition-attribute_? _comment_
+> _component-declaration_ → _declaration_ ~~_condition-attribute_?~~ _comment_
 
-> _condition-attribute_ → **if** _expression_
+> ~~_condition-attribute_ → **if** _expression_~~
 
 > _declaration_ → _IDENT_ _array-subscripts_? _modification_?
 
@@ -197,8 +215,8 @@ end _F;
 > &emsp; ~~| _element-redeclaration_~~
 
 > _element-modification-or-replaceable_ →\
-> &emsp; **each**?\
-> &emsp; **final**?\
+> &emsp; ~~**each**?~~\
+> &emsp; ~~**final**?~~\
 > &emsp; ( _element-modification_\
 > &emsp; ~~| _element-replaceable_~~\
 > &emsp; )
@@ -206,7 +224,7 @@ end _F;
 > _element-modification_ → _name_ _modification_? _string-comment_
 
 > ~~_element-redeclaration_ →\
-> &emsp; **redeclare** **each**? **final**?\
+> &emsp; **redeclare** **each**? ~~**final**?~~\
 > &emsp; ( _short-class-definition_\
 > &emsp; | _component-clause1_\
 > &emsp; | _element-replaceable_\
@@ -235,6 +253,8 @@ end _F;
 > &emsp; | _when-equation_\
 > &emsp; )\
 > &emsp; _comment_
+
+> _initial-equation_ → _equation_ | _prioritize-equation_
 
 > _statement_ →\
 > &emsp; ( _component-reference_ ( **:=** _expression_ | _function-call-args_ )\
@@ -306,6 +326,12 @@ end _F;
 > &emsp; **end** **when**
 
 > ~~_connect-clause_ → **connect** `[(]` _component-reference_ **,** _component-reference_ `[)]`~~
+
+> _prioritize-equation_ → **prioritize** `[(]` _component-reference_ **,** _priority_ `[)]`
+
+> _prioritize-expression_ → **prioritize** `[(]` _expression_ **,** _priority_ `[)]`
+
+> _priority_ → _expression_
 
 
 ## Expressions

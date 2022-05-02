@@ -1,7 +1,74 @@
 # Semantical differences between Flat Modelica and Modelica
 This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
 
+
+## Top level structure
+
+The top level structure (see [grammar](grammar.md#Start-rule)) of a Flat Modelica description can have several top level definitions, with a mandatory `model` definition at the end.
+The definitions before the `model` either define types or global constants.
+
+
+## Lexical scoping and record definitions
+
+Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there are two more restrictions on top of that explained in this section.
+
+Taken together, the two restrictions can be summarized concisely as follows:
+- In Flat Modelica, a member of a record can only be accessed through an instance of the record.
+  (This can also be described in terms of lexical look-up rules.)
+
+### No package constant access for records
+
+Flat Modelica – unlike Full Modelica — doesn't allow a record to be treated as a package for purposes of lookup just because it satisfies the package restrictions.
+For example, this is illegal:
+```
+package 'RecordIsNotPackage'
+  record 'R' "Record fulfilling the requirements of a package"
+    constant Real 'c' = 1.5;
+  end 'R';
+  model 'RecordIsNotPackage'
+    Real 'x' = 'R'.'c'; /* Error: Illegal attempt to access member 'c' inside definition of record 'R'. */
+  end 'RecordIsNotPackage';
+end 'RecordIsNotPackage';
+```
+
+### Inside record definitions
+
+Inside a record definition, members of the same record are not in scope.
+
+For example, this is illegal:
+```
+package 'OutOfScope'
+  record 'R'
+    constant Integer 'n';
+    Real['n'] 'x';         /* Error: Unknown variable 'n'. */
+    parameter Real 'p';
+    Real 'y'(start = 'p'); /* Error: Unknown variable 'p'. */
+  end 'R';
+  model 'OutOfScope'
+    'R' 'r'('n' = 3);
+  end 'OutOfScope';
+end 'OutOfScope';
+```
+Instead, constants may need to be evaluated and modifications moved to the model component declarations:
+```
+package 'OutOfScope'
+  record _R1 "Automatically generated specialization of R(n = 3)"
+    constant Integer 'n' = 3;
+    Real[3] 'x';
+    parameter Real 'p';
+    Real 'y';
+  end _R1;
+  model 'OutOfScope'
+    _R1 'r'('y'(start = 'r'.'p'));
+  end 'OutOfScope';
+end 'OutOfScope';
+```
+
+One of the sought effects of this restriction is that all only constant modifications can be expressed in Flat Modelica type definitions, greatly simplifying reasoning about types and their representation in tools.
+
+
 ## Unbalanced if-equations
+
 In Flat Modelica, all branches of an `if`-equation must have the same equation size.
 Absence of an else branch is equivalent to having an empty else branch with equation size 0.
 
@@ -21,7 +88,16 @@ Flat Modelica is designed to avoid such implicit evaluation of parameters, and t
 In Modelica a separate issue is that `if`-equations may contain connect and similar primitives
 that cannot easily be counted; but they are gone in Flat Modelica.
 
-# Pure Modelica functions
+
+## Conditional components
+
+Flat Modelica does not have conditional components (see `condition-attribute` in the [grammar](grammar.md)).
+All checks that apply to inactivated components in Full Modelica will need to be checked while generating Flat Modelica.
+
+The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected to make this restriction easier to handle when generating Flat Modelica.
+
+
+## Pure Modelica functions
 
 In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
 - Only the output values of a function call influence the simulation result (considered free of side effects for purposes of program analysis).
@@ -44,6 +120,233 @@ The rule for `pure(impureFunctionCall(...))` needs to be rephrased to not say _a
 ### Reason for change
 
 This change was made to support the [changed definitions of _constant expression_](#Constant-expressions).
+
+
+## Function default arguments
+
+Flat Modelica functions cannot have function default arguments.
+A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of arguments used in the model.
+(The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call. 
+No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
+
+For example, consider this full Modelica model:
+```
+model M
+  function f
+    input Real a;
+    input Real b = a + 1;
+    input Real c = 2 * b;
+    output Real y = a + b + c;
+  end f;
+
+  Real x = f(0.5, c = time);
+end M;
+```
+Here, there is only one call to the function `f` making use of argument defaults.
+Hence, out of the three possible combinations of absent arguments (not counting all arguments being present, as this will correspond to the base variant of `f` in Flat Modelica), only one needs a helper function in Flat Modelica:
+```
+package 'M'
+  function 'M.f'
+    input Real 'a';
+    input Real 'b';
+    input Real 'c';
+    output Real 'y' = 'a' + 'b' + 'c';
+  end 'M.f';
+
+  function '-M.f:1,3' "Automatically generated helper for passing only the first and third arguments to 'M.f'"
+    input Real 'a';
+    input Real 'c';
+    output Real 'y' = 'M.f'('a', 'b', 'c');
+  protected
+    Real 'b' = 'a' + 1;
+  end '-M.f:1,3';
+
+  model 'M'
+    Real 'x' = '-M.f:1,3'(0.5, time);
+  end 'M';
+end 'M';
+```
+
+Note the name chosen for the automatically generated helper, `'-M.f:1,3'`.
+Due to the leading hyphen, it belongs to the part of the variable namespace that is available for automatically generated names, meaning that there is no risk of collision with names coming from the original full Modelica source.
+
+A Flat Modelica function may still have declaration equations on its inputs, but unlike full Modelica, these are ignored.
+They are only allowed for the sake of consistency with how deeper value modifiers on functions inputs are handled, see [record construction](#record-construction).
+```
+function 'f'
+  input Real 'a';
+  input Real 'b' = 'a' + 1; /* No default; declaration equation is ignored in Flat Modelica. */
+  input Real 'c' = 2 * 'b'; /* No default; declaration equation is ignored in Flat Modelica. */
+  output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and protected variables. */
+end 'f';
+```
+
+
+## Records
+
+### Record construction
+
+Unlike full Modelica, there are no implicitly defined record constructor functions in Flat Modelica.
+A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating helper functions as needed.
+The default arguments of the full Modelica record constructor can be handled just like default arguments of other functions, see [above](#function-default-arguments).
+In addition to the helper functions for handling default argumnets, tools producing Flat Modelica from full Modelica can also create a base function for record construction based on values for all record members.
+
+For example, consider this full Modelica model:
+```
+model M
+  record R
+    Real a;
+    Real b = 1;
+    Real c = a + 1;
+  end R;
+
+  R r = R(3);
+end M;
+```
+To convert this to Flat Modelica, a tool can automatically create two functions:
+```
+package 'M'
+  record 'M.R'
+    Real 'a';
+    Real 'b';
+    Real 'c';
+  end 'M.R';
+
+  function '-M.R' "Automatically generated constructor for 'M.R'"
+    input Real 'a';
+    input Real 'b';
+    input Real 'c';
+    output 'M.R' _result('a' = 'a', 'b' = 'b', 'c' = 'c');
+  end '-M.R';
+
+  function '-M.R:1' "Automatically generated helper for passing only the first argument to '-M.R'"
+    input Real 'a';
+    output 'M.R' _result = '-M.R'('a', 'b', 'c');
+  protected
+    Real 'b' = 1;
+    Real 'c' = 'a' + 1;
+  end '-M.R:1';
+
+  model 'M'
+    'M.R' 'r' = '-M.R:1'(3);
+  end 'M';
+end 'M';
+```
+
+### Record member value modifications
+
+Even though Flat Modelica doesn't come with implicitly defined record constructor functions — that in full Modelica are derived based on value modifications in the record type definition – it is still allowed to have value modifications for the members of a record type in Flat Modelica.
+Note that the top level structure of a Flat Modelica model ensures that the value modifications that are part of record types can only contain constant values (possibly obtained by evaluation of constant expressions).
+As usual, such value modifications can be overridden when declaring a component of the record type, and when made in a model component declaration, it is possible to also have non-constant expressions in the modifications.
+The only semantics of value modifications in record types is that they will be used as the basis for the effective modifications of a component declaration, but the semantics of value modifications in a component declaration are different depending on the kind of component declaration (function/record/model component declaration).
+
+#### Record component declarations
+
+Value modifications on a record component declaration are simply stored as part of the record type being defined.
+All modifications must be given by constant expressions, allowing them to be evaluated.
+
+For example:
+```
+record 'R'
+  Real 'x' = 1; /* Constant value is stored as part of the type 'R'. */
+end 'R';
+
+record 'S'
+  'R' 'r1';          /* Keeps modification from component type. */
+  'R' 'r2'('x' = 2); /* Overrides modification from component type. */
+end 'S';
+```
+
+Note that in the example above, a tool's internal representation of the record type 'S' does not need to remember the origin of the modifications; it is sufficient to just remember that the modification of `'r1'.'x'` is `1`, and that the modification of `'r2'.'x'` is `2`.
+
+#### Model component declarations
+
+A value modification in a model component declaration is equivalent to having a normal equation for the record member.
+
+Example (omitting the `package` wrapper for brevity):
+```
+record 'R'
+  Real 'x';
+  Real 'y' = 1;
+end 'R';
+
+function 'makeR'
+  output 'R' 'r'('x' = 2);
+end 'makeR'
+
+model 'M'
+  'R' 'r1';
+  'R' 'r2';
+  'R' 'r3' = 'makeR'(); /* OK: Declaration equation removes all modifications. */
+equation
+  'r1'.'x' = 2; /* OK, making 'r1' fully determined. */
+  'r2' = 'makeR'(); /* Error: 'r2'.'y' becomes overdetermined. */
+end 'M'
+```
+
+#### Function input component declarations
+
+All value modifications of a function input component declaration are ignored.
+
+For example, this is valid:
+```
+record 'R'
+  Real x;
+end 'R';
+
+function 'foo'
+  input 'R' 'u'('x' = 10); /* Value modification is ignored. */
+  output Real 'y' = 'u'.'x'; /* Completely determined by record passed to function. */
+end 'foo';
+```
+
+It follows that record types containing value modifications are usable in function input component declarations, but that the value modifications do not make any difference here.
+
+Note the analogy between the example above and the following:
+```
+pure function 'makeR10' "Pure constant function returning value of type 'R'"
+  output 'R' 'r'('x' = 10);
+end 'makeR10';
+
+function 'foo'
+  input 'R' 'u' = 'makeR10'(); /* Not a default; declaration equation is ignored. */
+  output Real 'y' = 'u'.'x'; /* Completely determined by record passed to function. */
+end 'foo';
+```
+
+#### Function output and protected component declarations
+
+For output and protected function component declarations the value modifications are used for initial assignments, and are then ignored during the remaining part of the function call evaluation.
+
+For example:
+```
+record 'R'
+  Real 'x';
+  Real 'y';
+end 'R';
+
+function 'f'
+  output 'R' 'result'('y' = 5); /* Assigning initial value to 'result'.'y'. */
+algorithm
+  'result'.'x' = 6;
+end 'f';
+```
+
+For the purpose of analyzing uninitialized use of variables in functions, a record variable is considered assigned when all it's members have been assigned.
+(A record-valued assignment to the entire variable is a special case of this, with all record members being assigned at once.)
+It follows that a function output (of record type) can be completely determined using only modifications in the component declaration.
+
+Note that one consequence of the initial assignment semantics is that this is valid:
+```
+record 'R'
+  Real 'x' = 1;
+end 'R';
+
+function 'f'
+  output 'R' 'result'; /* Hidden initial assignment to 'result'.'x', making 'result' fully assigned. */
+end 'f';
+```
+
 
 ## Variability of expressions
 
@@ -78,6 +381,28 @@ The shifts in variability of function calls could be summarized as _the variabil
 Seen this way, the rules about which functions may be called in the body of a function definition ends up being another case of variability enforcement.
 
 This covers what one can currently express in full Modelica.  In the future, one might also introduce _pure discrete_ functions that don't have side effects, but that must be re-evaluated at events, even if the arguments are constant.
+
+
+## Variability specification inside types
+
+In a record definition it is possible to have variability prefixes (`parameter` or `constant`) on the record member component declarations.  This results in a type containing variability specification, referred to as a _variability-constrained type_.  Unless clear from context, types that are not variability-constrained should be referred to as _variability-free types_.
+
+Variability-constrained types may only be used in the following restrictive ways:
+- Definition of new types (that will also be variability-constrained).
+- Model component declaration.
+- A (sub-) expression of variability-constrained type (such as a reference to a model component declared with such type) may only be used in one of the following ways:
+  - Component references.  That is, accessing a member of a record, application of array subscripts, and combinations thereof.  Note that the resulting expression might again be of variability-constrained type, in which case these restrictions must also be met recursively.
+  - Passing as argument to a function.  It is possible for a variability-constrained record member to be received by a record member without variability constraint, and structural subtyping also allows the receiving record type to not have members corresponding to the variability-constrained members of the passed record.
+  - Alone on one side of an equation in solved form, or as left hand side of an assignment statement.  In this case a variability-constrained record member (at any depth) that does not have a corresponding record member on the other side of the equation (right side of assignment) is not considered part of the equation or assignment.
+
+The restrictions above should be considered preliminary, as we have yet to find out in more details how these restrictions can be met in real world applications.
+
+It is expected that the restrictions on variability-constrained types will sometime require a type to exist in both a variability-constrained and variability-free variant.  It remains to find out whether the most useful variability-free variants are such that the variability-constrained members of records have been removed, or such that just the variability-constraints have been removed.
+
+The last of the ways that an expression of variability-constrained type may be used – that is, in a solved equation or assignment – is an extension of full Modelica that is provided to mitigate potential problems caused by needing to have two Flat Modelica variants of the same full Modelica type.
+
+A [separate document](variability-constrained-types.md) gives examples of how variability-constrained types may arise in Flat Modelica, and how their constraints can be handled.
+
 
 ## Array size
 
@@ -172,9 +497,11 @@ In Flat Modelica, component declarations outside functions may only specify cons
 In Modelica, array sizes with parameter variability outside of functions are somehow allowed, at least not forbidden, but the semantics are not defined.
 So it is easier to forbid this feature for now. If introduced in Modelica, it is still possible to introduce them here with the same semantics. It would be impossible the other way around.
 
+
 ## Subscripting of general expressions
+
 In Flat Modelica it is possible to have a subscript on any (parenthesized) expression.
-The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such 
+The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such
 expressions and without the slight generalization we could not generate flat Modelica for them. It does not add any real complication
 to the translator.
 
@@ -186,8 +513,663 @@ record R
 end R;
 R a[3];
 ```
-Here  `a.x[1]` is a slice operation in Modelica generating the array  `{a[1].x[1],a[2].x[1],a[3].x[1]}`, whereas `(a.x)[1]` 
-is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}` 
+Here  `a.x[1]` is a slice operation in Modelica generating the array  `{a[1].x[1],a[2].x[1],a[3].x[1]}`, whereas `(a.x)[1]`
+is a subscripted slice operation generating the array `{a[1].x[1],a[1].x[2]}`
 (assuming trailing subscripts can be skipped, otherwise it is illegal).
-It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`, 
+It would be possible to extend subscripting to `{a,b}[1]`, `[a,b][1,1]`,
 and `foo()[1]` without causing any similar ambiguity - but it was not deemed necessary at the moment.
+
+
+## Input output
+
+The input and output causality shall only be present at the top of the model (and in functions).
+
+For converting a Modelica model it means that input or output shall only be preserved
+for variables that are:
+* public top-level connector variables
+* declared inside top-level connector variables
+* public top-level non-connector scalar
+* public top-level non-connector record
+
+Consider:
+```
+connector C
+  input Real x;
+  output Real y;
+end C;
+record R
+  Real x;
+end R;
+connector RealInput=input Real;
+model MSub
+  input R r;
+  RealInput a;
+  C c;
+  output Real z;
+protected
+  RealInput a2;
+  C c2;
+  output Real z2;
+end MSub;
+model M
+  extends MSub;
+  MSub msub(r=r);
+end M;
+```
+The Flat Modelica for `M` should only preserve input for `r`, `a`, `c.x` and output for `c.y`, `z`,
+and thus not preserve it for protected variables and for variables in `msub`.
+
+
+## Simplify modifications
+
+Flat Modelica has different rules for modifications applied to:
+- Model component declarations
+- Types (records and short class declarations) and functions (function component declarations)
+
+### Common restrictions
+
+Some restrictions compared to full Modelica apply to both modifications in types and in model component declarations:
+- Flat Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
+- At each level, all identifiers must be unique, so that conflicting modifications are trivially detected.
+
+### Restrictions for model component declarations
+
+A _model component declaration_ is a component declaration belonging to the single `model` of a Flat Modelica source.
+
+Aside from the common restrictions, there are no other restrictions on the modifications in model component declarations.
+
+### Restrictions for types and functions
+
+Named types can be introduced in two different ways in flat modelica, where both make use of modifications:
+- When defining `record` types, each _record component declaration_ can have modifications.  For example:
+```
+record 'PosPoint'
+  'Length' 'x'(min = 0);
+  'Length' 'y'(min = 0);
+end 'PosPoint';
+```
+- When defining type aliases (also known as _short class declarations_).  For example:
+  - ```type 'Length' = Real(unit = "m");``` (just modify existing scalar type)
+  - ```type 'Cube' = 'Length'[3](min = 0, max = 1);``` (make array type)
+  - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
+
+The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, has the same restrictions as record component declarations, see below.  This includes both public and protected function component declarations.  For example:
+```
+function 'fun'
+  input Real 'u'(min = 0); /* Public function component declaration. */
+  output Real 'y'(min = 0); /* Public function component declaration. */
+protected
+  Real 'x'(min = 0); /* Protected function component declaration. */
+  …
+end 'fun';
+```
+
+The following restrictions apply to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
+- Attribute modifiers must have constant variability.
+- Value modifiers in types can only have constant variability due to Flat Modelica scoping rules.
+- Value modifiers in functions can make use of non-constant components in the same function definition, but with simplified semantics compared to full Modelica.
+- Attribute modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
+
+The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
+
+The reason for placing the same restrictions on protected function component declarations as on public function component declarations is that the handling of types inside functions gets significantly simplified without much loss of generality.  To see the kind of loss of generlity, one needs to consider that many attributes have no use in functions at all: `start`, `fixed`, `nominal`, `unbounded`, `stateSelect`, and `displayUnit`.  This leaves two groups of attributes with minor loss of generality:
+- The strings `unit` and `quantity` can be used to enable more static checking of units and quantities in the function body.  Since such checks are performed during static analysis, the constant variability requirement should hold in general, not just inside functions.  Regarding the other requirement, it is hard to come up with realistic examples where `unit` and `quantity` would not be equal for all elements of an array.
+- Outside functions, `min` and `max` both provide information that may be useful for symbolic manipulations and define conditions that shall be monitored at runtime.  While the symbolic manipulations benefit greatly from constant variability of the limits, the runtime checking is more easily applicable to other variabilities, and different limits for different array elements is not as inconceivable as having different units.  Inside functions, on the other hand, limits on protected variables is not going to provide important information for symbolic manipulations, since function body evaluation does not involve equation solving.  If one would like to have non-constant limits, or limits that are different for different elements of an array, this is possible to express using `assert` statements instead of `min` and `max` attributes.
+
+#### Single array element type
+
+As stated above, an array in a type must have the same type for all its elements, which is to be expressed somehow using only scalar modifiers.  Exactly how this shall be enforced is left to depend on a clarification regarding the use of `each` in full Modelica, see https://github.com/modelica/ModelicaSpecification/issues/2630#issuecomment-669868185 and related comments.
+
+The two variants in `'LineA'` and `'LineB'` below are considered, with the aim of expressing the same thing that would be expressed as `FullModelicaLine` in full Modelica:
+```
+type 'P' = Real[3];
+
+record FullModelicaLine
+  /* Basic way of setting all 'start' attributes is to provide an array with all values:
+   */
+  'P' q[2](start = fill(4, 2, 3), fixed = fill(false, 2, 3));
+
+  /* Alternatively, one can (no full Modelica controversy here) use 'each' to
+   * propagate the same modifier to all elements of the surrounding array:
+   */
+  'P' p[2](each start = fill(4, 3), each fixed = fill(false, 3));
+end FullModelicaLine;
+
+record 'LineA'
+  /* Unclear whether or not valid Modelica. */
+  'P' 'p'[2](each start = 4, each fixed = false);
+end 'LineA';
+
+record 'LineB'
+  /* Do not use 'each' at all in Flat Modelica types. */
+  'P' 'p'[2](start = 4, fixed = false);
+end 'LineB';
+```
+
+If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
+
+### Final modification
+
+The concept of being final in full Modelica implies two different things:
+- Further modification is not possible.  This can be verified in the reduction from full Modelica to Flat Modelica, and there is no real need to express this constraint also in the Flat Modelica model.  (It could be useful for expressing constraints for hand-written Flat Modelica, but it is a language feature we could add later if requested.)
+- Parameter values and `start` attributes cannot be modified after translation.  This is something that can't just be verified during the reduction from full Modelica to Flat Modelica.  Instead, final parameter declaration equations are turned into initial equations, and then the same technique is used to handle final modification of `start`.  Details of this are given the sections below on initialization of parameters and time-varying variables.
+
+
+## Initialization of parameters
+
+In Flat Modelica, a parameter's declaration equation shall be solved with respect to the parameter, allowing the right hand side to be overridden during initialization (that is, after translation).  This is similar to a full Modelica non-final parameter with `fixed = true`.
+
+For example, the full Modelica
+```
+parameter Real p(fixed = true) = 4.2;
+```
+translates to the Flat Modelica
+```
+parameter Real 'p' = 4.2; /* Presence of declaration equation corresponds to full Modelica fixed = true. */
+```
+
+In Flat Modelica, a parameter without declaration equation shall be solvable from equations given in the `initial equation` section.  This corresponds directly to the full Modelica parameters with `fixed = false`.
+
+For example, the full Modelica
+```
+  parameter Real p(fixed = false);
+initial equation
+  p^2 + p = 1;
+```
+translates to the Flat Modelica
+```
+  parameter Real 'p'; /* Full Modelica parameter with fixed = false. */
+initial equation
+  'p'^2 + 'p' = 1;
+```
+
+The same mechanism is also able to represent a full Modelica final declaration equation.
+
+For example, the full Modelica
+```
+  final parameter Real p = 4.2;
+```
+translates to the Flat Modelica
+```
+  parameter Real p; /* Full Modelica final parameter has no declaration equation in Flat Modelica. */
+initial equation
+  p = 4.2; /* From full Modelica final declaration equation. */
+```
+
+The handling of guess values needed to solve parameters from nonlinear equations is the same as for time-varying variables, and is described in the next section.
+
+
+## Attributes `start`, `fixed`, and final modification of `start`
+
+### Background for start-values in Modelica
+
+The handling of start-values in Modelica is complicated by several aspects:
+- The interaction between start and fixed.
+- The priorities for non-fixed start-values.
+- Whether start-values can be modified or not afterwards. This is related to final start-values.
+This information is hidden and not easy to understand, and is not even easy to modify in Modelica.
+As a simplifying assumption we could assume that only literal start-values can be modified afterwards (but not that all literal start-values can be modified).
+
+Flat Modelica cannot simply preserve the priorities, since they are based on where a modification occurs - and that information is gone.
+Removing the complexity of priorities would require that start-values have been prioritized before generating Flat Modelica, which requires that index-reduction and state-selection is performed earlier, which is contrary to the goal.
+Replacing start-values by initial equations would require that prioritization has been done, and also prevent experimenting with novel ideas for initialization; see "Investigating Steady State Initialization for Modelica models" by Olsson & Henningsson (Modelica 2021 conference).
+Treating fixed and non-fixed variables differently doesn't work if we want to preserve arrays, since different array elements may have different values for `fixed`.
+
+To consider different start-values consider the following Modelica model:
+```
+model A
+  model B
+    model M
+      Real x(start = 1.0);
+      Real y;
+      Real z;
+    equation 
+      y = 5 * x;
+      z = 7 * x;
+      x + y + z = sin(time + x + y + z);
+    end M;
+    M m1;
+    M m2(z(start = 2.0));
+    M m3(y(start = 3.0));
+  end B;
+  B b(m2(y(start = 4.0)))
+end A;
+```
+Variable | Start-value | Priority in Modelica
+--------|--------------|------
+`b.m1.x` | 1.0 | 3
+`b.m1.y` | |
+`b.m1.z` | |
+||
+`b.m2.x` | 1.0 | 3
+`b.m2.y` | 4.0 | 1
+`b.m2.z` | 2.0 | 2
+||
+`b.m3.x` | 1.0 | 3
+`b.m3.y` | 3.0 | 2
+`b.m3.z` | |
+
+In this case it is recommended to use `b.m1.x`, `b.m2.y`, and `b.m3.y` as iteration variables in the non-linear equations.
+
+For initialization these start-values can also be used for selecting additional start-values while also considering fixed-attributes.
+
+#### Heterongenous arrays with fixed
+The `fixed` attribute can vary between array elements in Modelica.
+
+A non-contrived example is:
+```
+block SimpleFilter
+  parameter Real k = 2;
+  Real x[3](each start = 0.0, fixed = {false, true, true});
+  output Real y(start = 1.0, fixed = true) = k * x[1];
+  input Real u;
+equation 
+  der(x) = cat(1, x[2 : end], {u});
+end SimpleFilter;
+```
+In this case the first state is not fixed, instead the output is fixed (in some cases the output may be in another sub-model).
+
+#### Start-value for parameters
+For parameters the start-value is normally irrelevant and not specified.
+If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Flat Modelica (if `fixed = true`).
+
+The real problem is if the parameter has `fixed = false` and no value (but possibly a start-value).
+
+As an example:
+```
+model SteadyStateInit
+  parameter Real p(start = 2, fixed = false);
+  Real x(start = 10, fixed = true);
+initial equation
+  der(x) = 0;
+equation
+  der(x) = 10 - p * x;
+end SteadyStateInit;
+```
+In more a complicated situation, this could be the length of a mechnical arm that must be adjusted based on initial configuration.
+
+### Implicitly declared guess value parameter
+
+Instead of controlling the guess values for the variable `x` via its `start` attribute as in full Modelica, Flat Modelica makes use of an implicitly declared parameter `guess('x')`.  This is called the _guess value parameter_ for `'x'`, and has the same type as `x`.
+
+The syntax makes use of the new keyword `guess` which is not present in full Modelica.  (Note that introducing a new keyword will not cause conflict with identifiers used in full Modelica code thanks to name mangling.)
+
+Since the declaration of `guess('x')` is implicit, a declaration equation cannot be provided in the same was as for a declared parameter.  Instead, a special form of _parameter equation_ is used, where the parameter being solved must appear on the left hand side, and the equation shall be solved with causality so that the right hand side can be overridden during initialization (that is, after translation).  In the grammar, it is an new alternative in _generic-element_:
+
+> _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_ | _parameter-equation_
+
+> _parameter-equation_ → **parameter** **equation** _guess-value_ **=** _expression_ _comment_
+
+> _guess-value_ → **guess** `[(]` _component-reference_ `[)]`
+
+(One can consider more general use of parameter equations in the future, but for now they are only used for guess value parameters.)
+
+For example:
+```
+Real 'x';
+parameter equation guess('x') = 1.5;
+Real 'y'; /* Parameter equation above does not leave public section. */
+```
+
+Similar to `pre('x')`, `guess('x')` acts as an independent variable in the initialization problem, and instead of providing a parameter equation, it can be determiend by an initial equation.  Since an initial equation cannot be modified after translation, this form is useful when the full Modelica modification of `start` was final.
+
+For example:
+```
+  Real 'x';
+initial equation
+  guess('x') - 1.5 = 0;
+```
+
+When a guess value for `'x'` is needed to solve an equation (or system of equations), this equation has an implicit dependency on `guess('x')`, and it is an error if `guess('x')` cannot be determined first.  For example, this is illegal:
+```
+model 'IllegalGuessDependency'
+  Real 'x';
+initial equation
+  guess('x') = 0.5 * 'x'; /* Cannot determine guess('x') before solving for 'x'. */
+equation
+  'x' * 'x' = time * time; /* Initialization depends on guess('x'). */
+model 'IllegalGuessDependency'
+```
+
+While a guess value parameter is allowed to appear in equations in the same ways as a normal parameter, Flat Modelica models originating from full Modelica are only expected to have `guess('x')` appearing in an initial equation in solved form, if appearing at all:
+```
+  Real 'x';
+initial equation
+  guess('x') = 1.5;
+```
+
+Default parameter equations for guess value parameters shall be added as needed to obtain a balanced initialization problem.  For example:
+```
+  Real 'x';
+initial equation
+  'x'^2 + 'x' = 1; /* Needs guess value for 'x' */
+```
+should be conceptually extended to:
+```
+  Real 'x';
+  parameter equation guess('x') = 0.0; /* Default guess value. */
+initial equation
+  'x'^2 + 'x' = 1; /* Needs guess value for 'x' */
+```
+
+The need for a default equation can also come from direct use of `guess('x')`:
+```
+  Real 'x';
+initial equation
+  'x' = guess('x');
+```
+
+With the use of guess value parameters, the `SteadyStateInit` full Modelica example above can be turned into Flat Modelica:
+```
+model 'SteadyStateInit'
+  parameter Real 'p';
+  parameter equation guess('p') = 2;
+  Real 'x';
+  parameter equation guess('x') = 10;
+initial equation
+  der('x') = 0;
+  'x' = guess('x');
+equation
+  der('x') = 10 - 'p' * 'x';
+end 'SteadyStateInit';
+```
+
+#### Arrays and records
+
+For arrays, full Modelica modification of `start` with `each` will be described below.  Here is a simple example without `each`:
+```
+  Real[3] 'x';
+  parameter equation guess('x') = fill(1.5, 3);
+  Real[3] 'y';
+  Real[2] 'z';
+initial equation
+  guess('y') = fill(1.5, 3);
+  guess('z'[1]) = 1.5;
+  guess('z'[2]) = 1.5;
+```
+
+Records are similar to arrays:
+```
+  record 'R'
+    Real 'a';
+    Real 'b';
+  end 'R';
+  'R' 'x';
+  parameter equation guess('x') = R(1.1, 1.2);
+  'R' 'y';
+  'R' 'z';
+initial equation
+  guess('y') = R(1.1, 1.2);
+  guess('z'.'a') = 1.1;
+  guess('z'.'b') = 1.2;
+```
+
+Combining arrays and records:
+```
+  record 'R'
+    Real[3] 'a';
+    Real 'b';
+  end 'R';
+  'R'[2] 'x';
+  parameter equation guess('x') = fill(R(fill(1.5, 3), 1.2), ,2);
+  'R'[2] 'y';
+  'R'[2] 'z';
+initial equation
+  /* Some of the many ways to give equations for all guess values: */
+  guess('y') = fill(R(fill(1.5, 3), 1.2), 2);
+  guess('z'.'a') = fill(1.5, 2, 3);
+  guess('z'[1].'b') = 1.2;
+  guess('z'[2].'b') = 1.2;
+```
+
+#### Implementation notes
+
+Unlike normal parameters, the value of `guess('x')` is not considered part of a simulation result, allowing tools to strip all unused guess value parameters from the initialization problem.
+
+### Final modification of `start`
+
+Consider the full Modelica:
+```
+  Real x(final start = 1.0);
+```
+
+In Flat Modelica, the fact that the modification of `start` is final means that the guess value parameter shall be determined by an initial equation rather than a parameter equation:
+```
+  Real 'x';
+initial equation
+  guess('x') = 1.0; /* From final modification of start in full Modelica. */
+```
+
+As another example, consider a final non-fixed parameter in full Modelica:
+```
+  final parameter Real p(fixed = false, start = 1.0); /* All modifications are final. */
+initial equation
+  p * p = 2;
+```
+Flat Modelica:
+```
+  parameter Real 'p';
+initial equation
+  'p' * 'p' = 2;
+  guess('p') = 1.0; /* From final modification of start in full Modelica. */
+```
+
+### Modification of `start` with `each`
+
+When modifying arrays of `start` attributes in full Modelica, one can take advantage of `each` to avoid the need to use `fill` to create an array of suitable size with equal elements.  As shown in the examples above, using `fill` can actually work as a replacement for `each` when it comes to setting guess value parameters, and the design proposed in this section may not add enough value compared to added complexity of the design.
+
+Consider the following full Modelica model:
+```
+  record R
+    Real[3] a;
+    Real b;
+  end R;
+  R[2] x(a(each start = 1.5), b(each start = 1.2));
+  R[2] y(each a(start = {1.5, 1.6, 1.7}), each b(start = 1.2));
+```
+
+In Flat Modelica, the parameter equation syntax can be extended to allow `each` in a similar way:
+```
+  parameter equation each guess('x'.'a') = 1.5;
+  parameter equation each guess('x'.'b') = 1.2;
+  parameter equation each guess('y'.'a') = {1.5, 1.6, 1.7};
+  parameter equation each guess('y'.'b') = 1.2;
+```
+
+Just like for normal modifications, the `each` is actually redundant and could be removed from the design; the array dimensions of the right hand side must match the trailing array dimensions of the component reference on the left hand side, and the `each` is required just to make it more obvious that the right hand side value will be used to fill an array of values.  (To make an actually meaninful use of `each` one needs the expressive power of selecting which array dimensions to fill, and this can be added in a backwards compatible way to future versions of Flat Modelica, by allowing `each` at different positions inside the component reference of `guess`.)
+
+Finally, consider a full Modelica model with final modifications of `start`:
+```
+  final R[2] x(a(each start = 1.5), b(each start = 1.2));
+  final R[2] y(each a(start = {1.5, 1.6, 1.7}), each b(start = 1.2));
+```
+Here, the general equation syntax could be extended similar to the parameter equations:
+```
+initial equation
+  each guess('x'.'a') = 1.5;
+  each guess('x'.'b') = 1.2;
+  each guess('y'.'a') = {1.5, 1.6, 1.7};
+  each guess('y'.'b') = 1.2;
+```
+
+Here, the `each` is associated with the equation's entire left hand side, and for clarity at the cost of symmetry, it should only be allowed for the left hand side of an equation.  As for modification with `each`, the array dimensions of the right hand side must match the trailing array dimensions of the left hand side, and the `each` corresponds to a `fill` on the right hand side, adding the missing dimensions needed to match the left hand side.
+
+Again: The two new uses of `each` (in parameter equations and in normal equations) add non-essential complexity to the first version of Flat Modelica, and might make more sense to add in future versions.  At the same time, the proposed use of `each` in normal equations have applications beyond guess value parameters, in particular when a full Modelica model has a final modification with `each` for an array of parameter values.
+
+### The `fixed` attribute
+
+The `fixed` attribute has been completely removed in Flat Modelica.  This was described above for parameters, and is described here for time-varying variables.
+
+When the full Modelica variable has `fixed = true`, this is represented explicitly with an initial equation in Flat Modelica.  Having `fixed = false` in full Modelica doesn't turn into anything in Flat Modelica.
+
+For example, the full Modelica
+```
+  Real x(fixed = true, start = 1.0);
+```
+is translated to the Flat Modelica
+```
+  Real 'x';
+  parameter equation guess('x') = 1.0; /* From non-final modification of start in full Modelica. */
+initial equation
+  'x' = guess('x'); /* From fixed = true in full Modelica. */
+```
+
+Just like in Full Modelica, such equations shall also be added as needed to obtain a balanced initialization problem.  For example,
+```
+  Real 'x';
+  parameter equation guess('x') = 1.0;
+```
+may be conceptually extended to:
+```
+  Real 'x';
+  parameter equation guess('x') = 1.0;
+initial equation
+  'x' = guess('x'); /* Default initial equation for 'x'. */
+```
+
+This can happen in combination with default parameter equations for guess values.  For example,
+```
+  Real 'x';
+```
+may be conceptually extended to:
+```
+  Real 'x';
+  parameter equation guess('x') = 0.0; /* Default guess value. */
+initial equation
+  'x' = guess('x'); /* Default initial equation for 'x'. */
+```
+
+Note that omitting the guess value parameter would not give the same result:
+```
+  Real 'x';
+initial equation
+  'x' = 0.0; /* Wrong: No way to override after translation. */
+```
+
+#### Arrays with `each` modification of `fixed`
+
+Nothing special is needed when a full Modelica array has a homogeneous modificaiton of `fixed` using `each`.  The modification `each fixed = false` doesn't turn into anything in Flat Modelica, while `each fixed = true` turns into an array equation.
+
+For example, the full Modelica
+```
+  Real[3] x(each fixed = true, start = {1.1, 1.2, 1.3});
+```
+is translated to the Flat Modelica
+```
+  Real[3] 'x';
+  parameter equation guess('x') = {1.1, 1.2, 1.3}; /* From non-final modification of start in full Modelica. */
+initial equation
+  'x' = guess('x'); /* Array equation from each fixed = true in full Modelica. */
+```
+
+#### Arrays with heterogeneous modification of `fixed`
+
+Nothing special is needed to handle arrays with heterogeneous modification of `fixed`.  For example, the full Modelica
+```
+Real[3] x(each start = 1.0, fixed = {true, false, true});
+```
+is translated to the Flat Modelica
+```
+  Real[3] 'x';
+  parameter equation guess('x') = fill(1.0, 3);
+initial equation
+  'x'[1] = guess('x'[1]);
+  'x'[3] = guess('x')[3]; /* One can also apply guess to the entire 'x'. */
+```
+
+### Guess value prioritization
+
+In full Modelica, there is a priority associated with the effective modifier for a variable's `start` attribute.  Details of how the priority is determined are outside the scope of Flat Modelica specification, but Flat Modelica needs a way to directly express a variable's guess value priority as a number (computed based on the full Modelica definition of priority).
+
+The basic Flat Modelica way of expressing a variable's guess value priority take the form of a special kind of initial equation:
+```
+initial equation
+  prioritize('x', 2); /* The guess value priority of 'x' is 2. */
+```
+
+The second argument of `prioritize` – denoted _priority_ in the grammar – shall be an `Integer` constant.  Lower value means higher priority; that is, when making a choice based on priority, the variable with lower _priority_ value should be given precedence.
+
+Specification of priority is only allowed for components whose guess value parameter is explicitly present in the model.  Example:
+```
+  Real 'x';
+  parameter equation guess('x') = 1.1;
+  Real 'y';
+  Real 'z';
+initial equation
+  guess('y') = 1.2;
+  prioritize('x', 1); /* OK: Mentioned in guess value parameter equation. */
+  prioritize('y', 2); /* OK: Mentioned in initial equation. */
+  prioritize('z', 3); /* Error: Guess value is not explicitly mentioned anywhere. */
+```
+
+Array variables are no exception:
+```
+  Real[3] 'x';
+  parameter equation guess('x') = {1.1, 1.2, 1.3};
+initial equation
+  prioritize('x', 2);
+```
+
+Multiple specification is an error.  For example:
+```
+  Real 'x';
+  parameter equation guess('x') = 1.1;
+initial equation
+  prioritize('x', 100);
+  prioritize('x', 100); /* Not allowed, even though it is consistent with earlier specification. */
+```
+
+Since records themselves don't have `start` in full Modelica, the guess value parameter and prioritization mechanism gets applied to the members of the record:
+```
+  'R' 'r'; /* 'R' is a record type. */
+  parameter equation guess('r'.'x') = 1.1;
+initial equation
+  prioritize('r'.'x', 100);
+```
+
+#### Syntactic sugar: Prioritized guess value parameter equations
+
+A syntactic sugar is provided for guess value parameter equations:
+```
+  parameter equation guess('x') = prioritize(0.5, 2);
+```
+This is defined to mean the same as:
+```
+  parameter equation guess('x') = 0.5;
+initial equation
+  prioritize('x', 2)
+```
+That is, in the syntactic sugar form, `prioritize` is used with different arguments compared to its basic form in an initial equation.  In the syntactic sugar form, `prioritize` is wrapped around the right hand side of the parameter equation, and the variable to which the priority belongs is given by the left hand side, extracted from the `guess` wrapper.
+
+### The `nominal` attribute
+
+TODO: If we proceed with the design where `start` is no longer a type attribute, we should probably deal with `nominal` similarly, so that we get rid of all non-constant type attributes (`nominal` currently has parameter variability, but there are also applications where a time-varying `nominal` would be useful).
+
+### Syntactic sugars
+
+For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Flat Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
+
+Setting `fixed = true` on the continuous-time variable `'x'` is syntactic sugar for having:
+```
+initial equation
+  'x' = guess('x');
+```
+
+For a discrete-time variable, `fixed = true` is syntactic sugar for having:
+```
+initial equation
+  pre('x') = guess('x');
+```
+
+
+For `start`,
+```
+Real 'x'(start = startExpr);
+```
+is syntactic sugar for
+```
+Real 'x';
+parameter equation guess('x') = startExpr; /* Non-final modification of start in full Modelica. */
+```
+
+Note that it is not possible to use the syntactic sugar for a final modification of `start` in full Modelica, as this shall not be turned into a parameter equation for the guess value.
