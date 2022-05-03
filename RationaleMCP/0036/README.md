@@ -1,7 +1,6 @@
 Modelica Change Proposal MCP-0036 
 Setting states
 Hans Olsson
-(In Development) 
 --
 
 # Summary
@@ -17,6 +16,7 @@ and have the state-updating as part of the model (and not as some tool-specific 
 | 2020-09-25 | Hans Olsson. Updated with new semantics. |
 | 2021-04-29 | Hans Olsson. Added test-cases and more complete proposal. |
 | 2022-02-14 | Hans Olsson. More test-cases. |
+| 2022-05-03 | Hans Olsson. Update specification text, clarified that ready |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -25,7 +25,7 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 See previous discussion https://github.com/modelica/ModelicaSpecification/issues/2285
 and paper https://modelica.org/events/modelica2017/proceedings/html/submissions/ecp17132517_OlssonMattssonOtterPfeifferBurgerHenriksson.pdf
 
-This is still work in progress as the main challenge is figuring out a specific syntax.
+A specific syntax is proposed.
 
 # Alternatives
 The alternatives considered are:
@@ -35,7 +35,7 @@ The alternatives considered are:
  - replace "reinit" by "measurement"-operator, or forceState(…)
  - the implemented annotation does not seem like a good idea
 
-Ideally the proposal should allow us to hide this "turning a measurement into a state" in a block, and thus many of the details will be less important.
+The proposal does allow us to hide this "turning a measurement into a state" in a block, and thus many of the details will be less important.
 
 ## Annotation variant
 The annotation variant was proposed in the paper (not good since it influences the semantics) and is:
@@ -52,7 +52,7 @@ As discussed in https://github.com/modelica/ModelicaSpecification/issues/2285#is
 https://github.com/modelica/ModelicaSpecification/issues/578 was that all reinits are done at the end of the event iteration using previously computed values.
 
 Thus the current reinit(v, -v/2); does not lead to a loop with reinit, but first evaluates -v/2 (and other reinit-values) and then sets v (and other reinit-values).
-One goal of "Clocked Discretized Continuous-Time Partition" is to preserve the behaviour of a restricted set of continuous-time models; having two different variants of reinit (with same syntax but different semantics) is counter to that.
+One goal of "Clocked Discretized Continuous-Time Partition" is to preserve the behaviour of a restricted set of continuous-time models; having two different variants of reinit (with _the same syntax_ but different semantics) is counter to that.
 In addition the current reinit might possibly in the future be replaced by some form of impulses, indicating that the changes are physical and influence other parts of the system, this does not seem consistent with how states are set in this MCP.
 Finally having a conditional setting of states is more complicated, and reinit and other similar operators naturally suggest that - and we either need to determine what it means or forbid it.
 
@@ -108,12 +108,13 @@ https://specification.modelica.org/master/synchronous-language-elements.html#sol
 4. This declaration equation is ignored for the equation count.
 
 This makes it clear that the variable is an actual state, just integrated differently.
+Note that even if it reuses reinit it avoids the problems with the reinit(x, xs) proposal.
 
 Step (3) requires that it is a state (guaranteed by (1)), and that it is a continuous variable in a "Clocked Discretized Continuous-Time Partition", as stated at the start.
 
 # Backwards Compatibility
 Will depend on exact syntax. 
-In the proposed alternative it will depend on the measurement keyword; if we use "reinit" it is fully backwards compatible.
+In the proposed alternative it will depend on the measurement keyword; using "reinit" it is fully backwards compatible.
 
 # Tool Implementation
 Both the preliminary variant with annotation and proposed alternative have been implemented in Dymola.
