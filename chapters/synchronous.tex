@@ -1112,6 +1112,7 @@ Especially neither relations, nor any of the built-in operators of \cref{event-t
 The integration method associated with a clocked discretized continuous-time partition is defined with a string.
 A predefined type \lstinline!ModelicaServices.Types.SolverMethod! defines the methods supported by the respective tool by using the \lstinline!choices! annotation.
 
+See also \cref{setting-states}.
 \begin{nonnormative}
 The \lstinline!ModelicaServices! package contains tool specific definitions.  A string is used instead of an enumeration, since different tools might have different values and then the
 integer mapping of an enumeration is misleading since the same value might characterize different integrators.
@@ -1269,9 +1270,54 @@ This data is tool specific and is typically either defined with a vendor annotat
 
 \subsection{Setting states}\label{setting-states}
 \begin{nonnormative}
-In order to handle measurement it is necessary to consistently update the discretized states, see \textcite{OlssonEtAl2017ModelBased}.
+In order to handle measurement in control systems it is necessary to consistently update the discretized states, see \textcite{OlssonEtAl2017ModelBased}.
 This replaces the previous discretization methods for specific variables.
-Note that \lstinline!reinit! also has another definiton, see \cref{reinit}.
+\end{nonnormative}
+
+A declaration equation can have the form \lstinline!Real x=reinit(xs);!
+The restrictions are that:
+\begin{itemize}
+\item It is only legal in a Discretized Continuous-Time partition.
+\item The variable (i.e.,\ \lstinline!x!) must be a scalar or array variable that is a subtype of Real.
+\item The right-hand-side must be solely consist of a call to \lstinline!reinit!.
+\item The argument to \lstinline!reinit! (i.e,\ \lstinline!xs!) must be compatible with the variable, and may be an expression.
+\end{itemize}
+
+The semantics are:
+\begin{itemize}
+\item The variable implicitly always has \lstinline!StateSelect.always!.
+\item The variable participate in the usual index reduction and state selection (where it must be selected as a state).
+\item The discretization of the state is equal to the new value \lstinline!xs! during the entire step, instead of using the discretization method in \cref{solver-methods}.
+\item This declaration equation is ignored for the equation count.
+\end{itemize}
+
+\begin{example}
+The example will only shortly demonstrate the semantics; for realistic use-cases see \textcite{OlssonEtAl2017ModelBased}.
+\begin{lstlisting}[language=modelica]
+model DiscretizedWithReinit
+  Real u = sample(time, Clock(Clock(1, 10), "ExplicitEuler"));
+  Real x = reinit(u);
+  Real y = 2 * x;
+equation
+  der(y) = u - y;
+end DiscretizedWithReinit;
+\end{lstlisting}
+This is similar to the following equations:
+\begin{lstlisting}[language=modelica]
+when sample(0.1) then
+  u = time;
+  x = u; // Discretization - just using input!
+  y = 2 * x;
+  der_y = time - y;
+  der_x = 0.5 * der_y;
+\end{lstlisting}
+Here we see that \lstinline!x! was selected as a state in favor of \lstinline!y!, despite the latter being differentiated.
+Without the \lstinline!reinit!-call the equation for \lstinline!x! would be \lstinline!pre(x) + 0.1 * pre(der_x)!.
+Note that replacing the discretization for \lstinline!x! does not change the equations for \lstinline!der_y! and \lstinline!der_x! compared to solver method discretization.
+\end{example}
+
+\begin{nonnormative}
+Note that \lstinline!reinit! also has another definition, see \cref{reinit}.
 \end{nonnormative}
 
 \subsection{Associating a Solver to a Partition}\label{associating-a-solver-to-a-partition}
