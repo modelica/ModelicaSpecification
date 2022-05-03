@@ -67,7 +67,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Express final modification. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfinal-modification/RationaleMCP/0031/differences.md#Final-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2748)
 - [x] Make constants available to types. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md#Start-rule), [PR (closed?!)](https://github.com/modelica/ModelicaSpecification/pull/2746)
 - [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
-- [ ] Investigate need for `for`-equations.
+- [ ] Investigate need for `for`-equations. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-for-equations/RationaleMCP/0031/grammar.md#b26-equations), [PR (closed?!)](https://github.com/modelica/ModelicaSpecification/pull/3163)
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
 - [ ] Add function `realConnectorParameterEqual` for use in automatically generated asserts on `Real` equality.
 - [ ] Figure out what to do with synchronous features.
