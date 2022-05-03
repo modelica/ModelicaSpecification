@@ -55,7 +55,6 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
 - [x] Define allowed forms of type aliases (related to _one way to specify array dimensions_). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btype-aliases/RationaleMCP/0031/type-aliases.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2555)
 - [x] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
-- [ ] Handling of parameters treated as constants. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bevaluated-parameter/RationaleMCP/0031/annotations.md#summary-of-flat-modelica-annotations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3161)
 - [ ] Get rid of `protected`.
 - [x] Investigate need for `final`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2994)
 - [x] Origin of modifications (for start value prioritization). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bstart-value-prioritization/RationaleMCP/0031/differences.md#guess-value-prioritization), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2997)
@@ -78,6 +77,7 @@ These are subtopics that are considered necessary to resolve for a first version
 
 ### Flat Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
+- [ ] Handling of parameters treated as constants. [Previous discussion](https://github.com/modelica/ModelicaSpecification/pull/3161)
 - [ ] Primitive operations for triggering of events, to which the current event generating functions can be reduced.
 - [ ] Get rid of function calls with named arguments.
 - [ ] Get rid of function argument defaults.
