@@ -1066,9 +1066,9 @@ The semantic rules are:
 \item The deselection \lstinline!break $D$! is applied before any other, non selective model extension related, modifications of \lstinline!B! in \lstinline!C!.
 \item When adding elements from \lstinline!B! to \lstinline!C! the elements matched by any deselection in \lstinline!extends B! are excluded.
 \begin{itemize}
-\item A component deselection, \lstinline!break f!, matches the component with that name (\lstinline!f!) of \lstinline!B! and all connections with the component or its subcomponents.
+\item A component deselection, \lstinline!break f!, matches the component with that name, \lstinline!f!, of \lstinline!B! and all connections with the component or its subcomponents.
 Matched components must be models, blocks or connectors.
-\item A connection deselection,\lstinline!break connect(a, b)! matches all syntactical equivalent connections of \lstinline!B!.
+\item A connection deselection, \lstinline!break connect(a, b)!, matches all syntactical equivalent connections of \lstinline!B!.
 A connection \lstinline!connect(c, d)!, with \lstinline!c! and \lstinline!d! arbitrary but valid connection arguments, is syntactically equivalent to a connection deselection \lstinline!break connect(a, b)!, if, and only if, either, \lstinline!c! is syntactically equivalent to \lstinline!a! and \lstinline!d! is syntactically equivalent to \lstinline!b! or, vice versa, \lstinline!c! is syntactically equivalent to \lstinline!b! and \lstinline!d! is syntactically equivalent to \lstinline!a!.
 Two code fragments \lstinline!a! and \lstinline!c! are syntactically equivalent, if, and only if, the context-free derivations of \lstinline!a! and \lstinline!c! according to the grammar given in \cref{expressions1} are the same.
 \end{itemize}
@@ -1077,20 +1077,65 @@ Two code fragments \lstinline!a! and \lstinline!c! are syntactically equivalent,
 \item The component deselection are applied before the connection deselections of the same \lstinline!extends!-clause.
 \end{enumerate}
 
+\begin{example}
+The following gives three typical use cases: adding a component \emph{on a connection}, replacing a non-replaceable component, and finally constructing a reusable model from an example.
+\begin{lstlisting}[language=modelica]
+model System "An example model"
+  Plant plant;
+  BearingFriction friction;
+  Controller controller;
+  StepReference reference;
+equation
+  connect(reference.y, controller.u_s);
+  connect(plant.y, controller.u_m);
+  connect(controller.y, plant.u);
+  connect(friction.flange_a, plant.flange_a);
+end System;
+
+model FilterMeasurement "Component on a connection"
+  extends System(break connect(plant.y, controller.u_m));
+  BesselFilter filter;
+equation
+  connect(plant.y, filter.u);
+  connect(filter.y, controller.u_m);
+end FilterMeasurement;
+
+model SampledControllerSystem "Replacing non-replaceable"
+  extends System(break controller);
+  SampledController controller;
+equation
+  connect(reference.y, controller.u1); // Note: Different name
+  connect(plant.y, controller.u_m);
+  connect(controller.y, plant.u);
+end FilterMeasurement;
+
+model NewPlant "Reusable model from example"
+  extends System(break controller, break reference);
+  RealInput u;
+  RealOutput y;
+equation
+  connect(u, plant.u);
+  connect(plant.y, y);
+end NewPlant;
+\end{lstlisting}
+In these examples it would be possible to modify the \lstinline!System! model instead, but in many cases that is not realistic.
+For instance, it may not be possible to modify the \lstinline!System! and the controlled system may be comprised of a large number of components in \lstinline!System! -- instead of only two.
+\end{example}
+
 \begin{nonnormative}
 Some consequences of the rules are listed below:
 
 The syntax ensures that nested components cannot be deselected.
 
 Deselected components cannot be modified, neither in the \lstinline!extends!-clause nor when using \lstinline!C!.
-However, note that \lstinline!C! may add a component with same name as a deselected component (directly or through another \lstinline!extends-clause!) and that new component can be modified when using \lstinline!C!.
+However, \lstinline!C! may add a component with same name as a deselected component (directly or through another \lstinline!extends-clause!) and that new component can be modified when using \lstinline!C!.
 
 A class using selective model extension is not necessarily a sub-type of its base class.
 
 Deselection is designed to be light-weight in particular:
 \begin{itemize}
 \item Deselection is independent of any modification.
-\item It can be decided on what is deselected without considering modification, neither of the extending class \lstinline!C! nor its base class \lstinline!B!.
+\item What is deselected can be determined without considering any modifications, neither of the extending class \lstinline!C! nor its base class \lstinline!B!.
 \item There is no need to instantiate any classes to know that some component is deselected (i.e., not there) for every possible instance of the model with the deselection.
 An instance tree is not required.
 \item Selective model extension operates on the syntactic level only.
