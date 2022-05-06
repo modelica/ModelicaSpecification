@@ -15,34 +15,38 @@ specification in \cref{modelica-concrete-syntax}.
 
 \section{Character Set}\label{character-set}
 
-The character set of the Modelica language is Unicode, but restricted to
-the Unicode characters corresponding to 7-bit ASCII characters in
-several places; for details see \cref{lexical-conventions}.
+The character set of the Modelica language is Unicode, but restricted to the Unicode characters corresponding to 7-bit ASCII characters for identifiers; see \cref{lexical-conventions}.
 
 \section{Comments}\label{comments}
 
 There are two kinds of comments in Modelica which are not lexical units in the language and therefore are treated as white-space by a Modelica translator.
 The white-space characters are space, tabulator, and line separators (carriage return and line feed); and white-space cannot occur inside tokens, e.g., \lstinline!<=! must be written as two characters without space or comments between them.
-The following comment variants are available:
-%TODO-FORMAT should be a table instead of lstlisting?
+The following comment variants are available:\index{rest-of-line comment}\index{delimited comment}\index{comment}
 \begin{lstlisting}[language=modelica]
-// comment & Characters from // to the end of the line are ignored.
-/* comment */ & Characters between /* and */ are ignored, including line terminators.
+// Rest-of-line comment: Everything from // to the end of the line are ignored.
+"Not part of comment"
+/* Delimited comment: Characters after /* are ignored,
+  including line termination. The comment ends with */
 \end{lstlisting}
 
 \begin{nonnormative}
 The comment syntax is identical to that of C++.
 \end{nonnormative}
 
-Modelica comments do not nest, i.e., /* */ cannot be embedded within /*
-*/. The following is \emph{invalid}:
+Delimited Modelica comments do not nest, i.e., \lstinline!/* */! cannot be embedded within \lstinline!/* $\ldots$ */!.
+The following is \emph{invalid}:
 \begin{lstlisting}[language=modelica]
-/* Commented out - erroneous comment, invalid nesting of comments!
-  /* This is an interesting model */
-  model interesting
-    $\ldots$
-  end interesting;
+/* Invalid nesting of comments, the comment ends just before 'end'
+model Interesting
+  /* To be done */
+end Interesting;
 */
+\end{lstlisting}
+Rest-of-line comments can safely be used to comment out blocks of code without risk of conflict with comments inside.
+\begin{lstlisting}[language=modelica]
+//model Valid // Some other comment
+//  /* To be done */
+//end Valid;
 \end{lstlisting}
 
 There is also a description-string, that is part of the Modelica language and
@@ -64,7 +68,7 @@ Certain combinations of letters are \willintroduce{keywords} represented as \emp
 
 \subsection{Identifiers}\label{identifiers}
 
-Modelica \firstuse{identifiers}\index{identifier}, used for naming classes, variables, constants, and other items, are of two forms.
+Modelica \firstuse[identifier]{identifiers}, used for naming classes, variables, constants, and other items, are of two forms.
 The first form always starts with a letter or underscore (`\_'), followed by any number of letters, digits, or underscores.
 Case is significant, i.e., the identifiers \lstinline!Inductor! and \lstinline!inductor! are different.
 The second form (\lstinline[language=grammar]!Q-IDENT!) starts with a single quote, followed by a sequence of any printable ASCII character, where single-quote must be preceded by backslash, and terminated by a single quote, e.g.\ \lstinline!'12H'!, \lstinline!'13\'H'!, \lstinline!'+foo'!.
@@ -88,7 +92,7 @@ S-ESCAPE = "\'" | "\"" | "\?" | "\\"
 
 \subsection{Names}\label{names}
 
-A \firstuse{name}\index{name} is an identifier with a certain interpretation or meaning.
+A \firstuse{name} is an identifier with a certain interpretation or meaning.
 For example, a name may denote an \lstinline!Integer! variable, a \lstinline!Real! variable, a function, a type, etc.
 A name may have different meanings in different parts of the code, i.e., different scopes.
 The interpretation of identifiers as names is described in more detail in \cref{scoping-name-lookup-and-flattening}.
@@ -98,7 +102,7 @@ The meaning of package names is described in more detail in \cref{packages}.
 A name: \lstinline!Ele.Resistor!
 \end{example}
 
-A \firstuse{component reference}\index{component!reference} is an expression containing a sequence of identifiers and indices.
+A \firstuse[component!reference]{component reference} is an expression containing a sequence of identifiers and indices.
 A component reference is equivalent to the referenced object, which must be a component.
 A component reference is resolved (evaluated) in the scope of a class (\cref{component-declarations}), or expression for the case of a local iterator variable (\cref{slice-operation}).
 
@@ -108,7 +112,7 @@ A component reference: \lstinline!Ele.Resistor.u[21].r!
 
 \subsection{Modelica Keywords}\label{modelica-keywords}
 
-The following Modelica \firstuse{keywords}\index{keyword} are reserved words and shall not be used as identifiers, except as listed in \cref{lexical-conventions}:
+The following Modelica \firstuse[keyword]{keywords} are reserved words and shall not be used as identifiers:
 \begin{center}
 \begin{tabular}{l l l l l}
 \lstinline!algorithm! & \lstinline!discrete! & \lstinline!false! & \lstinline!loop! & \lstinline!pure!\\ \hline
@@ -128,7 +132,7 @@ The following Modelica \firstuse{keywords}\index{keyword} are reserved words and
 
 \section{Literal Constants}\label{literal-constants}
 
-\firstuse{Literals}\index{literal} (or \emph{literal constants}) are unnamed constants used to build expressions, and have different forms depending on their type.
+\firstuse[literal (constant)]{Literals} (or \firstuse[---]{literal constants}) are unnamed constants used to build expressions, and have different forms depending on their type.
 Each of the predefined types in Modelica has a way of expressing unnamed constants of the corresponding type, which is presented in the ensuing subsections.
 Additionally, array literals and record literals can be expressed.
 
@@ -153,7 +157,15 @@ but can be converted to a floating point number.
 
 \subsection{Integer Literals}\label{integer-literals}
 
-Literals of type \lstinline!Integer! are sequences of decimal digits, e.g.\ as in the integer numbers \lstinline!33!, \lstinline!0!, \lstinline!100!, \lstinline!30030044!.
+Literals of type \lstinline!Integer! are sequences of decimal digits, e.g.\ as in the integer numbers \lstinline!33!,
+% Just a '0' doesn't work in \lstinline as reported in (closed as fixed on 2021-09-07):
+% - https://github.com/brucemiller/LaTeXML/issues/1651 -- fixed on 'master'
+\ifpdf
+\lstinline!0!%
+\else
+0%
+\fi
+, \lstinline!100!, \lstinline!30030044!.
 The range of supported \lstinline!Integer! literals shall be at least large enough to represent the largest positive \lstinline!IntegerType! value, see \cref{integer-type}.
 
 \begin{nonnormative}

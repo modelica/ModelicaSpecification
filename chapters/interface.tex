@@ -41,7 +41,7 @@ not be present in \lstinline!B!.
 \end{nonnormative*}
 \end{definition}
 
-If \lstinline!A! is a subtype of \lstinline!B!, then \lstinline!B! is said to be a \firstuse{supertype}\index{supertype} of \lstinline!A!.
+If \lstinline!A! is a subtype of \lstinline!B!, then \lstinline!B! is said to be a \firstuse{supertype} of \lstinline!A!.
 
 \begin{definition}[Restricted subtype \emph{or} plug compatible interface]\index{restricted subtype}\index{subtype!restricted}\index{plug compatible interface}\index{interface!plug compatible}
 \lstinline!A! is a restricted subtype of \lstinline!B!, or equivalently, the interface of \lstinline!A! is plug compatible to the interface of \lstinline!B!, if \lstinline!A! is a subtype of
@@ -127,7 +127,7 @@ in all its values.
 \section{Interface or Type}\label{interface-or-type}
 
 Based on a flattened class or component we can construct an interface for that flattened class or component.
-The \firstuse{interface}\index{interface} or \firstuse{type}\index{type} (the terms \emph{interface} and \emph{type} are equivalent and can be used interchangeably, and are different from \emph{inheritance interface} and \emph{class type}) is defined as the following information about the flattened element itself:
+The \firstuse{interface} or \firstuse{type} (the terms \emph{interface} and \emph{type} are equivalent and can be used interchangeably, and are different from \emph{inheritance interface} and \emph{class type}) is defined as the following information about the flattened element itself:
 \begin{itemize}
 \item
   Whether it is replaceable or not.
@@ -198,14 +198,14 @@ When using a class as a base class we also need protected elements, and for inte
 However, the information is sufficient for checking compatibility and for using the class to flatten components.
 \end{nonnormative}
 
-\subsection{Transitively non-Replaceable}\label{transitively-non-replaceable}
+\subsection{Transitively Non-Replaceable}\label{transitively-non-replaceable}
 
 \begin{nonnormative}
 In several cases it is important that no new elements can be added to the interface of a class, especially considering short class definitions.
 Such classes are defined as \willintroduce{transitively non-replaceable}.
 \end{nonnormative}
 
-A class reference is \firstuse{transitively non-replaceable}\index{transitively non-replaceable} iff (i.e.\ \emph{if and only if}) all parts of the name satisfy the following:
+A class reference is \firstuse{transitively non-replaceable} iff (i.e.\ \emph{if and only if}) all parts of the name satisfy the following:
 \begin{itemize}
 \item
   If the class definition is long it is transitively non-replaceable if
@@ -224,7 +224,7 @@ According to \cref{restrictions-on-base-classes-and-constraining-types-to-be-tra
 
 For inheritance, the interface also must include protected elements; this is the only change compared to above.
 
-Based on a flattened class we can construct an \firstuse{inheritance interface}\index{inheritance interface}\index{interface!inheritance} or \firstuse{class type}\index{class type}\index{type!class} for that flattened class.
+Based on a flattened class we can construct an \firstuse{inheritance interface}\index{interface!inheritance} or \firstuse{class type}\index{type!class} for that flattened class.
 The inheritance interface or class type is defined as the following information about the flattened element itself:
 \begin{itemize}
 \item
@@ -537,6 +537,9 @@ Based on the above definition the following restriction holds:
   constraining interface of the function being redeclared.
 \end{itemize}
 
+Note that variability of function calls, see \cref{function-variability}, cannot be determined using just the interface of a function, as the variabilities of default argument expressions are not expressed by the interface.
+Hence a function redeclaration being function-compatible does not ensure that function calls will fulfill variability requirements, and tools must therefore check variability requirements separately.
+
 \begin{example}
 Demonstrating a redeclaration using a function-compatible function
 \begin{lstlisting}[language=modelica]
@@ -553,12 +556,9 @@ algorithm
 end PointMassGravity;
 
 model Body
-  model UseDriveLine "illegal model"
-    DriveLineBase base(redeclare Clutch friction);
-    // Cannot connect to friction.pressure
-  end UseDriveLine;
   Modelica.Mechanics.MultiBody.Interface.Frame_a frame_a;
   replaceable function gravity = GravityInterface;
+  constant Real failed[:] = gravity({1, 0, 0}); // May fail
 equation
   frame_a.f = gravity(frame_a.r0);
   // or gravity(position=frame_a.r0);
@@ -566,7 +566,8 @@ equation
 end Body;
 
 model PlanetSimulation
-  function sunGravity = PointMassGravity (m=2e30);
+  parameter Modelica.Units.SI.Mass mSun = 2e30;
+  function sunGravity = PointMassGravity (m = mSun);
   Body planet1(redeclare function gravity = sunGravity);
   Body planet2(redeclare function gravity = PointMassGravity (m=2e30));
   $\ldots$
@@ -577,6 +578,9 @@ Note: \lstinline!PointMassGravity! is not function-compatible with
 \lstinline!GravityInterface! (no default for \lstinline!m!), but \lstinline!sunGravity!
 inside \lstinline!PlanetSimulation! is function-compatible with
 \lstinline!GravityInterface!.
+
+The constant \lstinline!failed! in \lstinline!planet1!, will violate variability constraints, whereas it will work in \lstinline!planet2!.
+The call \lstinline!gravity(frame_a.r0)! will work in both of them.
 \end{example}
 
 \section{Type Compatible Expressions}\label{type-compatible-expressions}
@@ -600,12 +604,8 @@ The resulting type of the expression in case of two type compatible subexpressio
   If \lstinline!A! is a \lstinline!Real! expression then \lstinline!B! must be a \lstinline!Real! or \lstinline!Integer! expression
   and the type compatible expression is \lstinline!Real!, compare \cref{standard-type-coercion}.
 \item
-  If \lstinline!A! is an \lstinline!Integer! expression then \lstinline!B! must be a \lstinline!Real! or \lstinline!Integer!
-  expression. For exponentiation and division the type compatible
-  expression is \lstinline!Real! (even if both \lstinline!A! and \lstinline!B! are \lstinline!Integer!) see \cref{exponentiation-of-scalars-of-numeric-elements}
-  and \cref{division-of-scalars-or-numeric-arrays-by-numeric-scalars}, in
-  other cases the type compatible expression is \lstinline!Real! or \lstinline!Integer! (same as
-  \lstinline!B!), compare \cref{standard-type-coercion}.
+  If \lstinline!A! is an \lstinline!Integer! expression then \lstinline!B! must be a \lstinline!Real! or \lstinline!Integer! expression.
+  For exponentiation and division the type compatible expression is \lstinline!Real! (even if both \lstinline!A! and \lstinline!B! are \lstinline!Integer!) see \cref{element-wise-exponentiation} and \cref{division-by-numeric-scalars}, in other cases the type compatible expression is \lstinline!Real! or \lstinline!Integer! (same as \lstinline!B!), compare \cref{standard-type-coercion}.
 \item
   If \lstinline!A! is a \lstinline!Boolean! expression then \lstinline!B! must be a \lstinline!Boolean! expression and
   the type compatible expression is \lstinline!Boolean!.

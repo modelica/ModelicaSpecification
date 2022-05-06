@@ -2,32 +2,21 @@
 
 \section{Overview of Modelica}\label{overview-of-modelica}
 
-Modelica is a language for modeling of physical systems, designed to
-support effective library development and model exchange. It is a modern
-language built on acausal modeling with mathematical equations and
-object-oriented constructs to facilitate reuse of modeling knowledge.
+Modelica is a language for modeling of cyber-physical systems, supporting acausal connection of components governed by mathematical equations to facilitate modeling from first principles.
+It provides object-oriented constructs that facilitate reuse of models, and can be used conveniently for modeling complex systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
 
 \section{Scope of the Specification}\label{scope-of-the-specification}
 
-The semantics of the Modelica language is specified by means of a set of
-rules for translating any class described in the Modelica language to a
-flat Modelica structure.
+The semantics of the Modelica language is specified by means of a set of rules for translating any class described in the Modelica language to a flat Modelica structure.
+The semantic specification should be read together with the Modelica grammar.
 
-A class (of specialized class \lstinline!model!, \lstinline!class! or \lstinline!block!) intended to be simulated on its own is called a \firstuse{simulation model}\index{simulation model}.
+A class (of specialized class \lstinline!model! or \lstinline!block!) intended to be simulated on its own is called a \firstuse{simulation model}.
 
-The flat Modelica structure is also defined for other cases than
-simulation models; including functions (can be used to provide
-algorithmic contents), packages (used as a structuring mechanism), and
-partial models (used as base-models). This allows correctness to be
-verified for those classes, before using them to build the simulation
-model.
+The flat Modelica structure is also defined for other cases than simulation models; including functions (can be used to provide algorithmic contents), packages (used as a structuring mechanism), and partial models (used as base-models).
+This allows correctness to be verified for those classes, before using them to build the simulation model.
 
-There are specific semantic restrictions for a simulation model to
-ensure that the model is complete; they allow its flat Modelica
-structure to be further transformed into a set of differential,
-algebraic and discrete equations (= flat hybrid DAE). Note that
-satisfying the semantic restrictions does not guarantee that the model
-can be initialized from the initial conditions and simulated.
+There are specific semantic restrictions for a simulation model to ensure that the model is complete; they allow its flat Modelica structure to be further transformed into a set of differential, algebraic and discrete equations (= flat hybrid DAE).
+Note that satisfying the semantic restrictions does not guarantee that the model can be initialized from the initial conditions and simulated.
 
 Modelica was designed to facilitate symbolic transformations of models, especially by mapping basically every Modelica language construct to equations in the flat Modelica structure.
 Many Modelica models, especially in the associated Modelica Standard Library, are higher index systems, and can only be reasonably simulated if symbolic index reduction is performed, i.e., equations are differentiated and appropriate variables are selected as states, so that the resulting system of equations can be transformed to state space form (at least locally numerically), i.e., a hybrid DAE of index zero.
@@ -49,19 +38,13 @@ The key issues of the translation (or flattening) are:
 The flat hybrid DAE form consists of:
 \begin{itemize}
 \item
-  Declarations of variables with the appropriate basic types, prefixes
-  and attributes, such as \lstinline!parameter Real v=5!.
+  Declarations of variables with the appropriate basic types, prefixes and attributes, such as \lstinline!parameter Real v = 5!.
 \item
   Equations from equation sections.
 \item
-  Function invocations where an invocation is treated as a set of
-  equations which involves all input and all result variables (number of
-  equations = number of basic result variables).
+  Function invocations where an invocation is treated as a set of equations which involves all input and all result variables (number of equations = number of basic result variables).
 \item
-  Algorithm sections where every section is treated as a set of
-  equations which involves the variables occurring in the algorithm
-  section (number of equations = number of different assigned
-  variables).
+  Algorithm sections where every section is treated as a set of equations which involves the variables occurring in the algorithm section (number of equations = number of different assigned variables).
 \item
   The \lstinline!when!-clauses where every \lstinline!when!-clause is treated as a set of conditionally evaluated equations, which are functions of the variables occurring in the clause (number of equations = number of different assigned variables).
 \end{itemize}
@@ -69,14 +52,10 @@ The flat hybrid DAE form consists of:
 Therefore, a flat hybrid DAE is seen as a set of equations where some of the equations are only conditionally evaluated.
 Initial setup of the model is specified using \lstinline!start!-attributes and equations that hold only during initialization.
 
-A Modelica class may also contain annotations, i.e.\ formal comments,
-which specify graphical representations of the class (icon and diagram),
-documentation text for the class, and version information.
+A Modelica class may also contain annotations, i.e.\ formal comments, which specify graphical representations of the class (icon and diagram), documentation text for the class, and version information.
 
 \section{Some Definitions}\label{some-definitions}
 
-The semantic specification should be read together with the Modelica grammar.
-Non-normative text, i.e., examples and comments, are enclosed in {[}\ldots{]} and set in italics.
 Explanations of many terms can be found using the document index in \cref{document-index}.
 Some important terms are defined below.
 
@@ -89,24 +68,99 @@ Class definition, \lstinline!extends!-clause, or \lstinline[language=grammar]!co
 \end{definition}
 
 \begin{definition}[Flattening]\index{flattening}
-The translation of a model described in Modelica to the corresponding model described as a hybrid DAE, involving expansion of inherited base classes, parameterization of base classes, local classes
-and components, and generation of connection equations from \lstinline!connect!-equations (basically, mapping the hierarchical structure of a model into a set of differential, algebraic and discrete equations together with the corresponding variable declarations and function definitions from the model).
+The translation of a model described in Modelica to the corresponding model described as a hybrid DAE (see \cref{modelica-dae-representation}), involving expansion of inherited base classes, parameterization of base classes, local classes and components, and generation of connection equations from \lstinline!connect!-equations.
+In other words, mapping the hierarchical structure of a model into a set of differential, algebraic and discrete equations together with the corresponding variable declarations and function definitions from the model.
 \end{definition}
 
+\begin{definition}[Initialization]\index{initialization}
+Simulation starts with solving the initialization problem at the starting time, resulting in values for all variables that are consistent with the result of the flattening.
+\end{definition}
+
+\begin{definition}[Transient analysis]\index{transient analysis}\index{initial value problem!see{transient analysis}}
+Starting from the result of the initialization problem, the model is simulated forward in time.
+This uses numerical methods for handling the hybrid DAE, resulting in solution trajectories for the model's variables, i.e., the value of the variables as a function of time.
+\end{definition}
+
+\begin{nonnormative}
+In the numerical literature transient analysis is often called solving the \firstuse{initial value problem}, but that term is not used here to avoid confusion with the initialization problem.
+\end{nonnormative}
+
+\begin{definition}[Simulation]\index{simulation}
+Simulation is the combination of initialization followed by transient analysis.
+\end{definition}
+
+\begin{nonnormative}
+The model can be analyzed in ways other than simulation, e.g., linearization, and parameter estimation, but they are not described in the specification.
+\end{nonnormative}
+
+\begin{definition}[Translation]\index{translation}
+Translation is the process of preparing a Modelica simulation model for simulation, starting with flattening but not including the simulation itself.
+\end{definition}
+
+\begin{nonnormative}
+Typically, in addition to flattening, translation involves symbolic manipulation of the hybrid DAE and transforming the result into computer code that can simulate the model.
+\end{nonnormative}
+
+
 % More terms that would be useful to define here:
-% - translation (for phrases such as "during translation")
 % - deprecated
 % - quality of implementation
-% - simulator
 
-\section{Notation and Grammar}\label{notation-and-grammar}
+\section{Notation}\label{notation}
 
-The meta symbols (of the extended BNF-grammar) are defined in~\cref{lexical-conventions}.
+The remainder of this section shows examples of the presentation used in this document.
 
-Boldface denotes keywords of the Modelica language. Keywords are
-reserved words and shall not be used as identifiers, with the exception of
-\lstinline!initial! which is a keyword in section headings, and \lstinline!der! which is a
-keyword for declaration functions, but it is also possible to call the
-functions \lstinline!initial! and \lstinline!der!.
+Syntax highlighting of Modelica code is illustrated by the code listing below.
+Things to note include keywords that define code structure such as \lstinline!equation!, keywords that do not define code structure such as \lstinline!connect!, and recognized identifiers with meaning defined by the specification such as \lstinline!semiLinear!:
+\begin{lstlisting}[language=modelica]
+model Example "Example used to illustrate syntax highlighting"
+  /* The string above is a class description string, this is a comment. */
+  /* Invalid code is typically presented like this: */
+  String s = 1.0; // Error: No conversion form Real to String.
+  Real x;
+equation
+  2 * x = semiLinear(time - 0.5, 2, 3);
+  /* The annotation below has omitted details represented by an ellipsis: */
+  connect(resistor.n, conductor.p) annotation($\ldots$);
+end Example;
+\end{lstlisting}
 
-See \cref{modelica-concrete-syntax} for a full lexical specification and grammar.
+Relying on implicit conversion of \lstinline!Integer! literals to \lstinline!Real! is common, as seen in the equation above (note use of Modelica code appearing inline in the text).
+
+It is common to mix Modelica code with mathematical notation.
+For example, \lstinline!average($x$, $y$)! could be defined as $\frac{x + y}{2}$.
+
+\begin{definition}[Something]% Do not add this one to the index!
+Text defining the meaning of \emph{something}.
+\end{definition}
+
+In addition to the style of definition above, new terminology can be introduced in the running text.
+% TODO: Switch to \firstuse[---]{dummy} below.  For now, using \willintroduce to avoid risk of accidentally
+% creating index entry in the future.
+For example, a \willintroduce{dummy} is something that\ldots
+
+\begin{nonnormative}
+This is non-normative content that provides some explanation, motivation, and/or additional things to keep in mind.
+It has no defining power and may be skipped by readers strictly interested in just the definition of the Modelica language.
+\end{nonnormative}
+
+\begin{example}
+This is an example, which is a special kind of non-normative content.
+Examples often contain a mix of code listings and explanatory text, and this is no exception:
+\begin{lstlisting}[language=modelica]
+String s = 1.0; // Error: No conversion form Real to String.
+\end{lstlisting}
+To fix the type mismatch above, the number has to be replaced by a \lstinline!String! expression, such as \lstinline!"1.0"!.
+\end{example}
+
+Other code listings in the document include specification of lexical units and grammatical structure, both using metasymbols of the extended BNF-grammar defined in~\cref{lexical-conventions}.
+Lexical units are named with all upper-case letters and introduced with the `\lstinline[language=grammar]!=!' sign:
+\begin{lstlisting}[language=grammar]
+SOME-TOKEN = NON-DIGIT { DIGIT | NON-DIGIT }
+\end{lstlisting}
+Grammatical structure is recognized by production rules being named with lower-case letters and introduced with the `\lstinline[language=grammar]!:!' sign (also note appearance of the Modelica keyword \lstinline!der!):
+\begin{lstlisting}[language=grammar]
+differentiated-expression :
+    der "(" SOME-TOKEN ")"
+    | "(" differentiated-expression "+" differentiated-expression ")"
+\end{lstlisting}

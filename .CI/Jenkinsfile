@@ -18,7 +18,7 @@ pipeline {
   stage('build') {
     agent {
       docker {
-        image 'modelicaspec/latexml:20210330'
+        image 'modelicaspec/latexml:20220405'
         label 'linux'
         alwaysPull true
       }
@@ -30,9 +30,10 @@ pipeline {
       sh 'mkdir -p /tmp/jenkins'
       sh 'latexmk -pdf MLS.tex'
       sh 'latexml MLS.tex --includestyles --path=media --dest MLS.xml'
-      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest MLS.html'
+      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest index.html'
       sh '.scripts/patch-viewport.sh'
       sh '.scripts/patch-body-ios-hover.sh'
+      sh 'ln -s index.html MLS.html'
       sh 'ln -s preface.html Chx1.html'
       sh 'ln -s lexical-structure.html Ch2.html'
       sh 'ln -s operators-and-expressions.html Ch3.html'
@@ -99,6 +100,8 @@ pipeline {
         cd specification.modelica.org
         git add '${env.GIT_BRANCH}'
         if ! git diff-index --quiet origin/master --; then
+          git config user.name "Automatic Build"
+          git config user.email "noreply@modelica.org"
           git commit --amend -m "Initial commit"
           git push -f
         fi
