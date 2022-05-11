@@ -59,6 +59,24 @@ A component coming from a public section must not have the `protected = true` an
 
 When the Flat Modelica is not generated from a full Modelica model, the `protected` annotation needs to be understood by comparison to the case of full Modelica origin.
 
+For example, consider the following full Modelica model:
+```
+model M
+protected
+  parameter Real p = 1.0;
+end M;
+```
+
+Note that `p` can only be modified when extending the model, and that the `protected = true` annotation does not enforce this constraint in Flat Modelica.
+Hence, the correct conversion to Flat Modelica needs to combine `protected = true` with treatment similar to a parameter declared `final`:
+```
+model 'M'
+  parameter Real 'p' annotation(protected = true);
+initial equation
+  'p' = 1.0; /* From full Modelica protected declaration equation. */
+end 'M';
+```
+
 
 ## Vendor annotations
 
