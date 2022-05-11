@@ -130,7 +130,7 @@ end _F;
 
 > _composition_ →\
 > &emsp; (_generic-element_ **;**)* \
-> &emsp; ( **public** (_generic-element_ **;**)* \
+> &emsp; ~~( **public** (_generic-element_ **;**)*~~ \
 > &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
 > &emsp; | **equation** ( _equation_ **;** )* \
 > &emsp; | **initial** **equation** ( _initial-equation_ **;** )* \

@@ -1173,3 +1173,12 @@ parameter equation guess('x') = startExpr; /* Non-final modification of start in
 ```
 
 Note that it is not possible to use the syntactic sugar for a final modification of `start` in full Modelica, as this shall not be turned into a parameter equation for the guess value.
+
+
+## Protected
+
+Flat Modelica does not distinguish between protected and public sections of a class definition.
+For functions, this means that all component declarations with prefix `input` or `output` are considered part of the functions public interface, while all other component declarations are considered local to the implementation of the function.
+
+The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Flat Modelica comes from a protected section in the full Modelica model.
+See [`protected` annotation](annotations.md#protected).
