@@ -2,7 +2,7 @@
 
 # ModelicaSpecification
 This repository contains the Modelica Language Specification, hosted at https://github.com/modelica/ModelicaSpecification.
-Development is organized within the [Modelica Association Project Language (MAP-Lang)](https://modelica.org/projects) according to the [bylaws](https://github.com/modelica/MAP-Lang_ProjectRules/blob/main/MAP-Lang-ProjectRules.md).
+Development is organized within the [Modelica Association Project Language (MAP-Lang)](https://modelica.org/projects) according to the [project rules](https://github.com/modelica/MAP-Lang_ProjectRules/blob/main/MAP-Lang-ProjectRules.md).
 
 ## Description
 
