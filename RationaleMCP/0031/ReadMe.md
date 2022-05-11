@@ -71,9 +71,9 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
 - [ ] Add function `realParameterEqual` for use in automatically generated asserts on `Real` equality. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Breal-equality/RationaleMCP/0031/differences.md#connect-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3175)
 - [ ] Figure out what to do with synchronous features.
+- [ ] Event handling semantics is preserved as in Modelica.
 - [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
-- [ ] Event handling semantics is preserved as in Modelica.
 
 ### Flat Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
