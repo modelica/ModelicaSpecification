@@ -1,6 +1,7 @@
 Modelica Change Proposal MCP-0036 
 Setting states
 Hans Olsson
+--
 
 # Summary
 The main idea is that in many cases we use a model within a model (e.g. in Model-Predictive-Control and Feedback Linearization), 
