@@ -302,7 +302,7 @@ end _F;
 
 > _for-indices_ → _for-index_ ( **,** _for-index_ )*
 
-> _for-index_ → _IDENT_ ( **in** _expression_ )?
+> _for-index_ → _IDENT_ **in** _expression_
 
 > _while-statement_ →\
 > &emsp; **while** _expression_ **loop**\
