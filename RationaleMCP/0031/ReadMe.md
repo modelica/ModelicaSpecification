@@ -55,7 +55,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Decide on just one way to specify array dimensions. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bdimension-declaration/RationaleMCP/0031/grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2468)
 - [x] Define allowed forms of type aliases (related to _one way to specify array dimensions_). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btype-aliases/RationaleMCP/0031/type-aliases.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2555)
 - [x] Allowing array subscripting on general expressions. [Design in progress](https://github.com/modelica/ModelicaSpecification/pull/2540/commits/b5eab9d5edcab8766a79637292be6a1e68b2bacc#diff-069d28cf3b6b78debdcada80b99b6c0b), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2540)
-- [ ] Get rid of `protected`.
+- [ ] Get rid of `protected`. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-protected/RationaleMCP/0031/grammar.md#b22-class-definition), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3162)
 - [x] Investigate need for `final`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2994)
 - [x] Origin of modifications (for start value prioritization). [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bstart-value-prioritization/RationaleMCP/0031/differences.md#guess-value-prioritization), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2997)
 - [x] Get rid of `false` as default for `fixed`. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2996)
@@ -67,7 +67,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Express final modification. [Design in progress](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bfinal-modification/RationaleMCP/0031/differences.md#Final-modification), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2748)
 - [x] Make constants available to types. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Btop-level-structure/RationaleMCP/0031/grammar.md#Start-rule), [PR (closed?!)](https://github.com/modelica/ModelicaSpecification/pull/2746)
 - [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
-- [ ] Investigate need for `for`-equations.
+- [ ] Investigate need for `for`-equations. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-for-equations/RationaleMCP/0031/grammar.md#b26-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3163)
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
 - [ ] Add function `realConnectorParameterEqual` for use in automatically generated asserts on `Real` equality.
 - [ ] Figure out what to do with synchronous features.
