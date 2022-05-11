@@ -85,7 +85,7 @@ and some tools attempt to evaluate the parameters even if the branches have the 
 
 Flat Modelica is designed to avoid such implicit evaluation of parameters, and thus this restriction is necessary.
 
-In Modelica a separate issue is that `if`-equations may contain connect and similar primitives
+In Modelica a separate issue is that `if`-equations may contain `connect` and similar primitives
 that cannot easily be counted; but they are gone in Flat Modelica.
 
 
