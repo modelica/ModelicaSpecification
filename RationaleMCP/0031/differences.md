@@ -763,7 +763,7 @@ block SimpleFilter
   Real x[3](each start = 0.0, fixed = {false, true, true});
   output Real y(start = 1.0, fixed = true) = k * x[1];
   input Real u;
-equation 
+equation
   der(x) = cat(1, x[2 : end], {u});
 end SimpleFilter;
 ```
