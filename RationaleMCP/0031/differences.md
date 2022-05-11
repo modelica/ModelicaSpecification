@@ -97,6 +97,59 @@ All checks that apply to inactivated components in Full Modelica will need to be
 The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected to make this restriction easier to handle when generating Flat Modelica.
 
 
+## Connect equations
+
+There are no `connect` equations in Flat Modelica.
+
+To make this possible, a new builtin function `realParameterEqual` is provided.
+The two arguments to `realParameterEqual` must be `Real` parameter expressions, and the result is a `Boolean` (of variability determined from the arguments as usual).
+
+The function returns `true` if and only if the two arguments are exactly equal up to the precision of a stored parameter value.
+The non-trivial case for the function is thus when one or both of the arguments have extra bits of precision stored in registers, as illustrated by the example `ExtraPrecisionProblems` below.
+
+For a basic example of how the function can be used, consider the following model:
+```
+model M
+  connector C
+    parameter Real p;
+  end C;
+
+  model A
+    C c;
+  end A;
+
+  A a1(c.p = 1.0);
+  A a2(c.p = 1.1);
+equation
+  connect(a1.c, a2.c);
+end M;
+```
+In Flat Modelica one needs to use the `realParameterEqual` function:
+```
+package 'M'
+model 'M'
+  parameter Real 'a1.c.p' = 1.0;
+  parameter Real 'a2.c.p' = 1.0;
+equation
+  assert(realParameterEqual('a1.c.p', 'a2.c.p'), "Connector parameters a1.c.p and a2.c.p must be equal due to connect equation.");
+end 'M';
+end 'M';
+```
+
+Regarding the problem with extra bits of precision hiding in registers, consider the following model:
+```
+model 'M'
+  parameter Real 'p' = 1.1;
+  parameter Real 'q' = sin('p');
+equation
+  /* While 'q' has the precision of a Real stored in memory, the value of sin('p') might exist with
+   * higher precision in a register.  When comparing the two, realParameterEqual must make sure that
+   * the extra bits of precision does not make the assertion fail.
+   */
+  assert(realParameterEqual('q', sin('p')), "Incorrect implementation of realParameterEqual!");
+end 'M';
+
+
 ## Pure Modelica functions
 
 In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
