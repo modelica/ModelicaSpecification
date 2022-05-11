@@ -7,7 +7,7 @@ Hans Olsson, Gerd Kurzbach, Hilding Elmqvist, Martin Otter, Michael Tiller
 
 
 # Summary
-This MCP proposes a possibility to remove existing, inherited modifications.
+This MCP proposes a possibility to remove existing, in particular inherited, modifications.
 
 # Revisions
 | Date | Description |
@@ -21,6 +21,7 @@ This MCP proposes a possibility to remove existing, inherited modifications.
 | 2021-05-03 | Hans Olsson - additional feedback on prototype |
 | 2021-05-05 | Hans Olsson - feedback at language meeting |
 | 2021-06-16 | Hans Olsson - removed `<empty>` |
+| 2022-05-11 | Hans Olsson - explained extended scope |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -30,7 +31,7 @@ To parametrize components of classes modifications can be added.
 These modifications are merged with others, when the class is used as component in another class.
 Once a modification is placed at a component, currently there is no way to remove this again at the place of usage of the surrounding class.
 This prevents a more sophisticated determination of parameter values, e.g., by initial equations.
-This MCP proposes a possibility to remove existing, inherited modifications.
+This MCP proposes a possibility to remove existing, in particular inherited, modifications.
 The result are free parameters or variables, which then can be calculated by initial or transient equations or algorithms.
 This allows more flexibility when using library elements because it enables a possibility to replace equations.
 
@@ -98,8 +99,8 @@ Finally, if an annotation has the `break` modification but needs to have a value
   
 ## In the GUI
 
-In a dialog, a tool may hide the keyword `break` from the users and present them only an empty input field, not showing the inherited modification.
-Then, there needs to be a possibility to remove it again to get back the inherited modification.
+In a dialog, a tool may hide the keyword `break` from the users and present them only an empty input field, not showing the overridden modification.
+Then, there needs to be a possibility to remove it again to get back the overridden modification.
   
 # Use cases
 
