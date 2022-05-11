@@ -69,7 +69,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
 - [ ] Investigate need for `for`-equations. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-for-equations/RationaleMCP/0031/grammar.md#b26-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3163)
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
-- [ ] Add function `realConnectorParameterEqual` for use in automatically generated asserts on `Real` equality.
+- [ ] Add function `realParameterEqual` for use in automatically generated asserts on `Real` equality. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Breal-equality/RationaleMCP/0031/differences.md#connect-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3175)
 - [ ] Figure out what to do with synchronous features.
 - [ ] Source locations pointing back to the original Modelica code.
 - [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
