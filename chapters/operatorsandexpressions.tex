@@ -9,6 +9,7 @@ This chapter describes the evaluation rules for expressions, the concept of expr
 Expressions can contain variables and constants, which have types, predefined or user defined.
 The predefined built-in types of Modelica are \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!, and enumeration types which are presented in more detail in \cref{predefined-types-and-classes}.
 
+
 \section{Expressions}\label{expressions}
 
 Modelica equations, assignments and declaration equations contain expressions.
@@ -20,15 +21,30 @@ It is also possible to define functions and call them in a normal fashion.
 The function call syntax for both positional and named arguments is described in \cref{positional-or-named-input-arguments-of-functions} and for vectorized calls in \cref{initialization-and-binding-equations-of-components-in-functions}.
 The built-in array functions are given in \cref{array-dimension-lower-and-upper-index-bounds} and other built-in operators in \cref{built-in-intrinsic-operators-with-function-syntax}.
 
+
 \section{Operator Precedence and Associativity}\label{operator-precedence-and-associativity}
 
-Operator precedence determines the order of evaluation of operators in an expression.
-An operator with higher precedence is evaluated before an operator with lower precedence in the same expression.
+Operator precedence determines the implicit subexpression structure of expressions with operators.
+(Explicit subexpression structure can be expressed by wrapping the subexpression in parentheses.)
+An operator with higher precedence ties harder to its operands than an operator with lower precedence.
+For example, `\lstinline!*!' having higher precedence than `\lstinline!+!' means that \lstinline!1 + 2 * 3! is implicitly structured as \lstinline!1 + (2 * 3)!.
 
-The following table presents all the expression operators in order of precedence.
+Precedence group associativity is used to determine the implicit subexpression structure when operators belong to the same group of equal precedence.
+Left associativity means that subexpressions are formed from left to right.
+For example, left associativity of binary additive operators means that \lstinline!1 - 2 - 3! is implicitly structured as \lstinline!(1 - 2) - 3!.
+A precedence group may also be non-associative, meaning that there is no implicit subexpression structure defined based on associativity.
+For example, non-associativity of relational operators means that \lstinline!1 < 2 < 3! is an invalid expression.
+Note that the operators don't need to be identical for associativity to matter; also \lstinline!1 == 2 < 3! is invalid, and \lstinline!1 - 2 + 3! is implicitly structured as \lstinline!(1 - 2) + 3!.
+Also note that the non-associative array range in Modelica can be used with either two or three operands separated by `\lstinline!:!', meaning that \lstinline!1 : 2 : 5! is one valid ternary use of the operator rather than two invalid binary uses of the operator.
+
+At the parsing stage -- which is where the here defined operator precedence and associativity matters -- the subexpression structure is fixed.
+Since Modelica tools have the freedom to symbolically manipulate expressions, this subexpression structure cannot be expected to reflect order of evaluation, compare \cref{evaluation-order}.
+
+The following table presents the precedence and associativity of all the expression operators, consistent with and complementing information that can be derived from the Modelica grammar in \cref{modelica-concrete-syntax}.
 \begin{table}[H]
 \caption{%
-Operators in order of precedence from highest to lowest, as derived from the Modelica grammar in \cref{modelica-concrete-syntax}.
+Operators in order of precedence from highest to lowest.
+Operators with different precedence are separated by horizontal lines.
 All operators are binary except the postfix operators and those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
 % Beware that the array construction operator, normally expressed as \lstinline!{ }! needs escaped braces inside \caption.
 % This isn't handled correctly by LaTeXML, as reported here:
@@ -38,74 +54,115 @@ All operators are binary except the postfix operators and those shown as unary t
 \else
 \lstinline!{ }! % Intentional space at end of line.
 \fi
-and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.
-Operators with the same precedence occur at the same table row.
+and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.\\
+$^{\dagger}$ The associativity of array construction and concatenation refers to the separator (`\lstinline!,!' or `\lstinline!;!'), not the enclosing delimiters.
 }\label{tab:operator-precedence}
 \begin{center}
-\begin{tabular}{l l l}
+\begin{tabular}{l c l l}
 \hline
-\tablehead{Operator group} & \tablehead{Operator syntax} & \tablehead{Examples}\\
+\tablehead{Operator group} & \tablehead{Assoc.} & \tablehead{Operator syntax} & \tablehead{Examples}\\
 \hline
 \hline
-Postfix array index operator & \lstinline![]! & \lstinline!arr[index]!\\
+Postfix array index & left & \lstinline![]! & \lstinline!arr[index]!\\
 \hline
-Postfix access operator & \lstinline!.! & \lstinline!a.b!\\
+Postfix access & left & \lstinline!.! & \lstinline!a.b!\\
 \hline
-Postfix function call & \lstinline!$\mathit{funcName}$($\mathit{functionArguments}$)! & \lstinline!sin(4.36)!\\
+Postfix function call & none & \lstinline!$\mathit{funcName}$($\mathit{args}$)! & \lstinline!sin(4.36)!\\
 \hline
-Array construction & \lstinline!{$\mathit{expressions}$}! & \lstinline!{2, 3}!\\
-Horizontal concatenation & \lstinline![$\mathit{expressions}$]! & \lstinline![5, 6]!\\
-Vertical concatenation & \lstinline![$\mathit{expressions}$; $\mathit{expressions}\ldots$]! & \lstinline![2, 3; 7, 8]!\\
+Array construction & left$^{\dagger}$ & \lstinline!{$\mathit{expr}$, $\mathit{expr}$, $\ldots$}! & \lstinline!{2, 3}!\\
+Horizontal concatenation & left$^{\dagger}$ & \lstinline![$\mathit{expr}$, $\mathit{expr}$, $\ldots$]! & \lstinline![5, 6]!\\
 \hline
-Exponentiation & \ \lstinline!^! & \lstinline!2 ^ 3!\\
+Vertical concatenation & left$^{\dagger}$ & \lstinline![$\mathit{expr}$; $\mathit{expr}$; $\ldots$]! & \lstinline![2, 3; 7, 8]!\\
 \hline
-Multiplicative  & \lstinline!* /! & \lstinline!2 * 3!, \lstinline!2 / 3!\\
-Elementwise multiplicative & \lstinline!.* ./! & \lstinline![1, 2; 3, 4] .* [2, 3; 5, 6]!\\
+Exponentiation & none & \lstinline!^! & \lstinline!2 ^ 3!\\
 \hline
-Additive & \lstinline!+ -! & \lstinline!1 + 2!\\
-Additive unary & \lstinline!+$\mathit{expr}$ -$\mathit{expr}$! & \lstinline!-0.5!\\
-Array elementwise additive & \lstinline!.+ .-! & \lstinline![1, 2; 3, 4] .+ [2, 3; 5, 6]!\\
+Multiplicative & left & \lstinline!* /! & \lstinline!2 * 3!, \lstinline!2 / 3!\\
+Elementwise multiplicative & left & \lstinline!.* ./! & \lstinline!{2, 3} .* {4, 5}!\\
 \hline
-Relational & \lstinline!< <= > >= == <>! & \lstinline!a < b!, \lstinline!a <= b!, \lstinline!a > b!, \ldots\\
+Additive unary & none & \lstinline!+$\mathit{expr}$ -$\mathit{expr}$! & \lstinline!-0.5!\\
 \hline
-Unary negation & \lstinline!not $\mathit{expr}$! & \lstinline!not b1!\\
+Additive & left & \lstinline!+ -! & \lstinline!1 + 2!\\
+Elementwise additive & left & \lstinline!.+ .-! & \lstinline!{2, 3} .+ {4, 5}!\\
 \hline
-Logical and & \lstinline!and! & \lstinline!b1 and b2!\\
+Relational & none & \lstinline!< <= > >= == <>! & \lstinline!a < b!, \lstinline!a <= b!, \lstinline!a > b!\\
 \hline
-Logical or & \lstinline!or! & \lstinline!b1 or b2!\\
+Unary negation & none & \lstinline!not $\mathit{expr}$! & \lstinline!not b1!\\
 \hline
-\multirow{2}{*}{Array range} & \lstinline!$\mathit{expr}$ : $\mathit{expr}$! & \lstinline!1 : 5!\\
-                             & \lstinline!$\mathit{expr}$ : $\mathit{expr}$ : $\mathit{expr}$! & \lstinline!start : step : stop!\\
+Logical and & left & \lstinline!and! & \lstinline!b1 and b2!\\
 \hline
-Conditional & \lstinline!if $\mathit{expr}$ then $\mathit{expr}$ else $\mathit{expr}$! & \lstinline!if b then 3 else x!\\
+Logical or & left & \lstinline!or! & \lstinline!b1 or b2!\\
 \hline
-Named argument & \lstinline!$\mathit{ident}$ = $\mathit{expr}$! & \lstinline!x = 2.26!\\
+\multirow{2}{*}{Array range} & none & \lstinline!$\mathit{expr}$ : $\mathit{expr}$! & \lstinline!1 : 5!\\
+                             & none & \lstinline!$\mathit{expr}$ : $\mathit{expr}$ : $\mathit{expr}$! & \lstinline!start : step : stop!\\
+\hline
+Conditional & none & \lstinline!if $\mathit{expr}$ then $\mathit{expr}$ else $\mathit{expr}$! & \lstinline!if b then 3 else x!\\
+\hline
+Named argument & none & \lstinline!$\mathit{ident}$ = $\mathit{expr}$! & \lstinline!x = 2.26!\\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
 
-The conditional operator may also include \lstinline!elseif!-branches.
-Equality \lstinline!=! and assignment \lstinline!:=! are not expression operators since they are allowed only in equations and in assignment statements respectively.
-All binary expression operators are left associative, except exponentiation which is non-associative.
-The array range operator is non-associative.
+The postfix array index and postfix access operators are not expression operators in the normal sense that \lstinline!a.b[1]! can be treated as \lstinline!a.(b[1])!.
+Instead, these operators need to be considered jointly to identify an entire \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) which is the smallest unit that can be seen as an expression in itself.
+Postfix array index and postifx access can only be applied immediately to a \lstinline[language=grammar]!component-reference!; not even parentheses around the left operand are allowed.
 
-\begin{nonnormative}
+\begin{example}
+Relative precedence of postfix array index and postfix access.
+Consider the following definition of the array variable \lstinline!a!:
+\begin{lstlisting}[language=modelica]
+record R
+  Real[2] x;
+end R;
+R[3] a;
+\end{lstlisting}
+These are some valid as well as invalid ways to using postfix array index and postfix access:
+\begin{lstlisting}[language=modelica]
+a[3].x[2] // OK: Component reference of type Real
+a[3].x    // OK: Component reference of type Real[2]
+a.x[2]    // OK: Component reference of type Real[3]
+a.x       // OK: Component reference of type Real[3, 2]
+(a.x)[2]  // Error: Invalid use of parentheses
+a[3]      // OK: Component reference of type R
+(a[3]).x  // Error: Invalid use of parentheses
+\end{lstlisting}
+The relation between \lstinline!a.x!, \lstinline!a.x[2]!, and \lstinline!(a.x)[2]! illustrates the effect of giving higher precedence to array index than postfix access.
+Had the precedence been equal, this would have changed the meaning of \lstinline!a.x[2]! to the same thing that \lstinline!(a.x)[2]! tries to express, being a component reference of type \lstinline!Real[2]!.
+\end{example}
+
+\begin{example}
+Non-associative exponentiation and array range operator (note that the array range operator only takes scalar operands):
+\begin{lstlisting}[language=modelica]
+x ^ y ^ z     // Not legal, use parentheses to make it clear.
+a : b : c : d // Not legal, and parentheses cannot make it legal.
+\end{lstlisting}
+\end{example}
+
+The additive unary expressions are only allowed in the first term of a sum, that is, not immediately to the right of any of the additive or elementwise additive operators.
+For example, \lstinline!1 + -1 + 1! is an invalid expression (not parseable according to \cref{modelica-concrete-syntax}), whereas both \lstinline!1 + (-1) + 1! and \lstinline!-1 + 1 + 1! are fine.
+
+\begin{example}
 The unary minus and plus in Modelica is slightly different than in Mathematica\footnote{\emph{Mathematica} is a registered trademark of Wolfram Research Inc.} and in MATLAB\footnote{\emph{MATLAB} is a registered trademark of MathWorks Inc.}, since the following expressions are illegal (whereas in Mathematica and in MATLAB these are valid expressions):
+% Using $\hspace{0pt}$ below to work around https://github.com/brucemiller/LaTeXML/issues/1399
 \begin{lstlisting}[language=modelica]
 2*$\hspace{0pt}$-2 // = -4 in Mathematica/MATLAB; is illegal in Modelica
 -$\hspace{0pt}$-2  // = 2 in Mathematica/MATLAB; is illegal in Modelica
 +$\hspace{0pt}$+2  // = 2 in Mathematica/MATLAB; is illegal in Modelica
 2-$\hspace{0pt}$-2 // = 4 in Mathematica/MATLAB; is illegal in Modelica
 \end{lstlisting}
-% Using $\hspace{0pt}$ to work around https://github.com/brucemiller/LaTeXML/issues/1399
+\end{example}
 
-Non-associative exponentiation and array range operator (note that the array range operator only takes scalar operands):
-\begin{lstlisting}[language=modelica]
-x ^ y ^ z     // Not legal, use parentheses to make it clear.
-a : b : c : d // Not legal, and parentheses cannot make it legal.
-\end{lstlisting}
+The conditional operator may also include \lstinline!elseif!-branches.
+
+Equality \lstinline!=! and assignment \lstinline!:=! are not expression operators since they are allowed only in equations and in assignment statements respectively.
+
+\begin{nonnormative}
+The operator precedence table is useful when generating textual representations of Modelica expression trees.
+When doing this, attention must be paid to the rule that the unary additive operators are only allowed for the first term in a sum.
+A naive implementation might not produce all the required parentheses for an expression tree such as \lstinline!1 + (-1)!, as it might think that the higher precedence of the unary operator makes the parentheses redundant.
+A trick that solves this problem is to instead treat the additive unary operators as left associative with the same precedence as the binary additive operators.
 \end{nonnormative}
+
 
 \section{Evaluation Order}\label{evaluation-order}
 
@@ -114,8 +171,6 @@ A tool is free to solve equations, reorder expressions and to not evaluate expre
 
 If a numeric operation overflows the result is undefined.
 For literals it is recommended to automatically convert the number to another type with greater precision.
-
-\subsection{Example: Guarding Expressions Against Incorrect Evaluation}\label{example-guarding-expressions-against-incorrect-evaluation}
 
 \begin{example}
 If one wants to guard an expression against incorrect evaluation, it should be guarded by an \lstinline!if!:
@@ -812,18 +867,18 @@ In this case, the internal state of the operator is hidden from the ODE solver.
 
 \lstinline!spatialDistribution! allows the infinite-dimensional problem below to be solved efficiently with good accuracy
 \begin{align*}
-\frac{\partial z(y,t)}{\partial t}+v(t)\frac{\partial z(y,t)}{\partial y} &= 0.0\\
+\frac{\partial z(x,t)}{\partial t}+v(t)\frac{\partial z(x,t)}{\partial x} &= 0.0\\
 z(0.0, t) &= \mathrm{in}_0(t) \text{ if $v\geq 0$}\\
 z(1.0, t) &= \mathrm{in}_1(t) \text{ if $v<0$}
 \end{align*}
-where $z(y, t)$ is the transported quantity, $y$ is the normalized spatial coordinate ($0.0 \le y \le 1.0$), $t$ is the time, $v(t)=\mathrm{der}(x)$ is the normalized transport velocity and the boundary conditions are set at either $y=0.0$ or $y=1.0$, depending on the sign of the velocity.
+where $z(x, t)$ is the transported quantity, $x$ is the normalized spatial coordinate ($0.0 \le x \le 1.0$), $t$ is the time, $v(t)=\mathrm{der}(x)$ is the normalized transport velocity and the boundary conditions are set at either $x=0.0$ or $x=1.0$, depending on the sign of the velocity.
 The calling syntax is:
 \begin{lstlisting}[language=modelica]
 (out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
                                    initialPoints = {0.0, 1.0},
                                    initialValues = {0.0, 0.0});
 \end{lstlisting}
-where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, \lstinline!x!, \lstinline!v! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real! of equal size, containing the y coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(y, \mathit{t0})$.
+where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real! of equal size, containing the x coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(x, \mathit{t0})$.
 The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
 Elements in the \lstinline!initialPoints! array must be sorted in non-descending order.
 The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.
@@ -831,7 +886,7 @@ The operator can be vectorized only with respect to the arguments \lstinline!in0
 
 The solution, $z$, can be described in terms of characteristics:
 \begin{equation*}
-z(y+\int_{t}^{t+\beta} v(\alpha) \mathrm{d}\alpha, t+\beta) = z(y, t),\quad\text{for all $\beta$ as long as staying inside the domain}
+z(x+\int_{t}^{t+\beta} v(\alpha) \mathrm{d}\alpha, t+\beta) = z(x, t),\quad\text{for all $\beta$ as long as staying inside the domain}
 \end{equation*}
 
 This allows the direct computation of the solution based on interpolating the boundary conditions.
@@ -1214,6 +1269,7 @@ noEvent($\mathit{expr}$)
 \begin{semantics}
 \lstinline!Real! elementary relations within $\mathit{expr}$ are taken literally, i.e., no state or time event is triggered.
 No zero crossing functions shall be used to monitor any of the normally event-generating subexpressions inside $\mathit{expr}$.
+Inside functions, \lstinline!noEvent! only makes a difference in combination with the function annotation \lstinline!GenerateEvents = true! (see \cref{modelica:GenerateEvents}).
 See also \crefnameref{modelica:smooth} and \cref{events-and-synchronization}.
 \end{semantics}
 \end{operatordefinition}
@@ -1350,15 +1406,9 @@ While many invalid models can be rejected based on the declared variabilities of
 \item
   For an assignment \lstinline!v := expr! or binding equation \lstinline!v = expr!, \lstinline!v! must be declared to be at least as variable as \lstinline!expr!.
 \item
-  When determining whether an equation can contribute to solving for a variable \lstinline!v! (for instance,
-  when applying the perfect matching rule, see \cref{synchronous-data-flow-principle-and-single-assignment-rule}),
-  the equation can only be considered contributing if the resulting solution would be at most as variable as \lstinline!v!.
+  For multiple return assignment \lstinline!(x1, $\ldots$, xn) := expr! (see \cref{assignments-from-called-functions-with-multiple-results}), all of \lstinline!x1!, \ldots, \lstinline!xn! must be declared to be at least as variable as \lstinline!expr!.
 \item
-  The right-hand side expression in a binding equation (that is, \lstinline!expr!) of a parameter component and of the base type attributes
-  (such as \lstinline!start!) needs to be a parameter or constant expression.
-\item
-  If \lstinline!v! is a discrete-time component then \lstinline!expr! needs to be a
-  discrete-time expression.
+  When determining whether an equation can contribute to solving for a variable \lstinline!v! (for instance, when applying the perfect matching rule, see \cref{synchronous-data-flow-principle-and-single-assignment-rule}), the equation can only be considered contributing if the resulting solution would be at most as variable as \lstinline!v!.
 \end{itemize}
 
 \begin{example}

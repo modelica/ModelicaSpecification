@@ -115,7 +115,7 @@ for i in 1 : 10 loop           // i takes the values 1, 2, 3, $\ldots$, 10
 for r in 1.0 : 1.5 : 5.5 loop  // r takes the values 1.0, 2.5, 4.0, 5.5
 for i in {1, 3, 6, 7} loop     // i takes the values 1, 3, 6, 7
 for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two
-                               // for TwoEnums = enumeration(one,two)
+                               // for TwoEnums = enumeration(one, two)
 \end{lstlisting}
 
 The loop-variable may hide other variables as in the following example.
@@ -124,7 +124,7 @@ Using another name for the loop-variable is, however, strongly recommended.
   constant Integer j = 4;
   Real x[j]
 equation
-  for j in 1:j loop  // The loop-variable j takes the values 1,2,3,4
+  for j in 1:j loop  // j takes the values 1, 2, 3, 4
     x[j] = j;        // Uses the loop-variable j
   end for;
 \end{lstlisting}
@@ -138,10 +138,11 @@ See \cref{implicit-iteration-ranges} for more information.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  Real x[n],y[n];
-for i loop          // Same as:  for i in 1:size(x ,1) loop
-  x[i] = 2*y[i];
-end for;
+  Real x[n], y[n];
+equation
+  for i loop          // Same as: for i in 1:size(x, 1) loop
+    x[i] = 2 * y[i];
+  end for;
 \end{lstlisting}
 \end{example}
 
@@ -421,7 +422,7 @@ reinit(x, expr);
 The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
 \lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
 \lstinline!expr! needs to be type-compatible with \lstinline!x!.
-\lstinline!reinit! can for the same variable (resp.\ array of variables) only be applied (either as an individual variable or as part of an array of variables) in one equation (having \lstinline!reinit! of the same variable in \lstinline!when! and \lstinline!elsewhen! of the same variable is allowed).
+For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several \lstinline!when!- or \lstinline!elsewhen!-clauses of the same \lstinline!when!-equation is allowed).
 In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
 
 \lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value,
@@ -697,6 +698,8 @@ The initialization uses all equations and algorithms that are utilized in the in
 The equations of a \lstinline!when!-clause are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then! (and similarly for \lstinline!elsewhen! and algorithms see below).
 In this case, the \lstinline!when!-clause equations remain active during the whole initialization phase.
 In case of a \lstinline!reinit(x, expr)! being active during initialization (due to being inside \lstinline!when initial()!) this is interpreted as adding \lstinline!x = expr! (the \lstinline!reinit!-equation) as an initial equation.
+The \lstinline!reinit! handling applies both if directly inside \lstinline!when!-clause or inside an \lstinline!if!-equation in the \lstinline!when!-clause.
+In particular, \lstinline!reinit(x, expr)! needs to be counted as the equation \lstinline!x = expr;! for the purpose of balancing of \lstinline!if!-equations inside \lstinline!when!-clauses that are active during initialization, see \cref{if-equations}.
 
 \begin{nonnormative}
 If a \lstinline!when!-clause equation \lstinline!v = expr;! is not active during the initialization phase, the equation \lstinline!v = pre(v)! is added for initialization.
@@ -859,12 +862,46 @@ pre(y) := y;
 \end{lstlisting}
 \end{example}
 
+\begin{example}
+Resettable continuous-time controller initialized either in steady-state or by providing a \lstinline!start! value for state \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+  parameter Boolean steadyState = true;
+  parameter Real y0 = 0 "start and reset value for y, if not steadyState";
+  input Boolean reset "For resetting integrator to y0";
+  Real y;
+equation
+  der(y) = a * y + b * u;
+  when {initial(), reset} then
+    if not (initial() and steadyState) then
+      reinit(y, y0);
+    end if;
+  end when;
+initial equation
+  if steadyState then
+    der(y) = 0;
+  end if;
+\end{lstlisting}
+If \lstinline!not steadyState! this will add \lstinline!y = y0! during the initialization; if not the \lstinline!reinit! is ignored during initialization and the initial equation is used.
+This model can be written in various ways, this particular way makes it clear that the reset is equal to the normal initialization.
+
+During initialization this gives the following equations
+\begin{lstlisting}[language=modelica]
+  if not steadyState then
+    y = y0;
+  end if;
+  if steadyState then
+    der(y) = 0;
+  end if;
+\end{lstlisting}
+if \lstinline!steadyState! had not been a parameter-expression both of those equations would have been illegal according to the restrictions in \cref{if-equations}.
+\end{example}
+
 \subsection{Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}\label{equations-needed-for-initialization}
 
 \begin{nonnormative}
-In general, for the case of a pure (first order) ordinary differential equation (ODE) system with $n$ state variables and $m$ output variables, we will have $n+m$ unknowns in the simulation problem.
+In general, for the case of a pure (first order) ordinary differential equation (ODE) system with $n$ state variables and $m$ output variables, we will have $n+m$ unknowns during transient analysis.
 The ODE initialization problem has $n$ additional unknowns corresponding to the derivative variables.
-At initialization of an ODE we will need to find the values of $2n+m$ variables, in contrast to just $n+m$ variables to be solved for during simulation.
+During initialization of an ODE we will need to find the values of $2n+m$ variables, in contrast to just $n+m$ variables to be solved for during transient analysis.
 \end{nonnormative}
 
 \begin{example}
@@ -876,8 +913,9 @@ y = x1+x2+u;
 \end{lstlisting}
 
 Here we have three variables with unknown values: two dynamic variables that also are state variables, \lstinline!x1! and \lstinline!x2!, i.e., $n=2$, one output variable \lstinline!y!, i.e., $m=1$, and one input variable \lstinline!u! with known value.
-A consistent solution of the initial value problem providing initial values for \lstinline!x1!, \lstinline!x2!, \lstinline!der(x1)!, \lstinline!der(x2)!, and \lstinline!y! needs to be found.
-Two additional initial equations thus need to be provided to solve the initialization problem.
+A consistent solution of the initialization problem requires finding initial values for \lstinline!x1!, \lstinline!x2!, \lstinline!der(x1)!, \lstinline!der(x2)!, and \lstinline!y!.
+Two additional initial equations thus need to be provided to obtain a globally balanced initialization problem.
+Additionally, those two initial equations must be chosen with care to ensure that they, in combination with the dynamic equations, give a well-determined initialization problem.
 
 Regarding DAEs, only that at most $n$ additional equations are needed to arrive at $2n+m$ equations in the initialization system.
 The reason is that in a higher index DAE problem the number of dynamic continuous-time state variables might be less than the number of state variables $n$.
