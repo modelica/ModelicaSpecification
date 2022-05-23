@@ -106,7 +106,7 @@ Then, there needs to be a possibility to remove it again to get back the overrid
 
 ## Variables
 
-If there is an inherited modification from a base class and you want ot replace them by a (probably more sophisticated) equation or an algorithm in the `break` can be used in the derived class:
+If there is an inherited modification from a base class and you want to replace them by a (probably more sophisticated) equation or an algorithm in the `break` can be used in the derived class:
 ```
 model A
     Real x=1;
