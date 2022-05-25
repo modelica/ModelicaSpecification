@@ -77,7 +77,7 @@ initial equation
 end 'M';
 ```
 
-Note that the `Protected = true` annotation doesn't tell at which level of the component hierarchy that the original protected section was, as shown by the following example:
+Note that in full Modelica a protected section can occur at any level of the component hierarchy, as shown by the following example:
 ```
 model M
    Real x;
