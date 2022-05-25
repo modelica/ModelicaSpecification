@@ -248,7 +248,7 @@ end _F;
 > _equation_ →\
 > &emsp; ( _simple-expression_ ( **=** _expression_ )?\
 > &emsp; | _if-equation_\
-> &emsp; ~~| _for-equation_~~\
+> &emsp; | _for-equation_\
 > &emsp; ~~| _connect-clause_~~\
 > &emsp; | _when-equation_\
 > &emsp; )\
@@ -290,10 +290,10 @@ end _F;
 > &emsp; )?\
 > &emsp; **end** **if**
 
-> ~~_for-equation_ →~~\
-> ~~&emsp; **for** _for-indices_ **loop**~~\
-> ~~&emsp;&emsp; ( _equation_ **;** )* ~~\
-> ~~&emsp; **end** **for**~~
+> _for-equation_ →\
+> &emsp; **for** _for-indices_ **loop**\
+> &emsp;&emsp; ( _equation_ **;** )* \
+> &emsp; **end** **for**
 
 > _for-statement_ →\
 > &emsp; **for** _for-indices_ **loop**\
