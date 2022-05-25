@@ -82,6 +82,13 @@ Note that the `Protected = true` annotation doesn't tell at which level of the c
 model M
 end M;
 ```
+In Flat Modelica, the level of the original protected section is lost:
+```
+package 'M'
+  model 'M'
+  end 'M';
+end 'M';
+```
 
 
 ## Vendor annotations
