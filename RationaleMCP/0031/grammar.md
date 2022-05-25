@@ -291,18 +291,18 @@ end _F;
 > &emsp; **end** **if**
 
 > _for-equation_ →\
-> &emsp; **for** _for-indices_ **loop**\
+> &emsp; **for** _for-index_ **loop**\
 > &emsp;&emsp; ( _equation_ **;** )* \
 > &emsp; **end** **for**
 
 > _for-statement_ →\
-> &emsp; **for** _for-indices_ **loop**\
+> &emsp; **for** _for-index_ **loop**\
 > &emsp;&emsp; ( _statement_ **;** )* \
 > &emsp; **end** **for**
 
-> _for-indices_ → _for-index_ ( **,** _for-index_ )*
+> ~~_for-indices_ → _for-index_ ( **,** _for-index_ )*~~
 
-> _for-index_ → _IDENT_ ( **in** _expression_ )?
+> _for-index_ → _IDENT_ **in** _expression_
 
 > _while-statement_ →\
 > &emsp; **while** _expression_ **loop**\
@@ -386,7 +386,7 @@ end _F;
 > _function-call-args_ → `[(]` _function-arguments_? `[)]`
 
 > _function-arguments_\
-> &emsp; → _expression_ ( **,** _function-arguments-non-first_ | **for** _for-indices_ )?\
+> &emsp; → _expression_ ( **,** _function-arguments-non-first_ | **for** _for-index_ )?\
 > &emsp; | _function-partial-application_ ( **,** _function-arguments-non-first_ )?\
 > &emsp; | _named-arguments_
 
@@ -394,7 +394,7 @@ end _F;
 > &emsp; → _function-argument_ ( **,** _function-arguments-non-first_ )?\
 > &emsp; | _named-arguments_
 
-> _array-arguments_ → _expression_ ( ( **,** _expression_ )* | **for** _for-indices_ )
+> _array-arguments_ → _expression_ ( ( **,** _expression_ )* | **for** _for-index_ )
 
 > _named-arguments_ → _named-argument_ ( **,** _named-argument_ )*
 
