@@ -33,7 +33,7 @@ These are all the non-vendor specific annotations inherited from full Modelica t
 - `inverse` — Applied to a function, points to the inverse function
 
 These are all the non-vendor specific annotations inherited from full Modelica that are relevant for parameter input and simulation output:
-- `hideResult` — Applied to a parameter or variable, implies the variable should not be included in the simulation output
+- `HideResult` — Applied to a parameter or variable, implies the variable should not be included in the simulation output
 - `choices` — Applied to a parameter or variable, can be used to enumerate and tag different values for parameter input
 
 These are the new annotations introduced in Flat Modelica, each explained in more detail below:
