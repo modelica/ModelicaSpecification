@@ -80,12 +80,25 @@ end 'M';
 Note that the `Protected = true` annotation doesn't tell at which level of the component hierarchy that the original protected section was, as shown by the following example:
 ```
 model M
+   Real x;
+protected
+   Real p;
 end M;
+
+model N
+  M m1;
+protected
+  M m2;
+end N;
 ```
 In Flat Modelica, the level of the original protected section is lost:
 ```
 package 'M'
   model 'M'
+    Real 'm1.x';
+    Real 'm1.p' annotation(Protected = true); 
+    Real 'm2.x' annotation(Protected = true);
+    Real 'm2.p' annotation(Protected = true);
   end 'M';
 end 'M';
 ```
