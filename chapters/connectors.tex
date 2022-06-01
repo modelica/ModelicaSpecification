@@ -142,22 +142,44 @@ Then connections containing expandable connectors are elaborated:
 expandable connector EngineBus
 end EngineBus;
 
-block Sensor
+partial block Sensor
   RealOutput speed; // Output, i.e., non-input
 end Sensor;
-block Actuator
+partial block Actuator
   RealInput speed; // Input
 end Actuator;
 
-model Engine
+model SensorWBus
   EngineBus bus;
-  Sensor sensor;
-  Actuator actuator;
-equation
-  connect(bus.speed, sensor.speed); // sensor.speed is the non-input
+  replaceable Sensor sensor;
+equation 
+  connect(bus.speed, sensor.speed); 
+  // Provides 'speed'
+end SensorWBus;
+model ActuatorWBus
+  EngineBus bus;
+  replaceable Actuator actuator;
+equation 
   connect(bus.speed, actuator.speed);
+  // Uses 'speed'
+end ActuatorWBus;
+  
+model Engine
+  ActuatorWBus actuator;
+  SensorWBus sensor;
+  EngineBus bus;
+equation 
+  connect(bus, actuator.bus);
+  connect(bus, sensor.bus);
 end Engine;
 \end{lstlisting}
+This small example shows how expandable connectors are normally used:
+\begin{itemize}
+\item There are a number of bus-instances all connected together.
+Often they have the same name, but it is not required.
+\item There is one source of the signal: \lstinline!sensor.sensor.speed!.
+\item There are zero or more uses of the signal:  \lstinline!actuator.actuator.speed!.
+\end{itemize}
 \end{example}
 
 \item
