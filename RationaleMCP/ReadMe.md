@@ -15,7 +15,6 @@ After a release is accepted, follow the [check-list for a new release](NewReleas
 
 New MCP should be added to the following list - on the main branch to keep track of them,
 but the rest of the development on a branch/pull-request before being accepted.
-Discussion goes in the listed issue below.
 
 ## List of existing MCPs
 
