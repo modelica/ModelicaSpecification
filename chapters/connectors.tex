@@ -143,22 +143,44 @@ Then connections containing expandable connectors are elaborated:
 expandable connector EngineBus
 end EngineBus;
 
-block Sensor
+partial block Sensor
   RealOutput speed; // Output, i.e., non-input
 end Sensor;
-block Actuator
+partial block Actuator
   RealInput speed; // Input
 end Actuator;
 
-model Engine
+model SensorWBus
   EngineBus bus;
-  Sensor sensor;
-  Actuator actuator;
+  replaceable Sensor sensor;
 equation
-  connect(bus.speed, sensor.speed); // sensor.speed is the non-input
+  connect(bus.speed, sensor.speed);
+  // Provides 'speed'
+end SensorWBus;
+model ActuatorWBus
+  EngineBus bus;
+  replaceable Actuator actuator;
+equation
   connect(bus.speed, actuator.speed);
+  // Uses 'speed'
+end ActuatorWBus;
+
+model Engine
+  ActuatorWBus actuator;
+  SensorWBus sensor;
+  EngineBus bus;
+equation
+  connect(bus, actuator.bus);
+  connect(bus, sensor.bus);
 end Engine;
 \end{lstlisting}
+This small example shows how expandable connectors are normally used:
+\begin{itemize}
+\item There are a number of bus-instances all connected together.
+Often they have the same name, but it is not required.
+\item There is one source of the signal: \lstinline!sensor.sensor.speed!.
+\item There are zero or more uses of the signal:  \lstinline!actuator.actuator.speed!.
+\end{itemize}
 \end{example}
 
 \item
@@ -174,13 +196,13 @@ expandable connector EngineBus // has predefined signals
   SI.Temperature T;
 end EngineBus;
 
-block Sensor
+partial block Sensor
   RealOutput speed;
 end Sensor;
 
 model Engine
   EngineBus bus;
-  Sensor sensor;
+  replaceable Sensor sensor;
 equation
   connect(bus.speed, sensor.speed);
   // connection to non-connector speed is possible
@@ -242,22 +264,22 @@ Valid and invalid uses of sizeless array components:
 expandable connector EngineBus
 end EngineBus;
 
-block Sensor
+partial block Sensor
   RealOutput speed;
 end Sensor;
 
 model Engine
   parameter Integer n = 1;
   EngineBus bus;
-  Sensor sensor;
+  replaceable Sensor sensor;
   RealOutput sensorSpeeds[:];
 equation
   /* Comments below refer to the use of sizeless array bus.speed. */
   connect(bus.speed[n], sensor.speed) ; // OK; subscript to scalar component.
   connect(bus.speed, sensorSpeeds); // Error; missing subscripts.
 public
-  Real s[:] = bus.speed; // Error; missing subscripts.
-  Real s[2] = bus.speed[{1, 3}]; // OK; subscript selects fixed size sub-array.
+  Real a[:] = bus.speed; // Error; missing subscripts.
+  Real b[2] = bus.speed[{1, 3}]; // OK; subscript selects fixed size sub-array.
 end Engine;
 \end{lstlisting}
 \end{example}
