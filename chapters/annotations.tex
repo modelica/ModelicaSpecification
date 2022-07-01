@@ -447,7 +447,8 @@ This annotation can both be used for models intended as test-cases for implement
 \end{annotationdefinition}
 
 
-\section{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
+\section{Usage Restrictions}\label{usage-restrictions}
+\subsection{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
 For state machines it is useful to have single instances of local classes.
 This can be done using:
@@ -458,6 +459,35 @@ annotation(singleInstance = true)
 The annotation \fmtannotationindex{singleInstance} in a class indicates that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
 
+\subsection{Connection Restrictions}\label{connection-restrictions}
+
+A connector component declaration may have the following annotation:
+\begin{lstlisting}[language=modelica]
+annotation(mustBeConnected = "message");
+\end{lstlisting}%
+\annotationindex{mustBeConnected}
+
+It makes it an error if the connector is not connected from the outside (for a conditional connector this check is only active if the connector is enabled).
+For an array of connectors it applies separately to each element.
+
+\begin{nonnormative}
+This annotation is intended for non-causal connectors, see \cref{restrictions-of-connections-and-connectors}.
+It is particularly suited for stream connectors, see \cref{stream-connectors}.
+\end{nonnormative}
+
+\begin{example}
+This can be used for some optional connectors that should be connected when conditionally enabled.
+\begin{lstlisting}[language=modelica]
+partial model PartialWithSupport
+  Flange_b flange;
+  parameter Boolean useSupport;
+  Support support if useSupport
+    annotation(
+      mustBeConnected = "Support connector should be connected if activated.");
+end PartialWithSupport;
+\end{lstlisting}
+The protected components and connections needed to internally handle the support-connector is omitted.
+\end{example}
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
