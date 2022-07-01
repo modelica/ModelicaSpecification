@@ -489,6 +489,38 @@ end PartialWithSupport;
 The protected components and connections needed to internally handle the support-connector is omitted.
 \end{example}
 
+A connector component declaration may have the following annotation:
+\begin{lstlisting}[language=modelica]
+annotation(mayOnlyConnectOnce = "message");
+\end{lstlisting}%
+\annotationindex{mayOnlyConnectOnce}
+
+It makes it an error if the connector is connected from the outside and:
+\begin{itemize}
+\item For non-stream connectors the connection set has more than two elements.
+\item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
+\end{itemize}
+For an array of connectors it applies separately to each element.
+
+\begin{nonnormative}
+This annotation is intended for non-causal connectors, see \cref{restrictions-of-connections-and-connectors}.
+The connection handling operates on connection sets, and thus this restriction should also operate on those sets.
+The set handling avoids the case where only one of two equivalent models generate diagnostics.
+The stream connector part is primarily intended to exclude sensor-variables, see \cref{connection-of-3-stream-connectors-where-one-mass-flow-rate-is-identical-to-zero-n-3-and}, but also excludes non-reversible outgoing flows.
+\end{nonnormative}
+
+\begin{example}
+This can be used for components that implement mixing of fluids where it is not desired to combine that with the normal stream-connector mixing.
+\begin{lstlisting}[language=modelica]
+partial model MultiPort
+  parameter Integer n = 0 annotation(Dialog(connectorSizing = true));
+  FluidPort_a port_a(redeclare package Medium = Medium);
+  FluidPorts_b ports_b[n](redeclare each package Medium = Medium)
+    annotation (mayOnlyConnectOnce = "Should only connect once per element!");
+end MultiPort;
+\end{lstlisting}
+\end{example}
+
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
 A graphical representation of a class consists of two abstraction
