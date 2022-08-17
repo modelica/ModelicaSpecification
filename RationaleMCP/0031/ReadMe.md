@@ -92,6 +92,36 @@ In future minor versions of Flat Modelica 1, we could improve the language by in
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
 - [ ] Allowing some simple form of `model` that makes it possible to preserve structure of the equations that will allow more efficient symbolic processing and production of executables of much smaller size.
 
+## Prototype Development and Testing
+### Deliverables
+- [ ] Prioritized feature list
+- [ ] List of example models from simple to advanced mapped to features
+- [ ] Library of open source example models
+- [ ] Basic examples exported as Flat Modelica code (functionality provided by at least one tool)
+- [ ] Basic examples imported as Flat Modelica code and simulated (functionality provided by all tools)
+- [ ] Advanced examples exported as Flat Modelica code (functionality provided by at least one tool)
+- [ ] Advanced examples imported as Flat Modelica code and simulated (functionality provided by all tools)
+- [ ] Hand crafted special cases provided as Flat Modelica code
+- [ ] Hand crafted special cases imported as Flat Modelica code and simulated (functionality provided by all tools)
+- [ ] Gap analysis and list of Flat Modelica language issues
+
+### Milestones
+* MS1: Basic test cases defined
+* MS2: Basic test cases evaluated
+* MS3: Advanced and special test cases defined
+* MS4: Advanced and special test cases evaluated
+* MS5: Flat Modelica specification v1.0 defined
+
+### Timeline
+|Time|EQ3-2022|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|
+|--- |--------|--------|--------|--------|--------|--------|
+|MS1 |    x   |        |        |        |        |        |
+|MS2 |        |        |        |        |        |        |
+|MS3 |        |        |        |        |        |        |
+|MS4 |        |        |        |        |        |        |
+|MS5 |        |        |        |        |        |        |
+
+
 ## Revisions
 | Date | Description |
 | --- | --- |
