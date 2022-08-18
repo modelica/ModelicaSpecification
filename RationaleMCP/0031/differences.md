@@ -209,9 +209,8 @@ package 'M'
   function '-M.f:1,3' "Automatically generated helper for passing only the first and third arguments to 'M.f'"
     input Real 'a';
     input Real 'c';
-    output Real 'y' = 'M.f'('a', 'b', 'c');
-  protected
     Real 'b' = 'a' + 1;
+    output Real 'y' = 'M.f'('a', 'b', 'c');
   end '-M.f:1,3';
 
   model 'M'
@@ -230,7 +229,7 @@ function 'f'
   input Real 'a';
   input Real 'b' = 'a' + 1; /* No default; declaration equation is ignored in Flat Modelica. */
   input Real 'c' = 2 * 'b'; /* No default; declaration equation is ignored in Flat Modelica. */
-  output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and protected variables. */
+  output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and local variables. */
 end 'f';
 ```
 
@@ -274,10 +273,9 @@ package 'M'
 
   function '-M.R:1' "Automatically generated helper for passing only the first argument to '-M.R'"
     input Real 'a';
-    output 'M.R' _result = '-M.R'('a', 'b', 'c');
-  protected
     Real 'b' = 1;
     Real 'c' = 'a' + 1;
+    output 'M.R' _result = '-M.R'('a', 'b', 'c');
   end '-M.R:1';
 
   model 'M'
@@ -367,9 +365,9 @@ function 'foo'
 end 'foo';
 ```
 
-#### Function output and protected component declarations
+#### Function output and local component declarations
 
-For output and protected function component declarations the value modifications are used for initial assignments, and are then ignored during the remaining part of the function call evaluation.
+For output and local (that is, neither input nor output) function component declarations the value modifications are used for initial assignments, and are then ignored during the remaining part of the function call evaluation.
 
 For example:
 ```
@@ -646,13 +644,12 @@ end 'PosPoint';
   - ```type 'Cube' = 'Length'[3](min = 0, max = 1);``` (make array type)
   - ```type 'Square' = 'PosPoint'('x'(max = 1), 'y'(max = 1))``` (nested modification)
 
-The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, has the same restrictions as record component declarations, see below.  This includes both public and protected function component declarations.  For example:
+The third and last category of component declarations (beside model component declarations and record component declarations), _function component declarations_, has the same restrictions as record component declarations, see below.  This includes both public and local function component declarations.  For example:
 ```
 function 'fun'
   input Real 'u'(min = 0); /* Public function component declaration. */
   output Real 'y'(min = 0); /* Public function component declaration. */
-protected
-  Real 'x'(min = 0); /* Protected function component declaration. */
+  Real 'x'(min = 0); /* Local function component declaration. */
   …
 end 'fun';
 ```
@@ -665,9 +662,9 @@ The following restrictions apply to modifications in types and functions, making
 
 The modifications that are not allowed in types must be applied to the model component declarations instead.  For attributes such as `start`, `fixed` and `stateSelect`, this will often be the case.
 
-The reason for placing the same restrictions on protected function component declarations as on public function component declarations is that the handling of types inside functions gets significantly simplified without much loss of generality.  To see the kind of loss of generlity, one needs to consider that many attributes have no use in functions at all: `start`, `fixed`, `nominal`, `unbounded`, `stateSelect`, and `displayUnit`.  This leaves two groups of attributes with minor loss of generality:
+The reason for placing the same restrictions on local function component declarations as on public function component declarations is that the handling of types inside functions gets significantly simplified without much loss of generality.  To see the kind of loss of generlity, one needs to consider that many attributes have no use in functions at all: `start`, `fixed`, `nominal`, `unbounded`, `stateSelect`, and `displayUnit`.  This leaves two groups of attributes with minor loss of generality:
 - The strings `unit` and `quantity` can be used to enable more static checking of units and quantities in the function body.  Since such checks are performed during static analysis, the constant variability requirement should hold in general, not just inside functions.  Regarding the other requirement, it is hard to come up with realistic examples where `unit` and `quantity` would not be equal for all elements of an array.
-- Outside functions, `min` and `max` both provide information that may be useful for symbolic manipulations and define conditions that shall be monitored at runtime.  While the symbolic manipulations benefit greatly from constant variability of the limits, the runtime checking is more easily applicable to other variabilities, and different limits for different array elements is not as inconceivable as having different units.  Inside functions, on the other hand, limits on protected variables is not going to provide important information for symbolic manipulations, since function body evaluation does not involve equation solving.  If one would like to have non-constant limits, or limits that are different for different elements of an array, this is possible to express using `assert` statements instead of `min` and `max` attributes.
+- Outside functions, `min` and `max` both provide information that may be useful for symbolic manipulations and define conditions that shall be monitored at runtime.  While the symbolic manipulations benefit greatly from constant variability of the limits, the runtime checking is more easily applicable to other variabilities, and different limits for different array elements is not as inconceivable as having different units.  Inside functions, on the other hand, limits on local variables is not going to provide important information for symbolic manipulations, since function body evaluation does not involve equation solving.  If one would like to have non-constant limits, or limits that are different for different elements of an array, this is possible to express using `assert` statements instead of `min` and `max` attributes.
 
 #### Single array element type
 
@@ -1226,3 +1223,13 @@ parameter equation guess('x') = startExpr; /* Non-final modification of start in
 ```
 
 Note that it is not possible to use the syntactic sugar for a final modification of `start` in full Modelica, as this shall not be turned into a parameter equation for the guess value.
+
+
+## Protected
+
+Flat Modelica does not distinguish between protected and public sections of a class definition.
+For functions, this means that all component declarations with prefix `input` or `output` are considered part of the functions public interface, while all other component declarations are considered local to the implementation of the function.
+Accordingly, a function component declaration which is neither input nor output is called a _local component declaration_ or _local variable_ in Flat Modelica.
+
+The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Flat Modelica comes from a protected section in the full Modelica model.
+See [`protected` annotation](annotations.md#protected).
