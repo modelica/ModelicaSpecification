@@ -73,7 +73,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Figure out what to do with synchronous features.
 - [ ] Event handling semantics is preserved as in Modelica.
 - [ ] Source locations pointing back to the original Modelica code.
-- [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
+- [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bname-of-the-game/RationaleMCP/0031/name-of-the-game.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3224)
 
 ### Flat Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
