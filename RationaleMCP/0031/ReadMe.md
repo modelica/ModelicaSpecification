@@ -95,7 +95,7 @@ Big changes that don't make sense to even consider for a minor release of versio
 ## Prototype Development and Testing
 ### Deliverables
 - [ ] Feature list
-- [ ] List of example models from simple to advanced mapped to features
+- [ ] Initial simple example model from MSL mapped against feature list
 - [ ] Library of open source example models
 - [ ] Basic examples exported as Flat Modelica code (functionality provided by at least one tool)
 - [ ] Basic examples imported as Flat Modelica code and simulated (functionality provided by all tools)
