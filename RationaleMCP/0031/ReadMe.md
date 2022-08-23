@@ -95,22 +95,32 @@ Big changes that don't make sense to even consider for a minor release of versio
 ## Prototype Development and Testing
 ### Deliverables
 - [ ] Feature list
-- [ ] Initial simple example model from MSL mapped against feature list
+- [ ] Example models from MSL mapped against feature list
 - [ ] Library of open source unit test models matching the feature list
-- [ ] Initial example exported as Flat Modelica code (functionality provided by at least one tool)
-- [ ] Initial example imported as Flat Modelica code and simulated (functionality provided by all tools)
-- [ ] Advanced examples exported as Flat Modelica code (functionality provided by at least one tool)
-- [ ] Advanced examples imported as Flat Modelica code and simulated (functionality provided by all tools)
-- [ ] Hand crafted special cases provided as Flat Modelica code
-- [ ] Hand crafted special cases imported as Flat Modelica code and simulated (functionality provided by all tools)
-- [ ] Gap analysis and list of Flat Modelica language issues
+- [ ] Flat Modelica v0.1 issues
+- [ ] Flat Modelica v0.2
+
+### Plan of action
+Iteratively extend the scope to be covered following these steps:
+* Select the next non-working example ("lowest hanging fruit") from MSL, or hand craft one as needed.
+* Enhance export of Flat Modelica code (functionality provided by at least one tool).
+* Enhance import of Flat Modelica code (functionality provided by all tools).
+* Map example model to roadmap items.
+* Identify newly covered language features derived from roadmap items.
+* Create unit tests for newly identified features.
+* Support newly created unit tests.
+* Capture language issues or ambiguities as they occur.
+
+The captured issues shall then be resolved by the revised Flat Modelica specification v0.2 or considered as roadmap item for later versions.
 
 ### Milestones
-* MS1: Basic test cases defined
-* MS2: Basic test cases evaluated
-* MS3: Advanced and special test cases defined
-* MS4: Advanced and special test cases evaluated
-* MS5: Flat Modelica specification v1.0 defined
+* MS1: Initial example working
+* MS2: 50% of MSL examples working
+* MS3: 80% of MSL examples working
+* MS4: 95% of MSL examples working
+* MS5: ~100% of MSL examples working
+* MS6: All features covered by examples/unit tests and working
+* MS7: Flat Modelica specification v0.2 defined
 
 ### Timeline
 |Time|EQ3-2022|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|
