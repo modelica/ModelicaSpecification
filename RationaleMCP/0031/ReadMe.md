@@ -97,7 +97,7 @@ Big changes that don't make sense to even consider for a minor release of versio
 - [ ] Feature list
 - [ ] Initial simple example model from MSL mapped against feature list
 - [ ] Library of open source unit test models matching the feature list
-- [ ] Basic examples exported as Flat Modelica code (functionality provided by at least one tool)
+- [ ] Initial example exported as Flat Modelica code (functionality provided by at least one tool)
 - [ ] Basic examples imported as Flat Modelica code and simulated (functionality provided by all tools)
 - [ ] Advanced examples exported as Flat Modelica code (functionality provided by at least one tool)
 - [ ] Advanced examples imported as Flat Modelica code and simulated (functionality provided by all tools)
