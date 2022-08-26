@@ -506,11 +506,11 @@ A functional argument can be provided in one of the following forms to be passed
 %\def\labelenumi{\alph{enumi}.}
 \item\label{functional-argument:type-specifier}
   as a function type-specifier (\lstinline!Parabola! example below),
-\item
+\item\label{functional-argument:partial-application}
   as a function partial application (\cref{function-partial-application} below),
 \item\label{functional-argument:component}
   as a function that is a component (i.e., a formal parameter of function type of the enclosing function),
-\item
+\item\label{functional-argument:component-partial-application}
   as a function partial application of a function that is a component (example in \cref{function-partial-application} below).
 \end{enumerate}
 
@@ -573,7 +573,7 @@ Thus, for checking function type compatibility, bound formal parameters are igno
 \end{nonnormative}
 
 \begin{example}
-Function partial application as argument, positional argument passing, according to case (b) above:
+Function partial application as argument, positional argument passing, according to case~\ref{functional-argument:partial-application} above:
 \begin{lstlisting}[language=modelica]
 model Test
   parameter Integer N;
@@ -581,21 +581,22 @@ model Test
 algorithm
   area := 0;
   for i in 1:N loop
-    area := area + quadrature(0, 1, function  Sine(A=2, w=i*time));
+    area := area + quadrature(0, 1, function Sine(A = 2, w = i * time));
   end for;
 end Test;
 
-function Sine "y = Sine(x,A,w)"
+function Sine "y = Sine(x, A, w)"
   extends Integrand;
   input Real A;
   input Real w;
 algorithm
-  y:=A*Modelica.Math.sin(w*x);
+  y := A * Modelica.Math.sin(w * x);
 end Sine;
 \end{lstlisting}
 Call with function partial application as named input argument:
 \begin{lstlisting}[language=modelica]
-area := area + quadrature(0, 1, integrand = function Sine(A=2, w=i*time));
+area :=
+  area + quadrature(0, 1, integrand = function Sine(A = 2, w = i * time));
 \end{lstlisting}
 \end{example}
 
@@ -603,22 +604,22 @@ area := area + quadrature(0, 1, integrand = function Sine(A=2, w=i*time));
 Function types are matching after removing the bound arguments \lstinline!A! and \lstinline!w! in a function partial
 application:
 \begin{lstlisting}[language=modelica]
-function Sine2 "y = Sine2(A,w,x)"
+function Sine2 "y = Sine2(A, w, x)"
   input Real A;
   input Real w;
   input Real x; // Note: x is now last in argument list.
   output Real y;
 algorithm
-  y:=A*Modelica.Math.sin(w*x);
+  y := A * Modelica.Math.sin(w * x);
 end Sine2;
-area = quadrature(0, 1, integrand = function  Sine2(A=2, w=3));
+area = quadrature(0, 1, integrand = function Sine2(A = 2, w = 3));
 \end{lstlisting}
 The partially evaluated \lstinline!Sine2! has only one argument: \lstinline!x! -- and is thus type compatible with \lstinline!Integrand!.
 \end{example}
 
 \begin{example}
-Function partial application of a function that is a component, according to case (d) above:
-\begin{lstlisting}[language=modelica]
+Function partial application of a function that is a component, according to case~\ref{functional-argument:component-partial-application} above:
+\begin{lstlisting}[language=modelica,escapechar=!]
 partial function SurfaceIntegrand
   input Real x;
   input Real y;
@@ -632,8 +633,8 @@ function quadratureOnce
   input SurfaceIntegrand integrand;
   output Real z;
 algorithm
-  z := quadrature(y1, y2, function  integrand(y=x));
-  // This is according to case (d) and needs to bind the 2nd argument
+  z := quadrature(y1, y2, function integrand(y = x));
+  // This is according to case !\ref{functional-argument:component-partial-application}! and needs to bind the 2nd argument
 end quadratureOnce;
 
 function surfaceQuadrature
@@ -644,12 +645,14 @@ function surfaceQuadrature
   input SurfaceIntegrand integrand;
   output Real integral;
 algorithm
-  integral := quadrature(x1, x2,
-  function quadratureOnce(y1=y1, y2=y2, integrand=integrand));
-  // Case (b) and (c)
+  integral :=
+    quadrature(x1, x2,
+      function quadratureOnce(y1 = y1, y2 = y2, integrand = integrand));
+  // Case !\ref{functional-argument:partial-application}! and !\ref{functional-argument:component}!
 end surfaceQuadrature;
 \end{lstlisting}
 \end{example}
+
 
 \subsection{Output Formal Parameters}\label{output-formal-parameters-of-functions}
 
