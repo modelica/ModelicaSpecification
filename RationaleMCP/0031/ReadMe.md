@@ -116,7 +116,9 @@ Iteratively extend the scope to be covered following these steps:
 
 The captured issues shall then be resolved by the revised Flat Modelica specification v0.2 or considered as roadmap item for later versions.
 
-### Milestones
+### Milestones for reaching Flat Modelica v0.2
+Prerequisite is that Flat Modelica v0.1 has been finalized.
+
 * MS1: Initial example working
 * MS2: 50% of MSL examples working
 * MS3: 80% of MSL examples working
