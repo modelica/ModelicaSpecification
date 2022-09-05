@@ -99,7 +99,12 @@ Big changes that don't make sense to even consider for a minor release of versio
 - [ ] Library of open source unit test models matching the feature list
 - [ ] Flat Modelica v0.1 issues
 - [ ] Flat Modelica v0.2
-
+- [ ] Flat Modelica v0.1: md documents ready for prototype development
+- [ ] Flat Modelica v0.2: md documents ready for preliminary feedback of the language group
+- [ ] Flat Modelica v0.3: Feedback of the language group addressed in md documents
+- [ ] MCP0031 RC: Modelica specification changes  defined in the LaTeX sources based on Flat Modelica v1.0
+- [ ] MCP0031 RC+: Ready for evaluation including the feedback of three reviews
+- [ ] MCP0031 v1: Evaluated and formally accepted by the language group
 ### Plan of action
 Iteratively extend the scope to be covered following these steps:
 * Select the next non-working example ("lowest hanging fruit") from MSL, or hand craft one as needed.
