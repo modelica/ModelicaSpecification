@@ -50,7 +50,7 @@ The following commits at the Git repository at https://github.com/modelica-3rdpa
    - All license files were added as text files to a new directory ExternData/Resources/Licenses.
      The file format is not restricted to Text with a special encoding, but any file format (e.g., Mark-Down, PDF, HTML) basically can be supported.
      The license file LICENSE_ExternData.txt is the corresponding license of the copyright holder of the Modelica package, all other license files reflect third-party software components.
-   - It is recommended to use ModelicaPackage/Resource/Licenses as default directory for the license files.
+   - It is recommended to use ModelicaPackage/Resource/Licenses as the directory for the license files.
 1. https://github.com/modelica-3rdparty/ExternData/commit/f38372d825b20eac4de01ce01b95560522b43ad2
    - The license file LICENSE_ExternData.txt of the Modelica package is referenced by the Modelica top-level class as new annotation License="modelica://ExternData/Resources/Licenses/LICENSE_ExternData.txt".
      To introduce this new annotation on existing Modelica packages in a Modelica-compliant and vendorneutral way, the `__ModelicaAssociation` prefix was added (similar as `__ModelicaAssociation_Impure` in MSL v3.2.2).
