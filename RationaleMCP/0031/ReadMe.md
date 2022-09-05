@@ -97,8 +97,6 @@ Big changes that don't make sense to even consider for a minor release of versio
 - [ ] Feature list
 - [ ] Example models from MSL mapped against feature list
 - [ ] Library of open source unit test models matching the feature list
-- [ ] Flat Modelica v0.1 issues
-- [ ] Flat Modelica v0.2
 - [ ] Flat Modelica v0.1: md documents ready for prototype development
 - [ ] Flat Modelica v0.2: md documents ready for preliminary feedback of the language group
 - [ ] Flat Modelica v0.3: Feedback of the language group addressed in md documents
