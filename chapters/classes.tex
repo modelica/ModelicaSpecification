@@ -227,6 +227,8 @@ In addition, instances of classes extending from \lstinline!ExternalObject! may 
 Variables declared with the \lstinline!stream! type prefix shall be a subtype of \lstinline!Real!.
 This is further restricted in \cref{definition-of-stream-connectors}.
 
+Variables declared with the \lstinline!input! type prefix must not also have the prefix \lstinline!parameter! or \lstinline!constant!.
+
 The type prefix \lstinline!flow! of a component that is not a primitive element (see \cref{primitive-elements}), is also applied to the elements of the component (this is done after verifying that the type prefixes occurring on elements of the component are correct).
 Primitive elements with the \lstinline!flow! type prefix shall be a subtype of \lstinline!Real! or an operator record defining an additive group, see \cref{generation-of-connection-equations}.
 
@@ -552,14 +554,8 @@ A component declared with a condition-attribute can only be modified and/or used
 Adding the component and then removing it ensures that the component is valid.
 
 If a connect equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
-\end{nonnormative}
 
-If the condition is true for a public connector containing flow
-variables the connector must be connected from the outside.
-
-\begin{nonnormative}
-The reason for this restriction is that the default flow equation is probably incorrect (since it could otherwise
-be an unconditional connector) and the model cannot check that connector is connected.
+There are annotations to handle the case where the connector should be connected when activated, see \cref{annotations-for-the-graphical-user-interface}.
 \end{nonnormative}
 
 \section{Class Declarations}\label{class-declarations}
@@ -1171,8 +1167,7 @@ globally singular model.
 \begin{lstlisting}[language=modelica]
 import Modelica.Units.SI;
 
-partial model BaseProperties
-  "Interface of medium model for all type of media"
+partial model BaseProperties "Interface of medium model"
   parameter Boolean preferredStates = false;
   constant Integer nXi "Number of independent mass fractions";
   InputAbsolutePressure     p;
@@ -1695,14 +1690,14 @@ The predefined \lstinline!StateSelect!\indexinline{StateSelect} enumeration type
 \begin{lstlisting}[language=modelica]
 type StateSelect = enumeration(
   never   "Do not use as state at all.",
-  avoid   "Use as state, if it cannot be avoided (but only if variable appears
-           differentiated and no other potential state with attribute
-           default, prefer, or always can be selected).",
-  default "Use as state if appropriate, but only if variable appears
-           differentiated.",
-  prefer  "Prefer it as state over those having the default value
-           (also variables can be selected, which do not appear
-           differentiated).",
+  avoid   "Use as state, if it cannot be avoided (but only if variable appears "
+        + "differentiated and no other potential state with attribute "
+        + "default, prefer, or always can be selected).",
+  default "Use as state if appropriate, but only if variable appears "
+        + "differentiated.",
+  prefer  "Prefer it as state over those having the default value "
+        + "(also variables can be selected, which do not appear "
+        + "differentiated).",
   always  "Do use it as a state."
 );
 \end{lstlisting}
