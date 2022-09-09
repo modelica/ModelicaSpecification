@@ -45,7 +45,7 @@ Only the keywords `msgctxt`, `msgid` and `msgstr` are used.
 
 At first there can be an optional comment describing the location (file name and line number) of the text to translate. Multiple occurences of the same string can be listed here, separated by space.
 
-Then, the `<context identifier>` behind the keyword `msgctxt` is the full name of the Modelica class (e.g. `Modelica.Blocks.Math.Sin` ) where the text appears in. Short class definitions do not appear here. Texts in such classes belong to the enclosing full class definition.
+Then, the `<context identifier>` behind the keyword `msgctxt` is the full name of the Modelica class (e.g. `Modelica.Blocks.Math.Sin` ) where the text appears in. Short class definitions do not appear here. Texts in such classes (including their description string) belong to the enclosing full class definition.
 
 After the `msgid` keyword the text string which shall be translated follows. It should contain the original string from the Modelica text representation. 
 Since in Modelica control sequences also start with a backslash and another backslash is used to use sequences literally or to hide double quotes, no change is required here. 
