@@ -64,7 +64,7 @@ It shall be mandatory to use for *msgctxt* the full name of a class:
 - using the class makes it easier for the Modelica tool to copy and re-arrange models and packages without loosing the already existing language information.
 
 The following Modelica constructs shall be read out / translated: 
-* syntactical comments
+* description strings
 * strings in following annotations:
   * Text.string, Text.textString
   * missingInnerMessage, obsolete, unassignedMessage 
