@@ -5,7 +5,7 @@
 The files to support translation must be provided by the developer of the library. They must be stored in a subdirectory of the Resources directory of the library with the name `Language`.
 
 Two kind of files have to be provided:
-* a template file `<LibraryName>.pot`. 
+* a template file `<LibraryName>.pot` (Portable Object Template). 
 It contains all necessary information to translate all descriptions, but no translations. The pattern `<LibraryName>` denotes the toplevel class name of the library.
 * one file for each supported language with the name `<LibraryName>.<language>.po`. This file is a copy of the associated template file, but extended with the translations in the specified language. The pattern `<language>` stands for the ISO 639-1 language code, e.g. de or en.
 
