@@ -148,6 +148,7 @@ equation
    */
   assert(realParameterEqual('q', sin('p')), "Incorrect implementation of realParameterEqual!");
 end 'M';
+```
 
 
 ## Pure Modelica functions
