@@ -1233,3 +1233,8 @@ Accordingly, a function component declaration which is neither input nor output 
 
 The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Flat Modelica comes from a protected section in the full Modelica model.
 See [`protected` annotation](annotations.md#protected).
+
+
+## Clock partitions
+
+TBD
