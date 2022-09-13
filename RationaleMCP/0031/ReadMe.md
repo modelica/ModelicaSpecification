@@ -128,7 +128,7 @@ Prerequisite is that Flat Modelica v0.1 has been finalized.
 * MS7: Flat Modelica specification v0.2 defined
 
 ### Timeline
-|Time|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|EQ4-2022|
+|Time|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|EQ1-2024|
 |--- |-------|-------|-------|-------|-------|-------|
 |MS1 |       |   x   |        |       |       |         |        |
 |MS2 |       |        |   x   |       |       |         |        |
