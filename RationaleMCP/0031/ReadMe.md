@@ -128,13 +128,15 @@ Prerequisite is that Flat Modelica v0.1 has been finalized.
 * MS7: Flat Modelica specification v0.2 defined
 
 ### Timeline
-|Time|EQ3-2022|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|
-|--- |--------|--------|--------|--------|--------|--------|
-|MS1 |    x   |        |        |        |        |        |
-|MS2 |        |        |        |        |        |        |
-|MS3 |        |        |        |        |        |        |
-|MS4 |        |        |        |        |        |        |
-|MS5 |        |        |        |        |        |        |
+|Time|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|EQ4-2022|
+|--- |-------|-------|-------|-------|-------|-------|
+|MS1 |       |   x   |        |       |       |         |        |
+|MS2 |       |        |   x   |       |       |         |        |
+|MS3 |       |        |        |   x   |       |         |        |
+|MS4 |       |        |        |       |   x   |         |        |
+|MS5 |       |        |        |       |       |   x   |       |
+|MS6 |       |        |        |       |       |       |   x   |
+|MS7 |       |        |        |       |       |       |   x   |
 
 EQn: End of Quarter n
 
