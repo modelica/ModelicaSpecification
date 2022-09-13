@@ -14,9 +14,9 @@ Use cases to have in mind in the design of Flat Modelica, also indicating the us
 * Serve as intermediate stage in the Modelica specification, separating front end matters (the high level constructs of the Modelica language) from back end matters (simulation semantics).
   - Generally speaking, the two different matters will attract attention from people with quite different interests and areas of expertise (compuer science and numerical mathematics, respectively).
   - Separation will facilitate more efficient work and rapid development of the two aspects of the Modelica language.
-  - Simulation semantics could then get some well deserved attention after many years of almost no attention at all, which would be a necessary step towards true portability of models and libraries between tools.
+  - Simulation semantics could then get some well deserved attention, which would be a necessary step towards true portability of models and libraries between tools.
   - Making it easier to organize the development work of a Modelica tool.
-  - A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
+  - A working group with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
 * Basis for the _Equation Code_ of eFMI, [see below](#Relation-to-eFMI).
 * Help users understand the mysterious ways of the Modelica language by showing them the flattened models.
 * Comparison of different Modelica back ends with the same flattened model.
