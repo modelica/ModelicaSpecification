@@ -89,3 +89,133 @@ Note that exponentiation includes the prefix.
 
 The unit expression \lstinline!"T"! means tesla, but note that the letter \lstinline!T! is also the symbol for the prefix tera which has a multiplier value of 10\textsuperscript{12}.
 \end{example}
+
+
+\section{Unit Checking}\label{unit-checking}
+
+How to verify that units are used in compatible ways is current not fully determined by the specification.
+This section gives rules for certain situations, but in general tools are expected to reason based on common sense.
+
+
+\subsection{Empty and Undefined Units}\label{empty-and-undefined-units}
+
+In situations where the specification does not prescribe how to determine the unit of an expression, the unit of that expression is said to be \firstuse[undefined unit]{undefined}.
+It is then not possible for a tool to reject the equation (or other construct) with support in the specification, and options for the tool include silently not performing unit checking, or applying checks based on common sense.
+
+The unit of an expression can also be defined as being \firstuse[empty unit]{empty}, see below.
+In certain places (see below), expressions with empty unit can be implicitly cast to suitable units.
+When an expression with empty unit is implicitly cast to some unit, that unit is referred to as the \firstuse{inferred unit} of the expression.
+
+
+\subsection{Unit Inference}\label{unit-inference}
+
+Where the empty unit has no other defined meaning, it can be implicitly cast to unit \lstinline!"1"!.
+
+In some cases the empty unit can be implicitly cast to an inferred unit:
+\begin{itemize}
+\item
+  In binding equations and modifications:
+  \begin{itemize}
+  \item The entire expression of the binding or modification.
+  \item When the entire expression is an array construction, array concatenation and array range, then apply rules recursively for the direct subexpressions.
+  \end{itemize}
+\item
+  The entire argument expression in a function call.
+% To keep the design close to the bare minimum, this part is currently excluded:
+%\item
+%  For a translation-time constant with value 0.0:
+%  \begin{itemize}
+%  \item Expressions constituting the entire side of an equality or relation.
+%  \item The right hand side of an assignment.
+%  \item The direct subexpressions of array construction, array concatenation, and array range.
+%  \end{itemize}
+\end{itemize}
+
+
+\subsection{Expressions with Empty Unit}\label{expressions-with-empty-unit}
+
+This section describes conditions under which an expression has empty unit.
+Conditions not given here must not be interpreted as definitely not implying empty unit; instead, the unit may be currently undefined for some expressions, allowing the unit to be properly defined in future versions of the specification.
+
+Basic expressions defined to have empty unit:
+\begin{itemize}
+\item
+  \lstinline!Real! literals.
+\item
+  \lstinline!Integer! expressions implicitly cast to \lstinline!Real!.
+\end{itemize}
+
+Expressions defined to \emph{not} propagate the empty unit, thereby forcing inference of unit \lstinline!"1"!:
+\begin{itemize}
+\item
+  Addition, subtraction, multiplication and division operators when either operand has non-empty unit.
+\item
+  Right operand of binary exponentiation.
+\item
+  Component references outside functions where the declared \lstinline!unit!-attribute is \lstinline!""! (possibly by not being specified).
+  (Unit checking involving user-defined functions with empty unit on inputs and outputs is currently not defined.)
+\end{itemize}
+
+Built-in non-array operators, functions, and special expressions that propagate any unit (including empty):
+\begin{itemize}
+\item
+  Negation, addition, subtraction (scalar or element-wise)
+\end{itemize}
+
+Special situations in which the empty unit can be propagated up the expression tree:
+\begin{itemize}
+\item
+  Multiplication and division when both operands have empty unit.
+\end{itemize}
+
+\begin{example}
+Consider unit checking of the following declaration equation:
+\begin{lstlisting}[language=modelica]
+Real y(unit = "m") = 1 + 2.5 * 3;
+\end{lstlisting}
+The unit of the declaration equation right-hand side is determined as follows:
+\begin{itemize}
+\item The \lstinline!Real! literal \lstinline!2.5! has empty unit.
+\item The \lstinline!Integer! literals \lstinline!1! and \lstinline!3! are implicitly cast to \lstinline!Real!, and therefore have empty unit.
+\item The multiplication \lstinline!2.5 * 3! has empty unit, as multiplication can propagate the empty unit of both operands.
+\item The addition \lstinline!1 + (2.5 * 3)! has empty unit, as addition can propagate any unit as long as both operands have the same unit.
+\item The entire right-hand side expression gets inferred unit \lstinline!"m"! in order to be compatible with the component's declared \lstinline!unit!.
+\end{itemize}
+\end{example}
+
+\begin{example}
+Consider unit checking of the following erroneous declaration equation for \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+Real x(unit = "m") = 1.0;
+Real y(unit = "m") = x^2 / 2;
+\end{lstlisting}
+The unit of the declaration equation right-hand side is determined as follows:
+\begin{itemize}
+\item The unit of \lstinline!x! is \lstinline!"m"!, and common sense gives that \lstinline!x^2! has unit \lstinline!"m2"!
+\item The \lstinline!Integer! literal \lstinline!1! is implicitly cast to \lstinline!Real!, and therefore has empty unit.
+\item As the left operand of \lstinline!x^2 / 2! is non-empty, the right operand cannot be empty, and hence empty unit of \lstinline!2! is implicitly cast to \lstinline!"1"!.
+\item Common sense then gives that the unit of \lstinline!x^2 / 2! is \lstinline!"m2"!, which is an error due to the required unit being \lstinline!"m"!.
+\end{itemize}
+\end{example}
+
+\begin{example}
+Consider the potential consequences of an undefined unit in the following declaration equation:
+\begin{lstlisting}[language=modelica]
+Real y(unit = "m") = sin(1.57);
+\end{lstlisting}
+To see that the unit of the declaration equation right-hand side is undefined, note that:
+\begin{itemize}
+\item The \lstinline!Real! literal \lstinline!1.57! has empty unit.
+\item The expression \lstinline!sin(1.57)! is not covered by the specification, and hence has undefined unit.
+\end{itemize}
+If a tool wants to proceed according to ``common sense'', alternatives include:
+\begin{itemize}
+\item
+  Assume that \lstinline!sin! is a mapping from unit \lstinline!"1"! to unit \lstinline!"1"!.
+  The unit of \lstinline!1.57! then defaults to \lstinline!"1"! (alternatively, the same unit could be obtained by inference).
+  The unit of \lstinline!sin(1.57)! is then found to be \lstinline!"1"!, which is an error due to the required unit being \lstinline!"m"!.
+\item
+  Assume that \lstinline!sin! preserves both the unit \lstinline!"1"! and the empty unit.
+  The empty unit of \lstinline!1.57! gets propagated to \lstinline!sin(1.57)!, which in turn gets inferred unit \lstinline!"m"!.
+\end{itemize}
+\end{example}
