@@ -2058,15 +2058,43 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
 The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
 Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
 
+\begin{example}
+If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
+\end{example}
+
 Classes should not use other classes in ways that contradict this protection.
 Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
 
-\begin{nonnormative}
-For instance a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
-\end{nonnormative}
-
 \begin{example}
-If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
+For instance a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
+
+Consider the following invalid use of a class with \lstinline!Access.hide!:
+\begin{lstlisting}[language=modelica]
+package P
+  block MySecret
+    RealOutput y = time;
+    annotation(Protection(access = Access.hide));
+  end MySecret;
+  model M
+    MySecret mySecret;
+    Integrator integrator;
+  equation
+    connect(mySecret.y, integrator.u);
+    annotation(Protection(access = Access.diagram));
+  end M;
+end P;
+\end{lstlisting}
+In order to not reveal the existence of the class \lstinline!P.MySecret!, a tool may choose to show the diagram with both \lstinline!mySecret! and all connections to it removed.
+(The tool could also choose to not show the diagram of \lstinline!P.M! at all.)
+When simulating \lstinline!P.M!, the tool must not store \lstinline!mySecret.y!
+
+If a user enters
+\begin{lstlisting}[language=modelica]
+model My
+  P.MySecret a;
+end My;
+\end{lstlisting}
+That icon for \lstinline!P.MySecret! shall not be shown, similarly as if the class did not exist.
 \end{example}
 
 \begin{nonnormative}
