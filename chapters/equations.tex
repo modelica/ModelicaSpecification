@@ -207,7 +207,7 @@ The order between the equations in a \lstinline!when!-equation does not matter, 
 \begin{lstlisting}[language=modelica]
 equation
   when x > 2 then
-    y3 = 2*x +y1+y2; // Order of y1 and y3 equations does not matter
+    y3 = 2*x + y1 + y2; // Order of y1 and y3 equations does not matter
     y1 = sin(x);
   end when;
   y2 = sin(y1);
@@ -292,6 +292,7 @@ The equations within the \lstinline!when!-equation must have one of the followin
   The \lstinline!for!- and \lstinline!if!-equations if the equations within the \lstinline!for!- and \lstinline!if!-equations satisfy these requirements.
 \item
   The different branches of \lstinline!when!/\lstinline!elsewhen! must have the same set of component references on the left-hand side.
+  Here, the destination variable of a \lstinline!reinit! (including when inside a \lstinline!when!-clause activated with \lstinline!initial()!) is not considered a left-hand side, and hence \lstinline!reinit! is unaffected by this requirement (as are \lstinline!assert! and \lstinline!terminate!).
 \item
   The branches of an \lstinline!if!-equation inside \lstinline!when!-equations must have the same set of component references on the left-hand side, unless all switching conditions of the \lstinline!if!-equation are parameter expressions.
 \end{itemize}
@@ -440,6 +441,7 @@ The operator reinitializes \lstinline!x! with \lstinline!expr! at an event insta
 \lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
 \lstinline!expr! needs to be type-compatible with \lstinline!x!.
 For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several \lstinline!when!- or \lstinline!elsewhen!-clauses of the same \lstinline!when!-equation is allowed).
+If there are multiple \lstinline!reinit! for a variable inside the same \lstinline!when!- or \lstinline!elsewhen!-clause, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
 In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
 
 \lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value,
