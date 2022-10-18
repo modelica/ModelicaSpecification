@@ -219,8 +219,8 @@ algorithm
 ```
 Note that the following is illegal since the argument of `pre` needs to be discrete-time:
 ```
-  if initial() then /* Right before or right after when-statement does not matter. */
-    'y' := pre('x');
+  if initial() then
+    'y' := pre('x'); /* 'x' is continuous-time, since no longer inside when-clause. */
   end if;
 ```
 Open questions:
