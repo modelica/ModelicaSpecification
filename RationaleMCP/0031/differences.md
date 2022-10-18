@@ -155,12 +155,16 @@ end 'M';
 
 The `when`-equations in Flat Modelica are more restricted compared to full Modelica.
 In summary:
-- No special treatment of `initial()` as a `when`-clause trigger expression.
+- `when`-equations have no meaning at all for the initialization problem:
+  * No special treatment of `initial()` as a `when`-clause trigger expression.
+  * No implicit initial equations in the form `x = pre(x)` for a variable `x` assigned in the `when`-equation.
 - It is not allowed to have `when`-equations inside `if`-equations and `for`-equations.
 
 Here, the _special treatment_ of `when initial() then` refers to the special meaning of such a `when`-equation in the initialization problem, including the special meaning of `reinit` when activated by `initial()`.
 Hence, the first `when`-clause triggered by `initial()` in full Modelica needs to be turned into `initial equation` form in Flat Modelica, with `reinit`-equations replaced by equality-equations.
 This also means that in Flat Modelica, the triggering condition `initial()` will have the same effect as the triggering condition `true and initial()`, namely that they will never trigger the `when`-clause because the expression never undergoes a positive edge.
+
+The implicit initial equations `x = pre(x)` in full Modelica (in case no `when`-clause is activated with `initial()`) need to be made explicit in Flat Modelica.
 
 Regarding `when`-equations inside `if`-equations and `for`-equations, full Modelica only allows this where the `if`-equation conditions and `for`-equation ranges are parameter expressions.
 Hence, it is only with a small loss of generality that it is being assumed that these conditions and ranges should be possible to evaluate during translation, allowing an `if`-equation to be reduced to one of its branches, or a `for`-equation to be unrolled.
