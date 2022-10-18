@@ -170,6 +170,65 @@ Regarding `when`-equations inside `if`-equations and `for`-equations, full Model
 Hence, it is only with a small loss of generality that it is being assumed that these conditions and ranges should be possible to evaluate during translation, allowing an `if`-equation to be reduced to one of its branches, or a `for`-equation to be unrolled.
 
 
+## When-Statements
+
+The `when`-statements in Flat Modelica are more restricted compared to full Modelica.
+In summary:
+- `when`-statements have no meaning at all for the initialization problem:
+  * No special treatment of `initial()` as a `when`-clause trigger expression.
+
+**Example 1**: Consider the following full Modelica `when`-statement with a clause triggered by `initial()`:
+```
+  Real x;
+  Real y;
+algorithm
+  x := 0.5;
+  x := x + time;
+  when {x^2 > 2.0, initial()} then
+    y := x;
+  end when;
+  x := x + 0.5;
+```
+This can be expressed with the help of an `if`-statement in Flat Modelica:
+```
+  Real 'x';
+  Real 'y';
+algorithm
+  'x' := 0.5;
+  'x' := 'x' + time;
+  if initial() then /* Right before or right after when-statement does not matter. */
+    'y' := 'x';
+  end if;
+  when 'x'^2 > 2.0 then
+    'y' := 'x';
+  end when;
+  'x' := 'x' + 0.5;
+```
+
+**Example 2**: The `if`-equation trick has issues when relying on discrete-time variability inside the `when`-clause:
+```
+  Real x;
+  Real y;
+algorithm
+  x := 0.5;
+  x := x + time;
+  when {x^2 > 2.0, initial()} then
+    y := pre(x);
+  end when;
+  x := x + 0.5;
+```
+Note that the following is illegal since the argument of `pre` needs to be discrete-time:
+```
+  if initial() then /* Right before or right after when-statement does not matter. */
+    'y' := pre('x');
+  end if;
+```
+Open questions:
+- What are the other ways one might depend on the discrete-time variability inside a `when`-clause?
+- Could there be a resolution in utilizing that `pre('x')` appears guarded by `initial()` in the `if`-statement, as this means that `pre('x')` refers to an independent variable of the initialization problem?
+- Better to simply allow `when`-statements to be activated during initialization by `initial()` in Flat Modelica?
+
+
 ## Pure Modelica functions
 
 In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
