@@ -1238,4 +1238,47 @@ See [`protected` annotation](annotations.md#protected).
 
 ## Clock partitions
 
+Modelica requires that tool clock partition the equations, meaning that the clock for variables and equations can be inferred - in particular they are associated to a sub-clock that is part of a base-clock.
+The sub- and super-sampling factors of the sub-clocks may be inferred (in a slightly complicated way), and in general the sub-clocks and base-clocks cuts across the instance hierarchy.
+
+The idea is to remove the need for that in Flat Modelica simplifying the analysis.
+Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
+
+### Separate declaration of clock partitions
+
+Introduce a new syntax for stating that equations and variables belong to a sub-clock. The variables are repeated, but the equations are introduced in this form.
+
+A rough possibility would be (ignore the syntax - main idea is what to list):
+Modelica:
+model M
+   Real x, y;
+equation
+   when Clock(1e-3) then
+      x=sample(time);
+    end when;
+    y=subSample(x, 2);
+
+Converted to something like this:
+
+  BaseClock: Clock(1e-3);
+  SubClock: subSample(BaseClock, 2)
+     equation
+     'y'='x';
+     algorithm
+      ...
+      variables 'y';
+   SubClock: BaseClock
+     equation
+       'x'='time';
+     algorithm
+      ...
+      variables 'x';
+
+Note that we can safely remove any "when Clock... then" from the equations.
+
+#### Disadvantages:
+
+Since clock-partitioning operators can take expressions as argument we ideally should declare the clock of sub-expressions (especially for clock-partitioning operators as argument to clock-partitioning operators). Tools can circumvent that by introducing additional variables.
+
+Another option would be to "annotate" expressions with their clock - it avoids that problem, but would look messier.
 TBD
