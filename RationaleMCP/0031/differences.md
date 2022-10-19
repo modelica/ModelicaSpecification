@@ -1238,47 +1238,76 @@ See [`protected` annotation](annotations.md#protected).
 
 ## Clock partitions
 
-Modelica requires that tool clock partition the equations, meaning that the clock for variables and equations can be inferred - in particular they are associated to a sub-clock that is part of a base-clock.
-The sub- and super-sampling factors of the sub-clocks may be inferred (in a slightly complicated way), and in general the sub-clocks and base-clocks cuts across the instance hierarchy.
+The implicit clock partitioning carried out by tools for full Modelica is made explicit in Flat Modelica.
+The equations solved in a clocked sub-partition are placed in a dedicated `subpartition` construct, and the variables being determined by the sub-partition can be determined by a simple inspection of the equations, as explained below.
+See _base-partition_ and related rules in the [grammar](grammar.md#clock-partitions) for details on the syntax.
 
-The idea is to remove the need for that in Flat Modelica simplifying the analysis.
-Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
+Note that the component declarations for variables solved in a sub-partition are not syntactically placed inside the `subpartition` construct because of the way that the sub-clocks and base-clocks cut across the instance hierarchy.
 
-### Separate declaration of clock partitions
+In Flat Modelica, every base-clock and sub-clock is declared as a component with a name.
+Sometimes, this name will correspond to the name of a clock in full Modelica, sometimes it will be an automatically generated name.
+Tools may find it useful to include the clock components in a simulation result, but doing so is not required and there is no standard for what to store.
 
-Introduce a new syntax for stating that equations and variables belong to a sub-clock. The variables are repeated, but the equations are introduced in this form.
+Instead of the binary clocked `sample` operator in full Modelica, Flat Modelica has an unary `sample(…)` operator.
+It is only allowed inside the equations and algorithms of a `subpartition`, and the semantics is that the argument expression is sampled at the clock ticks of the current sub-partition.
 
-A rough possibility would be (ignore the syntax - main idea is what to list):
-Modelica:
-model M
-   Real x, y;
+A Flat Modelica model with clock partitioning can look like this:
+```
+package 'M'
+model 'M'
+  Real 'x';
+  Real 'baseVar', 'cVar1', 'cVar2', 'cVar3';
+  Real 'mixedVar1';
+
+/* Equations and algorithms before the start of the first base-partition belong to the continuous-time partition. */
 equation
-   when Clock(1e-3) then
-      x=sample(time);
-    end when;
-    y=subSample(x, 2);
+  der('x') = 1;
 
-Converted to something like this:
+partition /* Beginning of base-partition */
+  Clock 'baseClock' = Clock(1); /* Clock name originating from full Modelica model. */
 
-  BaseClock: Clock(1e-3);
-  SubClock: subSample(BaseClock, 2)
-     equation
-     'y'='x';
-     algorithm
-      ...
-      variables 'y';
-   SubClock: BaseClock
-     equation
-       'x'='time';
-     algorithm
-      ...
-      variables 'x';
+  subpartition /* Beginning of sub-partition within base-partition. */
+    Clock 'myClock' = 'baseClock';
+  equation
+    'baseVar' = sample('x');
 
-Note that we can safely remove any "when Clock... then" from the equations.
+  subpartition
+    Clock _subClock0 = subSample('baseClock', 2); /* Automatically generated clock name. */
+    solverMethod "ImplicitEuler";
+  equation
+    der('cVar1') = noClock('baseVar');
 
-#### Disadvantages:
+  subpartition
+    Clock _subClock1 = superSample(subSample('baseClock', 2), 8);
+  equation
+    'cVar2' = noClock('baseVar');
+    'cVar3' = noClock('cVar1');
+  algorithm
+    'mixedVar1' := 'cVar2' + 'cVar3';
 
-Since clock-partitioning operators can take expressions as argument we ideally should declare the clock of sub-expressions (especially for clock-partitioning operators as argument to clock-partitioning operators). Tools can circumvent that by introducing additional variables.
+partition
+  Clock _baseClock0 = Clock(1.1);
+  ...
+  /* Base-partition ends at the start of another base-partition, or at the end of the model. */
 
-Another option would be to "annotate" expressions with their clock - it avoids that problem, but would look messier.
-TBD
+end 'M';
+end 'M';
+```
+
+The base-clock of a `partition` must be given by a `Clock`-expression without references to other clocks.
+The clock of a `subpartition` must be given by a (clock conversion) expression of the current base-clock.
+
+The solver method for discretized continuous-time equations is given by a `solverMethod` specification after the `subpartition`'s clock-clause.
+It is only required when the sub-partition contains continuous-time equations.
+
+In the equations and algorithms of a `subupartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
+Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
+It is not allowed to reference variables determined in another clocked base-partition.
+Hence, the variables determined by a `subpartition` are found as all component references appearing in the `subpartition`'s equations and algorithms, except:
+- Parameters and constants.
+- Variables inside `noClock(…)`, `sample(…)`, or `previous(…)`.
+
+The `noClock(…)` may only be used to refer to variables determined by an earlier `subpartition` of the same `partition`.
+This means that there cannot be cyclic dependencies between the sub-partitions, and that evaluation of a `partition` at a clock tick can always be performed by executing the `subpartitions` in order of appearance.
+
+Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
