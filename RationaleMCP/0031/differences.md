@@ -1309,5 +1309,6 @@ Hence, the variables determined by a `subpartition` are found as all component r
 
 The `noClock(…)` may only be used to refer to variables determined by an earlier `subpartition` of the same `partition`.
 This means that there cannot be cyclic dependencies between the sub-partitions, and that evaluation of a `partition` at a clock tick can always be performed by executing the `subpartitions` in order of appearance.
+Note that `noClock(…)` in may sometimes be wrapped around a variable in Flat Modelica where there was no wrapping in the original full Modelica model.
 
 Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
