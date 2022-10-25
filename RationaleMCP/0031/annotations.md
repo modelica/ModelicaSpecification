@@ -96,7 +96,7 @@ In Flat Modelica, the level of the original protected section is lost:
 package 'M'
   model 'M'
     Real 'm1.x';
-    Real 'm1.p' annotation(Protected = true); 
+    Real 'm1.p' annotation(Protected = true);
     Real 'm2.x' annotation(Protected = true);
     Real 'm2.p' annotation(Protected = true);
   end 'M';
