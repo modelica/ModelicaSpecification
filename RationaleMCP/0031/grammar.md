@@ -183,8 +183,8 @@ end _F;
 
 > _sub-partition_ →\
 > &emsp; **subpartition** _comment_\
+> &emsp; ( **discretization** _STRING_ **;** )?\
 > &emsp; _clock-clause_ **;**\
-> &emsp; ( **solverMethod** _STRING_ **;** )?\
 > &emsp; ( **equation** ( _equation_ **;** )* \
 > &emsp; | **algorithm** ( _statement_ **;** )* \
 > &emsp; )*
