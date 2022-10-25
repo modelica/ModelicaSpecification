@@ -177,12 +177,14 @@ end _F;
 ## Clock partitions
 
 > _base-partition_ →\
-> &emsp; **partition** _comment_\
+> &emsp; **partition** _string-comment_\
+> &emsp; ( _annotation-comment_ **;** )?
 > &emsp; _clock-clause_ **;**\
 > &emsp; _sub-partition_*
 
 > _sub-partition_ →\
-> &emsp; **subpartition** _comment_\
+> &emsp; **subpartition** _string-comment_\
+> &emsp; ( _annotation-comment_ **;** )?
 > &emsp; ( **discretization** _STRING_ **;** )?\
 > &emsp; _clock-clause_ **;**\
 > &emsp; ( **equation** ( _equation_ **;** )* \
