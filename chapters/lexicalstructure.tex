@@ -247,6 +247,44 @@ when computing the direction of the line force.",
 \end{lstlisting}
 \end{nonnormative}
 
+\subsection{Units of Literal Constants}\label{units-literal-constants}
+
+Literal \lstinline!Real! and \lstinline!Integer! constants are implicitly assumed
+to have \lstinline!unit = "1"! if they appear in expressions containing variables,
+parameters, or constants that have a non-empty \lstinline!unit! attribute string.
+The inputs of transcendental built-in functions such as \lstinline!sin()!,
+\lstinline!cos()!, \lstinline!exp()!, etc., should have a dimensionless unit
+(e.g., "1" or "rad") if they involve expressions containing variables,
+parameters, or constants that have a non-empty unit attribute string; their
+outputs are implicitly assumed to have unit "1" if they are called within
+expressions containing variables, parameters, or constants that have a non-empty
+\lstinline!unit! attribute string.
+
+\begin{nonnormative}
+Rationale: unit attributes allow to check dimensional consistency of expressions
+and equations, as long as all the involved terms have a non-empty \lstinline!unit!
+attribute. Non-dimensional literal factors, e.g., \lstinline!2! in
+\lstinline!v = sqrt(2*g*h)! in physical laws involving quantities with units are
+always meant to be dimensionless, so they should be cosidered as such by giving
+them \lstinline!unit = "1"!. This allows to find out that, e.g., \lstinline!v = sqrt(2*h)!
+is dimensionally inconsistent (hence most likely wrong), because it has unit
+"m/s" on the LHS and unit "m0.5" on the RHS, which are not consistent.
+Without this rule, \lstinline!2! would have the default \lstinline!unit = ""!,
+of \lstinline!Real!, making it impossible to determine the RHS unit.
+
+On the other hand, literal constants showing up in expressions containing only
+literal constants should be left with the default \lstinline!unit = ""!
+attribute, otherwise declarations such as \lstinline!Real L(unit = "m") = 2.0!,
+equations such as \lstinline!L = 2.0! and function calls such as
+\lstinline!temperature_ph(1e5, 293.15)! or \lstinline!temperature_ph(1e5, 273.15 + 20)!
+would be erroneously flagged as dimensionally inconsistent.
+
+The rules involving built-in transcendental functions extend the scope of this
+concept to also allow determining that equations such as
+\lstinline!i = i0*exp(v/i0)! or \lstinline!i = v0*exp(i/i0)! are dimensionally
+inconsistent.
+\end{nonnormative}
+
 \section{Operator Symbols}\label{operator-symbols}
 
 The predefined operator symbols are formally defined on page \pageref{lexical-conventions} and
