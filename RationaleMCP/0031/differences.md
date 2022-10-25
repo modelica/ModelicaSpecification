@@ -1300,7 +1300,7 @@ The clock of a `subpartition` must be given by a (clock conversion) expression o
 The solver method for discretized continuous-time equations is given by a `solverMethod` specification after the `subpartition`'s clock-clause.
 It is only required when the sub-partition contains continuous-time equations.
 
-In the equations and algorithms of a `subupartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
+In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
 Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
 It is not allowed to reference variables determined in another clocked base-partition.
 Hence, the variables determined by a `subpartition` are found as all component references appearing in the `subpartition`'s equations and algorithms, except:
