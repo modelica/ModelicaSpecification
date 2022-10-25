@@ -1295,7 +1295,7 @@ end 'M';
 ```
 
 The base-clock of a `partition` must be given by a `Clock`-expression without references to other clocks.
-The clock of a `subpartition` must be given by a (clock conversion) expression of the current base-clock.
+The clock of a `subpartition` must be given by a (clock conversion) expression of the current base-clock, and there may be more than one `subpartition` having the same relation to the base-clock.
 
 The solver method for discretized continuous-time equations is given by a `solverMethod` specification after the `subpartition`'s clock-clause.
 It is only required when the sub-partition contains continuous-time equations.
