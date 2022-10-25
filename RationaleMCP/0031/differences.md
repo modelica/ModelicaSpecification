@@ -1272,7 +1272,7 @@ partition /* Beginning of base-partition */
     'baseVar' = sample('x');
 
   subpartition
-    discretization "ImplicitEuler";
+    annotation(solverMethod = "ImplicitEuler");
     Clock _subClock0 = subSample('baseClock', 2); /* Automatically generated clock name. */
   equation
     der('cVar1') = noClock('baseVar');
