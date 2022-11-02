@@ -266,47 +266,27 @@ Note that unit inference has not changed the empty unit of \lstinline!1.5! itsel
 This section describes conditions under which an expression has empty unit.
 Conditions not given here must not be interpreted as definitely not implying empty unit; instead, the unit may be currently undefined for some expressions, allowing the unit to be properly defined in future versions of the specification.
 
-Basic expressions defined to have empty unit:
+The following expressions are the only ones having empty unit:
 \begin{itemize}
 \item
   \lstinline!Real! literals.
 \item
+  \lstinline!Real! component references where the component's unit (after unit propagation has been carried out) is empty (possibly by not being specified).
+\item
   \lstinline!Integer! expressions implicitly cast to \lstinline!Real!.
-\end{itemize}
-
-Expressions defined to \emph{not} propagate the empty unit up the expression tree, thereby forcing inference of unit \lstinline!"1"!:
-\begin{itemize}
 \item
-  Addition, subtraction, multiplication and division operators when either operand has non-empty unit.
+  The following compound expressions result in the empty unit if and only if all operands have empty unit:
+  \begin{itemize}
+    \item \lstinline!Real!-valued numeric operator expressions.
+    \item Function calls to \lstinline!Real!-valued built-in functions (see \cref{built-in-mathematical-functions-and-external-built-in-functions}, \cref{modelica:der}, \cref{modelica:pre}, \cref{modelica:abs}, \cref{modelica:sqrt}, \cref{modelica:floor}, etc.).
+  \end{itemize}
+  If one of the operands has non-empty unit, all operands must have non-empty unit, meaning that operands with empty unit get inferred unit \lstinline!"1"!.
 \item
-  Right operand of binary exponentiation.
-\item
-  Component references outside of functions, where the component's unit (after unit propagation has been carried out) is empty (possibly by not being specified).
-  (Unit checking involving user-defined functions with empty unit on inputs and outputs is currently not defined.)
-\end{itemize}
-
-Built-in non-array operators, functions, and special expressions that propagate any unit (including empty) up the expression tree:
-\begin{itemize}
-\item
-  When all operands have the same unit: negation, addition, and subtraction (scalar or element-wise), see {array-element-wise-addition-subtraction-and-string-concatenation}.
-\item
-  The \lstinline!abs! function, see \cref{modelica:abs}.
-\end{itemize}
-
-Transcendental functions that propagate both unit \lstinline!"1"! and the empty unit up the expression tree:
-\begin{itemize}
-\item
-  All of the elementary mathematical functions listed in \cref{built-in-mathematical-functions-and-external-built-in-functions}.
-  (Whether some of these also accept other dimensionless units such as \lstinline!"rad"! for the input argument is currently not defined.)
-\item
-  The only binary of these functions, \lstinline!atan2!, requires both arguments to have the same unit, and accepts any unit.
-  The result of \lstinline!atan2! has empty unit only when both arguments have empty unit; otherwise the unit of the result is \lstinline!"1"!.
-\end{itemize}
-
-Special situations in which the empty unit is propagated up the expression tree:
-\begin{itemize}
-\item
-  Multiplication and division when both operands have empty unit.
+  Function calls to \lstinline!Real!-valued user-defined functions where:
+  \begin{itemize}
+    \item All \lstinline!Real! function inputs and outputs have empty declared unit (possibly by not being specified).
+    \item All \lstinline!Real! argument expressions have empty unit.
+  \end{itemize}
 \end{itemize}
 
 \begin{example}
@@ -318,8 +298,8 @@ The unit of the binding equation right-hand side is determined as follows:
 \begin{itemize}
 \item The \lstinline!Real! literal \lstinline!2.5! has empty unit.
 \item The \lstinline!Integer! literals \lstinline!1! and \lstinline!3! are implicitly cast to \lstinline!Real!, and therefore have empty unit.
-\item The multiplication \lstinline!2.5 * 3! has empty unit, as multiplication can propagate the empty unit of both operands.
-\item The addition \lstinline!1 + (2.5 * 3)! has empty unit, as addition can propagate any unit as long as both operands have the same unit.
+\item The multiplication \lstinline!2.5 * 3! has empty unit, as both multiplication operands have empty unit.
+\item The addition \lstinline!1 + (2.5 * 3)! has empty unit, as both addition operands have empty unit.
 \item The entire right-hand side expression gets inferred unit \lstinline!"m"! in order to be compatible with the component's declared \lstinline!unit!-attribute.
 \end{itemize}
 \end{example}
@@ -328,30 +308,15 @@ The unit of the binding equation right-hand side is determined as follows:
 Consider unit checking of the following erroneous binding equation for \lstinline!y!:
 \begin{lstlisting}[language=modelica]
 Real x(unit = "m") = 1.0;
-Real y(unit = "m") = x^2 / 2;
+Real y(unit = "m") = (x * x) / 2;
 \end{lstlisting}
 The unit of the binding equation right-hand side is determined as follows:
 \begin{itemize}
-\item The unit of \lstinline!x! is \lstinline!"m"!, and dimensional analysis gives that \lstinline!x^2! has unit \lstinline!"m2"!
-\item The \lstinline!Real! literal \lstinline!1.0! has empty unit, and gets inferred unit \lstinline!"m"!.
-\item As the left operand of \lstinline!x^2 / 2! is non-empty, the right operand cannot be empty, and hence empty unit of \lstinline!2! is implicitly cast to \lstinline!"1"!.
-\item Dimensional analysis then gives that the unit of \lstinline!x^2 / 2! is \lstinline!"m2"!, which is an error due to the required unit being \lstinline!"m"!.
+\item The unit of \lstinline!x! is \lstinline!"m"!, and dimensional analysis gives that \lstinline!x * x! has unit \lstinline!"m2"!
+\item The \lstinline!Integer! literal \lstinline!2! is implicitly cast to \lstinline!Real!, and therefore has empty unit.
+\item As the left operand of \lstinline!(x * x) / 2! has non-empty unit, the right operand is implicitly cast to unit \lstinline!"1"!.
+\item Dimensional analysis then gives that the unit of \lstinline!(x * x) / 2! is \lstinline!"m2"!, which is an error due to the required unit being \lstinline!"m"!.
 \end{itemize}
-\end{example}
-
-\begin{example}
-Difference between using a literal and a constant:
-\begin{lstlisting}[language=modelica]
-function f
-  input Real u(unit = "m");
-  output Real y(unit = "m") = u;
-end f;
-constant Real pi = 3.14;
-Real x(unit = "m") = f(3.14); // OK.
-Real y(unit = "m") = f(pi);   // Error.
-\end{lstlisting}
-The first call to \lstinline!f! is OK due to unit inference making \lstinline!"m"! the inferred unit of \lstinline!3.14!.
-The second call to \lstinline!f! is an error because the component reference \lstinline!pi! has an inferred unit of \lstinline!"1"! by itself, which prevents inference of the unit required by the function call.
 \end{example}
 
 \begin{example}
