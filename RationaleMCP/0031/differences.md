@@ -1302,7 +1302,8 @@ It is only required when the sub-partition contains continuous-time equations.
 
 In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
 Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
-It is not allowed to reference variables determined in another clocked base-partition.
+It is not allowed to reference variables determined in another clocked base-partition, except when wrapped in `hold()`.
+(The expression `hold(x)` is a continuous-time expression and needs to be sampled before it can appear in a clocked partition.)
 Hence, the variables determined by a `subpartition` are found as all component references appearing in the `subpartition`'s equations and algorithms, except:
 - Parameters and constants.
 - Variables inside `noClock(…)`, `sample(…)`, or `previous(…)`.
