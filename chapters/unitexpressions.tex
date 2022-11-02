@@ -355,23 +355,23 @@ The second call to \lstinline!f! is an error because the component reference \ls
 \end{example}
 
 \begin{example}
-Consider the potential consequences of an undefined unit in the following binding equation:
+Consider the potential consequences of an undefined unit in the following binding equation for \lstinline!y!:
 \begin{lstlisting}[language=modelica]
-Real y(unit = "m") = sin(1.57);
+function f
+  input Real u;
+  output Real y = u;
+end f;
+Real x(unit = "m2") = 1.57;
+Real y(unit = "m") = f(x);
 \end{lstlisting}
-To see that the unit of the binding equation right-hand side is undefined, note that:
-\begin{itemize}
-\item The \lstinline!Real! literal \lstinline!1.57! has empty unit.
-\item The expression \lstinline!sin(1.57)! is not covered by the specification, and hence has undefined unit.
-\end{itemize}
+To see that the unit of the binding equation right-hand side is undefined, note that the unit of the function call \lstinline!f(x)! is not covered by the specification, and hence has undefined unit.
 If a tool wants to proceed according to ``standard dimensional analysis'', alternatives include:
 \begin{itemize}
 \item
-  Assume that \lstinline!sin! is a mapping from unit \lstinline!"1"! to unit \lstinline!"1"!.
-  The unit of \lstinline!1.57! then defaults to \lstinline!"1"! (alternatively, the same unit could be obtained by inference).
-  The unit of \lstinline!sin(1.57)! is then found to be \lstinline!"1"!, which is an error due to the required unit being \lstinline!"m"!.
+  Ingore the unit of the input passed to \lstinline!f!, and assume that the call expression always gets the declared unit of the output, namely the empty unit.
+  As the unit of \lstinline!f(x)! is assumed empty, it gets inferred unit \lstinline!"m"!.
 \item
-  Assume that \lstinline!sin! preserves both the unit \lstinline!"1"! and the empty unit.
-  The empty unit of \lstinline!1.57! gets propagated to \lstinline!sin(1.57)!, which in turn gets inferred unit \lstinline!"m"!.
+  Analyze \lstinline!f! and conclude that it preserves any unit.
+  The unit of \lstinline!f(x)! then becomes \lstinline!"m2"!, which is a unit error for the binding equation.
 \end{itemize}
 \end{example}
