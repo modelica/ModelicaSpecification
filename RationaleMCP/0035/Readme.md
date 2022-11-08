@@ -112,7 +112,8 @@ There is a design choice how to structure the files for translation information 
 
 In this proposal the design "One file per library" is chosen, because it simplifies the handling of the translation data, the translation process and the generation of the template. The information of the header need to be stored only once. 
 
-If after finishing a library one wants to translate them into another language, he can use the preferred tool and feed the file as a whole into it. After translating the strings, he can then save the file them and is done.
+If after finishing a library one wants to translate them into another language, he can use the preferred tool and feed the file as a whole into it. After translating the strings, he can then save the file and the work is done.
+
 
 One file per class, possibly stored in a directory structure that corresponds to the class hierarchy, result in a large number of files, with each file having to be translated separately. While this has the advantage of allowing parallel translations, it can also lead to undesirably different translations of the same texts, as different people translate things differently.
 
