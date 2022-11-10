@@ -231,7 +231,7 @@ When encountering the empty unit in the following situations, the inferred unit 
 \item
   In binding equations and modifications:
   \begin{itemize}
-  \item The entire expression of the binding or modification.
+  \item The entire expression of the binding or modification, provided that the left-hand side component has non-empty \lstinline!unit!-attribute.
   \item When the entire expression is an array construction, array concatenation and array range, then apply rules recursively for the direct subexpressions.
   \end{itemize}
 \item
@@ -258,6 +258,19 @@ With the pseudo-code form \lstinline!unit($e$, $u$)! representing the expression
 Real y(unit = "m") = unit(1.5, "m"); // Using pseudo-code operator 'unit'.
 \end{lstlisting}
 Note that unit inference has not changed the empty unit of \lstinline!1.5! itself, but that it has introduced an implicit unit cast \emph{around} \lstinline!1.5! in order to fulfill the unit compatibility requirement.
+\end{example}
+
+\begin{example}
+Consider the following unit error:
+\begin{lstlisting}[language=modelica]
+  RealInput u = 1.5;
+  RealOutput y(unit = "m");
+equation
+  connect(u, y);
+\end{lstlisting}
+Here, the \lstinline!unit!-attribute of \lstinline!u! is empty, but the unit of \lstinline!u! is \lstinline!"m"! after unit propagation.
+It follows that the binding equation for \lstinline!u! has a unit error since the inferred unit of \lstinline!1.5! is \lstinline!"1"!.
+Note that relaxing the unit inference rules so that \lstinline!1.5! would get inferred unit based on the unit (instead of the \lstinline!unit!-attribute) of \lstinline!u! would be dangerous, as the meaning of \lstinline!1.5! could then change due to unit changes in remote parts of the model.
 \end{example}
 
 
