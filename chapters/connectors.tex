@@ -58,7 +58,7 @@ The three main tasks are to:
 \item
   Build connection sets from \lstinline!connect!-equations.
 \item
-  Generate equations for the complete model.
+  Generate equations for the complete model (\willintroduce{connection equations}).
 \end{itemize}
 
 \subsection{Connection Sets}\label{connection-sets}
@@ -119,7 +119,8 @@ Then connections containing expandable connectors are elaborated:
   \item
     If the variable on the other side of the \lstinline!connect!-equation is \lstinline!input! or \lstinline!output! the new component will be either \lstinline!input! or \lstinline!output! to satisfy the restrictions in \cref{restrictions-of-connections-and-connectors} for a non-expandable connector.
     \begin{nonnormative}
-    If the existing side refers to an inside connector (i.e.\ a connector of a component) the new variable will copy its causality, i.e.\ \lstinline!input! if \lstinline!input! and \lstinline!output! if \lstinline!output!, since the expandable connector must be an outside connector.
+    The general rule ensures consistency for inside and outside connectors, and handles multiple connections to the new component.
+    In the simple case of no other connections involving these variables and the existing side referring to an inside connector (i.e., a connector of a component), the new variable will copy its causality (i.e., \lstinline!input! if \lstinline!input! and \lstinline!output! if \lstinline!output!) since the expandable connector must be an outside connector.
     \end{nonnormative}
     For an array the \lstinline!input!/\lstinline!output! property can be deduced separately for each array element.
   \end{itemize}
@@ -142,22 +143,44 @@ Then connections containing expandable connectors are elaborated:
 expandable connector EngineBus
 end EngineBus;
 
-block Sensor
+partial block Sensor
   RealOutput speed; // Output, i.e., non-input
 end Sensor;
-block Actuator
+partial block Actuator
   RealInput speed; // Input
 end Actuator;
 
-model Engine
+model SensorWBus
   EngineBus bus;
-  Sensor sensor;
-  Actuator actuator;
+  replaceable Sensor sensor;
 equation
-  connect(bus.speed, sensor.speed); // sensor.speed is the non-input
+  connect(bus.speed, sensor.speed);
+  // Provides 'speed'
+end SensorWBus;
+model ActuatorWBus
+  EngineBus bus;
+  replaceable Actuator actuator;
+equation
   connect(bus.speed, actuator.speed);
+  // Uses 'speed'
+end ActuatorWBus;
+
+model Engine
+  ActuatorWBus actuator;
+  SensorWBus sensor;
+  EngineBus bus;
+equation
+  connect(bus, actuator.bus);
+  connect(bus, sensor.bus);
 end Engine;
 \end{lstlisting}
+This small example shows how expandable connectors are normally used:
+\begin{itemize}
+\item There are a number of bus-instances all connected together.
+Often they have the same name, but it is not required.
+\item There is one source of the signal: \lstinline!sensor.sensor.speed!.
+\item There are zero or more uses of the signal:  \lstinline!actuator.actuator.speed!.
+\end{itemize}
 \end{example}
 
 \item
@@ -173,13 +196,13 @@ expandable connector EngineBus // has predefined signals
   SI.Temperature T;
 end EngineBus;
 
-block Sensor
- RealOutput speed;
+partial block Sensor
+  RealOutput speed;
 end Sensor;
 
 model Engine
   EngineBus bus;
-  Sensor sensor;
+  replaceable Sensor sensor;
 equation
   connect(bus.speed, sensor.speed);
   // connection to non-connector speed is possible
@@ -241,22 +264,22 @@ Valid and invalid uses of sizeless array components:
 expandable connector EngineBus
 end EngineBus;
 
-block Sensor
+partial block Sensor
   RealOutput speed;
 end Sensor;
 
 model Engine
   parameter Integer n = 1;
   EngineBus bus;
-  Sensor sensor;
+  replaceable Sensor sensor;
   RealOutput sensorSpeeds[:];
 equation
   /* Comments below refer to the use of sizeless array bus.speed. */
   connect(bus.speed[n], sensor.speed) ; // OK; subscript to scalar component.
   connect(bus.speed, sensorSpeeds); // Error; missing subscripts.
 public
-  Real s[:] = bus.speed; // Error; missing subscripts.
-  Real s[2] = bus.speed[{1, 3}]; // OK; subscript selects fixed size sub-array.
+  Real a[:] = bus.speed; // Error; missing subscripts.
+  Real b[2] = bus.speed[{1, 3}]; // OK; subscript selects fixed size sub-array.
 end Engine;
 \end{lstlisting}
 \end{example}
@@ -354,7 +377,9 @@ For every use of the \lstinline!connect!-equation
 connect(a, b);
 \end{lstlisting}
 the primitive components of \lstinline!a! and \lstinline!b! form a connection set, together with an indication of whether they are from an inside or an outside connector.
+\begin{definition}[Primitive elements]\label{primitive-elements}\index{primitive element}\index{element!primitive}
 The primitive elements are of simple types or of types defined as \lstinline!operator record! (i.e.\ a component of an \lstinline!operator record! type is not split into sub-components).
+\end{definition}
 The elements of the connection sets are tuples of primitive variables together with an indication of inside or outside; if the same tuple belongs to two connection sets those two sets are merged, until every tuple is only present in one set.
 Composite connector types are broken down into primitive components.
 The \lstinline!outer! components are handled by mapping the objects to the corresponding \lstinline!inner! components, and the inside indication is not influenced.
@@ -765,12 +790,12 @@ Here, \lstinline!A! and \lstinline!B! are connector instances that may be hierar
 \tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
 \hline
 \hline
-\lstinline!connect(A, B)! & Optional spanning-tree edge & \Cref{modelica:optional-spanning-tree-edge}\\
-\lstinline!Connections.branch(A.R, B.R)! & Required spanning-tree edge & \Cref{modelica:Connections.branch}\\
-\lstinline!Connections.root(A.R)! & Definite root node & \Cref{modelica:Connections.root}\\
-\lstinline!Connections.potentialRoot(A.R, $\ldots$)! & Potential root node & \Cref{modelica:Connections.potentialRoot}\\
-\lstinline!Connections.isRoot(A.R)! & Predicate for being selected as root & \Cref{modelica:Connections.isRoot}\\
-\lstinline!Connections.rooted(A.R)! & Predicate for being closer to root & \Cref{modelica:Connections.rooted}\\
+{\lstinline!connect(A, B)!} & Optional spanning-tree edge & \Cref{modelica:optional-spanning-tree-edge}\\
+{\lstinline!Connections.branch(A.R, B.R)!} & Required spanning-tree edge & \Cref{modelica:Connections.branch}\\
+{\lstinline!Connections.root(A.R)!} & Definite root node & \Cref{modelica:Connections.root}\\
+{\lstinline!Connections.potentialRoot(A.R, $\ldots$)!} & Potential root node & \Cref{modelica:Connections.potentialRoot}\\
+{\lstinline!Connections.isRoot(A.R)!} & Predicate for being selected as root & \Cref{modelica:Connections.isRoot}\\
+{\lstinline!Connections.rooted(A.R)!} & Predicate for being closer to root & \Cref{modelica:Connections.rooted}\\
 \hline
 \end{tabular}
 \end{center}
