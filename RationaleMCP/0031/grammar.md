@@ -179,13 +179,12 @@ end _F;
 > _base-partition_ →\
 > &emsp; **partition** _string-comment_\
 > &emsp; ( _annotation-comment_ **;** )?
-> &emsp; _clock-clause_ **;**\
+> &emsp; ( _clock-clause_ **;** )*\
 > &emsp; _sub-partition_*
 
 > _sub-partition_ →\
-> &emsp; **subpartition** _string-comment_\
+> &emsp; **subpartition** `[(]` _argument-list_ `[)]` _string-comment_\
 > &emsp; ( _annotation-comment_ **;** )?
-> &emsp; _clock-clause_ **;**\
 > &emsp; ( **equation** ( _equation_ **;** )* \
 > &emsp; | **algorithm** ( _statement_ **;** )* \
 > &emsp; )*

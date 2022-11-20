@@ -1244,7 +1244,7 @@ See _base-partition_ and related rules in the [grammar](grammar.md#clock-partiti
 
 Note that the component declarations for variables solved in a sub-partition are not syntactically placed inside the `subpartition` construct because of the way that the sub-clocks and base-clocks cut across the instance hierarchy.
 
-In Flat Modelica, every base-clock and sub-clock is declared as a component with a name.
+In Flat Modelica, every clock is declared as a component with a name, at the top of some `partition`.
 Sometimes, this name will correspond to the name of a clock in full Modelica, sometimes it will be an automatically generated name.
 Tools may find it useful to include the clock components in a simulation result, but doing so is not required and there is no standard for what to store.
 
@@ -1264,21 +1264,19 @@ equation
   der('x') = 1;
 
 partition /* Beginning of base-partition */
-  Clock 'baseClock' = Clock(1); /* Clock name originating from full Modelica model. */
+  Clock 'myClock' = Clock(1); /* Clock name originating from full Modelica model. */
+  Clock _subClock0 = subSample('myClock', 2); /* Automatically generated clock name. */
+  Clock _subClock1 = superSample(subSample('myClock', 2), 8);
 
-  subpartition /* Beginning of sub-partition within base-partition. */
-    Clock 'myClock' = 'baseClock';
+  subpartition (clock = 'myClock') /* Beginning of sub-partition within base-partition. */
   equation
     'baseVar' = sample('x');
 
-  subpartition
-    annotation(solverMethod = "ImplicitEuler");
-    Clock _subClock0 = subSample('baseClock', 2); /* Automatically generated clock name. */
+  subpartition (clock = _subClock0, solverMethod = "ImplicitEuler")
   equation
     der('cVar1') = noClock('baseVar');
 
-  subpartition
-    Clock _subClock1 = superSample(subSample('baseClock', 2), 8);
+  subpartition (clock = _subClock1)
   equation
     'cVar2' = noClock('baseVar');
     'cVar3' = noClock('cVar1');
@@ -1294,11 +1292,18 @@ end 'M';
 end 'M';
 ```
 
-The base-clock of a `partition` must be given by a `Clock`-expression without references to other clocks.
-The clock of a `subpartition` must be given by a (clock conversion) expression of the current base-clock, and there may be more than one `subpartition` having the same relation to the base-clock.
+A `partition` begins with the definition of all clocks belonging to the base-partition and its sub-partitions.
+A clock is only accessible within the `partition` where it is declared, and may only be used to define other clocks and to specify the `clock` of a `subpartition`.
 
-The solver method for discretized continuous-time equations is given by a `solverMethod` specification after the `subpartition`'s clock-clause.
-It is only required when the sub-partition contains continuous-time equations.
+A sub-partition begins with the `subpartition` keyword, followed by a specification of some sub-partition details in the form of the named argument syntax.
+The following are the only valid named arguments:
+- `clock` `=` _clock-name_
+- `solverMethod` `=` _method-name_
+
+Here, _clock-name_ must be the name of a `Clock` declared within the current `partition`, and `method-name` must be a constant `String` expression.
+`clock` is required for every `subpartition`.
+`solverMethod` is only required when the sub-partition contains continuous-time equations, and specifies the time discretization method.
+It is an error if a named argument is specified multiple times.
 
 In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
 Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
