@@ -1300,7 +1300,7 @@ The following are the only valid named arguments:
 - `clock` `=` _clock-name_
 - `solverMethod` `=` _method-name_
 
-Here, _clock-name_ must be the name of a `Clock` declared within the current `partition`, and `method-name` must be a constant `String` expression.
+Here, _clock-name_ must be the name of a `Clock` declared within the current `partition`, and _method-name_ must be a constant `String` expression.
 `clock` is required for every `subpartition`.
 `solverMethod` is only required when the sub-partition contains continuous-time equations, and specifies the time discretization method.
 It is an error if a named argument is specified multiple times.
