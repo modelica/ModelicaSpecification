@@ -130,15 +130,16 @@ end _F;
 
 > _composition_ →\
 > &emsp; (_generic-element_ **;**)* \
-> &emsp; ~~( **public** (_generic-element_ **;**)*~~ \
-> &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
-> &emsp; | **equation** ( _equation_ **;** )* \
+> &emsp; ( **equation** ( _equation_ **;** )* \
 > &emsp; | **initial** **equation** ( _initial-equation_ **;** )* \
 > &emsp; | **initial**? **algorithm** ( _statement_ **;** )* \
+> &emsp; ~~| **public** (_generic-element_ **;**)*~~ \
+> &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
 > &emsp; )* \
 > &emsp; ( **external** _language-specification_?\
 > &emsp;&emsp; _external-function-call_? _annotation-comment_? **;**\
 > &emsp; )?\
+> &emsp; _base-partition_* \
 > &emsp; ( _annotation-comment_ **;** )?
 
 > _language-specification_ → _STRING_
@@ -171,6 +172,24 @@ end _F;
 > &emsp; _comment_~~
 
 > ~~_import-list_ → _IDENT_ ( **,** _IDENT_ )*~~
+
+
+## Clock partitions
+
+> _base-partition_ →\
+> &emsp; **partition** _string-comment_\
+> &emsp; ( _annotation-comment_ **;** )?
+> &emsp; ( _clock-clause_ **;** )*\
+> &emsp; _sub-partition_*
+
+> _sub-partition_ →\
+> &emsp; **subpartition** `[(]` _argument-list_ `[)]` _string-comment_\
+> &emsp; ( _annotation-comment_ **;** )?
+> &emsp; ( **equation** ( _equation_ **;** )* \
+> &emsp; | **algorithm** ( _statement_ **;** )* \
+> &emsp; )*
+
+> _clock-clause_ → **Clock** _IDENT_ **=** _expression_ _comment_
 
 
 ## B23 Extends

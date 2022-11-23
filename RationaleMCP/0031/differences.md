@@ -1234,3 +1234,87 @@ Accordingly, a function component declaration which is neither input nor output 
 
 The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Flat Modelica comes from a protected section in the full Modelica model.
 See [`protected` annotation](annotations.md#protected).
+
+
+## Clock partitions
+
+The implicit clock partitioning carried out by tools for full Modelica is made explicit in Flat Modelica.
+The equations solved in a clocked sub-partition are placed in a dedicated `subpartition` construct, and the variables being determined by the sub-partition can be determined by a simple inspection of the equations, as explained below.
+See _base-partition_ and related rules in the [grammar](grammar.md#clock-partitions) for details on the syntax.
+
+Note that the component declarations for variables solved in a sub-partition are not syntactically placed inside the `subpartition` construct because of the way that the sub-clocks and base-clocks cut across the instance hierarchy.
+
+In Flat Modelica, every clock is declared as a component with a name, at the top of some `partition`.
+Sometimes, this name will correspond to the name of a clock in full Modelica, sometimes it will be an automatically generated name.
+Tools may find it useful to include the clock components in a simulation result, but doing so is not required and there is no standard for what to store.
+
+Instead of the binary clocked `sample` operator in full Modelica, Flat Modelica has an unary `sample(…)` operator.
+It is only allowed inside the equations and algorithms of a `subpartition`, and the semantics is that the argument expression is sampled at the clock ticks of the current sub-partition.
+
+A Flat Modelica model with clock partitioning can look like this:
+```
+package 'M'
+model 'M'
+  Real 'x';
+  Real 'baseVar', 'cVar1', 'cVar2', 'cVar3';
+  Real 'mixedVar1';
+
+/* Equations and algorithms before the start of the first base-partition belong to the continuous-time partition. */
+equation
+  der('x') = 1;
+
+partition /* Beginning of base-partition */
+  Clock 'myClock' = Clock(1); /* Clock name originating from full Modelica model. */
+  Clock _subClock0 = subSample('myClock', 2); /* Automatically generated clock name. */
+  Clock _subClock1 = superSample(subSample('myClock', 2), 8);
+
+  subpartition (clock = 'myClock') /* Beginning of sub-partition within base-partition. */
+  equation
+    'baseVar' = sample('x');
+
+  subpartition (clock = _subClock0, solverMethod = "ImplicitEuler")
+  equation
+    der('cVar1') = noClock('baseVar');
+
+  subpartition (clock = _subClock1)
+  equation
+    'cVar2' = noClock('baseVar');
+    'cVar3' = noClock('cVar1');
+  algorithm
+    'mixedVar1' := 'cVar2' + 'cVar3';
+
+partition
+  Clock _baseClock0 = Clock(1.1);
+  ...
+  /* Base-partition ends at the start of another base-partition, or at the end of the model. */
+
+end 'M';
+end 'M';
+```
+
+A `partition` begins with the definition of all clocks belonging to the base-partition and its sub-partitions.
+A clock is only accessible within the `partition` where it is declared, and may only be used to define other clocks and to specify the `clock` of a `subpartition`.
+
+A sub-partition begins with the `subpartition` keyword, followed by a specification of some sub-partition details in the form of the named argument syntax.
+The following are the only valid named arguments:
+- `clock` `=` _clock-name_
+- `solverMethod` `=` _method-name_
+
+Here, _clock-name_ must be the name of a `Clock` declared within the current `partition`, and _method-name_ must be a constant `String` expression.
+`clock` is required for every `subpartition`.
+`solverMethod` is only required when the sub-partition contains continuous-time equations, and specifies the time discretization method.
+It is an error if a named argument is specified multiple times.
+
+In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
+Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
+It is not allowed to reference variables determined in another clocked base-partition, except when wrapped in `hold()`.
+(The expression `hold(x)` is a continuous-time expression and needs to be sampled before it can appear in a clocked partition.)
+Hence, the variables determined by a `subpartition` are found as all component references appearing in the `subpartition`'s equations and algorithms, except:
+- Parameters and constants.
+- Variables inside `noClock(…)`, `sample(…)`, or `previous(…)`.
+
+The `noClock(…)` may only be used to refer to variables determined by an earlier `subpartition` of the same `partition`.
+This means that there cannot be cyclic dependencies between the sub-partitions, and that evaluation of a `partition` at a clock tick can always be performed by executing the `subpartitions` in order of appearance.
+Note that `noClock(…)` in may sometimes be wrapped around a variable in Flat Modelica where there was no wrapping in the original full Modelica model.
+
+Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
