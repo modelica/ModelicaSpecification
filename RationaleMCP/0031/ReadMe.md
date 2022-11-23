@@ -70,7 +70,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Investigate need for `for`-equations. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-for-equations/RationaleMCP/0031/grammar.md#b26-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3163)
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
 - [x] Add function `realParameterEqual` for use in automatically generated asserts on `Real` equality. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Breal-equality/RationaleMCP/0031/differences.md#connect-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3175)
-- [ ] Figure out what to do with synchronous features. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsynchronous/RationaleMCP/0031/differences.md#clock-partitions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3240)
+- [x] Figure out what to do with synchronous features. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsynchronous/RationaleMCP/0031/differences.md#clock-partitions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3240)
 - [x] Event handling semantics is preserved as in Modelica.
 - [ ] Get rid of `when initial()` and `when`-equations inside `if` and `for`. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsimplify-when/RationaleMCP/0031/differences.md#when-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3258)
 - [ ] Source locations pointing back to the original Modelica code.
