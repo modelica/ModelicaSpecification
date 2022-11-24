@@ -172,40 +172,13 @@ Hence, it is only with a small loss of generality that it is being assumed that 
 
 ## When-Statements
 
-The `when`-statements in Flat Modelica are more restricted compared to full Modelica.
-In summary:
-- `when`-statements have no meaning at all for the initialization problem:
-  * No special treatment of `initial()` as a `when`-clause trigger expression.
+Unlike the `when`-equations, there are no restrictions on the `when`-statements in Flat Modelica relative to full Modelica.
 
-**Example 1**: Consider the following full Modelica `when`-statement with a clause triggered by `initial()`:
-```
-  Real x;
-  Real y;
-algorithm
-  x := 0.5;
-  x := x + time;
-  when {x^2 > 2.0, initial()} then
-    y := x;
-  end when;
-  x := x + 0.5;
-```
-This can be expressed with the help of an `if`-statement in Flat Modelica:
-```
-  Real 'x';
-  Real 'y';
-algorithm
-  'x' := 0.5;
-  'x' := 'x' + time;
-  if initial() then /* Right before or right after when-statement does not matter. */
-    'y' := 'x';
-  end if;
-  when 'x'^2 > 2.0 then
-    'y' := 'x';
-  end when;
-  'x' := 'x' + 0.5;
-```
+Note that `reinit` is not allowed in a `when`-statement, so the notable thing about `when`-statements in Flat Modelica is that they may be triggerd by `initial()` just like in Full Modelica.
 
-**Example 2**: The `if`-equation trick has issues when relying on discrete-time variability inside the `when`-clause:
+### Rationale
+
+The reason for not further restricting the `when`-statements is that it it was considered too complicated to reduce `when initial()` in an algorithm to something more elementary.  As an example, consider the following full Modelica `when`-statement with a clause triggered by `initial()`:
 ```
   Real x;
   Real y;
@@ -217,16 +190,35 @@ algorithm
   end when;
   x := x + 0.5;
 ```
-Note that the following is illegal since the argument of `pre` needs to be discrete-time:
+
+Note that the putting the following `if`-statement in the algorithm would be illegal since the argument of `pre` needs to be discrete-time:
 ```
   if initial() then
     'y' := pre('x'); /* 'x' is continuous-time, since no longer inside when-clause. */
   end if;
 ```
-Open questions:
-- What are the other ways one might depend on the discrete-time variability inside a `when`-clause?
-- Could there be a resolution in utilizing that `pre('x')` appears guarded by `initial()` in the `if`-statement, as this means that `pre('x')` refers to an independent variable of the initialization problem?
-- Better to simply allow `when`-statements to be activated during initialization by `initial()` in Flat Modelica?
+
+To get around this problem, one could try making separate variants of the algorithm depending on `initial()`:
+```
+  Real 'x';
+  Real 'y';
+initial algorithm
+  'x' := 0.5;
+  'x' := 'x' + time;
+  'y' := pre('x'); /* 'x' is discrete-time, since inside initial algorithm. */
+  'x' := 'x' + 0.5;
+algorithm
+  if not initial() then
+    'x' := 0.5;
+    'x' := 'x' + time;
+    when 'x'^2 > 2.0 then
+      'y' := pre('x');
+    end when;
+    'x' := 'x' + 0.5;
+  end if;
+```
+
+However, this doesn't work either, as the initialization problem will have two algorithms assigning to `'x'` and `'y'`, even though one of the algorithm has a disabled body.
 
 
 ## Pure Modelica functions
