@@ -54,7 +54,7 @@ In the future, there could be standardized contents for the `SourceLocations` th
 ### Design alternatives
 
 Alternatives include:
-- Just an integer to be used with a tool-specific table of source location details.
+- Just an integer to be used with a separate table of details provided by `SourceLocations`-annotation.
 - Predefined record to avoid need for tool-specific table. (Details to be designed).
 - Use `annotation(SourceLocation(…))` to avoid need for attachment operator.
 
