@@ -70,6 +70,7 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 > &emsp;&emsp; | _global-constant_ **;**\
 > &emsp;&emsp; )*\
 > &emsp;&emsp; **model** _long-class-specifier_ **;**\
+> &emsp;&emsp; ( _annotation-comment_ **;** )?
 > &emsp; **end** _IDENT_ **;**
 
 Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
