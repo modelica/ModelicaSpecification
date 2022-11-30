@@ -53,7 +53,7 @@ A/package.mo:3:5
 When provided as a separate file, the file shall have the following header right before the rows of table data:
 ```
 //! flat source
-//! Format: FORMAT
+//! format: FORMAT
 ```
 
 In the Flat Modelica code, a source location is attached to an expression or constuct using the `@` operator:
