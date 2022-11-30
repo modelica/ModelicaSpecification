@@ -191,7 +191,7 @@ algorithm
   x := x + 0.5;
 ```
 
-Note that the putting the following `if`-statement in the algorithm would be illegal since the argument of `pre` needs to be discrete-time:
+Note that putting the following `if`-statement in the algorithm would be illegal since the argument of `pre` needs to be discrete-time:
 ```
   if initial() then
     'y' := pre('x'); /* 'x' is continuous-time, since no longer inside when-clause. */
