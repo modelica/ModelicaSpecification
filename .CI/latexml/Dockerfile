@@ -26,6 +26,6 @@ RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirro
  && tlmgr install latexmk listings caption cleveref xcolor float multirow tocloft parskip etoolbox index biblatex biber newtxtt txfonts cmap \
  && cpanm JSON \
  && cpanm LaTeXML \
- && apt-get autoremove -qy make gcc curl wget git cpanminus libxml2-dev libxslt-dev \
+ && apt-get autoremove -qy make gcc wget git cpanminus libxml2-dev libxslt-dev \
  && latexmk --version \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/ /root/.cpanm/work*
