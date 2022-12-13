@@ -1060,7 +1060,7 @@ It is required that accumulated sub- and supersampling factors in the range of 1
 64 bit internal representation of numerator and denominator with sign can be used and gives minimum resolution $1.08\times 10^{-19}$ seconds and maximum range $9.22\times 10^{18}$~seconds = $2.92\times 10^{11}$~years.
 \end{nonnormative}
 
-\section{Clocked Discretized Partition}\label{continuous-time-equations-in-clocked-partitions}\label{clocked-discretized-partition}
+\section{Discretized Partition}\label{continuous-time-equations-in-clocked-partitions}\label{discretized-partition}
 
 \begin{nonnormative}
 The goal is that every continuous-time Modelica model can be utilized in a sampled data control system.
@@ -1096,43 +1096,46 @@ partition is discretized and the discretized continuous-time variables
 have only a value at a clock tick. Therefore, such a partition is
 handled in the same way as any other clocked partition. Especially,
 operators such as \lstinline!sample!, \lstinline!hold!, \lstinline!subSample! must be used to communicate
-signals of the discretized continuous-time partition with other
-partitions. Hereby, a discretized continuous-time partition is seen as a
+signals of the discretized partition with other
+partitions. Hereby, a discretized partition is treated similarly as a
 clocked partition.
 
 
-\subsection{Clocked Discrete-Time and Discretized Continuous-Time}\label{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}
+\subsection{Clocked and Discretized Partition}\label{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}\label{clocked-and-discretized-partition}
 
 Additionally to the variability of expressions defined in \cref{variability-of-expressions}, an orthogonal concept \willintroduce{clocked variability} is defined in this section.
 If not explicitly stated otherwise, an expression with a variability such as \emph{continuous-time} or \emph{discrete-time} means that the expression is inside a partition that is not associated to a clock.
 If an expression is present in a partition that is not a continuous-time partition, it is a \firstuse[clocked!expression]{clocked expression}\index{expression!clocked} and has \firstuse[clocked!variability]{clocked variability}\index{expression variability!clocked}.
 
-After sub-clock inferencing, see \cref{sub-clock-inferencing}, every partition that is associated to a clock has to be categorized as \willintroduce{clocked discrete-time} or \willintroduce{clocked discretized continuous-time} partition.
-
-If a clocked partition contains no operator \lstinline!der!, \lstinline!delay!, \lstinline!spatialDistribution!, no event related operators from \cref{event-related-operators-with-function-syntax} (with exception of \lstinline!noEvent! and \lstinline!smooth!), and no \lstinline!when!-clause with a \lstinline!Boolean! condition, it is a \firstuse[clocked!discrete-time partition]{clocked discrete-time}\index{partition!clocked discrete-time} partition.
-
+After sub-clock inferencing, see \cref{sub-clock-inferencing}, every partition that is associated to a clock has to be categorized as \willintroduce{clocked} or \willintroduce{discretized} partition.
 \begin{nonnormative}
-That is, the clocked discrete-time partition is a standard sampled data system that is described by difference equations.
+Previously clocked partition was refered to as clocked discrete-time partition, and discretized partition as clocked discretized continuous-time partition.
 \end{nonnormative}
 
-If a clocked partition is not a \emph{clocked discrete-time} partition, it is a \firstuse[clocked!discretized continuous-time partition]{clocked discretized continuous-time}\index{partition!clocked discretized continuous-time} partition.
+If a partition that is not continuous-time contains no operator \lstinline!der!, \lstinline!delay!, \lstinline!spatialDistribution!, no event related operators from \cref{event-related-operators-with-function-syntax} (with exception of \lstinline!noEvent! and \lstinline!smooth!), and no \lstinline!when!-clause with a \lstinline!Boolean! condition, it is a \firstuse[clocked!partition]{clocked}\index{partition!clocked} partition.
+
+\begin{nonnormative}
+That is, the clocked partition is a standard sampled data system that is described by difference equations.
+\end{nonnormative}
+
+Otherwise, it is a \firstuse[discretized!partition]{discretized}\index{partition!discretized} partition.
 Such a partition has to be solved with a \emph{solver method} of \cref{solver-methods}.
 When \lstinline!previous(x)! is used on a continuous-time state variable \lstinline!x!, then \lstinline!previous(x)! uses the start value of \lstinline!x! as value for the first clock tick.
 
-The use of the operator \lstinline!sample! from \cref{event-related-operators-with-function-syntax} in a clocked partition is problematic.
+The use of the operator \lstinline!sample! from \cref{event-related-operators-with-function-syntax} in a discretized partition is problematic.
 A diagnostic is recommended, especially if the operator is intended to generate events faster than the clock ticks, and otherwise the sampling should ideally be adjusted to the clock ticks.
 
 \begin{nonnormative}
-The reason for not disallowing \lstinline!sample! in a clocked partition is to make it possible to include \emph{any} continuous-time Modelica model in a sampled data control system.
+The reason for not disallowing \lstinline!sample! in a discretized partition is to make it possible to include \emph{any} continuous-time Modelica model in a sampled data control system.
 Note that even if the sampling is slower than the clock ticks (or even the same rate) it still introduces the problem of possibly uneven sampling.
 \end{nonnormative}
 
-In a clocked discrete-time partition all event generating mechanisms do no longer apply.
+In a clocked partition all event generating mechanisms do no longer apply.
 Especially neither relations, nor any of the built-in operators of \cref{event-triggering-mathematical-functions} (event triggering mathematical functions) will trigger an event.
 
 \subsection{Solver Methods}\label{solver-methods}
 
-The integration method associated with a clocked discretized continuous-time partition is defined with a string.
+The integration method associated with a discretized partition is defined with a string.
 A predefined type \lstinline!ModelicaServices.Types.SolverMethod! defines the methods supported by the respective tool by using the \lstinline!choices! annotation.
 
 \begin{nonnormative}
@@ -1149,8 +1152,8 @@ type SolverMethod = String annotation(choices(
   choice="ExplicitRungeKutta4" "Explicit Runge-Kutta method (order 4)",
   choice="ImplicitEuler" "Implicit Euler method (order 1)",
   choice="ImplicitTrapezoid" "Implicit trapezoid rule (order 2)"
-)) "Type of integration method to solve differential equations in a clocked " +
-   "discretized continuous-time partition."
+)) "Type of integration method to solve differential equations in a " +
+   "discretized partition."
 \end{lstlisting}
 
 If a tool supports one of the integrators of \lstinline!SolverMethod!, it must use the solver method name of above.
@@ -1165,7 +1168,7 @@ If the solver method is \lstinline!"External"!, then the partition associated wi
 \lstinline!interval()! using a solution method defined in the simulation environment.
 
 \begin{nonnormative}
-An example of such a solution method could be to have a table of the clocks that are associated with discretized continuous-time partitions and a method selection per clock.  In such
+An example of such a solution method could be to have a table of the clocks that are associated with discretized partitions and a method selection per clock.  In such
 a case, the solution method might be a variable step solver with step-size control that integrates between two clock ticks. The simulation environment might also combine all partitions associated with method \lstinline!"External"!, as well as all continuous-time partitions, and integrate them together with the solver selected by the simulation environment.
 \end{nonnormative}
 
@@ -1259,7 +1262,7 @@ Assume the differential equation
 equation
   der(x) = -x + u;
 \end{lstlisting}
-shall be transformed to a clocked discretized continuous-time partition with the \lstinline!"ExplicitEuler"! method.  The following model is a manual implementation:
+shall be transformed to a discretized partition with the \lstinline!"ExplicitEuler"! method.  The following model is a manual implementation:
 \begin{lstlisting}[language=modelica]
   input Real u;
   parameter Real x_start = 1;
@@ -1359,15 +1362,15 @@ Here \lstinline!z! is a continuous-time equation connected directly to both \lst
 \section{Initialization of Clocked Partitions}\label{initialization-of-clocked-partitions}
 
 The standard scheme for initialization of Modelica models does not apply
-for clocked discrete-time partitions. Instead, initialization is
+for clocked partitions. Instead, initialization is
 performed in the following way:
 \begin{itemize}
 \item
-  Clocked discrete-time variables cannot be used in initial equation or
+  Variables in clocked partitions cannot be used in initial equation or
   initial algorithm sections.
 \item
-  Attribute \lstinline!fixed! cannot be applied to clocked discrete-time
-  variables. The attribute \lstinline!fixed! is true for variables to which
+  Attribute \lstinline!fixed! cannot be applied to variables in clocked partitions.
+  The attribute \lstinline!fixed! is true for variables to which
   \lstinline!previous! is applied, otherwise false.
 \end{itemize}
 
