@@ -68,7 +68,7 @@ The alternatives above could also be combined in different ways:
 
 ### Conclusion
 
-None yet, but all discussion so far has pointed in the direction of just a single integer.
+For now, only allow a single integer.  It would be easy to extend this in future versions of Flat Modelica.
 
 
 ## Syntax for source location decoration attachment
