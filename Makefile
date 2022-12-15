@@ -8,7 +8,7 @@ all: MLS.pdf MLS.html
 
 .PHONY: clean-pdf
 clean-pdf:
-	-rm *.aux MLS.log MLS.toc MLS.pdf
+	-rm *.aux MLS.log MLS.toc MLS.pdf chapters/*.aux
 
 .PHONY: clean-html
 clean-html:
