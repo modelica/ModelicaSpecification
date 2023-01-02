@@ -189,6 +189,18 @@ Fixed ordinals: 1st, 2nd, 3rd.
 Symbolic ordinals: $n$th, $(n+1)$th.
 ```
 
+## Inline code
+
+Inline code is typically formatted using just the `\lstinline` macro.
+
+Since the change of type face can be very hard to notice for small code fragments, single quotes may sometimes be used to emphasize the distinction from the surrounding text, unless the code fragment consists of a single identifier (consistent presentation of identifiers is given higher priority than clarity of presentation in this case).
+For example:
+```
+… and prepending the reduction expression with ``\lstinline!functionName(!''.
+```
+
+Avoid overusing quotes around code fragments, especially for multi-letter fragments.
+
 ## Code listings
 
 ### Modelica listings
