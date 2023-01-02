@@ -227,6 +227,8 @@ In addition, instances of classes extending from \lstinline!ExternalObject! may 
 Variables declared with the \lstinline!stream! type prefix shall be a subtype of \lstinline!Real!.
 This is further restricted in \cref{definition-of-stream-connectors}.
 
+Variables declared with the \lstinline!input! type prefix must not also have the prefix \lstinline!parameter! or \lstinline!constant!.
+
 The type prefix \lstinline!flow! of a component that is not a primitive element (see \cref{primitive-elements}), is also applied to the elements of the component (this is done after verifying that the type prefixes occurring on elements of the component are correct).
 Primitive elements with the \lstinline!flow! type prefix shall be a subtype of \lstinline!Real! or an operator record defining an additive group, see \cref{generation-of-connection-equations}.
 
@@ -455,7 +457,7 @@ equation
   if state then // code which is removed during symbolic
     der(v) = a; // processing, if state=false
     der(r) = v;
-   end if;
+  end if;
 end Inertia;
 \end{lstlisting}
 
@@ -464,7 +466,7 @@ that constants cannot be changed after translation and usually not
 changed after they have been given a value. It can be used to represent
 mathematical constants, e.g.
 \begin{lstlisting}[language=modelica]
-final constant Real PI=4*atan(1);
+final constant Real PI = 4*atan(1);
 \end{lstlisting}
 
 There are no continuous-time \lstinline!Boolean!, \lstinline!Integer! or \lstinline!String!
@@ -552,14 +554,8 @@ A component declared with a condition-attribute can only be modified and/or used
 Adding the component and then removing it ensures that the component is valid.
 
 If a connect equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
-\end{nonnormative}
 
-If the condition is true for a public connector containing flow
-variables the connector must be connected from the outside.
-
-\begin{nonnormative}
-The reason for this restriction is that the default flow equation is probably incorrect (since it could otherwise
-be an unconditional connector) and the model cannot check that connector is connected.
+There are annotations to handle the case where the connector should be connected when activated, see \cref{annotations-for-the-graphical-user-interface}.
 \end{nonnormative}
 
 \section{Class Declarations}\label{class-declarations}
@@ -640,8 +636,8 @@ composition :
     algorithm-section
   }
   [ external [ language-specification ]
-  [ external-function-call ] [ annotation ] ";" ]
-  [ annotation ";" ]
+  [ external-function-call ] [ annotation-clause ] ";" ]
+  [ annotation-clause ";" ]
 \end{lstlisting}
 
 \subsection{Short Class Definitions}\label{short-class-definitions}
@@ -745,7 +741,7 @@ Real x[:]=foo(time);
 
 \subsection{Combining Base Classes and Other Elements}\label{restriction-on-combining-base-classes-and-other-elements}\label{combining-base-classes-and-other-elements}
 
-It is not legal to combine other components or base classes with an extends from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, or a simple type.
+It is not legal to combine equations, algorithms, components, base classes, or protected elements with an extends from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, or a simple type.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -814,7 +810,7 @@ May only be predefined types, enumerations, array of type, or classes extending 
 The normal modeling class in Modelica.
 
 \item \lstinline!block!\indexinline{block} --
-Same as \lstinline!model! with the restriction that each connector component of a \lstinline!block! must have prefixes \lstinline!input! and/or \lstinline!output! for all connector variables.
+Same as \lstinline!model! with the restriction that each public connector component of a \lstinline!block! must have prefixes \lstinline!input! and/or \lstinline!output! for all connector variables.
 
 \begin{nonnormative}
 The purpose is to model input/output blocks of block diagrams.  Due to the restrictions on \lstinline!input! and \lstinline!output! prefixes,
@@ -840,7 +836,8 @@ May only contain declarations of classes and constants.  Enhanced to allow \lsti
 Similar to \lstinline!record!; but operator overloading is possible, and due to this the typing rules are different, see \cref{interface-or-type-relationships}.  It is not legal to extend from an \lstinline!operator record! (or \lstinline!connector! inheriting from \lstinline!operator record!), except if the new class is an \lstinline!operator record! or \lstinline!connector! that is declared as a short class definition, whose modifier is either empty or only modify the default attributes for the component elements directly inside the \lstinline!operator record!.  An \lstinline!operator record! can only extend from an \lstinline!operator record!.  It is not legal to extend from any of its enclosing scopes.  (See \cref{overloaded-operators}).
 
 \item \lstinline!operator!\indexinline{operator} --
-Similar to \lstinline!package!; but may only contain declarations of functions.  May only be placed directly in an \lstinline!operator record!.  (See also \cref{overloaded-operators}).
+May only contain declarations of functions.
+May only be placed directly in an \lstinline!operator record!.  (See also \cref{overloaded-operators}).
 
 \item \lstinline!operator function!\indexinline{operator function} --
 Shorthand for an \lstinline!operator! with exactly one function; same restriction as \lstinline!function! class and in addition may only be placed directly in an \lstinline!operator record!.
@@ -877,7 +874,7 @@ operator record Complex
   algorithm
      result := Complex(re=c1.re*c2.re - c1.im*c2.im,
                       im=c1.re*c2.im + c1.im*c2.re);
-   end '*';
+  end '*';
 end Complex;
 record MyComplex
   extends Complex; // Error; extending from enclosing scope.
@@ -968,7 +965,7 @@ The local equation size of a \lstinline!model! or \lstinline!block! class is the
 \item
   The number of input and flow variables present in each (top-level) public connector component.
   \begin{nonnormative}
-  This represents the number of connection equations that will be provided when the class is used.
+  This represents the number of connection equations that will be provided when the class is used, due to the balancing restrictions for connectors, see \cref{balancing-restriction-and-size-of-connectors}.
   \end{nonnormative}
 \item
   The number of (top-level) public input variables that neither are connectors nor have binding equations.
@@ -1032,6 +1029,7 @@ The following restrictions hold:
   \begin{nonnormative}
   E.g.\ if the model contains a component, \lstinline!firstOrder! (of specialized class \lstinline!model!) and \lstinline!firstOrder! has
   \lstinline!input Real u! then there must be a binding equation for \lstinline!firstOrder.u!.
+  Note that this also applies to components inherited from a partial base-class provided the current class is non-partial.
   \end{nonnormative}
 \item
   A component declared with the \lstinline!inner! or \lstinline!outer! prefix shall not be of a
@@ -1045,7 +1043,12 @@ Flange support(phi=phi, tau=torque1+torque2) if use_support;
   If \lstinline!use_support=true!, there are two additional equations for \lstinline!support.phi! and \lstinline!support.tau! via the modifier.
 \end{example}
 \item
-  In other cases (declaration of a component of a \lstinline!model! or \lstinline!block! class, modifiers on extends, and modifier on short class definitions):  Modifiers for components shall only contain redeclarations of replaceable elements and binding equations.  The binding equations in modifiers for components may in these cases only be for parameters, constants, inputs and variables having a default binding equation.
+  In a declarations of a component of a \lstinline!model! or \lstinline!block! class, modifiers shall only contain redeclarations of replaceable elements and binding equations.
+  The binding equations in modifiers for components may in these cases only be for parameters, constants, inputs and variables having a default binding equation.
+  For the latter case of variables having a default binding equation the modifier may not remove the binding equation using \lstinline!break!, see \cref{removing-modifiers-break}.
+\item
+  Modifiers of base-classes (on extends and short class definitions) shall only contain redeclarations of replaceable elements and binding equations.
+  The binding equations follow the corresponding rules above, as if they were applied to the inherited component.
 \item
   All non-partial \lstinline!model! and \lstinline!block! classes must be locally balanced.
   \begin{nonnormative}
@@ -1170,8 +1173,7 @@ globally singular model.
 \begin{lstlisting}[language=modelica]
 import Modelica.Units.SI;
 
-partial model BaseProperties
-    "Interface of medium model for all type of media"
+partial model BaseProperties "Interface of medium model"
   parameter Boolean preferredStates = false;
   constant Integer nXi "Number of independent mass fractions";
   InputAbsolutePressure     p;
@@ -1388,7 +1390,7 @@ Note that only the values of \lstinline!x! and \lstinline!y! are declared to be 
 
 It is not possible to combine extends from the predefined types, enumeration types, or this \lstinline!Clock! type with other components.
 
-The names \lstinline!Real!\index{Real@\robustinline{Real}!reserved name}, \lstinline!Integer!\index{Integer@\robustinline{Integer}!reserved name}, \lstinline!Boolean!\index{Boolean@\robustinline{Boolean}!reserved name} and \lstinline!String!\index{String@\robustinline{String}!reserved name} are reserved such that it is illegal to declare an element with these names.
+The names \lstinline!Real!\index{Real@\robustinline{Real}!reserved name}, \lstinline!Integer!\index{Integer@\robustinline{Integer}!reserved name}, \lstinline!Boolean!\index{Boolean@\robustinline{Boolean}!reserved name} and \lstinline!String!\index{String@\robustinline{String}!reserved name} have restrictions similar to keywords, see \cref{modelica-keywords}.
 
 \begin{nonnormative}
 Hence, it is possible to define a normal class called \lstinline!Clock! in a package and extend from it.
@@ -1401,6 +1403,12 @@ It also follows that the only way to declare a subtype of e.g.\ \lstinline!Real!
 The definitions use \lstinline!RealType!\indexinline{RealType}, \lstinline!IntegerType!\indexinline{IntegerType}, \lstinline!BooleanType!\indexinline{BooleanType}, \lstinline!StringType!\indexinline{StringType}, \lstinline!EnumType!\indexinline{EnumType} as mnemonics corresponding to machine representations.
 These are called the \firstuse[primitive type]{primitive types}.
 
+\begin{definition}[Fallback value]\label{def:fallback-value}\index{fallback value}
+In situations where the \lstinline!start!-attribute would apply if provided, but the attribute is not provided, the \emph{fallback value} shall be used instead.
+Tools are recommended to give diagnostics when the fallback value is used.
+The fallback values for variables of the different predefined types are defined below.
+\end{definition}
+
 \subsection{Real Type}\label{real-type}
 
 The following is the predefined \lstinline!Real!\indexinline{Real} type:
@@ -1411,7 +1419,7 @@ type Real // Note: Defined with Modelica syntax although predefined
   parameter StringType unit        = "" "Unit used in equations";
   parameter StringType displayUnit = "" "Default display unit";
   parameter RealType min = -Inf, max = +Inf; // Inf denotes a large value
-  parameter RealType start    = 0; // Initial value
+  parameter RealType start;            // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false; // default for other variables
   parameter RealType nominal;            // Nominal value
@@ -1435,6 +1443,8 @@ end Real;
 The \lstinline!nominal! attribute is meant to be used for scaling purposes and to
 define tolerances in relative terms, see \cref{attributes-start-fixed-nominal-and-unbounded}.
 
+The fallback value is the closest value to $0.0$ consistent with the \lstinline!min! and \lstinline!max! bounds.
+
 \begin{nonnormative}
 For external functions in C89, \lstinline!RealType! maps to \lstinline[language=C]!double!.  In the mapping proposed in Annex~F of the C99 standard,
 \lstinline!RealType!/\lstinline[language=C]!double! matches the IEC~60559:1989 (ANSI/IEEE~754-1985) \lstinline[language=C]!double! format.
@@ -1448,7 +1458,7 @@ type Integer // Note: Defined with Modelica syntax although predefined
   IntegerType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
   parameter IntegerType min = -Inf, max = +Inf;
-  parameter IntegerType start = 0; // Initial value
+  parameter IntegerType start;         // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false; // default for other variables
 equation
@@ -1463,6 +1473,8 @@ end Integer;
 
 The minimal recommended number range for \lstinline!IntegerType! is from -2147483648 to +2147483647, corresponding to a two's-complement 32-bit integer implementation.
 
+The fallback value is the closest value to $0$ consistent with the \lstinline!min! and \lstinline!max! bounds.
+
 \subsection{Boolean Type}\label{boolean-type}
 
 The following is the predefined \lstinline!Boolean!\indexinline{Boolean} type:
@@ -1470,7 +1482,7 @@ The following is the predefined \lstinline!Boolean!\indexinline{Boolean} type:
 type Boolean // Note: Defined with Modelica syntax although predefined
   BooleanType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
-  parameter BooleanType start = false; // Initial value
+  parameter BooleanType start;         // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false, // default for other variables
 end Boolean;
@@ -1479,6 +1491,8 @@ end Boolean;
 \index{start@\robustinline{start}!attribute of \robustinline{Boolean}}%
 \index{fixed@\robustinline{fixed}!attribute of \robustinline{Boolean}}%
 
+The fallback value is \lstinline!false!.
+
 \subsection{String Type}\label{string-type}
 
 The following is the predefined \lstinline!String!\indexinline{String} type:
@@ -1486,7 +1500,7 @@ The following is the predefined \lstinline!String!\indexinline{String} type:
 type String // Note: Defined with Modelica syntax although predefined
   StringType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
-  parameter StringType start = "";     // Initial value
+  parameter StringType start;          // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false, // default for other variables
 end String;
@@ -1496,6 +1510,8 @@ end String;
 \index{fixed@\robustinline{fixed}!attribute of \robustinline{String}}
 
 A \lstinline!StringType! value (such as $\langle\mathit{value}\rangle$ or other textual attributes of built-in types) may contain any Unicode data (and nothing else).
+
+The fallback value is \lstinline!""!.
 
 \subsection{Enumeration Types}\label{enumeration-types}
 
@@ -1608,7 +1624,7 @@ type E // Note: Defined with Modelica syntax although predefined
   EnumType $\langle$$\mbox{\emph{value}}$$\rangle$; // Not an attribute; only accessed without dot-notation
   parameter StringType quantity = "";
   parameter EnumType min = e1, max = en;
-  parameter EnumType start = e1;       // Initial value
+  parameter EnumType start;             // Initial value
   parameter BooleanType fixed = true,  // default for parameter/constant;
                               = false; // default for other variables
   constant EnumType e1 = $\ldots$;
@@ -1618,6 +1634,8 @@ equation
   assert(min <= $\langle$$\mbox{\emph{value}}$$\rangle$ and $\langle$$\mbox{\emph{value}}$$\rangle$ <= max, "Variable value out of limit");
 end E;
 \end{lstlisting}
+
+The fallback value is the \lstinline!min! bound.
 
 \begin{nonnormative}
 Since the attributes and enumeration literals are on the same
@@ -1693,16 +1711,16 @@ The predefined \lstinline!StateSelect!\indexinline{StateSelect} enumeration type
 
 \begin{lstlisting}[language=modelica]
 type StateSelect = enumeration(
- never "Do not use as state at all.",
- avoid "Use as state, if it cannot be avoided (but only if variable appears
-         differentiated and no other potential state with attribute
-         default, prefer, or always can be selected).",
- default "Use as state if appropriate, but only if variable appears
-          differentiated.",
- prefer "Prefer it as state over those having the default value
-      (also variables can be selected, which do not appear
-      differentiated).",
-always "Do use it as a state."
+  never   "Do not use as state at all.",
+  avoid   "Use as state, if it cannot be avoided (but only if variable appears "
+        + "differentiated and no other potential state with attribute "
+        + "default, prefer, or always can be selected).",
+  default "Use as state if appropriate, but only if variable appears "
+        + "differentiated.",
+  prefer  "Prefer it as state over those having the default value "
+        + "(also variables can be selected, which do not appear "
+        + "differentiated).",
+  always  "Do use it as a state."
 );
 \end{lstlisting}
 

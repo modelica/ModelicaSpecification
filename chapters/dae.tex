@@ -85,6 +85,32 @@ Further, each of the original model equations behind \eqref{eq:dae-discrete-valu
 The interpretation of the non-solved form of \eqref{eq:dae-discrete-real} at events, on the other hand, is that at events, the discrete-time \lstinline!Real! variables $z$ are solved together with the continuous-time variables using \eqref{eq:dae} and \eqref{eq:dae-discrete-real}.
 
 \begin{example}
+The following model demonstrates that \cref{eq:dae-discrete-real} does not imply that all discrete-time \lstinline!Real! variables are given by equations in solved form, as also the discrete-time \lstinline!Real! variables are included in $z$:
+\begin{lstlisting}[language=modelica]
+model M
+  discrete Real x(start = 1.0, fixed = true);
+equation
+  when sample(1.0, 1.0) then
+    x = 3 * pre(x) - x^2; // Valid equation for discrete-time Real variable x.
+  end when;
+end M;
+\end{lstlisting}
+
+Another way that a discrete-time \lstinline!Real! variable can end up becoming determined by a nonlinear equation is through coupling with other variables.
+\begin{lstlisting}[language=modelica]
+model M
+  discrete Real x(start = 1.0, fixed = true);
+  discrete Real y(start = 0.0, fixed = true);
+equation
+  when sample(1.0, 1.0) then
+    y = x ^ 2 + 2 * exp(-time);
+    x = 3 * pre(x) - y; // OK, forming nonlinear equation system with y.
+  end when;
+end M;
+\end{lstlisting}
+\end{example}
+
+\begin{example}
 The following model is illegal since there is no equation in solved form that can be used in \eqref{eq:dae-discrete-valued} to solve for the discrete-valued variable \lstinline!y!:
 \begin{lstlisting}[language=modelica]
 model M
@@ -107,7 +133,7 @@ After initialization, simulation proceeds with transient analysis in the followi
 \begin{enumerate}
 \item\label{perform-simulation-integrate}
   The DAE \eqref{eq:dae} is solved by a numerical integration method.
-  In this phase the conditions $c$ of the if- and \lstinline!when!-clauses, as well as the discrete-time variables $z$ and $m$ are kept constant.
+  In this phase the conditions $c$ of the \lstinline!if!- and \lstinline!when!-clauses, as well as the discrete-time variables $z$ and $m$ are kept constant.
   Therefore, \eqref{eq:dae} is a continuous function of continuous variables and the most basic requirement of numerical integrators is fulfilled.
 \item
   During integration, all relations from \eqref{eq:crossing} are monitored.

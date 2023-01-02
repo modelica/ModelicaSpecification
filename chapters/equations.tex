@@ -46,7 +46,7 @@ equation :
    ( simple-expression "=" expression
      | if-equation
      | for-equation
-     | connect-clause
+     | connect-equation
      | when-equation
      | component-reference function-call-args
    )
@@ -115,7 +115,7 @@ for i in 1 : 10 loop           // i takes the values 1, 2, 3, $\ldots$, 10
 for r in 1.0 : 1.5 : 5.5 loop  // r takes the values 1.0, 2.5, 4.0, 5.5
 for i in {1, 3, 6, 7} loop     // i takes the values 1, 3, 6, 7
 for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two
-                               // for TwoEnums = enumeration(one,two)
+                               // for TwoEnums = enumeration(one, two)
 \end{lstlisting}
 
 The loop-variable may hide other variables as in the following example.
@@ -124,7 +124,7 @@ Using another name for the loop-variable is, however, strongly recommended.
   constant Integer j = 4;
   Real x[j]
 equation
-  for j in 1:j loop  // The loop-variable j takes the values 1,2,3,4
+  for j in 1:j loop  // j takes the values 1, 2, 3, 4
     x[j] = j;        // Uses the loop-variable j
   end for;
 \end{lstlisting}
@@ -138,10 +138,11 @@ See \cref{implicit-iteration-ranges} for more information.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  Real x[n],y[n];
-for i loop          // Same as:  for i in 1:size(x ,1) loop
-  x[i] = 2*y[i];
-end for;
+  Real x[n], y[n];
+equation
+  for i loop          // Same as: for i in 1:size(x, 1) loop
+    x[i] = 2 * y[i];
+  end for;
 \end{lstlisting}
 \end{example}
 
@@ -199,6 +200,7 @@ end when ";"
 \end{lstlisting}
 
 The \lstinline!expression! of a \lstinline!when!-equation shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
+If \lstinline!expression! is a clocked expression, the equation is referred to as a \emph{clocked \lstinline!when!-clause} (\cref{clocked-when-clause}) rather than a \lstinline!when!-equation, and is handled differently.
 The equations within a \lstinline!when!-equation are activated only at the instant when the scalar expression or any of the elements of the vector expression becomes true.
 
 \begin{example}
@@ -206,7 +208,7 @@ The order between the equations in a \lstinline!when!-equation does not matter, 
 \begin{lstlisting}[language=modelica]
 equation
   when x > 2 then
-    y3 = 2*x +y1+y2; // Order of y1 and y3 equations does not matter
+    y3 = 2*x + y1 + y2; // Order of y1 and y3 equations does not matter
     y1 = sin(x);
   end when;
   y2 = sin(y1);
@@ -289,13 +291,17 @@ The equations within the \lstinline!when!-equation must have one of the followin
   Operators \lstinline!assert!, \lstinline!terminate!, \lstinline!reinit!.
 \item
   The \lstinline!for!- and \lstinline!if!-equations if the equations within the \lstinline!for!- and \lstinline!if!-equations satisfy these requirements.
+\end{itemize}
+Additionally,
+\begin{itemize}
 \item
   The different branches of \lstinline!when!/\lstinline!elsewhen! must have the same set of component references on the left-hand side.
+  Here, the destination variable of a \lstinline!reinit! (including when inside a \lstinline!when!-clause activated with \lstinline!initial()!) is not considered a left-hand side, and hence \lstinline!reinit! is unaffected by this requirement (as are \lstinline!assert! and \lstinline!terminate!).
 \item
   The branches of an \lstinline!if!-equation inside \lstinline!when!-equations must have the same set of component references on the left-hand side, unless all switching conditions of the \lstinline!if!-equation are parameter expressions.
+\item
+  Any left hand side reference, (\lstinline!v!, \lstinline!out1!, \ldots), in a \lstinline!when!-clause must be a component reference, and any indices must be parameter expressions.
 \end{itemize}
-
-Any left hand side reference, (\lstinline!v!, \lstinline!out1!, \ldots), in a \lstinline!when!-clause must be a component reference, and any indices must be parameter expressions.
 
 \begin{nonnormative}
 The needed restrictions on equations within a \lstinline!when!-equation becomes apparent with the following example:
@@ -397,15 +403,32 @@ Below it is well defined what happens if both conditions become \lstinline!true!
 \begin{lstlisting}[language=modelica]
 model WhenPriority
   Boolean close;   // Correct model: close defined by two equations!
-algorithm
+equation
   $\ldots$
   when condition1 then
-    close := true;
+    close = true;
   elsewhen condition2 then
-    close := false;
+    close = false;
   end when;
   $\ldots$
 end WhenPriority;
+\end{lstlisting}
+An alternative to \lstinline!elsewhen! (in an equation or algorithm) is to use an algorithm with multiple \lstinline!when!-statements.
+However, both statements will be executed if both conditions become \lstinline!true! at the same time.
+Therefore they must be in reverse order to preserve the priority, and any side-effect would require more care.
+\begin{lstlisting}[language=modelica]
+model WhenPriorityAlg
+  Boolean close;   // Correct model: close defined by two when-statements!
+algorithm
+  $\ldots$
+  when condition2 then
+    close := false;
+  end when;
+  when condition1 then
+    close := true;
+  end when;
+  $\ldots$
+end WhenPriorityAlg;
 \end{lstlisting}
 \end{nonnormative}
 \end{itemize}
@@ -422,6 +445,7 @@ The operator reinitializes \lstinline!x! with \lstinline!expr! at an event insta
 \lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
 \lstinline!expr! needs to be type-compatible with \lstinline!x!.
 For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several \lstinline!when!- or \lstinline!elsewhen!-clauses of the same \lstinline!when!-equation is allowed).
+If there are multiple \lstinline!reinit! for a variable inside the same \lstinline!when!- or \lstinline!elsewhen!-clause, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
 In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
 
 \lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value,
@@ -707,7 +731,7 @@ If the condition of the \lstinline!when!-clause contains \lstinline!initial()!,
 but not in one of the specific forms, the \lstinline!when!-clause is not active during initialization: \lstinline!when not initial() then print("simulation started"); end when;!
 \end{nonnormative}
 
-The algorithmic statements within a \lstinline!when!-statement are active during initialization, if and only they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
+The algorithmic statements within a \lstinline!when!-statement are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
 In this case, the algorithmic statements within the \lstinline!when!-statement remain active during the whole initialization phase.
 
 An active \lstinline!when!-clause inactivates the following \lstinline!elsewhen! (similarly as for \lstinline!when!-clauses during simulation), but apart from that the first \lstinline!elsewhen initial() then! or \lstinline!elsewhen {$\ldots$, initial(), $\ldots$} then! is similarly active during initialization as \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
@@ -753,14 +777,14 @@ For other variables, \lstinline!fixed! defaults to \lstinline!false!.
 \lstinline!start!-values of variables having \lstinline!fixed = false! can be used as initial guesses, in case iterative solvers are used in the initialization phase.
 
 \begin{nonnormative}
-In case of iterative solver failure, it is recommended to specially report those variables for which the solver needs an initial guess, but which only have the default value of the \lstinline!start!-attribute as defined in \cref{predefined-types-and-classes}, since the lack of appropriate initial guesses is a likely cause of the solver failure.
+In case of iterative solver failure, it is recommended to specially report those variables for which the solver needs an initial guess, but where the fallback value (see \cref{predefined-types-and-classes}) has been applied, since the lack of appropriate initial guesses is a likely cause of the solver failure.
 \end{nonnormative}
 
-If a parameter has a modifier for the \lstinline!start!-attribute, does not have \lstinline!fixed = false!, and neither has a binding equation nor is part of a record having a binding equation, the modifier for the \lstinline!start!-attribute can be used to add a parameter binding equation assigning the parameter to that \lstinline!start! value.
+If a parameter has a value for the \lstinline!start!-attribute, does not have \lstinline!fixed = false!, and neither has a binding equation nor is part of a record having a binding equation, the value for the \lstinline!start!-attribute can be used to add a parameter binding equation assigning the parameter to that \lstinline!start! value.
 In this case a diagnostic message is recommended in a simulation model.
 
 \begin{nonnormative}
-This is used in libraries to give non-zero defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters that need to be set.
+This is used in libraries to give rudimentary defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters that should be set properly.
 \end{nonnormative}
 
 All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e.\ there must be additional equations for them -- and the \lstinline!start!-value can be used as a guess-value during initialization.
