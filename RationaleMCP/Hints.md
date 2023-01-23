@@ -2,7 +2,7 @@ Hints for generating a release.
 
 Currently there are no automated procedures for generating the revision-history.
 
-For the MCPs it is good to list additional pull requests considered, they can be found using something like:
+For the MCPs it is good to list additional pull requests considered, they can be found in GitHub's Pull Request list by searching for:
 ```
 -base:master -base:maint/3.4 -base:maint/3.5 merged:>=2000-01-01 -label:MCP0031 -label:MCP0033 
 ```
