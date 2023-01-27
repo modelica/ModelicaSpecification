@@ -1268,10 +1268,23 @@ This is a consequence of the parsing rules, since `\lstinline!2.!' is a lexical 
 
 \subsection{Element-wise Exponentiation}\label{element-wise-exponentiation}
 
-Exponentiation \lstinline!a ^ b! is defined as \lstinline[language=C]!pow(double a, double b)! in the ANSI~C library if both \lstinline!a! and \lstinline!b! are
-\lstinline!Real! scalars. A \lstinline!Real! scalar value is returned.  If \lstinline!a! or \lstinline!b! are \lstinline!Integer! scalars, they are
-automatically promoted to \lstinline!Real!.  Consequences of exceptional situations, such as ($\text{\lstinline!a!} = 0.0$ and $\text{\lstinline!b!} \leq 0.0$,
-$\text{\lstinline!a!} < 0$ and \lstinline!b! is not an integer) or overflow are undefined.
+Exponentiation \lstinline!a ^ b! always returns a \lstinline!Real! scalar value, and it is required that \lstinline!a! and \lstinline!b! are scalar \lstinline!Real! or \lstinline!Integer! expressions.
+The result should correspond to mathematical exponentiation with the following special cases:
+\begin{itemize}
+\item For any value of \lstinline!a! (including $0.0$) and an \lstinline!Integer! $\text{\lstinline!b!} = 0$, the result is $1.0$.
+\item If $\text{\lstinline!a!} < 0$ and \lstinline!b! is an \lstinline!Integer!, the result is defined as $\pm |a|^b$, with sign depending on whether \lstinline!b! is even (positive) or odd (negative).
+\item A deprecated semantics is to treat $\text{\lstinline!a!} < 0$ and a \lstinline!Real! \lstinline!b! having a non-zero integer value as if \lstinline!b! were an \lstinline!Integer!.
+\item For $\text{\lstinline!a!} = 0$ and $\text{\lstinline!b!} > 0$, the result is $0.0$.
+\item
+  Other exceptional situations are illegal.
+  For example: $\text{\lstinline!a!} = 0.0$ and $\text{\lstinline!b!} = 0.0$ for a \lstinline!Real b!, $\text{\lstinline!a!} = 0.0$ and $\text{\lstinline!b!} < 0$, or $\text{\lstinline!a!} < 0$ and \lstinline!b! does not have an integer value.
+\end{itemize}
+
+\begin{nonnormative}
+Except for defining the special case of $0.0^0$ it corresponds to \lstinline[language=C]!pow(double a, double b)! in the ANSI~C library.
+The result is always \lstinline!Real! as negative exponents can give non-integer results also when both operands are \lstinline!Integer!.
+The special treatment of \lstinline!Integer! exponents makes it possible to use $x^n$ in a power series.
+\end{nonnormative}
 
 Element-wise exponentiation \lstinline!a .^ b! of numeric scalars, vectors, matrices, or arrays \lstinline!a! and \lstinline!b! requires a numeric type class for
 \lstinline!a! and \lstinline!b! and either \lstinline!size(a) = size(b)! or scalar \lstinline!a! or scalar \lstinline!b!.
