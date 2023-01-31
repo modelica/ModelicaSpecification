@@ -254,3 +254,8 @@ When a sentence starts with inline code,
 this may be rewritten using _The_ inserted before the inline code to avoid a lower case letter at the beginning of the sentence:
 
 > The `import`-clauses are not inherited.
+
+### Wrap punctuations around some abbreviations 
+
+Always use comma (or colon if the following text starts on new line) _after_ "e.g." and "i.e."; and use comma or some other punctuation such as "(", "--", or "." before them.
+This also avoids the need to guard the space after the dot.
