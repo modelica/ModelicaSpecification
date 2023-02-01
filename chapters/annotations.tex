@@ -2093,14 +2093,22 @@ In order to not reveal the existence of the class \lstinline!P.MySecret!, a tool
 (The tool could also choose to not show the diagram of \lstinline!P.M! at all, or even reject to load the package \lstinline!P! altogether.)
 As long as the invalid use of \lstinline!P.MySecret! occurs within the same top level package as where the class is defined (here, \lstinline!P!), a tool is allowed to silently ignore the use for purposes of model translation.
 When simulating \lstinline!P.M!, the tool must not store \lstinline!mySecret.y!.
+In order to support development of valid protected packages, it is of course OK and expected that a tool will report the invalid use of \lstinline!P.MySecret! in \lstinline!P.M! (revealing its existence in a diagnostic) during development of the package.
+\end{example}
 
-If a user enters
+\begin{example}
+With the same package \lstinline!P! as in the previous example, consider invalid outside of \lstinline!P!:
 \begin{lstlisting}[language=modelica]
 model My
-  P.MySecret a;
+  P.MySecret a
+    annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));;
 end My;
 \end{lstlisting}
-That icon for \lstinline!P.MySecret! shall not be shown, similarly as if the class did not exist.
+Regardless of the protection of \lstinline!My!, a tool must act as if \lstinline!P.MySecret! did not exist.
+For example, translation of \lstinline!My! must fail with a standard error message about reference to the non-existing class \lstinline!P.MySecret!.
+Further, just like when being misused inside the package \lstinline!P!, the tool must not reveal that it knows about the icon of \lstinline!P.MySecret!.
+With such precautions taken, showing the text or diagram of \lstinline!My! is permitted as it doesn't reveal the actual existence of \lstinline!P.MySecret!.
 \end{example}
 
 \begin{nonnormative}
