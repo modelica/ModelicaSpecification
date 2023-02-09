@@ -197,7 +197,7 @@ The specialized classes \lstinline!package!, \lstinline!operator!, \lstinline!fu
 own kind and from \lstinline!class!.
 
 \begin{nonnormative}
-E.g.\ a package can only be base class for packages.
+E.g., a package can only be base class for packages.
 All other kinds of classes can use the \lstinline!import!-clause to use the contents of a package.
 \end{nonnormative}
 
@@ -231,7 +231,7 @@ The class name used after \lstinline!extends! for base classes and for constrain
 For a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! the class must use a class reference considered transitively non-replaceable.
 
 \begin{nonnormative}
-The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e.\ \lstinline!redeclare model extends M $\ldots$! where \lstinline!M! must be an inherited replaceable class.
+The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e., \lstinline!redeclare model extends M $\ldots$! where \lstinline!M! must be an inherited replaceable class.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -573,7 +573,7 @@ The intention of \lstinline!break! is to remove the value.
 The modifiers using \lstinline!break! are merged using the same rule as other modifications, and follow the same restrictions so they cannot override a final modifier.
 During flattening of an instantiated model, remaining \lstinline!break! modifications (i.e., the ones that are not further overriden) are treated as if the expression was missing.
 The \lstinline!break! modifier for a variable of a simple type can be applied to the value and/or to specific attributes.
-It is possible to override even if no value is present, either because there was no expression originally or because \lstinline!break! overrides another \lstinline!break!.
+Unless \lstinline!final! was specified, it is possible to override even if no value is present, either because there was no expression originally or because \lstinline!break! overrides another \lstinline!break!.
 
 \begin{nonnormative}
 In a dialog, a tool may hide the keyword \lstinline!break! and show an empty input field, without the overriden modification.
@@ -608,11 +608,11 @@ Replace a given parameter value by an initial computation:
 \begin{lstlisting}
 model A
   parameter Real diameter  = 1;
-  final parameter radius = diameter / 2;
+  final parameter Real radius = diameter / 2;
 end A;
 
 model B "Initial equation for diameter"
-  extends A( diameter(fixed = false) = break );
+  extends A( final diameter(fixed = false) = break );
   parameter Real square=2;
 initial equation
   //  solving equation below for diameter
@@ -626,7 +626,7 @@ model A
 end A;
 
 model B "Computing x instead"
-  extends A(x=break);
+  extends A(final x=break);
 algorithm
   x:=0;
   while ...
@@ -857,7 +857,7 @@ end MoistAir2;
 Here, the usual approach is used to extend (here from \lstinline!PartialMedium!) and in the modifier perform all redeclarations.
 In order to perform these redeclarations, corresponding implementations of all elements of \lstinline!PartialMedium! have to be given under a different name, such as \lstinline!MoistAir2.MoistAir_BaseProperties!, since the name \lstinline!BaseProperties! already exists due to \lstinline!extends PartialMedium!.
 Then it is possible in the modifier to redeclare \lstinline!PartialMedium.BaseProperties! to \lstinline!MoistAir2.MoistAir_BaseProperties!.
-Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g.\ \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!:
+Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g., \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!:
 The problem is that \lstinline!MoistAir_BaseProperties! extends from \lstinline!PartialMedium.BaseProperties! where the constant \lstinline!nX! does not yet have a value.
 This means that the dimension of array \lstinline!X! is undefined and model \lstinline!MoistAir_BaseProperties! is wrong.
 With this construction, all constant definitions have to be repeated whenever these constants shall be used, especially in \lstinline!MoistAir_BaseProperties! and \lstinline!MoistAir_dynamicViscosity!.
@@ -1001,8 +1001,8 @@ replaceable type T=T1[n] constrainedby T2;
 replaceable T1[n] x constrainedby T2;
 \end{lstlisting}
 In these examples the number of dimensions must be the same in \lstinline!T1! and \lstinline!T2!, as well as in a redeclaration.  Normally \lstinline!T1! and \lstinline!T2! are scalar types, but both
-could also be defined as array types (with the same number of dimensions).  Thus if \lstinline!T2! is a scalar type (e.g.\ \lstinline!type T2 = Real!) then \lstinline!T1! must also be a scalar type,
-and if \lstinline!T2! is defined as vector type (e.g.\ \lstinline!type T2 = Real[3]!) then \lstinline!T1! must also be vector type.
+could also be defined as array types (with the same number of dimensions).  Thus if \lstinline!T2! is a scalar type (e.g., \lstinline!type T2 = Real!) then \lstinline!T1! must also be a scalar type,
+and if \lstinline!T2! is defined as vector type (e.g., \lstinline!type T2 = Real[3]!) then \lstinline!T1! must also be vector type.
 \end{example}
 
 \subsubsection{Constraining-Clause Annotations}\label{constraining-clause-annotations}
@@ -1060,6 +1060,12 @@ prefixes are inherited, \cref{redeclaration}):
 \subsection{Annotations for Redeclaration and Modification}\label{annotation-choices-for-suggested-redeclarations-and-modifications}
 
 A declaration can have an annotation \fmtannotationindex{choices} containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
+Lookup inside a \lstinline!choice! modifier is performed in the context of the annotation, meaning that references may need to be transformed to preserve the meaning when a \lstinline!choice! is applied in a different context.
+
+\begin{nonnormative}
+It is recommended to avoid expressions with references to elements that are not globally accessible, such as contents within a \lstinline!protected! section of a class.
+By starting names with a dot it can be ensured that no transformation of references will be needed when a \lstinline!choice! is applied, and that applicability of a \lstinline!choice! does not depend on context, see \cref{global-name-lookup}.
+\end{nonnormative}
 
 This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclaration, where the string comments on the choice declaration can be used as textual explanations of the choices.
 The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
