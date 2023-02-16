@@ -94,7 +94,7 @@ annotation(SourceLocations(…));
 end 'MyModel';
 ```
 
-The precedence of `@` is lower than the expression operators, so that no parentheses are needed when attaching a source locaiton to a modification or binding.
+The precedence of `@` is lower than the expression operators, so that no parentheses are needed when attaching a source location to a modification or binding.
 
 #### Low precedence infix `!` operator
 
