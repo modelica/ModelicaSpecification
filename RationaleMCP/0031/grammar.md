@@ -66,10 +66,10 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 > _flat-modelica_ →\
 > &emsp; _VERSION-HEADER_\
 > &emsp; **package** _IDENT_\
-> &emsp;&emsp; ( _class-definition_ **;**\
-> &emsp;&emsp; | _global-constant_ **;**\
+> &emsp;&emsp; ( _decoration_? _class-definition_ **;**\
+> &emsp;&emsp; | _decoration_? _global-constant_ **;**\
 > &emsp;&emsp; )*\
-> &emsp;&emsp; **model** _long-class-specifier_ **;**\
+> &emsp;&emsp; _decoration_? **model** _long-class-specifier_ **;**\
 > &emsp;&emsp; ( _annotation-comment_ **;** )?
 > &emsp; **end** _IDENT_ **;**
 
@@ -130,14 +130,14 @@ end _F;
 > _enumeration-literal_ → _IDENT_ _comment_
 
 > _composition_ →\
-> &emsp; (_generic-element_ **;**)* \
+> &emsp; (_decoration_? _generic-element_ **;**)* \
 > &emsp; ( **equation** ( _equation_ **;** )* \
 > &emsp; | **initial** **equation** ( _initial-equation_ **;** )* \
 > &emsp; | **initial**? **algorithm** ( _statement_ **;** )* \
 > &emsp; ~~| **public** (_generic-element_ **;**)*~~ \
 > &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
 > &emsp; )* \
-> &emsp; ( **external** _language-specification_?\
+> &emsp; ( _decoration_? **external** _language-specification_?\
 > &emsp;&emsp; _external-function-call_? _annotation-comment_? **;**\
 > &emsp; )?\
 > &emsp; _base-partition_* \
@@ -190,7 +190,7 @@ end _F;
 > &emsp; | **algorithm** ( _statement_ **;** )* \
 > &emsp; )*
 
-> _clock-clause_ → **Clock** _IDENT_ **=** _expression_ _comment_
+> _clock-clause_ → _decoration_? **Clock** _IDENT_ **=** _expression_ _comment_
 
 
 ## B23 Extends
@@ -231,7 +231,7 @@ end _F;
 > _argument-list_ → _argument_ ( **,** _argument_ )*
 
 > _argument_\
-> &emsp; → _element-modification-or-replaceable_\
+> &emsp; → _decoration_? _element-modification-or-replaceable_\
 > &emsp; ~~| _element-redeclaration_~~
 
 > _element-modification-or-replaceable_ →\
@@ -266,7 +266,8 @@ end _F;
 ## B26 Equations
 
 > _equation_ →\
-> &emsp; ( _simple-expression_ ( **=** _expression_ )?\
+> &emsp; _decoration_?\
+> &emsp; ( _simple-expression_ _decoration_? ( **=** _expression_ )?\
 > &emsp; | _if-equation_\
 > &emsp; | _for-equation_\
 > &emsp; ~~| _connect-clause_~~\
@@ -277,6 +278,7 @@ end _F;
 > _initial-equation_ → _equation_ | _prioritize-equation_
 
 > _statement_ →\
+> &emsp; _decoration_?\
 > &emsp; ( _component-reference_ ( **:=** _expression_ | _function-call-args_ )\
 > &emsp; | `[(]` _output-expression-list_ `[)]` **:=** _component-reference_ _function-call-args_\
 > &emsp; | **break**\
@@ -356,12 +358,16 @@ end _F;
 
 ## Expressions
 
-> _expression_ → _simple-expression_ | _if-expression_
+> _decoration_ → **@** UNSIGNED-INTEGER
+
+> _expression_ → _expression-no-decoration_ _decoration_?
+
+> _expression-no-decoration_ → _simple-expression_ | _if-expression_
 
 > _if-expression_ →\
 > &emsp; **if** _expression_ **then** _expression_\
 > &emsp; ( **elseif** _expression_ **then** _expression_ )* \
-> &emsp; **else** _expression_
+> &emsp; **else** _expression-no-decoration_
 
 > _simple-expression_ → _logical-expression_ ( **:** _logical-expression_ ( **:** _logical-expression_ )? )?
 
@@ -392,7 +398,7 @@ end _F;
 > &emsp; | **true**\
 > &emsp; | ( **der** | **initial** | **pure** ) _function-call-args_\
 > &emsp; | _component-reference_ _function-call-args_?\
-> &emsp; | `[(]` _output-expression-list_ `[)]` _array-subscripts_?\
+> &emsp; | `[(]` _decoration_? _output-expression-list_ `[)]` _array-subscripts_?\
 > &emsp; | `[[]` _expression-list_ ( **;** _expression-list_ )* `[]]`\
 > &emsp; | **{** _array-arguments_ **}**\
 > &emsp; | **end**
