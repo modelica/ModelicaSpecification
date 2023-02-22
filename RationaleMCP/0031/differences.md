@@ -151,6 +151,76 @@ end 'M';
 ```
 
 
+## When-Equations
+
+The `when`-equations in Flat Modelica are more restricted compared to full Modelica.
+In summary:
+- `when`-equations have no meaning at all for the initialization problem:
+  * No special treatment of `initial()` as a `when`-clause trigger expression.
+  * No implicit initial equations in the form `x = pre(x)` for a variable `x` assigned in the `when`-equation.
+- It is not allowed to have `when`-equations inside `if`-equations and `for`-equations.
+
+Here, the _special treatment_ of `when initial() then` refers to the special meaning of such a `when`-equation in the initialization problem, including the special meaning of `reinit` when activated by `initial()`.
+Hence, the first `when`-clause triggered by `initial()` in full Modelica needs to be turned into `initial equation` form in Flat Modelica, with `reinit`-equations replaced by equality-equations.
+This also means that in Flat Modelica, the triggering condition `initial()` will have the same effect as the triggering condition `true and initial()`, namely that they will never trigger the `when`-clause because the expression never undergoes a positive edge.
+
+The implicit initial equations `x = pre(x)` in full Modelica (in case no `when`-clause is activated with `initial()`) need to be made explicit in Flat Modelica.
+
+Regarding `when`-equations inside `if`-equations and `for`-equations, full Modelica only allows this where the `if`-equation conditions and `for`-equation ranges are parameter expressions.
+Hence, it is only with a small loss of generality that it is being assumed that these conditions and ranges should be possible to evaluate during translation, allowing an `if`-equation to be reduced to one of its branches, or a `for`-equation to be unrolled.
+
+
+## When-Statements
+
+Unlike the `when`-equations, there are no restrictions on the `when`-statements in Flat Modelica relative to full Modelica.
+
+Note that `reinit` is not allowed in a `when`-statement, so the notable thing about `when`-statements in Flat Modelica is that they may be triggerd by `initial()` just like in Full Modelica.
+
+### Rationale
+
+The reason for not further restricting the `when`-statements is that it it was considered too complicated to reduce `when initial()` in an algorithm to something more elementary.  As an example, consider the following full Modelica `when`-statement with a clause triggered by `initial()`:
+```
+  Real x;
+  Real y;
+algorithm
+  x := 0.5;
+  x := x + time;
+  when {x^2 > 2.0, initial()} then
+    y := pre(x);
+  end when;
+  x := x + 0.5;
+```
+
+Note that putting the following `if`-statement in the algorithm would be illegal since the argument of `pre` needs to be discrete-time:
+```
+  if initial() then
+    'y' := pre('x'); /* 'x' is continuous-time, since no longer inside when-clause. */
+  end if;
+```
+
+To get around this problem, one could try making separate variants of the algorithm depending on `initial()`:
+```
+  Real 'x';
+  Real 'y';
+initial algorithm
+  'x' := 0.5;
+  'x' := 'x' + time;
+  'y' := pre('x'); /* 'x' is discrete-time, since inside initial algorithm. */
+  'x' := 'x' + 0.5;
+algorithm
+  if not initial() then
+    'x' := 0.5;
+    'x' := 'x' + time;
+    when 'x'^2 > 2.0 then
+      'y' := pre('x');
+    end when;
+    'x' := 'x' + 0.5;
+  end if;
+```
+
+However, this doesn't work either, as the initialization problem will have two algorithms assigning to `'x'` and `'y'`, even though one of the algorithm has a disabled body.
+
+
 ## Pure Modelica functions
 
 In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
