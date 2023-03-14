@@ -24,15 +24,15 @@ but the rest of the development on a branch/pull-request before being accepted.
 |Active|0038|Initialization of Clocked Partitions|[MCP/0038](https://github.com/modelica/ModelicaSpecification/tree/MCP/0038/RationaleMCP/0038)||
 |Active|0037|Generalized Modelica URIs|[MCP/0037](https://github.com/modelica/ModelicaSpecification/tree/MCP/0037/RationaleMCP/0037)|https://github.com/modelica/ModelicaSpecification/pull/2663|
 |Active|0036|Setting states|[MCP/0036](https://github.com/modelica/ModelicaSpecification/tree/MCP/0036/RationaleMCP/0036)|https://github.com/modelica/ModelicaSpecification/pull/3164|
-|Active|0035|Multilingual support of Modelica|[MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035)|https://github.com/modelica/ModelicaSpecification/pull/2956|
+|Accepted in [3.6](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.6)|0035|Multilingual support of Modelica|[MCP/0035](https://github.com/modelica/ModelicaSpecification/tree/MCP/0035/RationaleMCP/0035)|https://github.com/modelica/ModelicaSpecification/pull/2956|
 |Active|0034|Ternary|[MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034)|https://github.com/modelica/ModelicaSpecification/pull/2477|
 |Added in [3.5](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.5)|0033|Annotations for Predefined Plots|[MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033)||
-|Active|0032|Selective Model Extension|[MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032)|https://github.com/modelica/ModelicaSpecification/pull/3166|
+|Accepted in [3.6](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.6)|0032|Selective Model Extension|[MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032)|https://github.com/modelica/ModelicaSpecification/pull/3166|
 |Active|0031|Flat Modelica and MLS modularization|[MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031)|
 |On hold|0030|IsClocked Operator||[#2238](https://github.com/modelica/ModelicaSpecification/issues/2238)|
 |Active|0029|License Export|[MCP/0029](https://github.com/modelica/ModelicaSpecification/tree/MCP/0029/RationaleMCP/0029)||
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0028|Record Derivatives mixing Real and non-Real||[#2137](https://github.com/modelica/ModelicaSpecification/issues/2137)|
-|Active|0027|Units of Literal Constants||[#2127](https://github.com/modelica/ModelicaSpecification/issues/2127)|
+|Active|0027|Units of Literal Constants|[MCP/0027](https://github.com/modelica/ModelicaSpecification/tree/MCP/0027/RationaleMCP/0027|[#3255](https://github.com/modelica/ModelicaSpecification/issues/3255) ([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0026|Arc-only Ellipse||[#2045](https://github.com/modelica/ModelicaSpecification/issues/2045)|
 |On hold|0025|Functions with input output||[#2012](https://github.com/modelica/ModelicaSpecification/issues/2012)|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0024|Initialization of Clocked States||[#2007](https://github.com/modelica/ModelicaSpecification/issues/2007)|
@@ -50,7 +50,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 |Active|0012|Calling blocks as functions|[MCP/0012](https://github.com/modelica/ModelicaSpecification/tree/MCP/0012/RationaleMCP/0012)||
 |On hold|0011|Allow user-defined functions in reductions|||
 |On hold|0010|Adding guards to reductions|||
-|Active|0009|Undefined modification|[MCP/0009](https://github.com/modelica/ModelicaSpecification/tree/MCP/0009/RationaleMCP/0009)|https://github.com/modelica/ModelicaSpecification/pull/3167|
+|Accepted in [3.6](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.6)|0009|Undefined modification|[MCP/0009](https://github.com/modelica/ModelicaSpecification/tree/MCP/0009/RationaleMCP/0009)|https://github.com/modelica/ModelicaSpecification/pull/3167|
 |On hold|0008|Custom annotations|||
 |On hold|0007|Match expressions|||
 |On hold|0006|Atomic blocks|||

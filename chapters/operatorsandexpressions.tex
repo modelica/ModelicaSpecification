@@ -48,7 +48,7 @@ Operators with different precedence are separated by horizontal lines.
 All operators are binary except the postfix operators and those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
 % Beware that the array construction operator, normally expressed as \lstinline!{ }! needs escaped braces inside \caption.
 % This isn't handled correctly by LaTeXML, as reported here:
-% - https://github.com/brucemiller/LaTeXML/issues/1377
+% - https://github.com/brucemiller/LaTeXML/issues/1377 (fixed on master 2022-12-10)
 \ifpdf
 \lstinline!\{ \}! % Intentional space at end of line.
 \else
@@ -166,7 +166,7 @@ A trick that solves this problem is to instead treat the additive unary operator
 
 \section{Evaluation Order}\label{evaluation-order}
 
-A tool is free to solve equations, reorder expressions and to not evaluate expressions if their values do not influence the result (e.g.\ short-circuit evaluation of \lstinline!Boolean! expressions).
+A tool is free to solve equations, reorder expressions and to not evaluate expressions if their values do not influence the result (e.g., short-circuit evaluation of \lstinline!Boolean! expressions).
 \lstinline!if!-statements and \lstinline!if!-expressions guarantee that their branches are only evaluated if the appropriate condition is true, but relational operators generating state or time events will during continuous integration have the value from the most recent event.
 
 If a numeric operation overflows the result is undefined.
@@ -292,7 +292,7 @@ The following holds for relational operators:
 \item
   In relations of the form \lstinline!v1 == v2 or v1 <> v2!, \lstinline!v1! or \lstinline!v2! shall, unless used in a function, not be a subtype of \lstinline!Real!.
   \begin{nonnormative}
-  The reason for this rule is that relations with \lstinline!Real! arguments are transformed to state events (see \cref{events-and-synchronization}) and this transformation becomes unnecessarily complicated for the \lstinline!==! and \lstinline!<>! relational operators (e.g.\ two crossing functions instead of one crossing function needed, epsilon strategy needed even at event instants).
+  The reason for this rule is that relations with \lstinline!Real! arguments are transformed to state events (see \cref{events-and-synchronization}) and this transformation becomes unnecessarily complicated for the \lstinline!==! and \lstinline!<>! relational operators (e.g., two crossing functions instead of one crossing function needed, epsilon strategy needed even at event instants).
   Furthermore, testing on equality of \lstinline!Real! variables is questionable on machines where the number length in registers is different to number length in main memory.
   \end{nonnormative}
 \item
@@ -404,7 +404,7 @@ With exception of the built-in \lstinline!String! operator, all operators in thi
 
 \subsection{Numeric Functions and Conversion Functions}\label{numeric-functions-and-conversion-functions}
 
-The mathematical functions and conversion operators are listed below do not generate events.
+The mathematical functions and conversion operators listed below do not generate events.
 \begin{center}
 \begin{tabular}{l|l l}
 \hline
@@ -493,19 +493,17 @@ See also \cref{type-conversion-of-integer-to-enumeration-values}.
 
 \begin{operatordefinition*}[String]\label{modelica:to-String}\index{String@\robustinline{String}!conversion operator}
 \begin{synopsis}\begin{lstlisting}
-String($b$, <options>)
-String($i$, <options>)
-String($r$, significantDigits = $d$, <options>)
+String($b$, $\langle$$\mbox{\emph{options}}$$\rangle$)
+String($i$, $\langle$$\mbox{\emph{options}}$$\rangle$)
+String($i$, format = $s$)
+String($r$, $\langle$$\mbox{\emph{options}}$$\rangle$)
 String($r$, format = $s$)
-String($e$, <options>)
+String($e$, $\langle$$\mbox{\emph{options}}$$\rangle$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Convert a scalar non-\lstinline!String! expression to a \lstinline!String! representation.
-The first argument may be a \lstinline!Boolean! $b$, an \lstinline!Integer! $i$, a \lstinline!Real! $r$ or an enumeration value $e$ (\cref{type-conversion-of-enumeration-values-to-string-or-integer}).
-The other arguments must use named arguments.
-For \lstinline!Real! expressions the output shall be according to the Modelica grammar.
-
-The optional \lstinline!<options>! are:
+The first argument may be a \lstinline!Boolean! $b$, an \lstinline!Integer! $i$, a \lstinline!Real! $r$, or an enumeration value $e$ (\cref{type-conversion-of-enumeration-values-to-string-or-integer}).
+The $\langle\mathit{options}\rangle$ represent zero or more of the following named arguments (that cannot be passed as positional arguments):
 \begin{itemize}
 \item
   \lstinline!Integer minimumLength = 0!: Minimum length of the resulting string.
@@ -514,13 +512,19 @@ The optional \lstinline!<options>! are:
   \lstinline!Boolean leftJustified = true!: If true, the converted result is left justified in the string; if false it is right justified in the string.
 \item
   \lstinline!Integer significantDigits = 6!: Number of significant digits in the result string.
+  Only allowed when formatting a \lstinline!Real! value.
 \end{itemize}
+
+The standard type coercion described in \cref{standard-type-coercion} shall not be applied for the first argument of \lstinline!String!.
+Hence, specifying \lstinline!significantDigits! is an error when the first argument of \lstinline!String! is an \lstinline!Integer! expression.
+
+For \lstinline!Real! expressions the output shall be according to the Modelica grammar.
 
 \begin{nonnormative}
 Examples of \lstinline!Real! values formatted with 6 significant digits: \emph{12.3456}, \emph{0.0123456}, \emph{12345600}, \emph{1.23456E-10}.
 \end{nonnormative}
 
-The \lstinline!format! string corresponding to \lstinline!<options>! is:
+The \lstinline!format! string corresponding to $\langle\mathit{options}\rangle$ is:
 \begin{itemize}
 \item
   For \lstinline!Real!:\\
@@ -531,12 +535,27 @@ The \lstinline!format! string corresponding to \lstinline!<options>! is:
   \lstinline!(if leftJustified then "-" else "") + String(minimumLength) + "d"!
 \end{itemize}
 
-Form of the \lstinline!format! string:
-According to ANSI-C the format string specifies one conversion specifier (excluding the leading \%), shall not contain length modifiers, and shall not use `\lstinline!*!' for width and/or precision.
-For all numeric values the format specifiers `\lstinline!f!', `\lstinline!e!', `\lstinline!E!', `\lstinline!g!', `\lstinline!G!' are allowed.
-For integral values it is also allowed to use the `\lstinline!d!', `\lstinline!i!', `\lstinline!o!', `\lstinline!x!', `\lstinline!X!', `\lstinline!u!', and `\lstinline!c!' format specifiers (for non-integral values a tool may round, truncate or use a different format if the integer conversion characters are used).
+The ANSI-C style \lstinline!format! string (which cannot be combined with any of the other named arguments) consists of a single conversion specification without the leading \%.
+It shall not contain a length modifier, and shall not use `\lstinline!*!' for width and/or precision.
+For both \lstinline!Real! and \lstinline!Integer! values, the conversion specifiers `\lstinline!f!', `\lstinline!e!', `\lstinline!E!', `\lstinline!g!', `\lstinline!G!' are allowed.
+For \lstinline!Integer! values it is also allowed to use the `\lstinline!d!', `\lstinline!i!', `\lstinline!o!', `\lstinline!x!', `\lstinline!X!', `\lstinline!u!', and `\lstinline!c!' conversion specifiers.
+Using the \lstinline!Integer! conversion specifiers for a \lstinline!Real! value is a deprecated feature, where tools are expected to produce a result by either rounding the value, truncating the value, or picking one of the \lstinline!Real! conversion specifiers instead.
 
 The `\lstinline!x!'/`\lstinline!X!' formats (hexa-decimal) and \lstinline!c! (character) for \lstinline!Integer! values give results that do not agree with the Modelica grammar.
+
+\begin{example}
+Some situations worth a remark:
+\begin{itemize}
+\item
+  \lstinline!String(4.0, format = "g")! produces \emph{4} which is not a valid \lstinline!Real! literal.
+  However, it is an \lstinline!Integer! literal that can be used almost anywhere in Modelica code instead of the \lstinline!Real! literal \lstinline{4.0} (with the first argument to \lstinline!String! being a notable exception here).
+\item
+  \lstinline!String(4, format = ".3f")! uses the \lstinline!Integer! case of \lstinline!String! since no automatic type coerction takes place for the first argument.
+  An implementation may internally convert the value to floating point and then fall back on the \lstinline!Real! case implementation of \lstinline!format = ".3f"!.
+\item
+  \lstinline!String(4611686018427387648, format = ".0f")! (a valid \lstinline!Integer! value in an implementation with 64 bit \lstinline!IntegerType!) may produce \emph{4611686018427387904} (not equal to input value), in case internal conversion to a 64 bit \lstinline[language=C]!double! is applied.
+\end{itemize}
+\end{example}
 \end{semantics}
 \end{operatordefinition*}
 
@@ -561,7 +580,7 @@ The operators listed below trigger events if used outside of a \lstinline!when!-
 \end{center}
 
 These expression for \lstinline!div!, \lstinline!ceil!, \lstinline!floor!, and \lstinline!integer! are event generating expression.
-The event generating expression for \lstinline!mod(x,y)! is \lstinline!floor(x/y)!, and for \lstinline!rem(x,y)! it is \lstinline!div(x,y)! -- i.e.\ events are not generated when \lstinline!mod! or \lstinline!rem! changes continuously in an interval, but when they change discontinuously from one interval to the next.
+The event generating expression for \lstinline!mod(x,y)! is \lstinline!floor(x/y)!, and for \lstinline!rem(x,y)! it is \lstinline!div(x,y)! -- i.e., events are not generated when \lstinline!mod! or \lstinline!rem! changes continuously in an interval, but when they change discontinuously from one interval to the next.
 
 \begin{nonnormative}
 If this is not desired, the \lstinline!noEvent! operator can be applied to them.
@@ -750,7 +769,7 @@ delay($\mathit{expr}$, $\mathit{delayTime}$)
 Evaluates to \lstinline!$\mathit{expr}$(time - $\mathit{delayTime}$)! for $\text{\lstinline!time!} > \text{\lstinline!time.start!} + \mathit{delayTime}$ and \lstinline!$\mathit{expr}$(time.start)! for $\text{\lstinline!time!} \leq \text{\lstinline!time.start!} + \mathit{delayTime}$.
 The arguments, i.e., $\mathit{expr}$, $\mathit{delayTime}$ and $\mathit{delayMax}$, need to be subtypes of \lstinline!Real!.
 $\mathit{delayMax}$ needs to be additionally a parameter expression.
-The following relation shall hold: $0 < \mathit{delayTime} \leq \mathit{delayMax}$, otherwise an error occurs.
+The following relation shall hold: $0 \leq \mathit{delayTime} \leq \mathit{delayMax}$, otherwise an error occurs.
 If $\mathit{delayMax}$ is not supplied in the argument list, $\mathit{delayTime}$ needs to be a parameter expression.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 For further details, see \cref{delay}.
@@ -1047,7 +1066,7 @@ Here, a non-linear equation system $f_2$ is present.
 \lstinline!homotopy! is, however used on a variable that is an ``input'' to the non-linear algebraic equation system, and modifies the characteristics of the non-linear algebraic equation system.
 The only useful way is to perform the homotopy iteration over $f_1$ and $f_2$ together.
 
-The suggested approach is ``conceptual'', because more efficient implementations are possible, e.g.\ by determining the smallest iteration loop, that contains the equations of the first BLT block in which \lstinline!homotopy! is present and all equations up to the last BLT block that describes a non-linear algebraic equation system.
+The suggested approach is ``conceptual'', because more efficient implementations are possible, e.g., by determining the smallest iteration loop, that contains the equations of the first BLT block in which \lstinline!homotopy! is present and all equations up to the last BLT block that describes a non-linear algebraic equation system.
 
 A trivial implementation of \lstinline!homotopy! is obtained by defining the following function in the global scope:
 \begin{lstlisting}[language=modelica]
@@ -1222,7 +1241,7 @@ end MyLib;
 If \lstinline!MyLib.Vehicle! is simulated, the call of \lstinline!getInstanceName()! returns \lstinline!"Vehicle.engine.controller"!.
 \end{example}
 
-If this function is not called inside a model or block (e.g.\ the function is called in a function or in a constant of a package), the return value is not specified.
+If this function is not called inside a model or block (e.g., the function is called in a function or in a constant of a package), the return value is not specified.
 
 \begin{nonnormative}
 The simulation result should not depend on the return value of this function.
@@ -1292,7 +1311,7 @@ See also \crefnameref{modelica:smooth} and \cref{events-and-synchronization}.
 smooth($p$, $\mathit{expr}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-If $p \geq 0$ \lstinline!smooth($p$, $\mathit{expr}$)! returns $\mathit{expr}$ and states that $\mathit{expr}$ is $p$ times continuously differentiable, i.e.: $\mathit{expr}$ is continuous in all \lstinline!Real! variables appearing in the expression and all partial derivatives with respect to all appearing real variables exist and are continuous up to order $p$.
+If $p \geq 0$ \lstinline!smooth($p$, $\mathit{expr}$)! returns $\mathit{expr}$ and states that $\mathit{expr}$ is $p$ times continuously differentiable, i.e., $\mathit{expr}$ is continuous in all \lstinline!Real! variables appearing in the expression and all partial derivatives with respect to all appearing real variables exist and are continuous up to order $p$.
 The argument $p$ should be a scalar \lstinline!Integer! parameter expression.
 The only allowed types for $\mathit{expr}$ in \lstinline!smooth! are: \lstinline!Real! expressions, arrays of allowed expressions, and records containing only components of allowed expressions.
 
@@ -1366,7 +1385,7 @@ edge($b$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Expands into \lstinline!($b$ and not pre($b$))! for \lstinline!Boolean! variable $b$.
-The same restrictions as for \lstinline!pre! apply (e.g.\ not to be used in \lstinline!function! classes).
+The same restrictions as for \lstinline!pre! apply (e.g., not to be used in \lstinline!function! classes).
 \end{semantics}
 \end{operatordefinition}
 
@@ -1557,6 +1576,8 @@ Discrete-time expressions\index{discrete-time!expression}\index{expression varia
   Expressions where all the subexpressions are discrete-time expressions.
 \item
   Expressions in the body of a \lstinline!when!-clause, \lstinline!initial equation!, or \lstinline!initial algorithm!.
+\item
+  Expressions in a clocked discrete-time partition, see \cref{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}.
 \item
   Unless inside \lstinline!noEvent!: Ordered relations (\lstinline!>!, \lstinline!<!, \lstinline!>=!, \lstinline!<=!) and the event generating functions \lstinline!ceil!, \lstinline!floor!, \lstinline!div!, and \lstinline!integer!, if at least one argument is non-discrete time expression and subtype of \lstinline!Real!.
   \begin{nonnormative}
