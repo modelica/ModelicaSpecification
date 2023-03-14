@@ -438,12 +438,12 @@ Combined with some other information about the components and analysis of expres
     The declaration equation -- or \lstinline!start!-attribute if no declaration equation is given (see \cref{initialization-initial-equation-and-initial-algorithm}) -- is given by an evaluable expression (\cref{evaluable-expressions}).
   \end{itemize}
   It is also simply called an \firstuse[---]{evaluable parameter}.
-  An evaluable parameter does not change during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{normal parameter}, see item below).
+  An evaluable parameter does not change during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{non-evaluable parameter}, see item below).
   At which of these stages the value is determined is tool dependent.
   For further details, see \ref{parameters}.
 \item
-  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!normal]{normal parameter variable}\index{component variability!normal parameter} unless it is an evaluable parameter.
-  It is also simply called a \firstuse[---]{normal parameter}.
+  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!non-evaluable]{non-evaluable parameter variable}\index{component variability!non-evaluable parameter} unless it is an evaluable parameter.
+  It is also simply called a \firstuse[---]{non-evaluable parameter}.
   It does not change during transient analysis, with a value determined by the initialization problem.
   For further details, see \ref{parameters}.
 \item
@@ -457,7 +457,7 @@ Combined with some other information about the components and analysis of expres
   For further details, see \ref{continuous-time-variables}.
 \end{itemize}
 
-The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either a normal or evaluable parameter variable.
+The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either an evaluable or non-evaluable parameter variable.
 
 The variability of expressions and restrictions on variability for declaration equations is given in \cref{variability-of-expressions}.
 
@@ -554,7 +554,7 @@ By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameter
 
 \subsection{Parameters}\label{parameters}
 
-Parameter variables are divided into evaluable parameter variables and normal parameter variables, both defined in \cref{component-variability}.
+Parameter variables are divided into evaluable parameter variables and non-evaluable parameter variables, both defined in \cref{component-variability}.
 
 By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that a value for an evaluable parameter is possible to obtain during translation, compare \cref{constants}.
 Making use of that value during translation turns the evaluable parameter into an evaluated parameter, and it must be ensured that the parameter cannot be assigned a different value after translation, as this would invalidate the use of the original value during translation.
@@ -563,11 +563,11 @@ Making use of that value during translation turns the evaluable parameter into a
 A particularly demanding aspect of this evaluation is the potential presence of external functions.
 Hence, if it is known that a parameter won't be used by an evaluable expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
 \begin{lstlisting}[language=modelica]
-import length = Modelica.Utilities.Strings.length; /* Pure external function */
-parameter Integer n = length("Hello");             /* Evaluable parameter */
+import length = Modelica.Utilities.Strings.length; // Pure external function
+parameter Integer n = length("Hello");             // Evaluable parameter
 parameter Integer p = length("Hello")
-  annotation(Evaluate = false);                    /* Normal parameter */
-parameter Boolean b = false;                       /* Evaluable parameter */
+  annotation(Evaluate = false);                    // Non-evaluable parameter
+parameter Boolean b = false;                       // Evaluable parameter
 
 /* Fulfillment of acyclic binding rule might cause evaluation of n;
  * to break the cycle, a tool might evaluate either b, n, or both:
@@ -582,25 +582,26 @@ parameter Real y = if b and p < 3 then 1 - y else 0;
 \end{example}
 
 \begin{nonnormative}
-For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is an evaluable or normal parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
-To see this, note that \lstinline!Evaluate = false! makes it a normal parameter by definition, and that \lstinline!Evaluate = true! would trigger the warning if the parameter is normal.
+For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is an evaluable or non-evaluable parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
+To see this, note that \lstinline!Evaluate = false! makes it a non-evaluable parameter by definition, and that \lstinline!Evaluate = true! would trigger the warning if the parameter is non-evaluable.
 \end{nonnormative}
 
 \begin{nonnormative}
-With every normal parameter, there is at least one reason why it isn't an evaluable parameter.
+With every non-evaluable parameter, there is at least one reason why it isn't an evaluable parameter.
 This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of evaluable expression variability is detected.
 For example:
 \begin{lstlisting}[language=modelica]
   parameter Integer n =
-    if b then 1 else 2;        // Normal parameter due to variability of b.
-  parameter Boolean b(fixed = false); // Normal parameter due to fixed = false.
-  Real[n] x;                   // Variability error: n must be evaluable.
+    if b then 1 else 2;    // Non-evaluable parameter due to variability of b.
+  parameter Boolean b(fixed = false);
+                           // Non-evaluable parameter due to fixed = false.
+  Real[n] x;               // Variability error: n must be evaluable.
 initial equation
   b = n > 3;
 \end{lstlisting}
-Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a normal parameter is that it has a dependency on the normal parameter \lstinline!b!.
+Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a non-evaluable parameter is that it has a dependency on the non-evaluable parameter \lstinline!b!.
 
-(Would evaluable and normal parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the evaluable component declarations instead.)
+(Would evaluable and non-evaluable parameters have had different variability prefixes in their component declarations, it would have been possible to detect and report errors directly at the evaluable component declarations instead.)
 \end{nonnormative}
 
 \begin{nonnormative}
