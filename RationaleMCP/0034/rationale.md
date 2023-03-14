@@ -52,6 +52,10 @@ This MCP does not include any new built-in functions, although there are several
 
 The reason for not introducing such functions is to minimize backwards incompatibility.  If the lack of such functions turns out to be too much of a limitation, they can be introduced with a future MCP.
 
+## External function value mapping
+In the external language interface, the `Ternary` values are mapped to {1, 2, 3}.
+This makes it similar to enumerations, and by not mapping any `Ternary` value to 0 there is a better chance of detecting the mistake of directly using the `Ternary` as a truth value in the external code.
+
 # The option type alternative
 Before deciding to go with the design where `Ternary` is introduced, we must also mention the following important alternative approach.  Reasons will be given why this isn't the design proposed by this MCP.
 

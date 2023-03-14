@@ -116,8 +116,8 @@ Mapping of values:
 
 | `Ternary`         | External language |
 | ----------------- | ----------------- |
-| `Ternary(false)`  | -1                |
-| `unknown`         | 0                 |
-| `Ternary(true)`   | 1                 |
+| `Ternary(false)`  | 1                 |
+| `unknown`         | 2                 |
+| `Ternary(true)`   | 3                 |
 
 Unlike `Boolean` for which there is a natural interpretation of any non-zero value from C as meaning `true`, there is a unique way to represent each of the three different values of `Ternary`.  This is analogous to the external language mapping for enumerations and helps detecting errors in the external language code.
