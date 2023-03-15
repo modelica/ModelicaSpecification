@@ -32,7 +32,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 |On hold|0030|IsClocked Operator||[#2238](https://github.com/modelica/ModelicaSpecification/issues/2238)|
 |Active|0029|License Export|[MCP/0029](https://github.com/modelica/ModelicaSpecification/tree/MCP/0029/RationaleMCP/0029)|https://github.com/modelica/ModelicaSpecification/pull/2900|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0028|Record Derivatives mixing Real and non-Real||[#2137](https://github.com/modelica/ModelicaSpecification/issues/2137)|
-|Active|0027|Units of Literal Constants|[MCP/0027](https://github.com/modelica/ModelicaSpecification/tree/MCP/0027/RationaleMCP/0027|[#3255](https://github.com/modelica/ModelicaSpecification/issues/3255) ([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))|
+|Active|0027|Units of Literal Constants|[MCP/0027](https://github.com/modelica/ModelicaSpecification/tree/MCP/0027/RationaleMCP/0027)|[#3255](https://github.com/modelica/ModelicaSpecification/issues/3255) ([#2127](https://github.com/modelica/ModelicaSpecification/issues/2127))|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0026|Arc-only Ellipse||[#2045](https://github.com/modelica/ModelicaSpecification/issues/2045)|
 |On hold|0025|Functions with input output||[#2012](https://github.com/modelica/ModelicaSpecification/issues/2012)|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0024|Initialization of Clocked States||[#2007](https://github.com/modelica/ModelicaSpecification/issues/2007)|
