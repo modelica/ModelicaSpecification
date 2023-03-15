@@ -15,38 +15,38 @@ specification in \cref{modelica-concrete-syntax}.
 
 \section{Character Set}\label{character-set}
 
-The character set of the Modelica language is Unicode, but restricted to
-the Unicode characters corresponding to 7-bit ASCII characters in
-several places; for details see \cref{lexical-conventions}.
+The character set of the Modelica language is Unicode, but restricted to the Unicode characters corresponding to 7-bit ASCII characters for identifiers; see \cref{lexical-conventions}.
 
 \section{Comments}\label{comments}
 
-There are two kinds of comments in Modelica which are not lexical units
-in the language and therefore are treated as whitespace by a Modelica
-translator. The whitespace characters are space, tabulator, and line
-separators (carriage return and line feed); and whitespace cannot occur
-inside tokens, e.g., \textless{}= must be written as two characters
-without space or comments between them.  The following comment variants are
-available:
-%TODO-FORMAT should be a table instead of lstlisting?
+There are two kinds of comments in Modelica which are not lexical units in the language and therefore are treated as white-space by a Modelica translator.
+The white-space characters are space, tabulator, and line separators (carriage return and line feed); and white-space cannot occur inside tokens, e.g., \lstinline!<=! must be written as two characters without space or comments between them.
+The following comment variants are available:\index{rest-of-line comment}\index{delimited comment}\index{comment}
 \begin{lstlisting}[language=modelica]
-// comment & Characters from // to the end of the line are ignored.
-/* comment */ & Characters between /* and */ are ignored, including line terminators.
+// Rest-of-line comment: Everything from // to the end of the line are ignored.
+"Not part of comment"
+/* Delimited comment: Characters after /* are ignored,
+  including line termination. The comment ends with */
 \end{lstlisting}
 
 \begin{nonnormative}
 The comment syntax is identical to that of C++.
 \end{nonnormative}
 
-Modelica comments do not nest, i.e., /* */ cannot be embedded within /*
-*/. The following is \emph{invalid}:
+Delimited Modelica comments do not nest, i.e., \lstinline!/* */! cannot be embedded within \lstinline!/* $\ldots$ */!.
+The following is \emph{invalid}:
 \begin{lstlisting}[language=modelica]
-/* Commented out - erroneous comment, invalid nesting of comments!
-  /* This is an interesting model */
-  model interesting
-  ...
-  end interesting;
+/* Invalid nesting of comments, the comment ends just before 'end'
+model Interesting
+  /* To be done */
+end Interesting;
 */
+\end{lstlisting}
+Rest-of-line comments can safely be used to comment out blocks of code without risk of conflict with comments inside.
+\begin{lstlisting}[language=modelica]
+//model Valid // Some other comment
+//  /* To be done */
+//end Valid;
 \end{lstlisting}
 
 There is also a description-string, that is part of the Modelica language and
@@ -55,96 +55,107 @@ occur at the end of a declaration, equation, or statement or at the
 beginning of a class definition. For example:
 \begin{lstlisting}[language=modelica]
 model TempResistor "Temperature dependent resistor"
-  ...
+  $\ldots$
   parameter Real R "Resistance for reference temp.";
-  ...
+  $\ldots$
 end TempResistor;
 \end{lstlisting}
 
 \section{Identifiers, Names, and Keywords}\label{identifiers-names-and-keywords}
 
-\emph{Identifiers} are sequences of letters, digits, and other
-characters such as underscore, which are used for \emph{naming} various
-items in the language. Certain combinations of letters are
-\emph{keywords} represented as \emph{reserved} words in the Modelica
-grammar and are therefore not available as identifiers.
+\willintroduce{Identifiers} are sequences of letters, digits, and other characters such as underscore, which are used for \emph{naming} various items in the language.
+Certain combinations of letters are \willintroduce{keywords} represented as \emph{reserved} words in the Modelica grammar and are therefore not available as identifiers.
 
 \subsection{Identifiers}\label{identifiers}
 
-Modelica \emph{identifiers}, used for naming classes, variables,
-constants, and other items, are of two forms. The first form always
-starts with a letter or underscore (\_), followed by any number of
-letters, digits, or underscores. Case is significant, i.e., the names
-\lstinline!Inductor! and \lstinline!inductor! are different. The second form \lstinline!(Q-IDENT)! starts
-with a single quote, followed by a sequence of any printable ASCII
-character, where single-quote must be preceded by backslash, and
-terminated by a single quote, e.g.\ \lstinline!'12H'!, \lstinline!'13\'H'!,
-\lstinline!'+foo'!. Control characters in quoted identifiers have to use string
-escapes.
-The single quotes are part of the identifier, i.e., \lstinline!'x'! and \lstinline!x!
-are distinct identifiers. The redundant escapes (\lstinline!'\?'! and \lstinline!'\"'!) are the same as the corresponding non-escaped
-variants (\lstinline!'?'! and \lstinline!'"'!), but are only for use in Modelica source code.
-A full BNF definition of the Modelica syntax and
-lexical units is available in \cref{modelica-concrete-syntax}.
+Modelica \firstuse[identifier]{identifiers}, used for naming classes, variables, constants, and other items, are of two forms.
+The first form always starts with a letter or underscore (`\_'), followed by any number of letters, digits, or underscores.
+Case is significant, i.e., the identifiers \lstinline!Inductor! and \lstinline!inductor! are different.
+The second form (\lstinline[language=grammar]!Q-IDENT!) starts with a single quote, followed by a sequence of any printable ASCII character, where single-quote must be preceded by backslash, and terminated by a single quote, e.g., \lstinline!'12H'!, \lstinline!'13\'H'!, \lstinline!'+foo'!.
+Control characters in quoted identifiers have to use string escapes.
+The single quotes are part of the identifier, i.e., \lstinline!'x'! and \lstinline!x! are distinct identifiers.
+The redundant escapes (\lstinline!'\?'! and \lstinline!'\"'!) are the same as the corresponding non-escaped variants (\lstinline!'?'! and \lstinline!'"'!), but are only for use in Modelica source code.
+A full BNF definition of the Modelica syntax and lexical units is available in \cref{modelica-concrete-syntax}.
 
-\begin{lstlisting}[language=grammar,mathescape=false]
-IDENT   = NONDIGIT { DIGIT | NONDIGIT } | Q-IDENT
+% For easy maintenance, the lexing rules below should be a substring of the full lexing rules in \cref{lexical-conventions}.
+\begin{lstlisting}[language=grammar]
+IDENT = NON-DIGIT { DIGIT | NON-DIGIT } | Q-IDENT
 Q-IDENT = "'" { Q-CHAR | S-ESCAPE } "'"
-NONDIGIT = "_" | letters "a" ... "z" | letters "A" ... "Z"
-DIGIT    = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-Q-CHAR = NONDIGIT | DIGIT | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | ">" | "=" | "?" | "@" | "[" | "]" | "^" | "{" | "}"  | "|" | "~" | " " | """
-S-ESCAPE = "\'" | "\"" | "\?" | "\\" | "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
+NON-DIGIT = "_" | letters "a" $\ldots$ "z" | letters "A" $\ldots$ "Z"
+DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+Q-CHAR = NON-DIGIT | DIGIT | "!" | "#" | "$\mbox{\textdollar}$" | "%" | "&" | "(" | ")"
+   | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | ">" | "="
+   | "?" | "@" | "[" | "]" | "^" | "{" | "}" | "|" | "~" | " " | """
+S-ESCAPE = "\'" | "\"" | "\?" | "\\"
+   | "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
 \end{lstlisting}
 
 \subsection{Names}\label{names}
 
-A \emph{name} is an identifier with a certain interpretation or meaning.
-For example, a name may denote an \lstinline!Integer! variable, a \lstinline!Real! variable, a
-function, a type, etc. A name may have different meanings in different
-parts of the code, i.e., different scopes. The interpretation of
-identifiers as names is described in more detail in \cref{scoping-name-lookup-and-flattening}. The
-meaning of package names is described in more detail in \cref{packages}.
+A \firstuse{name} is an identifier with a certain interpretation or meaning.
+For example, a name may denote an \lstinline!Integer! variable, a \lstinline!Real! variable, a function, a type, etc.
+A name may have different meanings in different parts of the code, i.e., different scopes.
+The interpretation of identifiers as names is described in more detail in \cref{scoping-name-lookup-and-flattening}.
+The meaning of package names is described in more detail in \cref{packages}.
+
+\begin{example}
+A name: \lstinline!Ele.Resistor!
+\end{example}
+
+A \firstuse[component!reference]{component reference} is an expression containing a sequence of identifiers and indices.
+A component reference is equivalent to the referenced object, which must be a component.
+A component reference is resolved (evaluated) in the scope of a class (\cref{component-declarations}), or expression for the case of a local iterator variable (\cref{slice-operation}).
+
+\begin{example}
+A component reference: \lstinline!Ele.Resistor.u[21].r!
+\end{example}
 
 \subsection{Modelica Keywords}\label{modelica-keywords}
 
-The following Modelica \emph{keywords} are reserved words and shall not be
-used as identifiers, except as listed in \cref{lexical-conventions}:
+The following Modelica \firstuse[keyword]{keywords} are reserved words that cannot be used where \lstinline[language=grammar]!IDENT! is expected in the language grammar (\cref{modelica-concrete-syntax}):
 \begin{center}
 \begin{tabular}{l l l l l}
-\lstinline!algorithm! & \lstinline!discrete! & \lstinline!false! & \lstinline!loop! & \lstinline!pure!\\ \hline
-\lstinline!and! & \lstinline!each! & \lstinline!final! & \lstinline!model! & \lstinline!record!\\ \hline
-\lstinline!annotation! & \lstinline!else! & \lstinline!flow! & \lstinline!not! & \lstinline!redeclare!\\ \hline
-& \lstinline!elseif! & \lstinline!for! & \lstinline!operator! & \lstinline!replaceable!\\ \hline
-\lstinline!block! & \lstinline!elsewhen! & \lstinline!function! & \lstinline!or! & \lstinline!return!\\ \hline
-\lstinline!break! & \lstinline!encapsulated! & \lstinline!if! & \lstinline!outer! & \lstinline!stream!\\ \hline
-\lstinline!class! & \lstinline!end! & \lstinline!import! & \lstinline!output! & \lstinline!then!\\ \hline
-\lstinline!connect! & \lstinline!enumeration! & \lstinline!impure! & \lstinline!package! & \lstinline!true!\\ \hline
-\lstinline!connector! & \lstinline!equation! & \lstinline!in! & \lstinline!parameter! & \lstinline!type!\\ \hline
-\lstinline!constant! & \lstinline!expandable! & \lstinline!initial! & \lstinline!partial! & \lstinline!when!\\ \hline
-\lstinline!constrainedby! & \lstinline!extends! & \lstinline!inner! & \lstinline!protected! & \lstinline!while!\\ \hline
-\lstinline!der! & \lstinline!external! & \lstinline!input! & \lstinline!public! & \lstinline!within!\\
+{\lstinline!algorithm!} & {\lstinline!discrete!} & {\lstinline!false!} & {\lstinline!loop!} & {\lstinline!pure!}\\ \hline
+{\lstinline!and!} & {\lstinline!each!} & {\lstinline!final!} & {\lstinline!model!} & {\lstinline!record!}\\ \hline
+{\lstinline!annotation!} & {\lstinline!else!} & {\lstinline!flow!} & {\lstinline!not!} & {\lstinline!redeclare!}\\ \hline
+& {\lstinline!elseif!} & {\lstinline!for!} & {\lstinline!operator!} & {\lstinline!replaceable!}\\ \hline
+{\lstinline!block!} & {\lstinline!elsewhen!} & {\lstinline!function!} & {\lstinline!or!} & {\lstinline!return!}\\ \hline
+{\lstinline!break!} & {\lstinline!encapsulated!} & {\lstinline!if!} & {\lstinline!outer!} & {\lstinline!stream!}\\ \hline
+{\lstinline!class!} & {\lstinline!end!} & {\lstinline!import!} & {\lstinline!output!} & {\lstinline!then!}\\ \hline
+{\lstinline!connect!} & {\lstinline!enumeration!} & {\lstinline!impure!} & {\lstinline!package!} & {\lstinline!true!}\\ \hline
+{\lstinline!connector!} & {\lstinline!equation!} & {\lstinline!in!} & {\lstinline!parameter!} & {\lstinline!type!}\\ \hline
+{\lstinline!constant!} & {\lstinline!expandable!} & {\lstinline!initial!} & {\lstinline!partial!} & {\lstinline!when!}\\ \hline
+{\lstinline!constrainedby!} & {\lstinline!extends!} & {\lstinline!inner!} & {\lstinline!protected!} & {\lstinline!while!}\\ \hline
+{\lstinline!der!} & {\lstinline!external!} & {\lstinline!input!} & {\lstinline!public!} & {\lstinline!within!}\\
 \end{tabular}
 \end{center}
 
+In particular, it is not allowed to declare an element or enumeration literal with these names.
+This also applies to the identifiers that name the predefined types \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, and \lstinline!String!, see \cref{predefined-types-and-classes}.
+
+\begin{example}
+Not all predefined types have names with restrictions:
+\begin{lstlisting}[language=modelica]
+type StateSelect = enumeration(one, two);
+StateSelect s = StateSelect.one;          // OK, using local StateSelect.
+Real x(stateSelect = StateSelect.never);  // Error: 'never' is not a literal
+                                          // of StateSelect.
+Real y(stateSelect = .StateSelect.never); // OK, using predefined StateSelect.
+\end{lstlisting}
+\end{example}
+
 \section{Literal Constants}\label{literal-constants}
 
-Literal constants are unnamed constants that have different forms
-depending on their type. Each of the predefined types in Modelica has a
-way of expressing unnamed constants of the corresponding type, which is
-presented in the ensuing subsections. Additionally, array literals and
-record literals can be expressed.
+\firstuse[literal (constant)]{Literals} (or \firstuse[---]{literal constants}) are unnamed constants used to build expressions, and have different forms depending on their type.
+Each of the predefined types in Modelica has a way of expressing unnamed constants of the corresponding type, which is presented in the ensuing subsections.
+Additionally, array literals and record literals can be expressed.
 
 \subsection{Floating Point Numbers}\label{floating-point-numbers}
 
-A floating point number is expressed as a decimal number in the form of
-a sequence of decimal digits followed by a decimal point, followed by decimal digits,
-followed by an exponent indicated by E or e followed by a sign
-and one or more decimal digits. The various parts can be omitted, see \lstinline!UNSIGNED_REAL! in~\cref{lexical-conventions} for
-details and also the examples below. The minimal recommended range is
-that of IEEE double precision floating point numbers, for which the
-largest representable positive number is 1.7976931348623157E+308 and the
-smallest positive number is 2.2250738585072014E-308. For example, the
-following are floating point number literal constants:
+A floating point number is expressed as a decimal number in the form of a sequence of decimal digits followed by a decimal point, followed by decimal digits, followed by an exponent indicated by \lstinline!E! or \lstinline!e! followed by a sign and one or more decimal digits.
+The various parts can be omitted, see \lstinline[language=grammar]!UNSIGNED-REAL! in~\cref{lexical-conventions} for details and also the examples below.
+The minimal recommended range is that of IEEE double precision floating point numbers, for which the largest representable positive number is $1.7976931348623157\times10^{308}$ and the smallest positive number is $2.2250738585072014\times 10^{-308}$.
+For example, the following are floating point number literal constants:
 \begin{lstlisting}[language=modelica]
 22.5, 3.141592653589793, 1.2E-35
 \end{lstlisting}
@@ -160,7 +171,15 @@ but can be converted to a floating point number.
 
 \subsection{Integer Literals}\label{integer-literals}
 
-Literals of type \lstinline!Integer! are sequences of decimal digits, e.g.\ as in the integer numbers \lstinline!33!, \lstinline!0!, \lstinline!100!, \lstinline!30030044!.
+Literals of type \lstinline!Integer! are sequences of decimal digits, e.g., as in the integer numbers \lstinline!33!,
+% Just a '0' doesn't work in \lstinline as reported in (closed as fixed on 2021-09-07):
+% - https://github.com/brucemiller/LaTeXML/issues/1651 -- fixed on 'master'
+\ifpdf
+\lstinline!0!%
+\else
+0%
+\fi
+, \lstinline!100!, \lstinline!30030044!.
 The range of supported \lstinline!Integer! literals shall be at least large enough to represent the largest positive \lstinline!IntegerType! value, see \cref{integer-type}.
 
 \begin{nonnormative}
@@ -169,35 +188,31 @@ Negative numbers are formed by unary minus followed by an integer literal.
 
 \subsection{Boolean Literals}\label{boolean-literals}
 
-The two \lstinline!Boolean! literal values are \lstinline!true! and \lstinline!false!.
+The two \lstinline!Boolean! literal values are \lstinline!true!\indexinline{true} and \lstinline!false!\indexinline{false}.
 
 \subsection{Strings}\label{strings}
 
-String literals appear between double quotes as in \lstinline!"between"!. Any
-character in the Modelica language character set (see \cref{lexical-conventions} for
-allowed characters) apart from double quote (\lstinline!"!) and backslash
-(\lstinline!\!), including new-line, can be \emph{directly} included
-in a string without using an escape code. Certain characters in string
-literals can be represented using escape codes, i.e., the character is
-preceded by a backslash (\lstinline!\!) within the string. Those
-characters are:
+String literals appear between double quotes as in \lstinline!"between"!.
+Any character in the Modelica language character set (see \cref{lexical-conventions} for allowed characters) apart from double quote (\lstinline!"!) and backslash (\lstinline!\!), including new-line, can be \emph{directly} included in a string without using an escape sequence.
+Certain characters in string literals can be represented using escape sequences\index{escape sequence!string literal}, i.e., the character is preceded by a backslash (\lstinline!\!) within the string.
+Those characters are:
 \begin{center}
 \begin{tabular}{c l}
 \hline
 \tablehead{Character} & \tablehead{Description}\\
 \hline
 \hline
-\lstinline!\'! & Single quote, may also appear without backslash in string constants\\
-\lstinline!\"! & Double quote\\
-\lstinline!\?! & Question-mark, may also appear without backslash in string constants\\
-\lstinline!\\! & Backslash itself\\
-\lstinline!\a! & Alert (bell, code 7, ctrl-G)\\
-\lstinline!\b! & Backspace (code 8, ctrl-H)\\
-\lstinline!\f! & Form feed (code 12, ctrl-L)\\
-\lstinline!\n! & Newline (code 10, ctrl-J), same as literal newline\\
-\lstinline!\r! & Carriage return (code 13, ctrl-M)\\
-\lstinline!\t! & Horizontal tab (code 9, ctrl-I)\\
-\lstinline!\v! & Vertical tab (code 11, ctrl-K)\\
+{\lstinline!\'!} & Single quote, may also appear without backslash in string constants\\
+{\lstinline!\"!} & Double quote\\
+{\lstinline!\?!} & Question-mark, may also appear without backslash in string constants\\
+{\lstinline!\\!} & Backslash itself\\
+{\lstinline!\a!} & Alert (bell, code 7, ctrl-G)\\
+{\lstinline!\b!} & Backspace (code 8, ctrl-H)\\
+{\lstinline!\f!} & Form feed (code 12, ctrl-L)\\
+{\lstinline!\n!} & Newline (code 10, ctrl-J), same as literal newline\\
+{\lstinline!\r!} & Carriage return (code 13, ctrl-M)\\
+{\lstinline!\t!} & Horizontal tab (code 9, ctrl-I)\\
+{\lstinline!\v!} & Vertical tab (code 11, ctrl-K)\\
 \hline
 \end{tabular}
 \end{center}
@@ -210,7 +225,7 @@ double quote, space, the word: \emph{between}, double quote, space, the word:
 \end{lstlisting}
 
 Concatenation of string literals in certain situations (see the Modelica
-grammar) is denoted by the + operator in Modelica, e.g.\ \lstinline!"a"! + \lstinline!"b"!
+grammar) is denoted by the + operator in Modelica, e.g., \lstinline!"a"! + \lstinline!"b"!
 becomes \lstinline!"ab"!. This is useful for expressing long string literals that
 need to be written on several lines.
 
@@ -235,14 +250,14 @@ non-printable newline character when browsing or editing a string
 literal. For example, the following statement defines one string that
 contains (non-printable) newline characters:
 \begin{lstlisting}[language=modelica]
-assert(noEvent(length > s_small), "
-The distance between the origin of frame_a and the origin of frame_b
+assert(noEvent(length > s_small),
+"The distance between the origin of frame_a and the origin of frame_b
 of a LineForceWithMass component became smaller as parameter s_small
 (= a small number, defined in the
 \"Advanced\" menu). The distance is
 set to s_small, although it is smaller, to avoid a division by zero
 when computing the direction of the line force.",
-level = AssertionLevel.warning);
+       level = AssertionLevel.warning);
 \end{lstlisting}
 \end{nonnormative}
 

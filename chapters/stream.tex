@@ -1,55 +1,34 @@
 \chapter{Stream Connectors}\label{stream-connectors}
 
-The two basic variable types in a connector -- \emph{potential} (or \emph{across})
-variable and \emph{flow} (or \emph{through}) variable -- are not sufficient to
-describe in a numerically sound way the bi-directional flow of matter
-with convective transport of specific quantities, such as specific
-enthalpy and chemical composition. The values of these specific
-quantities are determined from the upstream side of the flow, i.e., they
-depend on the flow direction. When using across and through variables,
-the corresponding models would include nonlinear systems of equations
-with Boolean unknowns for the flow directions and singularities around
-zero flow. Such equation systems cannot be solved reliably in general.
-The model formulations can be simplified when formulating two different
-balance equations for the two possible flow directions. This is not
-possible with across and through variables though.
+The two basic variable types in a connector -- \emph{potential} (or \emph{across}) variable and \emph{flow} (or \emph{through}) variable -- are not sufficient to describe in a numerically sound way the bi-directional flow of matter with convective transport of specific quantities, such as specific enthalpy and chemical composition.  The values of these specific quantities are determined from the upstream side of the flow, i.e., they depend on the flow direction.  When using across and through variables, the corresponding models would include nonlinear systems of equations with \lstinline!Boolean! unknowns for the flow directions and singularities around zero flow.  Such equation systems cannot be solved reliably in general.  The model formulations can be simplified when formulating two different balance equations for the two possible flow directions.  This is not possible with across and through variables though.
 
-This fundamental problem is addressed in Modelica by introducing a third
-type of connector variable, called stream variable, declared with the
-prefix \lstinline!stream!. A stream variable describes a quantity that is
-carried by a flow variable, i.e., a purely convective transport
-phenomenon. The value of the stream variable is the specific property
-inside the component close to the boundary, assuming that matter flows
-out of the component into the connection point. In other words, it is
-the value the carried quantity would have if the fluid was flowing out
-of the connector, irrespective of the actual flow direction.
+This fundamental problem is addressed in Modelica by introducing a third type of connector variable, called \willintroduce{stream variable}, declared with the prefix \lstinline!stream!.
+A stream variable describes a quantity that is carried by a flow variable, i.e., a purely convective transport phenomenon.
+The value of the stream variable is the specific property inside the component close to the boundary, assuming that matter flows out of the component into the connection point.
+In other words, it is the value the carried quantity would have if the fluid was flowing out of the connector, irrespective of the actual flow direction.
 
 The rationale of the definition and typical use cases are described in
 \cref{derivation-of-stream-equations}.
 
 \section{Definition of Stream Connectors}\label{definition-of-stream-connectors}
 
-If at least one variable in a connector has the \lstinline!stream! prefix,
-the connector is called \firstuse{stream connector} and the corresponding
-variable is called \firstuse{stream variable}. The following definitions hold:
+If at least one variable in a connector has the \lstinline!stream!\indexinline{stream} prefix, the connector is called \firstuse[stream!connector]{stream connector} and the corresponding variable is called \firstuse[stream!variable]{stream variable}.
+The following definitions hold:
 \begin{itemize}
 \item
   The \lstinline!stream! prefix can only be used in a connector
   declaration.
 \item
-  A stream connector must have exactly one scalar variable with the \lstinline!flow! prefix.
+  A stream connector must have exactly one variable with the \lstinline!flow! prefix.
+  That variable shall be a scalar that is a subtype of \lstinline!Real!.
   \begin{nonnormative}
   The idea is that all stream variables of a connector are associated with this flow variable.
   \end{nonnormative}
 \item
-  For every outside connector (see \cref{inside-and-outside-connectors}), one
-  equation is generated for every variable with the \lstinline!stream!
-  prefix (to describe the propagation of the stream variable
-  along a model hierarchy). For the exact definition, see the end of
-  \cref{stream-operator-instream-and-connection-equations}.
+  For every outside connector (see \cref{inside-and-outside-connectors}), one equation is generated for every variable with the \lstinline!stream! prefix (to describe the propagation of the stream variable along a model hierarchy).
+  For the exact definition, see the end of \cref{stream-operator-instream-and-connection-equations}.
 \item
-  For inside connectors (see \cref{inside-and-outside-connectors}), variables
-  with the \lstinline!stream! prefix do not lead to connection equations.
+  For inside connectors (see \cref{inside-and-outside-connectors}), variables with the \lstinline!stream! prefix do not lead to connection equations.
 \item
   Connection equations with stream variables are generated in a model when using \lstinline!inStream! or \lstinline!actualStream!,
   see \cref{stream-operator-instream-and-connection-equations} and \cref{stream-operator-actualstream}.
@@ -80,17 +59,14 @@ inquired through the built-in \lstinline!actualStream!, see
 \cref{stream-operator-actualstream}.
 \end{example}
 
-\section{Stream Operator inStream and Connection Equations}\label{stream-operator-instream-and-connection-equations}
+\section{inStream and Connection Equations}\label{stream-operator-instream-and-connection-equations}\label{instream-and-connection-equations}
 
 In combination with the stream variables of a connector, \lstinline!inStream! is designed to describe in a numerically
 reliable way the bi-directional transport of specific quantities carried
 by a flow of matter.
 
-\lstinline!inStream(v)! is only allowed on stream variables \lstinline!v! and is
-informally the value the stream variable has, assuming that the flow is
-from the connection point into the component. This value is computed
-from the stream connection equations of the flow variables and of the
-stream variables.
+\lstinline!inStream(v)! is only allowed on stream variables \lstinline!v! and is informally the value the stream variable has, assuming that the flow is from the connection point into the component.
+This value is computed from the \firstuse{stream connection equations}\index{connection equations!stream} of the flow variables and of the stream variables.
 
 For the following definition it is assumed that $N$ inside connectors
 \lstinline!$m_{j}$.c! ($j = 1, 2, \ldots, N$) and $M$ outside connectors
@@ -101,25 +77,25 @@ variable \lstinline!m_flow! in connector \lstinline!c!.
 
 \begin{lstlisting}[language=modelica]
 connector FluidPort
-  ...
+  $\ldots$
   flow Real m_flow "Flow of matter; m_flow > 0 if flow into component";
   stream Real h_outflow "Specific variable in component if m_flow < 0"
 end FluidPort
 
 model FluidSystem
-  ...
-  FluidComponent $m_1$, $m_2$, ..., $m_N$;
-  FluidPort $c_1$, $c_2$, ..., $c_M$;
+  $\ldots$
+  FluidComponent $m_1$, $m_2$, $\ldots$, $m_N$;
+  FluidPort $c_1$, $c_2$, $\ldots$, $c_M$;
 equation
   connect($m_1$.c, $m_2$.c);
   connect($m_1$.c, $m_3$.c);
-  ...
+  $\ldots$
   connect($m_1$.c, $m_N$.c);
   connect($m_1$.c, $c_1$);
   connect($m_1$.c, $c_2$);
-  ...
+  $\ldots$
   connect($m_1$.c, $c_M$);
-  ...
+  $\ldots$
 end FluidSystem;
 \end{lstlisting}
 \begin{figure}[H]
@@ -130,9 +106,7 @@ end FluidSystem;
 \end{figure}
 
 \begin{nonnormative}
-The connection set represents an infinitesimally small control
-volume, for which the stream connection equations are equivalent to the
-conservation equations for mass and energy.
+The connection set represents an infinitesimally small control volume, for which the stream connection equations are equivalent to the conservation equations for mass and energy.
 \end{nonnormative}
 
 With these prerequisites, the semantics of the expression
@@ -219,10 +193,8 @@ If the argument of \lstinline!inStream! is an array, the implicit
 equation system holds elementwise, i.e., \lstinline!inStream! is
 vectorizable.
 
-The stream connection equations have singularities and/or multiple
-solutions if one or more of the flow variables become zero. When all the
-flows are zero, a singularity is always present, so it is necessary to
-approximate the solution in an open neighbourhood of that point.
+The stream connection equations have singularities and/or multiple solutions if one or more of the flow variables become zero.
+When all the flows are zero, a singularity is always present, so it is necessary to approximate the solution in an open neighbourhood of that point.
 
 \begin{nonnormative}
 For example, assume that \lstinline!$m_{j}$.c.m_flow = $c_{k}$.m_flow = 0!, then all equations above are identically fulfilled and \lstinline!inStream! can have any value.
@@ -274,32 +246,32 @@ $c_{2}$.h_outflow = inStream($c_{1}$.h_outflow);
 if $m_j$.c.m_flow.min >= 0  for all j = 1:N with j <> i  and
    $c_k$.m_flow.max <= 0 for all k = 1:M
 then
-    inStream($m_i$.c.h_outflow) =  $m_i$.c.h_outflow;
- else
-    si = sum (max(-$m_j$.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) +
-         sum(max( $c_k$.m_flow ,0) for k  in 1:M);
-    inStream($m_i$.c.h_outflow) =
-       (sum(positiveMax(-$m_j$.c.m_flow,$s_i$)*$m_j$.c.h_outflow)
-      +  sum(positiveMax($c_k$.m_flow,s_i)*inStream($c_k$.h_outflow)))/
-     (sum(positiveMax(-$m_j$.c.m_flow,s_i))
-        +  sum(positiveMax($c_k$.m_flow,s_i)))
-                  for j in 1:N and i <> j and $m_j$.c.m_flow.min < 0,
-                  for k in 1:M and $c_k$.m_flow.max > 0
+  inStream($m_i$.c.h_outflow) = $m_i$.c.h_outflow;
+else
+  si = sum (max(-$m_j$.c.m_flow,0) for j in cat(1,1:i-1, i+1:N) +
+       sum(max( $c_k$.m_flow ,0) for k  in 1:M);
+  inStream($m_i$.c.h_outflow) =
+     (sum(positiveMax(-$m_j$.c.m_flow,$s_i$)*$m_j$.c.h_outflow)
+    +  sum(positiveMax($c_k$.m_flow,s_i)*inStream($c_k$.h_outflow)))/
+   (sum(positiveMax(-$m_j$.c.m_flow,s_i))
+      +  sum(positiveMax($c_k$.m_flow,s_i)))
+                for j in 1:N and i <> j and $m_j$.c.m_flow.min < 0,
+                for k in 1:M and $c_k$.m_flow.max > 0
 // Additional equations to be generated
 for q in 1:M loop
-   if $m_j$.c.m_flow.min >= 0 for all j = 1:N and
-       $c_k$.m_flow.max <= 0 for all k = 1:M and k <> q
-   then
-       $c_q$.h_outflow = 0;
-    else
-       $s_q$ =  (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
-                    sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
-       $c_q$.h_outflow = (sum(positiveMax(-$m_j$.c.m_flow,s_q)*$m_j$.c.h_outflow) +
-                 sum(positiveMax($c_k$.m_flow,$s_q$)* inStream($c_k$.h_outflow)))/
-                (sum(positiveMax(-$m_j$.c.m_flow,s_q)) +
-                 sum(positiveMax($c_k$.m_flow,s_q)))
-		  for j in 1:N and $m_j$.c.m_flow.min < 0,
-                  for k in 1:M and k <> q and $c_k$.m_flow.max > 0
+  if $m_j$.c.m_flow.min >= 0 for all j = 1:N and
+    $c_k$.m_flow.max <= 0 for all k = 1:M and k <> q
+  then
+    $c_q$.h_outflow = 0;
+  else
+    $s_q$ = (sum(max(-$m_j$.c.m_flow,0) for j in  1:N) +
+                  sum(max( $c_k$.m_flow ,0) for k in cat(1,1:q-1, q+1:M)));
+    $c_q$.h_outflow = (sum(positiveMax(-$m_j$.c.m_flow,s_q)*$m_j$.c.h_outflow) +
+               sum(positiveMax($c_k$.m_flow,$s_q$)* inStream($c_k$.h_outflow)))/
+              (sum(positiveMax(-$m_j$.c.m_flow,s_q)) +
+               sum(positiveMax($c_k$.m_flow,s_q)))
+    for j in 1:N and $m_j$.c.m_flow.min < 0,
+                for k in 1:M and k <> q and $c_k$.m_flow.max > 0
 end for;
 \end{lstlisting}
 \end{itemize}
@@ -385,7 +357,7 @@ the connection set (i.e., equivalent to $m_{j}\text{\lstinline!.c.m_flow!} =
 position is set identically to closed by its controller.
 \end{nonnormative}
 
-\section{Stream Operator actualStream}\label{stream-operator-actualstream}
+\section{actualStream}\label{stream-operator-actualstream}\label{actualstream}
 
 \lstinline!actualStream! is provided for convenience, in
 order to return the actual value of the stream variable, depending on
@@ -396,7 +368,8 @@ definition it is assumed that an (inside or outside) connector \lstinline!c!
 contains a stream variable \lstinline!h_outflow! which is associated with a flow
 variable \lstinline!m_flow! in the same connector \lstinline!c!:
 \begin{lstlisting}[language=modelica]
-actualStream(c.h_outflow) = if c.m_flow > 0 then inStream(c.h_outflow) else c.h_outflow;
+actualStream(c.h_outflow) =
+  if c.m_flow > 0 then inStream(c.h_outflow) else c.h_outflow;
 \end{lstlisting}
 
 \begin{nonnormative}
@@ -413,7 +386,7 @@ automatically, and decide whether or not to generate an event. If a user
 wants to avoid events entirely, he/she may enclose the right-hand side
 of (1) with \lstinline!noEvent!.
 
-Equations like (2) might be used for monitoring purposes (e.g.\ plots), in order to inspect what the actual enthalpy of the fluid flowing through a port is.
+Equations like (2) might be used for monitoring purposes (e.g., plots), in order to inspect what the actual enthalpy of the fluid flowing through a port is.
 In this case, the user will probably want to see the change due to flow reversal at the exact instant, so an event should be generated.  If the user doesn't
 bother, then he/she should enclose the right-hand side of (2) with \lstinline!noEvent!.  Since the output of \lstinline!actualStream! will be discontinuous,
 it should not be used by itself to model physical behaviour (e.g., to compute densities used in momentum balances) -- \lstinline!inStream! should be used
