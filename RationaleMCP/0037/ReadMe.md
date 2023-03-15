@@ -32,7 +32,7 @@ Besides addressing the problem with case insensitivity of the _host_ part of a U
   - Named experiments (topic for future MCP).
   - A component of the instantiated class.
 
-The file system storage of external resources together with a Modelica class makes use of a new, special, directory name for external resources, removing amiguity in how to reference an external resource, as well as making it easier to determine which parts of a file system hierarchy that might contain external resources.
+The file system storage of external resources together with a Modelica class makes use of a new, special, directory name for external resources, removing ambiguity in how to reference an external resource, as well as making it easier to determine which parts of a file system hierarchy that might contain external resources.
 
 ## Backwards Compatibility
 Introducing the new operator with function syntax `resolveURI` means that Modelica code using this name for other purposes will break.  However, the name is unlikely to be in use in existing Modelica libraries.
