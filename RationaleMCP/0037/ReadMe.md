@@ -27,7 +27,7 @@ Having `resolveURI` in the Modelica Language Specification instead of `loadResou
 Besides addressing the problem with case insensitivity of the _host_ part of a URI, the new forms are designed to address two major shortcomings of the current forms of Modelica URIs:
 - A class should be able to refer to its own resources without hard-coding its own fully qualified name.
 - References to special views of a class (_icon_, etc) shouldn't interfere with user-defined anchors and fragment specifiers.  Instead, Modelica URIs must have a flexible form allowing for new kinds of resources attached to a class, for example:
-  - Figures and plots ([MCP-0033](https://github.com/modelica/ModelicaSpecification/pull/2482)).
+  - Figures and plots.
   - Figure style sheets (topic for future MCP).
   - Named experiments (topic for future MCP).
   - A component of the instantiated class.
