@@ -6,7 +6,7 @@ The result of `resolveURI(uri)` is a `String` giving the absolute filename of th
 
 `resolveURI` accepts two kinds of URIs:
 - _file:///…_ — only allowing absolute _file_ URIs
-- _modelica:…_ — any Modelica URI except the deprecated _host_ form
+- _modelica:…?…_ — any Modelica URI with a query part (which excludes the legacy _host_ form)
 
 The reason that relative file URIs are not supported by `resolveURI` is that the base URI would most naturally be the file in which the Modelica source code of the `resolveURI` expression is stored, but a Modelica tool is not required to store classes in a file system, so this also encourages the use of Modelica URIs to handle resources attached to a Modelica class.
 

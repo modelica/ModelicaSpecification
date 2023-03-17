@@ -11,9 +11,12 @@ Users that are unsure about the details of the general URI syntax are recommende
 
 ## Basic structure
 
+The Modelica URIs described in this proposal have a mandatory _query_ part.  This makes them easily distinguishable from the legacy Modelica URI format, where the _query_ part of the URI is never used.
+
 The _path_ part of a Modelica URI is denoted the Modelice URI's _class reference_, and unlike the old Modelica URI format, qualified Modelica class names use the normal URI path segment separator `/` instead of `.`.
 
-The new format takes advantage of the _authority_ being optional.  The meaning of a non-empty _authority_ is currently reserved for the deprecated form of a Modelica URI.  An empty _authority_ cannot be mistaken for the deprecated form, and is allowed in the new form as an alternative to not specifying the _authority_ at all.
+An empty _authority_ is allowed as an alternative to not specifying the _authority_ at all.
+The use of a non-empty _authority_ is reserved for future use.  (It is also used in the legacy Modelica URI format.)
 
 As usual, some characters need to be URL encoded when put in a URI.  For instance, the Modelica class `.Slashy.'Foo/Bar'.Baz` is referenced like so:
 - _modelica:/Slashy/'Foo%2FBar'/Baz_
@@ -23,7 +26,7 @@ As usual, some characters need to be URL encoded when put in a URI.  For instanc
 This section presents a couple of alternative designs, meant to be discussed in the language group before deciding which one to proceed with.
 
 Before going into the alternative new designs, let us first mention the current form:
-- _modelica://host/…_ (non-empty host) — This is the form defined today, becoming deprecated as of this MCP.  In this MCP, this is referred to as the _deprecated form_ (of a Modelica URI).
+- _modelica://host/…_ (no _query_ part, and possibly a non-empty _authority_) — This is the form defined today, referred to as the _legacy form_ (of a Modelica URI) as of this MCP.
   * Example: _modelica://Modelica.Electrical.Analog/media/foo.png_
 
 ### Relative Modelica URIs and the class tree context

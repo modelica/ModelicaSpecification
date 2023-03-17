@@ -37,7 +37,7 @@ The file system storage of external resources together with a Modelica class mak
 ## Backwards Compatibility
 Introducing the new operator with function syntax `resolveURI` means that Modelica code using this name for other purposes will break.  However, the name is unlikely to be in use in existing Modelica libraries.
 
-The new Modelica URIs are distinct from the existing Modelica URIs, making this part of the MCP fully backwards compatible.  However, the existing Modelica URIs will become a deprecated form according to this MCP.
+The new Modelica URIs are distinct from the existing Modelica URIs, making this part of the MCP fully backwards compatible.
 
 The new file system storage structure uses a directory name that couldn't be the name of a Modelica class.  Hence, the only kind of backwards incompatibility caused by this part of the MCP would be if a Modelica class is already using that name in the file hierarchy for something else.  Again, the name is unlikely to be used in existing Modelica libraries.
 

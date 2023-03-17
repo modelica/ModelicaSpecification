@@ -1,6 +1,6 @@
 # Class reference separator
 
-Two different choice of separator in Modelica URI class references have been considered, namely `/` and `.`.  The currently proposed separator in this MCP is `/`, while the deprecated form of Modelica URIs use `.`.  This document gives reasons for and against the current proposal.
+Two different choice of separator in Modelica URI class references have been considered, namely `/` and `.`.  The currently proposed separator in this MCP is `/`, while the legacy form of Modelica URIs use `.`.  This document gives reasons for and against the current proposal.
 
 
 ## Reasons for using `.` (dot)
@@ -13,7 +13,7 @@ Most class names using normal Modelica syntax can be directly copied and pasted 
 
 ### Possibility to use URI path to point out external resources
 
-The URI path could be used to specify a relative file path to an external resource of the class, just like in the deprecated Modelica URI format:
+The URI path could be used to specify a relative file path to an external resource of the class, just like in the legacy Modelica URI format:
 * _modelica:/Modelica.Electrical.Analog/media/foo.png_
 
 (Reasons are given below for why we shouldn't use this form of references to external resources anyway.)
@@ -41,9 +41,9 @@ With `.` as separator, on the other hand, one obtains:
 ### External resources with empty relative class reference
 
 In case one wants to point out external resources using the URI path, one also has to watch out for the pitfal of just leaving the _relclass_ empty when there are additional path segments:
-  * Wrong: _modelica://media/foo.png_ (deprecated form where _media_ would be the class reference)
-  * Wrong: _modelica:/media/foo.png_ (fully qualified form — not the intention)
-  * Correct: _modelica:.//media/foo.png_ (empty _relclass_; just a `.` cannot be mistaken for )
+  * Wrong: _modelica://media?resource=foo.png_ (malformed, reminding of legacy form where _media_ would be the class reference)
+  * Wrong: _modelica:/media?resource=foo.png_ (fully qualified form — not the intention)
+  * Correct: _modelica:.//media?resource=foo.png_ (empty _relclass_; just a `.` cannot be mistaken for )
 
 ### Modelica tools should support handling of Modelica URIs
 
