@@ -10,6 +10,7 @@ This MCP defines the next generation handling of external resources in Modelica.
 | Date | Description |
 | --- | --- |
 | 2020-07-22 | Henrik Tidefelt. Filling this document with initial content. |
+| 2023-03-23 | Henrik Tidefelt. Updates after design meeting discussions. |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
