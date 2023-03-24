@@ -13,8 +13,10 @@ type Ternary // Note: Defined with Modelica syntax although predefined
 end Ternary;
 ```
 
-## New keyword `unknown`
-The keyword `unknown` is introduced to refer to the _unknown_ truth value.
+## New top-level constant `unknown`
+The top-level constant `unknown` is introduced to refer to the _unknown_ truth value.
+
+Using `unknown` as if it were not a reserved name similar to `Real` is deprecated.  It is also deprecated to refer to the top-level constant using its fully qualified component reference `.unknown`.
 
 
 ## Conversion from Boolean

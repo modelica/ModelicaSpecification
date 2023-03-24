@@ -8,7 +8,7 @@ It was concluded in [#2211](https://github.com/modelica/ModelicaSpecification/is
 
 The proposal is based on the following principles:
 - A new built-in type, `Ternary`.
-- A new literal constant `unknown` for the third truth value.
+- A new top-level constant `unknown` for the third truth value.
 - Explicit as well as implicit conversion from `Boolean`.
 - No implicit conversion to `Boolean`.
 - No new built-in functions.
@@ -28,10 +28,12 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 See [separate document](rationale.md).
 
 ## Backwards Compatibility
-The introduction of the keyword `unknown` introduces a backwards incompatibility with code making use of that name for identifiers.
+As built-in types are treated similar to keywords, the introduced `Ternary` introduces a backwards incompatibility with code making use of that name for identifiers.
+By introducing `unknown` as a top-level constant rather than a keyword, this will not break code making use of this name for identifiers.
+By deprecating uses of `unknown` that wouldn't work if `unknown` was a keyword, it will be possible to later align the syntaxes of `true`, `false`, and `unknown`.
 
 ## Tool Implementation
-A prototype has been implemented in a development version of Wolfram SystemModeler.  In the prototype, the type is named `__Wolfram_Ternary`, and the third truth value is named `__Wolfram_unknown`.
+A prototype has been implemented in a development version of Wolfram SystemModeler.  In the prototype, the type is named `__Wolfram_Ternary`, and the third truth value is named `__Wolfram_unknown`.  The prototype currently has `__Wolfram_unknown` as a keyword, but will be updated to have a top-level constant instead.
 
 The prototype is complemented with a collection of example models, provided in a separate repository: https://github.com/henrikt-ma/TernaryTest
 

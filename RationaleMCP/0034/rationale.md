@@ -7,7 +7,7 @@ For those who don't want to read through #2211 to get the background, the applic
 # Rationale
 The principles on which this MCP is base were listed on the [entry page](ReadMe.md), and are repeated here for convenience:
 - A new built-in type, `Ternary`.
-- A new literal constant `unknown` for the third truth value.
+- A new top-level constant `unknown` for the third truth value.
 - Explicit as well as implicit conversion from `Boolean`.
 - No implicit conversion to `Boolean`.
 - No new built-in functions.
@@ -20,11 +20,16 @@ Although one could imagine ternary logic only being used in annoations to just h
 One could also have imagined just introducing `Ternary` as a new built-in enumeration, but expressing ternary logic in analogy with Boolean logic would then require defining the meaning of Boolean operators such as `and` to have meaning for this particular enumeration.  That is probably not how we want enumerations to be used.
 
 ## New literal constant
-The introduction of the keyword `unknown` to represent the third third truth value makes it very convenient to construct.  Alternatives that were considered less attractive include:
+The introduction of the top-level constant `unknown` to represent the third third truth value avoids the backwards incompatibility that would come with making `unknown` a keyword similar to `true` and `false`.  Uses that makes it distinguishable from being a keyword are deprecated from start, to pave the way for future alignment with `true` and `false`.
+
+Alternatives that were considered less attractive include:
+- Making `unknown` a keyword similar to `true` and `false`.
 - Defining `Ternary()` to construct `unknown`.
 - Defining a `Ternary`-valued operation that can produce `unknown` as a function of only known values, for example `consensus(true, false)`.
 
 The alternative approaches both suffer from the problem of not having a symmetric way of refering to _unknown_ in the same way as we refer to `false` and `true`.  This lack of symmetry is both a problem for source code as well as in specification text and other places where writing about Modelica.
+
+As shadowing the top-level `unknown` is allowed but deprecated, there can be situations where one would like to access the top-level constant while it is shadowed.  It was considered to allow something like `Ternary()` to avoid the need to access the top level constant, but the current design instead relies on using the fully qualified `.unknown`.  Use of the fully qualified form is deprecated from start, meaning that it should only be used when a model also contains the deprecated exostence of another identifier named `unknown`.
 
 ## Conversion from Boolean
 
