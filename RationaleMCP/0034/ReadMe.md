@@ -20,6 +20,7 @@ See [design](ternary.md) for details.
 | --- | --- |
 | 2019-11-22 | Henrik Tidefelt. Filling this document with initial content. |
 | 2021-10-25 | Henrik Tidefelt. Introducing collection of examples. |
+| 2023-03-24 | Henrik Tidefelt. Changing `unknown` to be top-level constant. |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
