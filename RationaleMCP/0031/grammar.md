@@ -398,7 +398,7 @@ end _F;
 > &emsp; | **true**\
 > &emsp; | ( **der** | **initial** | **pure** ) _function-call-args_\
 > &emsp; | _component-reference_ _function-call-args_?\
-> &emsp; | `[(]` _decoration_? _output-expression-list_ `[)]` _array-subscripts_?\
+> &emsp; | `[(]` _output-expression-list_ `[)]` _array-subscripts_?\
 > &emsp; | `[[]` _expression-list_ ( **;** _expression-list_ )* `[]]`\
 > &emsp; | **{** _array-arguments_ **}**\
 > &emsp; | **end**
