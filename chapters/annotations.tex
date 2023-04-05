@@ -366,15 +366,48 @@ The annotation listed below, in addition to annotations described in \crefrange{
 The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base class of the type-declaration.
 In the case of multiple conflicting annotations it is handled similarly to modifiers (e.g., an \lstinline!Evaluate! annotation on the component declaration takes precedence).
 In the case of hierarchical components it is applied to all components, overriding any \lstinline!Evaluate!-setting for specific components.
-The annotation \lstinline!Evaluate! only has effect for a component declared with the prefix \lstinline!parameter!.
+The annotation \lstinline!Evaluate! is only allowed for parameters and constants.
 
-If \lstinline!Evaluate = true!, the model developer proposes to utilize the value for the symbolic processing. In that case, it is not possible to change the parameter value after symbolic pre-processing.
+Setting \lstinline!Evaluate = true! for an evaluable parameter, means that it must be an evaluated parameter (i.e., its value must be determined during translation, similar to a constant).
+For a non-evaluable parameter, it has no impact and it is recommended to issue a warning in most cases.
+The exception for recommending this warning is when the parameter is non-evaluable due to dependency on a parameter with \lstinline!Evaluate = false!, as this could be a sign of intentional overriding of \lstinline!Evaluate = true!, see example below.
+For both evaluable parameters and constants, the model developer further proposes to utilize the value for symbolic processing.
+A constant can never be changed after translation, and it is normal for its value to be used for symbolic processing even without \lstinline!Evaluate = true!.
 
-If \lstinline!Evaluate = false!, the model developer proposes to not utilize the value of the corresponding parameter for the symbolic processing.
+For a parameter, \lstinline!Evaluate = false! ensures that the parameter is a non-evaluable parameter according to \cref{component-variability} (meaning it is not allowed to be used where an evaluable expression (\cref{evaluable-expressions}) is expected).
+For both parameters and constants -- even when the value can be determined during translation -- the model developer further proposes to not utilize the value for symbolic processing.
 
 \begin{nonnormative}
-\lstinline!Evaluate! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
+\lstinline!Evaluate = true! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
+
+Conversely, a possible use of \lstinline!Evaluate = false! is to ensure that a parameter can be changed after translation, even when a tool might be tempted to evaluate it to improve the efficiency of the generated code.
 \end{nonnormative}
+
+\begin{example}
+When a parameter has \lstinline!Evaluate = true! for optimization reasons (not because it needs to be evaluable), it is possible to prevent the value from being determined during translation without modifying the original model:
+\begin{lstlisting}[language=modelica]
+model M_evaluable
+  /* Here, 'b' is evaluable, and will be evaluated. */
+  parameter Boolean b = false annotation(Evaluate = true);
+  Real x(start = 1.0, fixed = true);
+equation
+  if b then /* No need for b to be evaluable. */
+    der(x) = x;
+  else
+    der(x) = -x;
+  end if;
+end M_evaluable;
+
+model M_non_evaluable
+  /* Here, 'bn' is non-evaluable, which in turn will cause 'b' to be
+   * non-evaluable, thereby preventing it from being determined during
+   * translation.
+   */
+  extends M_evaluable(b = bn);
+  parameter Boolean bn = false annotation(Evaluate = false);
+end M_non_evaluable;
+\end{lstlisting}
+\end{example}
 \end{semantics}
 \end{annotationdefinition}
 
