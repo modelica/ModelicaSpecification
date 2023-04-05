@@ -14,7 +14,7 @@ It provides object-oriented constructs that facilitate reuse of models, and can 
 Version | Link                                                              | Published |
 ------- | ----------------------------------------------------------------- | --------|
 3.7-dev | [Master branch](https://github.com/modelica/ModelicaSpecification/tree/master) [HTML](https://specification.modelica.org/master/) [PDF](https://specification.modelica.org/master/MLS.pdf)| not yet |
-3.6 | [3.6 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.6) [HTML](https://specification.modelica.org/maint/3.6/MLS.html) [PDF](https://specification.modelica.org/maint/3.6/MLS.pdf)| 2023 (voting) |
+3.6 | [3.6 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.6) [HTML](https://specification.modelica.org/maint/3.6/MLS.html) [PDF](https://specification.modelica.org/maint/3.6/MLS.pdf)| 2023 |
 3.5 | [3.5 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.5) [HTML](https://specification.modelica.org/maint/3.5/MLS.html) [PDF](https://specification.modelica.org/maint/3.5/MLS.pdf)| 2021 |
 3.4     | [3.4 branch](https://github.com/modelica/ModelicaSpecification/tree/maint/3.4) [HTML](https://specification.modelica.org/maint/3.4/MLS.html) [PDF](https://modelica.org/documents/ModelicaSpec34.pdf)          | 2017    |
 3.3rev1 | [PDF](https://modelica.org/documents/ModelicaSpec33Revision1.pdf) | 2014    |
