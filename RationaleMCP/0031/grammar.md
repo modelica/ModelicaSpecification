@@ -365,8 +365,8 @@ end _F;
 > _expression-no-decoration_ → _simple-expression_ | _if-expression_
 
 > _if-expression_ →\
-> &emsp; **if** _expression_ **then** _expression_\
-> &emsp; ( **elseif** _expression_ **then** _expression_ )* \
+> &emsp; **if** _expression-no-decoration_ **then** _expression-no-decoration_\
+> &emsp; ( **elseif** _expression-no-decoration_ **then** _expression-no-decoration_ )* \
 > &emsp; **else** _expression-no-decoration_
 
 > _simple-expression_ → _logical-expression_ ( **:** _logical-expression_ ( **:** _logical-expression_ )? )?
