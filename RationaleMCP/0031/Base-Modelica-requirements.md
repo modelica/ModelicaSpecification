@@ -18,26 +18,26 @@ Things that the Base Modelica format should support:
    - Comment (@harmanpa): Agreed as that also allows other meta-data. Unfortunately having `annotation(__something_LineNumber=12)` on every statement could become quite verbose.
 - Documentation strings.
 - Vendor-specific annotations.
-  - Comment (@mtiller): So annotations are present in the grammar but all annotations except vendor annotations are stripped.  If the concern is bloat from annotations that are no longer relevant in the flattened form (*e.g.,* graphical annotations), why not identify what gets excluded vs. what gets included? (see comment about source locations above)
+  - Comment (@mtiller): So annotations are present in the grammar but all annotations except vendor annotations are stripped.  If the concern is bloat from annotations that are no longer relevant in the lowered form (*e.g.,* graphical annotations), why not identify what gets excluded vs. what gets included? (see comment about source locations above)
   - Comment (@harmanpa): I agree, I'd like to be able to put arbitary meta-data in.
 - All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Base Modelica model is exported to an FMU for Model Exchange.)
   - Comment (@mtiller): The semantics of this are unclear.  When you say constant evaluation, do you mean constant folding?  What about `final` parameters?  Should those be parameters in an FMU? I wouldn't think so.  It seems like they should just be `output`s.
-- List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during flattening for other reasons.
+- List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during lowering for other reasons.
   - `final` can probably be replaced by using normal equation instead of binding equation. meaning that binding eqations can always be treated as non-final.
   - Comment (@mtiller): Why not just add an `Evaluate=true` annotation to indicate these.
 - Values for all constants, even those that have been inlined everywhere, since the values should be part of the simulation result.
 - Less restricted forms of record field access and array subscripting?
   - Comment (@mtiller): Wouldn't we expect to restrict forms of record field access and array subscripting?  If so, then I would suggest saying "Restrict some forms of record field access and array subscripting" or "A more restrictive subset of record field access and array subscripting".
- - Comment (@mtiller): Factor out constant subexpressions to unique variables?  Perhaps filter all literals (scalars and arrays) completely out of the flattened form and provide them in a separate file?
+ - Comment (@mtiller): Factor out constant subexpressions to unique variables?  Perhaps filter all literals (scalars and arrays) completely out of the lowered form and provide them in a separate file?
   - Needs Standardized naming for introduced intermediate variables.
-- Expressions for all variables that were treated as aliases during flattening, specifying the variable that it is an alias of and the sign of the relationship
+- Expressions for all variables that were treated as aliases during lowering, specifying the variable that it is an alias of and the sign of the relationship
   - Comment (@mtiller): Doesn't the expression already tell us all that (*e.g.,* `b = -a`...`-a` is an expression and it tells us that `b` is an alias of `a` with the opposite sign?  Or did you want something more explicit?  Should there be a special form of equation (perhaps in the form of an assignment statement) that can be used to indicate solved equations in general, and alias relations in particular?
   - Comment (@harmanpa): Yes syntactically it is just that expression, however that isn't necessarily the expression that the alias came from. e.g. the model might contain `a = c` and `a = -b` but we decide to keep `b`, so in our aliases section we store `b = -a` and `b = -c`.
 - Function declarations that are utilised in the model.
-  - Comment (@mtiller): Do we flatten the functions?  I say that because functions can use features like `extends` or `redeclare` in their definitions.  Presumably we want all that removed in a flattened form, no?  Functions should probably be allowed to have arguments of array and record type.
+  - Comment (@mtiller): Do we lower the functions?  I say that because functions can use features like `extends` or `redeclare` in their definitions.  Presumably we want all that removed in a lowered form, no?  Functions should probably be allowed to have arguments of array and record type.
   - Comment (@harmanpa): Yes. Additionally we might have multiple versions of functions, because we might call a function with different dimension inputs. We need a naming convention for this.
 
-Examples of things that should be gone after flattening and shouldn't exist in Base Modelica:
+Examples of things that should be gone after lowering and shouldn't exist in Base Modelica:
 - Complex classes that may contain equations.
 - Connectors.
 - Conditional components.
@@ -77,7 +77,7 @@ Content of that should go into this section:
 - Hints for inlining, state selection, etc.
 
 ### Modelica
-Content of that should go into this section:
+Content of that should go into this section, describing lowering of (full) Modelica to Base Modelica:
 - All sorts of restricted classes and rules for how they may be used.
 - Inheritance, modification, and redeclaration.
 - Connectors, including stream connectors.
@@ -103,7 +103,7 @@ One advantage to this approach would be to organize the semantics of Modelica by
   - Functions
 
 From this perspective, expressions can almost be treated as "pass through".  The editor doesn't really need to
-interpret them in any way. For the most part they just pass through to the flattened form (but with some
+interpret them in any way. For the most part they just pass through to the lowered form (but with some
 potential simplifications or restrictions, as described above).
 
 ## Comments from regensburg design meeting (added by @HansOlsson)

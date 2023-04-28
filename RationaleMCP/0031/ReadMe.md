@@ -7,7 +7,9 @@ Peter Harman, Werther Kai, Gerd Kurzbach, Oliver Lenord, Hans Olsson, Michael Sc
 This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Base Modelica_.
 
 ### In a sentence (or two)
-Base Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.  It is an integral part of the Modelica specification, not a new separate standard.
+Base Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.
+It is an integral part of the Modelica specification, not a new separate standard.
+We say that a Modelica model is _lowered_ when transforming it into Base Modelica.
 
 ### Use cases
 Use cases to have in mind in the design of Base Modelica, also indicating the usefullness of the Base Modelica endeavor:
@@ -18,8 +20,8 @@ Use cases to have in mind in the design of Base Modelica, also indicating the us
   - Making it easier to organize the development work of a Modelica tool.
   - A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
 * Basis for the _Equation Code_ of eFMI, [see below](#Relation-to-eFMI).
-* Help users understand the mysterious ways of the Modelica language by showing them the flattened models.
-* Comparison of different Modelica back ends with the same flattened model.
+* Help users understand the mysterious ways of the Modelica language by showing them the lowered models.
+* Comparison of different Modelica back ends with the same lowered model.
 * Plant model descriptions for use in control design.
 * Equation analysis for fault detection and isolation.
 * Integration with third party tools for equation analysis.  _(Could we be more specific about what this migh be?)_

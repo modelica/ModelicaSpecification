@@ -1,10 +1,10 @@
 # Name mangling
 
-This document describes the Base Modelica encoding of names of a flattended Modelica model.  In the world of (full) Modelica and Base Modelica, it is assumed that the context of an identifier is always known, so that it is always clear whether names have been mangled or not.
+This document describes the Base Modelica encoding of names of a lowered Modelica model.  In the world of (full) Modelica and Base Modelica, it is assumed that the context of an identifier is always known, so that it is always clear whether names have been mangled or not.
 
 ## Terminology
 
-A _component reference_ of a flattened Modelica model is a hierarchically structured string such as `axis.bearingFriction.sa`, or `foo[1,2].bar`, or just `k`.  For example, this is how we currently refer to variables in a simulation result.
+A _component reference_ of a lowered Modelica model is a hierarchically structured string such as `axis.bearingFriction.sa`, or `foo[1,2].bar`, or just `k`.  For example, this is how we currently refer to variables in a simulation result.
 
 An _identifier_ is something that may be used as a variable name in a Modelica or Base Modelica class, such as `axis` or `bearingFriction`.  Valid identifiers must conform to the `IDENT` in Modelica's lexical structure (see below).
 
