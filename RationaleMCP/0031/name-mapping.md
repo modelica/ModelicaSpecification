@@ -61,7 +61,7 @@ Using `\` as escape character, many strings, including all component references,
 1. Insert a "`\`" before any of the characters: { "`\`", "`'`" }
 1. Wrap the result in single quotes.
 
-Upquoting a Modelica component reference always results in a valid (Flat) Modelica `Q-IDENT` identifier.  Examples:
+Upquoting a Modelica component reference always results in a valid (Base) Modelica `Q-IDENT` identifier.  Examples:
 
 | Input | Upquoted string | Remark |
 |--|--|--|
