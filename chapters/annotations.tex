@@ -158,6 +158,7 @@ record Axis
   Real max "Axis upper bound, in 'unit'";
   String unit = "" "Unit of axis tick labels";
   String label "Axis label";
+  AxisScale scale = Linear() "Mapping between axis values and position on axis"
 end Axis;
 \end{lstlisting}
 
@@ -180,6 +181,49 @@ When \lstinline!label! is not provided, the tool produces a default label.
 Providing the empty string as \lstinline!label! means that no label should be shown.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!label!.
 The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis \lstinline!label! shall not contain the unit.
+
+The type of \lstinline!scale! is defined as an empty partial record:
+\begin{lstlisting}[language=modelica]
+partial record AxisScale
+end AxisScale;
+\end{lstlisting}%
+\annotationindex{AxisScale}
+
+The standardized annotations extending from \lstinline!AxisScale! are \lstinline!Linear! and  \lstinline!Log!, but it is also allowed to use a vendor-specific annotation.
+
+Use \lstinline!Linear! for a linear mapping between axis values and position on axis:
+\begin{lstlisting}[language=modelica]
+record Linear
+  extends AxisScale;
+end Linear;
+\end{lstlisting}%
+\index{Linear@\robustinline{Linear} (axis scale)}
+
+Use \lstinline!Log! for a logarithmic mapping between axis values and position on axis:
+\begin{lstlisting}[language=modelica]
+record Log
+  extends AxisScale;
+  Integer base(min = 2) = 10;
+end Log;
+\end{lstlisting}%
+\index{Log@\robustinline{Log} (axis scale)}
+
+The \lstinline!base! of a \lstinline!Log! scale determines preferred positions of major axis ticks.
+It is not required that the presentation of axis tick labels reflect the \lstinline!base! setting.
+For example, when \lstinline!base! is 10, major axis ticks should preferrably be placed at integer powers of 10, and natural alternatives that a tool may use for major axis tick labels could look like $0.001$ or $10^{-3}$.
+Under some circumstances, such as when the axis range does not span even a single order of magnitude, a tool may disregard the preference in order to get useful axis ticks.
+
+\begin{example}
+A \emph{symmetric log} axis scale is sometimes used for axes spanning across several orders of magnitude of both positive and negative values.
+Details vary, but the mapping from value to linear position along axis is some variation of $y \mapsto \operatorname{sign}(y)\, \operatorname{log}(1 + \frac{\abs{y}}{10^{\alpha}})$.
+A tool may implement this as a vendor-specific axis scale:
+\begin{lstlisting}[language=modelica]
+Axis(
+  min = -1e5, max = 1e5,
+  scale = __NameOfVendor_symlog(1),
+)
+\end{lstlisting}
+\end{example}
 
 \subsubsection{Plot Curves}\label{plot-curves}
 
