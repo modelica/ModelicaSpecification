@@ -1,16 +1,16 @@
-# Modelica Change Proposal MCP-0031<br/>Flat Modelica and MLS modularization
+# Modelica Change Proposal MCP-0031<br/>Base Modelica and MLS modularization
 Peter Harman, Werther Kai, Gerd Kurzbach, Oliver Lenord, Hans Olsson, Michael Schellenberger, Martin Sjölund, Henrik Tidefelt
 
 **(In Development)**
 
 ## Summary
-This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Flat Modelica_.
+This MCP is a new attempt at introducing a specification of an intermediate format which will be called _Base Modelica_.
 
 ### In a sentence (or two)
-Flat Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.  It is an integral part of the Modelica specification, not a new separate standard.
+Base Modelica is a language to describe hybrid (continuous and discrete) systems with emphasis on defining the dynamic behavior.  It is an integral part of the Modelica specification, not a new separate standard.
 
 ### Use cases
-Use cases to have in mind in the design of Flat Modelica, also indicating the usefullness of the Flat Modelica endeavor:
+Use cases to have in mind in the design of Base Modelica, also indicating the usefullness of the Base Modelica endeavor:
 * Serve as intermediate stage in the Modelica specification, separating front end matters (the high level constructs of the Modelica language) from back end matters (simulation semantics).
   - Generally speaking, the two different matters will attract attention from people with quite different interests and areas of expertise (compuer science and numerical mathematics, respectively).
   - Separation will facilitate more efficient work and rapid development of the two aspects of the Modelica language.
@@ -28,21 +28,21 @@ Use cases to have in mind in the design of Flat Modelica, also indicating the us
 * IP protection when combined with obfuscation.
 
 ### Relation to eFMI
-One of the key use cases driving the development of Flat Modelica is its use as basis for the _Equation Code_ of [eFMI](https://itea3.org/index.php/project/emphysis.html).  The requirements for eFMI are much smaller in terms of language features compared to the needs for serving as intermediate representation in the Modelica standard.  To accommodate both use cases, the Equation Code of eFMI will be defined as a restricted variant of Flat Modelica.
+One of the key use cases driving the development of Base Modelica is its use as basis for the _Equation Code_ of [eFMI](https://itea3.org/index.php/project/emphysis.html).  The requirements for eFMI are much smaller in terms of language features compared to the needs for serving as intermediate representation in the Modelica standard.  To accommodate both use cases, the Equation Code of eFMI will be defined as a restricted variant of Base Modelica.
 
 ### Requirements
 From the use cases above, some implicit requirements follow:
 * Simple enough to be attractive for applications that essentially just want a simple description of variables and equations, meaning that many of the complicated high level constructs of Modelica are removed.
-* Expressive enough to allow the high level constructs of Modelica to be reduced to Flat Modelica without loss of semantics.
-* When Flat Modelica serves as an intermediate representation of the translation of a higher level language (such as Modelica), errors detected in Flat Modelica code shall be traceable to the original code.
-* Human readable and writeable, since not all use cases assume Flat Modelica being produced from a higher level language by a tool.
+* Expressive enough to allow the high level constructs of Modelica to be reduced to Base Modelica without loss of semantics.
+* When Base Modelica serves as an intermediate representation of the translation of a higher level language (such as Modelica), errors detected in Base Modelica code shall be traceable to the original code.
+* Human readable and writeable, since not all use cases assume Base Modelica being produced from a higher level language by a tool.
 
 ## Roadmap
 Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
 
-### Flat Modelica 0.1 (this MCP)
-These are subtopics that are considered necessary to resolve for a first version of Flat Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
-- [x] Flat Modelica identifier naming scheme.
+### Base Modelica 0.1 (this MCP)
+These are subtopics that are considered necessary to resolve for a first version of Base Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
+- [x] Base Modelica identifier naming scheme.
 - [x] Principles for use of language constructs vs annotations.  [Design](annotations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2459)
 - [x] Get rid of the obviously irrelevant parts of the grammar.  [Design](grammar.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/2465)
 - [x] Get rid of `connect` equations.
@@ -73,10 +73,10 @@ These are subtopics that are considered necessary to resolve for a first version
 - [ ] Figure out what to do with synchronous features.
 - [ ] Event handling semantics is preserved as in Modelica.
 - [ ] Source locations pointing back to the original Modelica code.
-- [ ] Settle the name (currently _Flat Modelica_), considering that scalarization isn't mandatory.
+- [ ] Settle the name (currently _Base Modelica_), considering that scalarization isn't mandatory.
 
-### Flat Modelica 0.1+…1.0 (future MCPs)
-In future minor versions of Flat Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
+### Base Modelica 0.1+…1.0 (future MCPs)
+In future minor versions of Base Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
 - [ ] Handling of parameters treated as constants. [Previous discussion](https://github.com/modelica/ModelicaSpecification/pull/3161)
 - [ ] Primitive operations for triggering of events, to which the current event generating functions can be reduced.
 - [ ] Get rid of function calls with named arguments.
@@ -88,7 +88,7 @@ In future minor versions of Flat Modelica 1, we could improve the language by in
 - [ ] Reintroduce `each` for efficiency and to avoid code duplication.
 - [ ] Figure out what to do with Connectors and FMI3.0 Terminals.
 
-### Flat Modelica 2.0 (future MCPs)
+### Base Modelica 2.0 (future MCPs)
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
 - [ ] Allowing some simple form of `model` that makes it possible to preserve structure of the equations that will allow more efficient symbolic processing and production of executables of much smaller size.
 
@@ -101,13 +101,13 @@ Big changes that don't make sense to even consider for a minor release of versio
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
 
 ## Rationale
-The requirements on what Flat Modelica should and shoudn't be are currently being developed in a [separate document](Flat-Modelica-requirements.md).
+The requirements on what Base Modelica should and shoudn't be are currently being developed in a [separate document](Flat-Modelica-requirements.md).
 
 ## Backwards Compatibility
 It is the goal of this MCP that it should only change the way the Modelica language is described, not either adding, removing, or changing any of the Modelica language features.  Hence, it should be completely backwards compatible.
 
 ## Tool Implementation
-While existing Modelica implementations should work just as well before as after incorporation of this MCP, there should still be a proof of concept implementation showing how Flat Modelica can be produced by a tool, and that the Flat Modelica output can then be used as input to a Modelica back end for simulation.  Ideally, this should be demonstrated using different tools for the two tasks.
+While existing Modelica implementations should work just as well before as after incorporation of this MCP, there should still be a proof of concept implementation showing how Base Modelica can be produced by a tool, and that the Base Modelica output can then be used as input to a Modelica back end for simulation.  Ideally, this should be demonstrated using different tools for the two tasks.
 
 ### Experience with Prototype
 (None, so far.)

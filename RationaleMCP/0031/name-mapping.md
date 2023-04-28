@@ -1,19 +1,19 @@
 # Name mangling
 
-This document describes the Flat Modelica encoding of names of a flattended Modelica model.  In the world of (full) Modelica and Flat Modelica, it is assumed that the context of an identifier is always known, so that it is always clear whether names have been mangled or not.
+This document describes the Base Modelica encoding of names of a flattended Modelica model.  In the world of (full) Modelica and Base Modelica, it is assumed that the context of an identifier is always known, so that it is always clear whether names have been mangled or not.
 
 ## Terminology
 
 A _component reference_ of a flattened Modelica model is a hierarchically structured string such as `axis.bearingFriction.sa`, or `foo[1,2].bar`, or just `k`.  For example, this is how we currently refer to variables in a simulation result.
 
-An _identifier_ is something that may be used as a variable name in a Modelica or Flat Modelica class, such as `axis` or `bearingFriction`.  Valid identifiers must conform to the `IDENT` in Modelica's lexical structure (see below).
+An _identifier_ is something that may be used as a variable name in a Modelica or Base Modelica class, such as `axis` or `bearingFriction`.  Valid identifiers must conform to the `IDENT` in Modelica's lexical structure (see below).
 
-To refer to a component reference in Flat Modelica, its name needs to be _encoded_ as a Flat Modelica identifier.  This process is also known as _name mangling_ since the resulting identifiers will appear as more or less distorted variants of the original component references.  A tool reading Flat Modelica input will then need to _decode_ identifiers in order to reconstruct the original component references.
+To refer to a component reference in Base Modelica, its name needs to be _encoded_ as a Base Modelica identifier.  This process is also known as _name mangling_ since the resulting identifiers will appear as more or less distorted variants of the original component references.  A tool reading Base Modelica input will then need to _decode_ identifiers in order to reconstruct the original component references.
 
 
 ## Requirements
 
-In order for Flat Modelica to be a subset of Modelica, the Flat Modelica identifiers must conform to the `IDENT` in Modelica's lexical structure:
+In order for Base Modelica to be a subset of Modelica, the Base Modelica identifiers must conform to the `IDENT` in Modelica's lexical structure:
 ```
 IDENT    = NONDIGIT { DIGIT | NONDIGIT } | Q-IDENT
 Q-IDENT  = "’" { Q-CHAR | S-ESCAPE | """ } "’"
@@ -31,7 +31,7 @@ Additional requirements:
 * Possible to reconstruct original component references
 * Support different levels of scalarization
 * Reserved namespace for generated names
-* No collision with current and future Flat Modelica reserved names
+* No collision with current and future Base Modelica reserved names
 * No ambiguity with array subscripting and record member reference expressions
 * Allow systematic construction of names for things such as start attributes, that combine a variable name with additional specification
 
@@ -42,11 +42,11 @@ Additional requirements:
 
 In Modelica, a component reference is a very restricted form of a gneralized expression where literal array subscripting and record member referencing can be applied to any sub-expression.  As such, they are identified with their abstract syntax tree representation.  In particular, their textual input form is insensitive to whitespace and comments.
 
-In Flat Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Flat Modelica component reference is not allowed to contain whitespace or comments.
+In Base Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Base Modelica component reference is not allowed to contain whitespace or comments.
 
 Examples:
 
-| String | Valid Flat Modelica component reference? |
+| String | Valid Base Modelica component reference? |
 |--|--|
 | `foo[1,2].bar` | Yes |
 | `foo[1, 2]` | No (whitespace not allowed) |
@@ -73,13 +73,13 @@ Upquoting a Modelica component reference always results in a valid (Flat) Modeli
 | `der(foo)` | `'der(foo)'` | Input is not valid component reference, but result is still valid identifier |
 | `'foo\` | `'\'foo\\'` | Same as above. |
 
-To obtain the Flat Modelica component reference out of a Modelica component reference,
+To obtain the Base Modelica component reference out of a Modelica component reference,
 1. Strip whitespace and comments.
 1. Upquote
 
 Examples:
 
-| Modelica component reference | Flat Modelica | Remark |
+| Modelica component reference | Base Modelica | Remark |
 |--|--|--|
 | `axis.bearingFriction.sa` | `'axis.bearingFriction.sa'` | |
 | `foo[1 /* first */]` | `'foo[1]'` | Whitespace and comments on the Modelica side is stripped |
@@ -103,9 +103,9 @@ Unlike upquoting, downquoting breaks much more easily.  Examples:
 | `'foo\'` | **error** | Incomplete escape sequence after stripping surrounding quotes. |
 
 
-### Flat Modelica namespaces
+### Base Modelica namespaces
 
-To support fast categorization of identifiers in Flat Modelica, they are divided into easily recognizable categories:
+To support fast categorization of identifiers in Base Modelica, they are divided into easily recognizable categories:
 * A `Q-IDENT` that cannot be decoded is an error.
 * Any other `Q-IDENT` is categorized based on the first character of the decoded string:
   - A `NONDIGIT` or "`'`" means a component reference
@@ -113,15 +113,15 @@ To support fast categorization of identifiers in Flat Modelica, they are divided
   - Otherwise, it is a generated structured name
 * An `IDENT` is categorized based on the first character:
   - A "`_`" means a generated non-structured name
-  - Otherwise, it is a Flat Modelica reserved name
+  - Otherwise, it is a Base Modelica reserved name
 
 Examples:
 
-| Flat Modelica identifier | Category |
+| Base Modelica identifier | Category |
 |--|--|
-| `class` | Flat Modelica reserved name (happens to be a keyword) |
-| `sin` | Flat Modelica reserved name (name of built-in function) |
-| `foo` | Flat Modelica reserved name (reserved for future use) |
+| `class` | Base Modelica reserved name (happens to be a keyword) |
+| `sin` | Base Modelica reserved name (name of built-in function) |
+| `foo` | Base Modelica reserved name (reserved for future use) |
 | `_R123` | Generated non-structured name (such as an automatically generated record or introduced helper variable) |
 | `'axis.bearingFriction.sa'` | Component reference: `axis.bearingFriction.sa` |
 | `'\'foo bar!\'.x'` | Component reference: `'foo bar!'.x` |
@@ -158,9 +158,9 @@ model ManglingTest
 end ManglingTest;
 ```
 
-### Scalarized Flat Modelica
+### Scalarized Base Modelica
 
-Here, every Flat Modelica component reference refers to a scalar variable.
+Here, every Base Modelica component reference refers to a scalar variable.
 
 ```
 model 'ManglingTest'
@@ -187,7 +187,7 @@ equation
 end 'ManglingTest';
 ```
 
-### Hierarchical Flat Modelica
+### Hierarchical Base Modelica
 
 Here, automatically generated records are used to preserve the hierarchical structure of the original Modelica model, and arrays are not scalarized.
 

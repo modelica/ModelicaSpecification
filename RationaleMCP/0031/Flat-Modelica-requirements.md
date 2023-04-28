@@ -1,9 +1,9 @@
-# Requirements on Flat Modelica
-This document should contain a first draft of the requirements on what Flat Modelica should and shouldn't be, to be used as a starting point for discussions at the upcoming design meeting in Regensburg on March 7-8, 2019.  It also contains a rough separation of things belonging to the three main parts of the Modelica Language Specification (MLS) that would come out of this MCP.
+# Requirements on Base Modelica
+This document should contain a first draft of the requirements on what Base Modelica should and shouldn't be, to be used as a starting point for discussions at the upcoming design meeting in Regensburg on March 7-8, 2019.  It also contains a rough separation of things belonging to the three main parts of the Modelica Language Specification (MLS) that would come out of this MCP.
 
-## Flat Modelica features
+## Base Modelica features
 
-Things that the Flat Modelica format should support:
+Things that the Base Modelica format should support:
 - Basic scalar types with the same attributes as in Modelica.
 - Record and enumeration types.
 - Arrays.
@@ -20,7 +20,7 @@ Things that the Flat Modelica format should support:
 - Vendor-specific annotations.
   - Comment (@mtiller): So annotations are present in the grammar but all annotations except vendor annotations are stripped.  If the concern is bloat from annotations that are no longer relevant in the flattened form (*e.g.,* graphical annotations), why not identify what gets excluded vs. what gets included? (see comment about source locations above)
   - Comment (@harmanpa): I agree, I'd like to be able to put arbitary meta-data in.
-- All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Flat Modelica model is exported to an FMU for Model Exchange.)
+- All variabilities, but constant evaluation of parameters is not allowed.  (For example, this guarantees that all parameters will remain parameters if a Base Modelica model is exported to an FMU for Model Exchange.)
   - Comment (@mtiller): The semantics of this are unclear.  When you say constant evaluation, do you mean constant folding?  What about `final` parameters?  Should those be parameters in an FMU? I wouldn't think so.  It seems like they should just be `output`s.
 - List of all `parameter` variables that were treated as `constant` due to use in _parameter expressions_, the `Evaluate=true` annotation, or subject to constant evaluation during flattening for other reasons.
   - `final` can probably be replaced by using normal equation instead of binding equation. meaning that binding eqations can always be treated as non-final.
@@ -37,7 +37,7 @@ Things that the Flat Modelica format should support:
   - Comment (@mtiller): Do we flatten the functions?  I say that because functions can use features like `extends` or `redeclare` in their definitions.  Presumably we want all that removed in a flattened form, no?  Functions should probably be allowed to have arguments of array and record type.
   - Comment (@harmanpa): Yes. Additionally we might have multiple versions of functions, because we might call a function with different dimension inputs. We need a naming convention for this.
 
-Examples of things that should be gone after flattening and shouldn't exist in Flat Modelica:
+Examples of things that should be gone after flattening and shouldn't exist in Base Modelica:
 - Complex classes that may contain equations.
 - Connectors.
 - Conditional components.
@@ -63,11 +63,11 @@ Content of that should go into this section:
 - Expressions.
 - External functions.
 - User-defined functions.
-- Restricted forms of record field access and array subscripting (some or all of the restrictions may be lifted for Flat Modelica).
+- Restricted forms of record field access and array subscripting (some or all of the restrictions may be lifted for Base Modelica).
 - Unit expressions.
 - Syntax for synchronous language elements and state machines.
 
-### Flat Modelica
+### Base Modelica
 Content of that should go into this section:
 - Overview of execution model for hybrid differential-algebraic equations.
 - Simulation initialization and priority of non-fixed start attributes.

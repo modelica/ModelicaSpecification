@@ -1,24 +1,24 @@
-# Semantical differences between Flat Modelica and Modelica
-This document describes differences between Flat Modelica and Modelica that aren't clear from the differences in the grammars.
+# Semantical differences between Base Modelica and Modelica
+This document describes differences between Base Modelica and Modelica that aren't clear from the differences in the grammars.
 
 
 ## Top level structure
 
-The top level structure (see [grammar](grammar.md#Start-rule)) of a Flat Modelica description can have several top level definitions, with a mandatory `model` definition at the end.
+The top level structure (see [grammar](grammar.md#Start-rule)) of a Base Modelica description can have several top level definitions, with a mandatory `model` definition at the end.
 The definitions before the `model` either define types or global constants.
 
 
 ## Lexical scoping and record definitions
 
-Lookup in Flat Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Flat Modelica program, but there are two more restrictions on top of that explained in this section.
+Lookup in Base Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Base Modelica program, but there are two more restrictions on top of that explained in this section.
 
 Taken together, the two restrictions can be summarized concisely as follows:
-- In Flat Modelica, a member of a record can only be accessed through an instance of the record.
+- In Base Modelica, a member of a record can only be accessed through an instance of the record.
   (This can also be described in terms of lexical look-up rules.)
 
 ### No package constant access for records
 
-Flat Modelica – unlike Full Modelica — doesn't allow a record to be treated as a package for purposes of lookup just because it satisfies the package restrictions.
+Base Modelica – unlike Full Modelica — doesn't allow a record to be treated as a package for purposes of lookup just because it satisfies the package restrictions.
 For example, this is illegal:
 ```
 package 'RecordIsNotPackage'
@@ -64,12 +64,12 @@ package 'OutOfScope'
 end 'OutOfScope';
 ```
 
-One of the sought effects of this restriction is that all only constant modifications can be expressed in Flat Modelica type definitions, greatly simplifying reasoning about types and their representation in tools.
+One of the sought effects of this restriction is that all only constant modifications can be expressed in Base Modelica type definitions, greatly simplifying reasoning about types and their representation in tools.
 
 
 ## Unbalanced if-equations
 
-In Flat Modelica, all branches of an `if`-equation must have the same equation size.
+In Base Modelica, all branches of an `if`-equation must have the same equation size.
 Absence of an else branch is equivalent to having an empty else branch with equation size 0.
 
 An `if`-equation without `else` is useful for a conditional `assert` and similar checks.
@@ -83,23 +83,23 @@ For `if`-equations with parameter condition it does not hold, and if the equatio
 differ those parameters have to be evaluated. In practice it can be complicated to separate those cases,
 and some tools attempt to evaluate the parameters even if the branches have the same equation size.
 
-Flat Modelica is designed to avoid such implicit evaluation of parameters, and thus this restriction is necessary.
+Base Modelica is designed to avoid such implicit evaluation of parameters, and thus this restriction is necessary.
 
 In Modelica a separate issue is that `if`-equations may contain connect and similar primitives
-that cannot easily be counted; but they are gone in Flat Modelica.
+that cannot easily be counted; but they are gone in Base Modelica.
 
 
 ## Conditional components
 
-Flat Modelica does not have conditional components (see `condition-attribute` in the [grammar](grammar.md)).
-All checks that apply to inactivated components in Full Modelica will need to be checked while generating Flat Modelica.
+Base Modelica does not have conditional components (see `condition-attribute` in the [grammar](grammar.md)).
+All checks that apply to inactivated components in Full Modelica will need to be checked while generating Base Modelica.
 
-The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected to make this restriction easier to handle when generating Flat Modelica.
+The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected to make this restriction easier to handle when generating Base Modelica.
 
 
 ## Pure Modelica functions
 
-In addition to full Modelica's classification into _pure_ and _impure_, Flat Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
+In addition to full Modelica's classification into _pure_ and _impure_, Base Modelica adds the concept of a `pure constant` function, informally characterized by the following properties:
 - Only the output values of a function call influence the simulation result (considered free of side effects for purposes of program analysis).
 - The function itself only contributes with `constant` variability to expressions where it is called.  That is, when the function is called with constant arguments, the result is assumed to be the same when evaluated at translation time and when evaluated at any point during simulation.
 - It is straight-forward to evaluate a call to a `pure constant` function at translation time.
@@ -124,8 +124,8 @@ This change was made to support the [changed definitions of _constant expression
 
 ## Function default arguments
 
-Flat Modelica functions cannot have function default arguments.
-A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of arguments used in the model.
+Base Modelica functions cannot have function default arguments.
+A tool producing Base Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of arguments used in the model.
 (The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call. 
 No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
 
@@ -143,7 +143,7 @@ model M
 end M;
 ```
 Here, there is only one call to the function `f` making use of argument defaults.
-Hence, out of the three possible combinations of absent arguments (not counting all arguments being present, as this will correspond to the base variant of `f` in Flat Modelica), only one needs a helper function in Flat Modelica:
+Hence, out of the three possible combinations of absent arguments (not counting all arguments being present, as this will correspond to the base variant of `f` in Base Modelica), only one needs a helper function in Base Modelica:
 ```
 package 'M'
   function 'M.f'
@@ -169,13 +169,13 @@ end 'M';
 Note the name chosen for the automatically generated helper, `'-M.f:1,3'`.
 Due to the leading hyphen, it belongs to the part of the variable namespace that is available for automatically generated names, meaning that there is no risk of collision with names coming from the original full Modelica source.
 
-A Flat Modelica function may still have declaration equations on its inputs, but unlike full Modelica, these are ignored.
+A Base Modelica function may still have declaration equations on its inputs, but unlike full Modelica, these are ignored.
 They are only allowed for the sake of consistency with how deeper value modifiers on functions inputs are handled, see [record construction](#record-construction).
 ```
 function 'f'
   input Real 'a';
-  input Real 'b' = 'a' + 1; /* No default; declaration equation is ignored in Flat Modelica. */
-  input Real 'c' = 2 * 'b'; /* No default; declaration equation is ignored in Flat Modelica. */
+  input Real 'b' = 'a' + 1; /* No default; declaration equation is ignored in Base Modelica. */
+  input Real 'c' = 2 * 'b'; /* No default; declaration equation is ignored in Base Modelica. */
   output Real 'y' = 'a' + 'b' + 'c'; /* Declaration equations are useful for outputs and local variables. */
 end 'f';
 ```
@@ -185,10 +185,10 @@ end 'f';
 
 ### Record construction
 
-Unlike full Modelica, there are no implicitly defined record constructor functions in Flat Modelica.
-A tool producing Flat Modelica from full Modelica can accommodate this by automatically generating helper functions as needed.
+Unlike full Modelica, there are no implicitly defined record constructor functions in Base Modelica.
+A tool producing Base Modelica from full Modelica can accommodate this by automatically generating helper functions as needed.
 The default arguments of the full Modelica record constructor can be handled just like default arguments of other functions, see [above](#function-default-arguments).
-In addition to the helper functions for handling default argumnets, tools producing Flat Modelica from full Modelica can also create a base function for record construction based on values for all record members.
+In addition to the helper functions for handling default argumnets, tools producing Base Modelica from full Modelica can also create a base function for record construction based on values for all record members.
 
 For example, consider this full Modelica model:
 ```
@@ -202,7 +202,7 @@ model M
   R r = R(3);
 end M;
 ```
-To convert this to Flat Modelica, a tool can automatically create two functions:
+To convert this to Base Modelica, a tool can automatically create two functions:
 ```
 package 'M'
   record 'M.R'
@@ -233,8 +233,8 @@ end 'M';
 
 ### Record member value modifications
 
-Even though Flat Modelica doesn't come with implicitly defined record constructor functions — that in full Modelica are derived based on value modifications in the record type definition – it is still allowed to have value modifications for the members of a record type in Flat Modelica.
-Note that the top level structure of a Flat Modelica model ensures that the value modifications that are part of record types can only contain constant values (possibly obtained by evaluation of constant expressions).
+Even though Base Modelica doesn't come with implicitly defined record constructor functions — that in full Modelica are derived based on value modifications in the record type definition – it is still allowed to have value modifications for the members of a record type in Base Modelica.
+Note that the top level structure of a Base Modelica model ensures that the value modifications that are part of record types can only contain constant values (possibly obtained by evaluation of constant expressions).
 As usual, such value modifications can be overridden when declaring a component of the record type, and when made in a model component declaration, it is possible to also have non-constant expressions in the modifications.
 The only semantics of value modifications in record types is that they will be used as the basis for the effective modifications of a component declaration, but the semantics of value modifications in a component declaration are different depending on the kind of component declaration (function/record/model component declaration).
 
@@ -349,24 +349,24 @@ end 'f';
 ## Variability of expressions
 
 ### Constant expressions
-In Flat Modelica, a _constant expression_ is more restricted than in full Modelica, by adding the following requirement:
+In Base Modelica, a _constant expression_ is more restricted than in full Modelica, by adding the following requirement:
 - Functions called in a constant expression must be `pure constant`.
 
 By requiring functions called in a constant expression to be `pure constant`, it is ensured that a constant expression can always be evaluated to a value at translation time.  A function call that is not a constant expression must not be evaluated before simulation starts.
 
 ### Parameter expressions
 
-In Flat Modelica, a _parameter expression_ is more restricted than in full Modelica, by adding the following requirement:
+In Base Modelica, a _parameter expression_ is more restricted than in full Modelica, by adding the following requirement:
 - Functions called in a parameter expression must be pure.
 
-As a consequence, the full Modelica syntactic sugar of using an impure function in the binding equation of a parameter is not allowed in Flat Modelica.  Such initialization has to be expressed explicitly using an initial equation.  Hence, the rules of variability hold without exception also in the case of components declared as parameter.
+As a consequence, the full Modelica syntactic sugar of using an impure function in the binding equation of a parameter is not allowed in Base Modelica.  Such initialization has to be expressed explicitly using an initial equation.  Hence, the rules of variability hold without exception also in the case of components declared as parameter.
 
 ### Reason for change
 By excluding `external` functions, translation time evaluation of constant expressions is greatly simplified.  By excluding `impure` functions and `pure(…)` expressions, it is ensured that it doesn't matter whether evaluation happens at translation time or at simulation (initialization) time.
 
 Forbidding translation time evaluation of function calls in non-constant expressions generalizes the current Modelica rule for `impure` functions and makes it clear that this is not allowed regardless whether this is seen as an optimization or not.  (The current Modelica specification only has a non-normative paragraph saying that performing optimizations is not allowd.)
 
-The change regarding parameter expressions could be extended to discrete-time expressions as well without loss of expressiveness due to the existing restrictions on where an impure function may be called.  This could also be expressed more generally by saying that a function call expression where the callee is impure is a non-discrete-time expression.  However, it was decided to not include this in the formal description of differences between Modelica and Flat Modelica in order to avoid describing changes that only clarify things without actually making a difference to semantics.
+The change regarding parameter expressions could be extended to discrete-time expressions as well without loss of expressiveness due to the existing restrictions on where an impure function may be called.  This could also be expressed more generally by saying that a function call expression where the callee is impure is a non-discrete-time expression.  However, it was decided to not include this in the formal description of differences between Modelica and Base Modelica in order to avoid describing changes that only clarify things without actually making a difference to semantics.
 
 The shifts in variability of function calls could be summarized as _the variability of a function call expression is the highest variability among the argument expressions and the variability of the called function itself_, where the _variability of a function_ is defined by the following table:
 
@@ -397,15 +397,15 @@ The restrictions above should be considered preliminary, as we have yet to find 
 
 It is expected that the restrictions on variability-constrained types will sometime require a type to exist in both a variability-constrained and variability-free variant.  It remains to find out whether the most useful variability-free variants are such that the variability-constrained members of records have been removed, or such that just the variability-constraints have been removed.
 
-The last of the ways that an expression of variability-constrained type may be used – that is, in a solved equation or assignment – is an extension of full Modelica that is provided to mitigate potential problems caused by needing to have two Flat Modelica variants of the same full Modelica type.
+The last of the ways that an expression of variability-constrained type may be used – that is, in a solved equation or assignment – is an extension of full Modelica that is provided to mitigate potential problems caused by needing to have two Base Modelica variants of the same full Modelica type.
 
-A [separate document](variability-constrained-types.md) gives examples of how variability-constrained types may arise in Flat Modelica, and how their constraints can be handled.
+A [separate document](variability-constrained-types.md) gives examples of how variability-constrained types may arise in Base Modelica, and how their constraints can be handled.
 
 
 ## Array size
 
 ### Array types
-In Flat Modelica, array size is part of an array type.  Each dimension has a size that is either _constant_ or _flexible_.  A constant size is one that is an `Integer` number (of constant variability).  It follows that array dimensions index by `Boolean` or enumeration types have constant size (TODO: figure out correct terminology).  A flexible size is an `Integer` of non-constant variability, that is, it corresponds to an array dimension indexed by `Integer` and where the upper bound is a number unknown to the type system.
+In Base Modelica, array size is part of an array type.  Each dimension has a size that is either _constant_ or _flexible_.  A constant size is one that is an `Integer` number (of constant variability).  It follows that array dimensions index by `Boolean` or enumeration types have constant size (TODO: figure out correct terminology).  A flexible size is an `Integer` of non-constant variability, that is, it corresponds to an array dimension indexed by `Integer` and where the upper bound is a number unknown to the type system.
 
 When determining expression types, every array dimension must be unambiguously typed as either constant or flexible.  Where there are constraints on array sizes, for instance when adding two arrays, a flexible array size is only compatible with another flexible array size.  It is a runtime error if the two flexible array sizes are found to be incompatible at runtime (a tool can optimize runtime checks away if it can prove that the sizes will be compatible).
 
@@ -434,9 +434,9 @@ end M;
 ```
 
 #### Change and reason for the change
-This draws a clear line between the constant and flexible array sizes.  This is important for portability (lack of clear separation opens up for different interpretations, where what is considered valid code in one tool is considered a type error in another).  The clear separation also means that flexible array size becomes an isolated Flat Modelica language feature that can be easily defined as an unsupported feature in eFMI.
+This draws a clear line between the constant and flexible array sizes.  This is important for portability (lack of clear separation opens up for different interpretations, where what is considered valid code in one tool is considered a type error in another).  The clear separation also means that flexible array size becomes an isolated Base Modelica language feature that can be easily defined as an unsupported feature in eFMI.
 
-To only consider a flexible size compatible with another flexible size is a restriction that may be removed in the future, allowing different forms of inference on the array sizes.  For now, however, such inference is not considered necessary for a first version of Flat Modelica, and defining such inference would also involve too much work at this stage of Flat Modelica development.
+To only consider a flexible size compatible with another flexible size is a restriction that may be removed in the future, allowing different forms of inference on the array sizes.  For now, however, such inference is not considered necessary for a first version of Base Modelica, and defining such inference would also involve too much work at this stage of Base Modelica development.
 
 It is believed that the clear separation of constant and flexible array sizes is also a necessary starting point for a future extension to allow components with flexible array size outside functions.
 
@@ -489,7 +489,7 @@ The variability of a `size` expression depends on the presence of flexible array
 In Modelica, size-expressions are described as function calls, meaning that they cannot be seen as acting on the type of the argument.  This is changed in order to capture important cases of specifying array dimensions that would otherwise be typed as flexible sizes for no good reason.
 
 ### Component declaration with non-constant array size
-In Flat Modelica, component declarations outside functions may only specify constant array sizes.
+In Base Modelica, component declarations outside functions may only specify constant array sizes.
 
 #### Change and reason for the change
 In Modelica, array sizes with parameter variability outside of functions are somehow allowed, at least not forbidden, but the semantics are not defined.
@@ -498,9 +498,9 @@ So it is easier to forbid this feature for now. If introduced in Modelica, it is
 
 ## Subscripting of general expressions
 
-In Flat Modelica it is possible to have a subscript on any (parenthesized) expression.
+In Base Modelica it is possible to have a subscript on any (parenthesized) expression.
 The reason for this generalization is that some manipulations, in particular inlining of function calls, can lead to such
-expressions and without the slight generalization we could not generate flat Modelica for them. It does not add any real complication
+expressions and without the slight generalization we could not generate Base Modelica for them. It does not add any real complication
 to the translator.
 
 The reason it is  restricted to parenthesized expressions is that `a.x[1]` (according to normal Modelica semantics) and `(a.x)[1]` will often work differently.
@@ -554,31 +554,31 @@ model M
   MSub msub(r=r);
 end M;
 ```
-The Flat Modelica for `M` should only preserve input for `r`, `a`, `c.x` and output for `c.y`, `z`,
+The Base Modelica for `M` should only preserve input for `r`, `a`, `c.x` and output for `c.y`, `z`,
 and thus not preserve it for protected variables and for variables in `msub`.
 
 
 ## Simplify modifications
 
-Flat Modelica has different rules for modifications applied to:
+Base Modelica has different rules for modifications applied to:
 - Model component declarations
 - Types (records and short class declarations) and functions (function component declarations)
 
 ### Common restrictions
 
 Some restrictions compared to full Modelica apply to both modifications in types and in model component declarations:
-- Flat Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
+- Base Modelica does not allow hierarchical names in modifiers, meaning that all modifiers must use the nested form with just a single identifier at each level.
 - At each level, all identifiers must be unique, so that conflicting modifications are trivially detected.
 
 ### Restrictions for model component declarations
 
-A _model component declaration_ is a component declaration belonging to the single `model` of a Flat Modelica source.
+A _model component declaration_ is a component declaration belonging to the single `model` of a Base Modelica source.
 
 Aside from the common restrictions, there are no other restrictions on the modifications in model component declarations.
 
 ### Restrictions for types and functions
 
-Named types can be introduced in two different ways in flat modelica, where both make use of modifications:
+Named types can be introduced in two different ways in Base modelica, where both make use of modifications:
 - When defining `record` types, each _record component declaration_ can have modifications.  For example:
 ```
 record 'PosPoint'
@@ -601,9 +601,9 @@ function 'fun'
 end 'fun';
 ```
 
-The following restrictions apply to modifications in types and functions, making types and function signatures in Flat Modelica easier to represent and reason about compared to full Modelica:
+The following restrictions apply to modifications in types and functions, making types and function signatures in Base Modelica easier to represent and reason about compared to full Modelica:
 - Attribute modifiers must have constant variability.
-- Value modifiers in types can only have constant variability due to Flat Modelica scoping rules.
+- Value modifiers in types can only have constant variability due to Base Modelica scoping rules.
 - Value modifiers in functions can make use of non-constant components in the same function definition, but with simplified semantics compared to full Modelica.
 - Attribute modifiers must be scalar, giving all elements of an array the same element type.  Details of how the scalar modifier is applied to all elements of an array is described [below](#Single-array-element-type).  For example, an array in a type cannot have individual element types with different `unit` attributes.
 
@@ -638,34 +638,34 @@ record 'LineA'
 end 'LineA';
 
 record 'LineB'
-  /* Do not use 'each' at all in Flat Modelica types. */
+  /* Do not use 'each' at all in Base Modelica types. */
   'P' 'p'[2](start = 4, fixed = false);
 end 'LineB';
 ```
 
-If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Flat Modelica.  Otherwise, Flat Modelica will use the `LineB` form.
+If the `LineA` variant ends up being valid in full Modelica, then this is the form that will also be used for Base Modelica.  Otherwise, Base Modelica will use the `LineB` form.
 
 ### Final modification
 
 The concept of being final in full Modelica implies two different things:
-- Further modification is not possible.  This can be verified in the reduction from full Modelica to Flat Modelica, and there is no real need to express this constraint also in the Flat Modelica model.  (It could be useful for expressing constraints for hand-written Flat Modelica, but it is a language feature we could add later if requested.)
-- Parameter values and `start` attributes cannot be modified after translation.  This is something that can't just be verified during the reduction from full Modelica to Flat Modelica.  Instead, final parameter declaration equations are turned into initial equations, and then the same technique is used to handle final modification of `start`.  Details of this are given the sections below on initialization of parameters and time-varying variables.
+- Further modification is not possible.  This can be verified in the reduction from full Modelica to Base Modelica, and there is no real need to express this constraint also in the Base Modelica model.  (It could be useful for expressing constraints for hand-written Base Modelica, but it is a language feature we could add later if requested.)
+- Parameter values and `start` attributes cannot be modified after translation.  This is something that can't just be verified during the reduction from full Modelica to Base Modelica.  Instead, final parameter declaration equations are turned into initial equations, and then the same technique is used to handle final modification of `start`.  Details of this are given the sections below on initialization of parameters and time-varying variables.
 
 
 ## Initialization of parameters
 
-In Flat Modelica, a parameter's declaration equation shall be solved with respect to the parameter, allowing the right hand side to be overridden during initialization (that is, after translation).  This is similar to a full Modelica non-final parameter with `fixed = true`.
+In Base Modelica, a parameter's declaration equation shall be solved with respect to the parameter, allowing the right hand side to be overridden during initialization (that is, after translation).  This is similar to a full Modelica non-final parameter with `fixed = true`.
 
 For example, the full Modelica
 ```
 parameter Real p(fixed = true) = 4.2;
 ```
-translates to the Flat Modelica
+translates to the Base Modelica
 ```
 parameter Real 'p' = 4.2; /* Presence of declaration equation corresponds to full Modelica fixed = true. */
 ```
 
-In Flat Modelica, a parameter without declaration equation shall be solvable from equations given in the `initial equation` section.  This corresponds directly to the full Modelica parameters with `fixed = false`.
+In Base Modelica, a parameter without declaration equation shall be solvable from equations given in the `initial equation` section.  This corresponds directly to the full Modelica parameters with `fixed = false`.
 
 For example, the full Modelica
 ```
@@ -673,7 +673,7 @@ For example, the full Modelica
 initial equation
   p^2 + p = 1;
 ```
-translates to the Flat Modelica
+translates to the Base Modelica
 ```
   parameter Real 'p'; /* Full Modelica parameter with fixed = false. */
 initial equation
@@ -686,9 +686,9 @@ For example, the full Modelica
 ```
   final parameter Real p = 4.2;
 ```
-translates to the Flat Modelica
+translates to the Base Modelica
 ```
-  parameter Real p; /* Full Modelica final parameter has no declaration equation in Flat Modelica. */
+  parameter Real p; /* Full Modelica final parameter has no declaration equation in Base Modelica. */
 initial equation
   p = 4.2; /* From full Modelica final declaration equation. */
 ```
@@ -707,8 +707,8 @@ The handling of start-values in Modelica is complicated by several aspects:
 This information is hidden and not easy to understand, and is not even easy to modify in Modelica.
 As a simplifying assumption we could assume that only literal start-values can be modified afterwards (but not that all literal start-values can be modified).
 
-Flat Modelica cannot simply preserve the priorities, since they are based on where a modification occurs - and that information is gone.
-Removing the complexity of priorities would require that start-values have been prioritized before generating Flat Modelica, which requires that index-reduction and state-selection is performed earlier, which is contrary to the goal.
+Base Modelica cannot simply preserve the priorities, since they are based on where a modification occurs - and that information is gone.
+Removing the complexity of priorities would require that start-values have been prioritized before generating Base Modelica, which requires that index-reduction and state-selection is performed earlier, which is contrary to the goal.
 Replacing start-values by initial equations would require that prioritization has been done, and also prevent experimenting with novel ideas for initialization; see "Investigating Steady State Initialization for Modelica models" by Olsson & Henningsson (Modelica 2021 conference).
 Treating fixed and non-fixed variables differently doesn't work if we want to preserve arrays, since different array elements may have different values for `fixed`.
 
@@ -768,7 +768,7 @@ In this case the first state is not fixed, instead the output is fixed (in some 
 
 #### Start-value for parameters
 For parameters the start-value is normally irrelevant and not specified.
-If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Flat Modelica (if `fixed = true`).
+If the parameter lacks a value modification the `start` attribute can be used as parameter-value after a warning, this can be done before generating Base Modelica (if `fixed = true`).
 
 The real problem is if the parameter has `fixed = false` and no value (but possibly a start-value).
 
@@ -787,7 +787,7 @@ In more a complicated situation, this could be the length of a mechnical arm tha
 
 ### Implicitly declared guess value parameter
 
-Instead of controlling the guess values for the variable `x` via its `start` attribute as in full Modelica, Flat Modelica makes use of an implicitly declared parameter `guess('x')`.  This is called the _guess value parameter_ for `'x'`, and has the same type as `x`.
+Instead of controlling the guess values for the variable `x` via its `start` attribute as in full Modelica, Base Modelica makes use of an implicitly declared parameter `guess('x')`.  This is called the _guess value parameter_ for `'x'`, and has the same type as `x`.
 
 The syntax makes use of the new keyword `guess` which is not present in full Modelica.  (Note that introducing a new keyword will not cause conflict with identifiers used in full Modelica code thanks to name mangling.)
 
@@ -828,7 +828,7 @@ equation
 model 'IllegalGuessDependency'
 ```
 
-While a guess value parameter is allowed to appear in equations in the same ways as a normal parameter, Flat Modelica models originating from full Modelica are only expected to have `guess('x')` appearing in an initial equation in solved form, if appearing at all:
+While a guess value parameter is allowed to appear in equations in the same ways as a normal parameter, Base Modelica models originating from full Modelica are only expected to have `guess('x')` appearing in an initial equation in solved form, if appearing at all:
 ```
   Real 'x';
 initial equation
@@ -856,7 +856,7 @@ initial equation
   'x' = guess('x');
 ```
 
-With the use of guess value parameters, the `SteadyStateInit` full Modelica example above can be turned into Flat Modelica:
+With the use of guess value parameters, the `SteadyStateInit` full Modelica example above can be turned into Base Modelica:
 ```
 model 'SteadyStateInit'
   parameter Real 'p';
@@ -930,7 +930,7 @@ Consider the full Modelica:
   Real x(final start = 1.0);
 ```
 
-In Flat Modelica, the fact that the modification of `start` is final means that the guess value parameter shall be determined by an initial equation rather than a parameter equation:
+In Base Modelica, the fact that the modification of `start` is final means that the guess value parameter shall be determined by an initial equation rather than a parameter equation:
 ```
   Real 'x';
 initial equation
@@ -943,7 +943,7 @@ As another example, consider a final non-fixed parameter in full Modelica:
 initial equation
   p * p = 2;
 ```
-Flat Modelica:
+Base Modelica:
 ```
   parameter Real 'p';
 initial equation
@@ -965,7 +965,7 @@ Consider the following full Modelica model:
   R[2] y(each a(start = {1.5, 1.6, 1.7}), each b(start = 1.2));
 ```
 
-In Flat Modelica, the parameter equation syntax can be extended to allow `each` in a similar way:
+In Base Modelica, the parameter equation syntax can be extended to allow `each` in a similar way:
 ```
   parameter equation each guess('x'.'a') = 1.5;
   parameter equation each guess('x'.'b') = 1.2;
@@ -973,7 +973,7 @@ In Flat Modelica, the parameter equation syntax can be extended to allow `each` 
   parameter equation each guess('y'.'b') = 1.2;
 ```
 
-Just like for normal modifications, the `each` is actually redundant and could be removed from the design; the array dimensions of the right hand side must match the trailing array dimensions of the component reference on the left hand side, and the `each` is required just to make it more obvious that the right hand side value will be used to fill an array of values.  (To make an actually meaninful use of `each` one needs the expressive power of selecting which array dimensions to fill, and this can be added in a backwards compatible way to future versions of Flat Modelica, by allowing `each` at different positions inside the component reference of `guess`.)
+Just like for normal modifications, the `each` is actually redundant and could be removed from the design; the array dimensions of the right hand side must match the trailing array dimensions of the component reference on the left hand side, and the `each` is required just to make it more obvious that the right hand side value will be used to fill an array of values.  (To make an actually meaninful use of `each` one needs the expressive power of selecting which array dimensions to fill, and this can be added in a backwards compatible way to future versions of Base Modelica, by allowing `each` at different positions inside the component reference of `guess`.)
 
 Finally, consider a full Modelica model with final modifications of `start`:
 ```
@@ -991,19 +991,19 @@ initial equation
 
 Here, the `each` is associated with the equation's entire left hand side, and for clarity at the cost of symmetry, it should only be allowed for the left hand side of an equation.  As for modification with `each`, the array dimensions of the right hand side must match the trailing array dimensions of the left hand side, and the `each` corresponds to a `fill` on the right hand side, adding the missing dimensions needed to match the left hand side.
 
-Again: The two new uses of `each` (in parameter equations and in normal equations) add non-essential complexity to the first version of Flat Modelica, and might make more sense to add in future versions.  At the same time, the proposed use of `each` in normal equations have applications beyond guess value parameters, in particular when a full Modelica model has a final modification with `each` for an array of parameter values.
+Again: The two new uses of `each` (in parameter equations and in normal equations) add non-essential complexity to the first version of Base Modelica, and might make more sense to add in future versions.  At the same time, the proposed use of `each` in normal equations have applications beyond guess value parameters, in particular when a full Modelica model has a final modification with `each` for an array of parameter values.
 
 ### The `fixed` attribute
 
-The `fixed` attribute has been completely removed in Flat Modelica.  This was described above for parameters, and is described here for time-varying variables.
+The `fixed` attribute has been completely removed in Base Modelica.  This was described above for parameters, and is described here for time-varying variables.
 
-When the full Modelica variable has `fixed = true`, this is represented explicitly with an initial equation in Flat Modelica.  Having `fixed = false` in full Modelica doesn't turn into anything in Flat Modelica.
+When the full Modelica variable has `fixed = true`, this is represented explicitly with an initial equation in Base Modelica.  Having `fixed = false` in full Modelica doesn't turn into anything in Base Modelica.
 
 For example, the full Modelica
 ```
   Real x(fixed = true, start = 1.0);
 ```
-is translated to the Flat Modelica
+is translated to the Base Modelica
 ```
   Real 'x';
   parameter equation guess('x') = 1.0; /* From non-final modification of start in full Modelica. */
@@ -1045,13 +1045,13 @@ initial equation
 
 #### Arrays with `each` modification of `fixed`
 
-Nothing special is needed when a full Modelica array has a homogeneous modificaiton of `fixed` using `each`.  The modification `each fixed = false` doesn't turn into anything in Flat Modelica, while `each fixed = true` turns into an array equation.
+Nothing special is needed when a full Modelica array has a homogeneous modificaiton of `fixed` using `each`.  The modification `each fixed = false` doesn't turn into anything in Base Modelica, while `each fixed = true` turns into an array equation.
 
 For example, the full Modelica
 ```
   Real[3] x(each fixed = true, start = {1.1, 1.2, 1.3});
 ```
-is translated to the Flat Modelica
+is translated to the Base Modelica
 ```
   Real[3] 'x';
   parameter equation guess('x') = {1.1, 1.2, 1.3}; /* From non-final modification of start in full Modelica. */
@@ -1065,7 +1065,7 @@ Nothing special is needed to handle arrays with heterogeneous modification of `f
 ```
 Real[3] x(each start = 1.0, fixed = {true, false, true});
 ```
-is translated to the Flat Modelica
+is translated to the Base Modelica
 ```
   Real[3] 'x';
   parameter equation guess('x') = fill(1.0, 3);
@@ -1076,9 +1076,9 @@ initial equation
 
 ### Guess value prioritization
 
-In full Modelica, there is a priority associated with the effective modifier for a variable's `start` attribute.  Details of how the priority is determined are outside the scope of Flat Modelica specification, but Flat Modelica needs a way to directly express a variable's guess value priority as a number (computed based on the full Modelica definition of priority).
+In full Modelica, there is a priority associated with the effective modifier for a variable's `start` attribute.  Details of how the priority is determined are outside the scope of Base Modelica specification, but Base Modelica needs a way to directly express a variable's guess value priority as a number (computed based on the full Modelica definition of priority).
 
-The basic Flat Modelica way of expressing a variable's guess value priority take the form of a special kind of initial equation:
+The basic Base Modelica way of expressing a variable's guess value priority take the form of a special kind of initial equation:
 ```
 initial equation
   prioritize('x', 2); /* The guess value priority of 'x' is 2. */
@@ -1144,7 +1144,7 @@ TODO: If we proceed with the design where `start` is no longer a type attribute,
 
 ### Syntactic sugars
 
-For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Flat Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
+For convenience and recognition among full Modelica users, a model component declaration may include modifications of `fixed` and `start` as syntactic sugar.  Note that this does not make `fixed` and `start` actual attributes in Base Modelica; the syntactic sugar is only piggy-backing on the syntax for modification of attributes.
 
 Setting `fixed = true` on the continuous-time variable `'x'` is syntactic sugar for having:
 ```
@@ -1174,9 +1174,9 @@ Note that it is not possible to use the syntactic sugar for a final modification
 
 ## Protected
 
-Flat Modelica does not distinguish between protected and public sections of a class definition.
+Base Modelica does not distinguish between protected and public sections of a class definition.
 For functions, this means that all component declarations with prefix `input` or `output` are considered part of the functions public interface, while all other component declarations are considered local to the implementation of the function.
-Accordingly, a function component declaration which is neither input nor output is called a _local component declaration_ or _local variable_ in Flat Modelica.
+Accordingly, a function component declaration which is neither input nor output is called a _local component declaration_ or _local variable_ in Base Modelica.
 
-The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Flat Modelica comes from a protected section in the full Modelica model.
+The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Base Modelica comes from a protected section in the full Modelica model.
 See [`protected` annotation](annotations.md#protected).
