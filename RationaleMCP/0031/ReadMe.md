@@ -101,7 +101,7 @@ Big changes that don't make sense to even consider for a minor release of versio
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
 
 ## Rationale
-The requirements on what Base Modelica should and shoudn't be are currently being developed in a [separate document](Flat-Modelica-requirements.md).
+The requirements on what Base Modelica should and shoudn't be are currently being developed in a [separate document](Base-Modelica-requirements.md).
 
 ## Backwards Compatibility
 It is the goal of this MCP that it should only change the way the Modelica language is described, not either adding, removing, or changing any of the Modelica language features.  Hence, it should be completely backwards compatible.
