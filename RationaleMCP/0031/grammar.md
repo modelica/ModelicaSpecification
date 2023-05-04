@@ -1,10 +1,10 @@
-# Flat Modelica grammar
+# Base Modelica grammar
 
-The starting point for this Flat Modelica grammar is the ANTLR grammar for Modelica as proposed by [this ModelicaSpecification PR](https://github.com/modelica/ModelicaSpecification/pull/2378).
+The starting point for this Base Modelica grammar is the ANTLR grammar for Modelica as proposed by [this ModelicaSpecification PR](https://github.com/modelica/ModelicaSpecification/pull/2378).
 
-The intention is to develop the Flat Modelica grammar as a modification (mainly consisting of restrictions) of the full Modelica grammar, and to make the differences clearly visible in this document.  Hence, rather than just erasing the parts of the Modelica grammar that shouldn't be brought to Flat Modelica, these parts will be marked with a strikeout.
+The intention is to develop the Base Modelica grammar as a modification (mainly consisting of restrictions) of the full Modelica grammar, and to make the differences clearly visible in this document.  Hence, rather than just erasing the parts of the Modelica grammar that shouldn't be brought to Base Modelica, these parts will be marked with a strikeout.
 
-The start rule of the Flat Modelica grammar below is [_flat-modelica_](#Start-rule).
+The start rule of the Base Modelica grammar below is [_base-modelica_](#Start-rule).
 
 
 ## B1 Lexical conventions
@@ -63,7 +63,7 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 
 
 ## Start rule
-> _flat-modelica_ →\
+> _base-modelica_ →\
 > &emsp; _VERSION-HEADER_\
 > &emsp; **package** _IDENT_\
 > &emsp;&emsp; ( _decoration_? _class-definition_ **;**\
@@ -73,16 +73,16 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 > &emsp;&emsp; ( _annotation-comment_ **;** )?
 > &emsp; **end** _IDENT_ **;**
 
-Here, the _VERSION-HEADER_ is a Flat Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
-> _VERSION-HEADER_ → `^\U+FEFF?//![ ]flat[ ][0-9]+[.][0-9]+[r.][0-9]+$`
+Here, the _VERSION-HEADER_ is a Base Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
+> _VERSION-HEADER_ → `^\U+FEFF?//![ ]base[ ][0-9]+[.][0-9]+[r.][0-9]+$`
 
 The `\U+FEFF?` at the very beginning is an optional byte order mark.
 
-The _IDENT_ in the _flat-modelica_ rule must be the same identifier as in the _long-class-specifier_ following **model**.
+The _IDENT_ in the _base-modelica_ rule must be the same identifier as in the _long-class-specifier_ following **model**.
 
-As an example of the _flat-modelica_ rule, this is a minimal valid Flat Modelica source:
+As an example of the _base-modelica_ rule, this is a minimal valid Base Modelica source:
 ```
-//! flat 3.5.0
+//! base 3.5.0
 package _F
   model _F
   end _F;

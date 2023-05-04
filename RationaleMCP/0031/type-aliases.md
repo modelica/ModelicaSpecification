@@ -1,6 +1,6 @@
 # Type aliases
 
-This document presents some alternative designs for the allowed use of type aliases in Flat Modelica.  Once the different alternatives are properly described together with their advantages and disadvantages, it will be possible to make an informed decision of which design to choose.
+This document presents some alternative designs for the allowed use of type aliases in Base Modelica.  Once the different alternatives are properly described together with their advantages and disadvantages, it will be possible to make an informed decision of which design to choose.
 
 
 ## Design alternatives for scalars
@@ -175,6 +175,6 @@ type PositiveCone3D = [3] Length(min = 0.0);
 While type aliases for scalars and records were deemed useful enough to be supported, it was decided to omit type aliases for arrays.
 
 The reasoning beind the decision to not support array type aliases was based on several things:
-- Array type aliases were not thought to add significant convenience for machine-generated Flat Modelica.
+- Array type aliases were not thought to add significant convenience for machine-generated Base Modelica.
 - The full Modelica way of defining array type aliases comes with some confusion when used as the element type of another array type (see above).
 - The idea to introduce another notation for declaring array types (as in `[3, 4] Real`) was not popular in the MCP working group.

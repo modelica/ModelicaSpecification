@@ -5,7 +5,7 @@ The `constsize` expression is introduced and defined in [differences.md](differe
 This section describes a limitation of the current design, and ways in which it can be remedied in the future.
 
 ### Limitation
-The current forms of `constsize` don't allow leaving some leading sizes flexible, while making other sizes constant.  It means that some full Modelica function algorithms cannot be directly converted to Flat Modelica:
+The current forms of `constsize` don't allow leaving some leading sizes flexible, while making other sizes constant.  It means that some full Modelica function algorithms cannot be directly converted to Base Modelica:
 ```
 function flexibleTrouble
 protected
@@ -13,11 +13,11 @@ protected
   Real[2] b;
   Real[:] y;
 algorithm
-  /* Allowed in full Modelica, but not in Flat Modelica.
+  /* Allowed in full Modelica, but not in Base Modelica.
    * Size mismatch in array multiplication: ':' is not compatible with constant size.
    */
   y := a * b;
-  /* Trying to address Flat Modelica type error.
+  /* Trying to address Base Modelica type error.
    * Well-typed, but will generally fail at runtime, as 42 has nothing to do with the first size of 'a'.
    */
   y := constsize(a, 42, 2) * b;
@@ -36,7 +36,7 @@ Alternatively, one could make `constsize` a keyword and change the grammar to al
 constsize(arrExp, :, s2, ..., sn)
 ```
 
-For now, however, we don't expect this to be a problem for real-world examples.  Regarding the example given above, the variable `a` should probably have been declared as `Real[:, 2]` to start with, and then the matrix multiplication would be fine also in Flat Modelica.  For this reason, and knowing that there are ways that the current `constsize` expressions can be generalized in the future, we leave the design of `constsize` for now with this known limitation.
+For now, however, we don't expect this to be a problem for real-world examples.  Regarding the example given above, the variable `a` should probably have been declared as `Real[:, 2]` to start with, and then the matrix multiplication would be fine also in Base Modelica.  For this reason, and knowing that there are ways that the current `constsize` expressions can be generalized in the future, we leave the design of `constsize` for now with this known limitation.
 
 With a way to specify `:` in the `constsize` expression, one would have to define if a `:` specified for a constant dimension should turn that dimension into a flexible size, or if it should be defined as leaving the size constant.  This could be particularly useful when dealing with dimensions indexed by enumerations:
 ```
@@ -95,7 +95,7 @@ constsize(dimsExp)(arrExp)          /* dimsExp is a constant Integer array expre
 Pros and cons leading to the current decision of going with the function call syntax instead:
 - Syntax (square bracket form) is easily and naturally extended to also allow `:` sizes where the resulting size must not be constant (the use of `:` in a list of sizes given between square brackets is already established).
 - Syntax (square bracket form) is easily and naturally extended to allow non-`Integer` sizes to be given as declared, rather than as the integer measuring the size of the dimension.  That is, to allow `Boolean` instead of the integer `2`.
-- Not using function call syntax means grammar has to be extended (with `constsize` as Flat Modelica keyword), without added value until generalized to also allow `:`.
+- Not using function call syntax means grammar has to be extended (with `constsize` as Base Modelica keyword), without added value until generalized to also allow `:`.
 - The currently proposed function call syntax would also be possible to extend, see above.
 
 Example (compare [example using current design](differences.md#the-constsize-expression)):

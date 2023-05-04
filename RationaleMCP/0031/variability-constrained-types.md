@@ -1,6 +1,6 @@
 # Variability-constrained types by example
 
-[As described elsewhere](differences.md), a variability-constrained type is one where some record members have been declared with variability prefix (`parameter` or `constant` – `discrete` is currently _not_ an actual variability prefix in Modelica, but implies being discrete-time in a way that makes it impossible to use in a type).  In Flat Modelica, such types are only allowed in model component declarations, and this document gives examples of how this constraint be handled.
+[As described elsewhere](differences.md), a variability-constrained type is one where some record members have been declared with variability prefix (`parameter` or `constant` – `discrete` is currently _not_ an actual variability prefix in Modelica, but implies being discrete-time in a way that makes it impossible to use in a type).  In Base Modelica, such types are only allowed in model component declarations, and this document gives examples of how this constraint be handled.
 
 ## Hierarchical representation of model structure
 
@@ -21,7 +21,7 @@ model M
 end M;
 ```
 
-The same hierarchical structure can be represented in Flat Modelica:
+The same hierarchical structure can be represented in Base Modelica:
 ```
 record 'M.Resistor' /* Variability-constrained type */
   parameter Real 'r'; /* Parameter declared with variability-free type Real. */
@@ -39,7 +39,7 @@ equation
 end 'M';
 ```
 
-For this use of a variability-constrained Flat Modelica record, there is typcailly no need to have a variability-free variant of the same type, and the interesting part is to verify that the Flat Modelica equations don't have illegal sub-expressions of variability-constrained type.  Consider the first equation,
+For this use of a variability-constrained Base Modelica record, there is typcailly no need to have a variability-free variant of the same type, and the interesting part is to verify that the Base Modelica equations don't have illegal sub-expressions of variability-constrained type.  Consider the first equation,
 ```
   'comp1'.'i' = 1 / 'comp1'.'r';
 ```
@@ -62,7 +62,7 @@ end M;
 
 (Someone has to remind us why the `data` was additionally declared `parameter`.)
 
-In this case, there seems to be no need to preserve the variability-constraints in the Flat Modelica type:
+In this case, there seems to be no need to preserve the variability-constraints in the Base Modelica type:
 ```
 record 'M.Parameters'
   Real 'x';
@@ -81,4 +81,4 @@ TODO: Example with time-varying polynomial.
 
 ## Connector with parameter
 
-TODO: Describe what happens to a full Modelica connector with a parameter inside.  In particular, what is the corresponding Flat Modelica record?
+TODO: Describe what happens to a full Modelica connector with a parameter inside.  In particular, what is the corresponding Base Modelica record?
