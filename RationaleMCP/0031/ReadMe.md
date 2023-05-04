@@ -76,7 +76,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Event handling semantics is preserved as in Modelica.
 - [x] Get rid of `when initial()` and `when`-equations inside `if` and `for`. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsimplify-when/RationaleMCP/0031/differences.md#when-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3258)
 - [x] Source locations pointing back to the original Modelica code. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsource-locations/RationaleMCP/0031/source-locations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3295)
-- [ ] Settle the name (originally _Flat Modelica_), considering that scalarization isn't mandatory. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bname-of-the-game/RationaleMCP/0031/name-of-the-game.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3224)
+- [x] Settle the name (originally _Flat Modelica_), considering that scalarization isn't mandatory. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bname-of-the-game/RationaleMCP/0031/name-of-the-game.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3224)
 
 ### Base Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Base Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
