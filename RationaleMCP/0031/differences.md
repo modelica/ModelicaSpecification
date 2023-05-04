@@ -85,8 +85,7 @@ and some tools attempt to evaluate the parameters even if the branches have the 
 
 Base Modelica is designed to avoid such implicit evaluation of parameters, and thus this restriction is necessary.
 
-In Modelica a separate issue is that `if`-equations may contain connect and similar primitives
-that cannot easily be counted; but they are gone in Base Modelica.
+In Modelica a separate issue is that `if`-equations may contain `connect` and similar primitives that cannot easily be counted; but they are gone in Base Modelica.
 
 
 ## Conditional components
@@ -95,6 +94,130 @@ Base Modelica does not have conditional components (see `condition-attribute` in
 All checks that apply to inactivated components in Full Modelica will need to be checked while generating Base Modelica.
 
 The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129 regarding conditional connectors is expected to make this restriction easier to handle when generating Base Modelica.
+
+
+## Connect equations
+
+There are no `connect` equations in Flat Modelica.
+
+To make this possible, a new builtin function `realParameterEqual` is provided.
+The two arguments to `realParameterEqual` must be `Real` parameter expressions, and the result is a `Boolean` (of variability determined from the arguments as usual).
+
+The function returns `true` if and only if the two arguments are exactly equal up to the precision of a stored parameter value.
+The non-trivial case for the function is thus when one or both of the arguments have extra bits of precision stored in registers, as illustrated by the example `ExtraPrecisionProblems` below.
+
+For a basic example of how the function can be used, consider the following model:
+```
+model M
+  connector C
+    parameter Real p;
+  end C;
+
+  model A
+    C c;
+  end A;
+
+  A a1(c.p = 1.0);
+  A a2(c.p = 1.1);
+equation
+  connect(a1.c, a2.c);
+end M;
+```
+In Flat Modelica one needs to use the `realParameterEqual` function:
+```
+package 'M'
+model 'M'
+  parameter Real 'a1.c.p' = 1.0;
+  parameter Real 'a2.c.p' = 1.0;
+equation
+  assert(realParameterEqual('a1.c.p', 'a2.c.p'), "Connector parameters a1.c.p and a2.c.p must be equal due to connect equation.");
+end 'M';
+end 'M';
+```
+
+Regarding the problem with extra bits of precision hiding in registers, consider the following model:
+```
+model 'M'
+  parameter Real 'p' = 1.1;
+  parameter Real 'q' = sin('p');
+equation
+  /* While 'q' has the precision of a Real stored in memory, the value of sin('p') might exist with
+   * higher precision in a register.  When comparing the two, realParameterEqual must make sure that
+   * the extra bits of precision does not make the assertion fail.
+   */
+  assert(realParameterEqual('q', sin('p')), "Incorrect implementation of realParameterEqual!");
+end 'M';
+```
+
+
+## When-Equations
+
+The `when`-equations in Flat Modelica are more restricted compared to full Modelica.
+In summary:
+- `when`-equations have no meaning at all for the initialization problem:
+  * No special treatment of `initial()` as a `when`-clause trigger expression.
+  * No implicit initial equations in the form `x = pre(x)` for a variable `x` assigned in the `when`-equation.
+- It is not allowed to have `when`-equations inside `if`-equations and `for`-equations.
+
+Here, the _special treatment_ of `when initial() then` refers to the special meaning of such a `when`-equation in the initialization problem, including the special meaning of `reinit` when activated by `initial()`.
+Hence, the first `when`-clause triggered by `initial()` in full Modelica needs to be turned into `initial equation` form in Flat Modelica, with `reinit`-equations replaced by equality-equations.
+This also means that in Flat Modelica, the triggering condition `initial()` will have the same effect as the triggering condition `true and initial()`, namely that they will never trigger the `when`-clause because the expression never undergoes a positive edge.
+
+The implicit initial equations `x = pre(x)` in full Modelica (in case no `when`-clause is activated with `initial()`) need to be made explicit in Flat Modelica.
+
+Regarding `when`-equations inside `if`-equations and `for`-equations, full Modelica only allows this where the `if`-equation conditions and `for`-equation ranges are parameter expressions.
+Hence, it is only with a small loss of generality that it is being assumed that these conditions and ranges should be possible to evaluate during translation, allowing an `if`-equation to be reduced to one of its branches, or a `for`-equation to be unrolled.
+
+
+## When-Statements
+
+Unlike the `when`-equations, there are no restrictions on the `when`-statements in Flat Modelica relative to full Modelica.
+
+Note that `reinit` is not allowed in a `when`-statement, so the notable thing about `when`-statements in Flat Modelica is that they may be triggerd by `initial()` just like in Full Modelica.
+
+### Rationale
+
+The reason for not further restricting the `when`-statements is that it it was considered too complicated to reduce `when initial()` in an algorithm to something more elementary.  As an example, consider the following full Modelica `when`-statement with a clause triggered by `initial()`:
+```
+  Real x;
+  Real y;
+algorithm
+  x := 0.5;
+  x := x + time;
+  when {x^2 > 2.0, initial()} then
+    y := pre(x);
+  end when;
+  x := x + 0.5;
+```
+
+Note that putting the following `if`-statement in the algorithm would be illegal since the argument of `pre` needs to be discrete-time:
+```
+  if initial() then
+    'y' := pre('x'); /* 'x' is continuous-time, since no longer inside when-clause. */
+  end if;
+```
+
+To get around this problem, one could try making separate variants of the algorithm depending on `initial()`:
+```
+  Real 'x';
+  Real 'y';
+initial algorithm
+  'x' := 0.5;
+  'x' := 'x' + time;
+  'y' := pre('x'); /* 'x' is discrete-time, since inside initial algorithm. */
+  'x' := 'x' + 0.5;
+algorithm
+  if not initial() then
+    'x' := 0.5;
+    'x' := 'x' + time;
+    when 'x'^2 > 2.0 then
+      'y' := pre('x');
+    end when;
+    'x' := 'x' + 0.5;
+  end if;
+```
+
+However, this doesn't work either, as the initialization problem will have two algorithms assigning to `'x'` and `'y'`, even though one of the algorithm has a disabled body.
 
 
 ## Pure Modelica functions
@@ -1180,3 +1303,87 @@ Accordingly, a function component declaration which is neither input nor output 
 
 The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Base Modelica comes from a protected section in the full Modelica model.
 See [`protected` annotation](annotations.md#protected).
+
+
+## Clock partitions
+
+The implicit clock partitioning carried out by tools for full Modelica is made explicit in Flat Modelica.
+The equations solved in a clocked sub-partition are placed in a dedicated `subpartition` construct, and the variables being determined by the sub-partition can be determined by a simple inspection of the equations, as explained below.
+See _base-partition_ and related rules in the [grammar](grammar.md#clock-partitions) for details on the syntax.
+
+Note that the component declarations for variables solved in a sub-partition are not syntactically placed inside the `subpartition` construct because of the way that the sub-clocks and base-clocks cut across the instance hierarchy.
+
+In Flat Modelica, every clock is declared as a component with a name, at the top of some `partition`.
+Sometimes, this name will correspond to the name of a clock in full Modelica, sometimes it will be an automatically generated name.
+Tools may find it useful to include the clock components in a simulation result, but doing so is not required and there is no standard for what to store.
+
+Instead of the binary clocked `sample` operator in full Modelica, Flat Modelica has an unary `sample(…)` operator.
+It is only allowed inside the equations and algorithms of a `subpartition`, and the semantics is that the argument expression is sampled at the clock ticks of the current sub-partition.
+
+A Flat Modelica model with clock partitioning can look like this:
+```
+package 'M'
+model 'M'
+  Real 'x';
+  Real 'baseVar', 'cVar1', 'cVar2', 'cVar3';
+  Real 'mixedVar1';
+
+/* Equations and algorithms before the start of the first base-partition belong to the continuous-time partition. */
+equation
+  der('x') = 1;
+
+partition /* Beginning of base-partition */
+  Clock 'myClock' = Clock(1); /* Clock name originating from full Modelica model. */
+  Clock _subClock0 = subSample('myClock', 2); /* Automatically generated clock name. */
+  Clock _subClock1 = superSample(subSample('myClock', 2), 8);
+
+  subpartition (clock = 'myClock') /* Beginning of sub-partition within base-partition. */
+  equation
+    'baseVar' = sample('x');
+
+  subpartition (clock = _subClock0, solverMethod = "ImplicitEuler")
+  equation
+    der('cVar1') = noClock('baseVar');
+
+  subpartition (clock = _subClock1)
+  equation
+    'cVar2' = noClock('baseVar');
+    'cVar3' = noClock('cVar1');
+  algorithm
+    'mixedVar1' := 'cVar2' + 'cVar3';
+
+partition
+  Clock _baseClock0 = Clock(1.1);
+  ...
+  /* Base-partition ends at the start of another base-partition, or at the end of the model. */
+
+end 'M';
+end 'M';
+```
+
+A `partition` begins with the definition of all clocks belonging to the base-partition and its sub-partitions.
+A clock is only accessible within the `partition` where it is declared, and may only be used to define other clocks and to specify the `clock` of a `subpartition`.
+
+A sub-partition begins with the `subpartition` keyword, followed by a specification of some sub-partition details in the form of the named argument syntax.
+The following are the only valid named arguments:
+- `clock` `=` _clock-name_
+- `solverMethod` `=` _method-name_
+
+Here, _clock-name_ must be the name of a `Clock` declared within the current `partition`, and _method-name_ must be a constant `String` expression.
+`clock` is required for every `subpartition`.
+`solverMethod` is only required when the sub-partition contains continuous-time equations, and specifies the time discretization method.
+It is an error if a named argument is specified multiple times.
+
+In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
+Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
+It is not allowed to reference variables determined in another clocked base-partition, except when wrapped in `hold()`.
+(The expression `hold(x)` is a continuous-time expression and needs to be sampled before it can appear in a clocked partition.)
+Hence, the variables determined by a `subpartition` are found as all component references appearing in the `subpartition`'s equations and algorithms, except:
+- Parameters and constants.
+- Variables inside `noClock(…)`, `sample(…)`, or `previous(…)`.
+
+The `noClock(…)` may only be used to refer to variables determined by an earlier `subpartition` of the same `partition`.
+This means that there cannot be cyclic dependencies between the sub-partitions, and that evaluation of a `partition` at a clock tick can always be performed by executing the `subpartitions` in order of appearance.
+Note that `noClock(…)` in may sometimes be wrapped around a variable in Flat Modelica where there was no wrapping in the original full Modelica model.
+
+Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.

@@ -16,9 +16,9 @@ Use cases to have in mind in the design of Base Modelica, also indicating the us
 * Serve as intermediate stage in the Modelica specification, separating front end matters (the high level constructs of the Modelica language) from back end matters (simulation semantics).
   - Generally speaking, the two different matters will attract attention from people with quite different interests and areas of expertise (compuer science and numerical mathematics, respectively).
   - Separation will facilitate more efficient work and rapid development of the two aspects of the Modelica language.
-  - Simulation semantics could then get some well deserved attention after many years of almost no attention at all, which would be a necessary step towards true portability of models and libraries between tools.
+  - Simulation semantics could then get some well deserved attention, which would be a necessary step towards true portability of models and libraries between tools.
   - Making it easier to organize the development work of a Modelica tool.
-  - A working gorup with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
+  - A working group with focus on the equation model and simulation semantics would also play a very important roll in future developments of new language features such as varying-structure systems, or integration with PDE solvers.
 * Basis for the _Equation Code_ of eFMI, [see below](#Relation-to-eFMI).
 * Help users understand the mysterious ways of the Modelica language by showing them the lowered models.
 * Comparison of different Modelica back ends with the same lowered model.
@@ -71,11 +71,12 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Get rid of `each`. [PR](https://github.com/modelica/ModelicaSpecification/pull/2583)
 - [x] Investigate need for `for`-equations. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031-for-equations/RationaleMCP/0031/grammar.md#b26-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3163)
 - [x] Marking of top level inputs and outputs. [Design](differences.md#Input-output)
-- [ ] Add function `realParameterEqual` for use in automatically generated asserts on `Real` equality. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Breal-equality/RationaleMCP/0031/differences.md#connect-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3175)
-- [ ] Figure out what to do with synchronous features.
-- [ ] Event handling semantics is preserved as in Modelica.
-- [ ] Source locations pointing back to the original Modelica code.
-- [ ] Settle the name (currently _Base Modelica_), considering that scalarization isn't mandatory.
+- [x] Add function `realParameterEqual` for use in automatically generated asserts on `Real` equality. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Breal-equality/RationaleMCP/0031/differences.md#connect-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3175)
+- [x] Figure out what to do with synchronous features. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsynchronous/RationaleMCP/0031/differences.md#clock-partitions), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3240)
+- [x] Event handling semantics is preserved as in Modelica.
+- [x] Get rid of `when initial()` and `when`-equations inside `if` and `for`. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsimplify-when/RationaleMCP/0031/differences.md#when-equations), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3258)
+- [x] Source locations pointing back to the original Modelica code. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsource-locations/RationaleMCP/0031/source-locations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3295)
+- [ ] Settle the name (originally _Flat Modelica_), considering that scalarization isn't mandatory. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bname-of-the-game/RationaleMCP/0031/name-of-the-game.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3224)
 
 ### Base Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Base Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.

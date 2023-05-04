@@ -66,10 +66,11 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 > _base-modelica_ →\
 > &emsp; _VERSION-HEADER_\
 > &emsp; **package** _IDENT_\
-> &emsp;&emsp; ( _class-definition_ **;**\
-> &emsp;&emsp; | _global-constant_ **;**\
+> &emsp;&emsp; ( _decoration_? _class-definition_ **;**\
+> &emsp;&emsp; | _decoration_? _global-constant_ **;**\
 > &emsp;&emsp; )*\
-> &emsp;&emsp; **model** _long-class-specifier_ **;**\
+> &emsp;&emsp; _decoration_? **model** _long-class-specifier_ **;**\
+> &emsp;&emsp; ( _annotation-comment_ **;** )?
 > &emsp; **end** _IDENT_ **;**
 
 Here, the _VERSION-HEADER_ is a Base Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
@@ -129,16 +130,17 @@ end _F;
 > _enumeration-literal_ → _IDENT_ _comment_
 
 > _composition_ →\
-> &emsp; (_generic-element_ **;**)* \
-> &emsp; ~~( **public** (_generic-element_ **;**)*~~ \
-> &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
-> &emsp; | **equation** ( _equation_ **;** )* \
+> &emsp; (_decoration_? _generic-element_ **;**)* \
+> &emsp; ( **equation** ( _equation_ **;** )* \
 > &emsp; | **initial** **equation** ( _initial-equation_ **;** )* \
 > &emsp; | **initial**? **algorithm** ( _statement_ **;** )* \
+> &emsp; ~~| **public** (_generic-element_ **;**)*~~ \
+> &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
 > &emsp; )* \
-> &emsp; ( **external** _language-specification_?\
+> &emsp; ( _decoration_? **external** _language-specification_?\
 > &emsp;&emsp; _external-function-call_? _annotation-comment_? **;**\
 > &emsp; )?\
+> &emsp; _base-partition_* \
 > &emsp; ( _annotation-comment_ **;** )?
 
 > _language-specification_ → _STRING_
@@ -171,6 +173,24 @@ end _F;
 > &emsp; _comment_~~
 
 > ~~_import-list_ → _IDENT_ ( **,** _IDENT_ )*~~
+
+
+## Clock partitions
+
+> _base-partition_ →\
+> &emsp; **partition** _string-comment_\
+> &emsp; ( _annotation-comment_ **;** )?
+> &emsp; ( _clock-clause_ **;** )*\
+> &emsp; _sub-partition_*
+
+> _sub-partition_ →\
+> &emsp; **subpartition** `[(]` _argument-list_ `[)]` _string-comment_\
+> &emsp; ( _annotation-comment_ **;** )?
+> &emsp; ( **equation** ( _equation_ **;** )* \
+> &emsp; | **algorithm** ( _statement_ **;** )* \
+> &emsp; )*
+
+> _clock-clause_ → _decoration_? **Clock** _IDENT_ **=** _expression_ _comment_
 
 
 ## B23 Extends
@@ -211,7 +231,7 @@ end _F;
 > _argument-list_ → _argument_ ( **,** _argument_ )*
 
 > _argument_\
-> &emsp; → _element-modification-or-replaceable_\
+> &emsp; → _decoration_? _element-modification-or-replaceable_\
 > &emsp; ~~| _element-redeclaration_~~
 
 > _element-modification-or-replaceable_ →\
@@ -246,7 +266,8 @@ end _F;
 ## B26 Equations
 
 > _equation_ →\
-> &emsp; ( _simple-expression_ ( **=** _expression_ )?\
+> &emsp; _decoration_?\
+> &emsp; ( _simple-expression_ _decoration_? ( **=** _expression_ )?\
 > &emsp; | _if-equation_\
 > &emsp; | _for-equation_\
 > &emsp; ~~| _connect-clause_~~\
@@ -257,6 +278,7 @@ end _F;
 > _initial-equation_ → _equation_ | _prioritize-equation_
 
 > _statement_ →\
+> &emsp; _decoration_?\
 > &emsp; ( _component-reference_ ( **:=** _expression_ | _function-call-args_ )\
 > &emsp; | `[(]` _output-expression-list_ `[)]` **:=** _component-reference_ _function-call-args_\
 > &emsp; | **break**\
@@ -336,12 +358,16 @@ end _F;
 
 ## Expressions
 
-> _expression_ → _simple-expression_ | _if-expression_
+> _decoration_ → **@** UNSIGNED-INTEGER
+
+> _expression_ → _expression-no-decoration_ _decoration_?
+
+> _expression-no-decoration_ → _simple-expression_ | _if-expression_
 
 > _if-expression_ →\
-> &emsp; **if** _expression_ **then** _expression_\
-> &emsp; ( **elseif** _expression_ **then** _expression_ )* \
-> &emsp; **else** _expression_
+> &emsp; **if** _expression-no-decoration_ **then** _expression-no-decoration_\
+> &emsp; ( **elseif** _expression-no-decoration_ **then** _expression-no-decoration_ )* \
+> &emsp; **else** _expression-no-decoration_
 
 > _simple-expression_ → _logical-expression_ ( **:** _logical-expression_ ( **:** _logical-expression_ )? )?
 

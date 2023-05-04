@@ -79,3 +79,5 @@ Maybe also fill, etc affected?
 * ~~getInstanceName~~ (handled before Base Modelica; there is no instance name anymore)
 
 ## New in Base Modelica
+
+* [realParameterEqual](differences.md#connect-equations) (test exact equality of Real parameters)

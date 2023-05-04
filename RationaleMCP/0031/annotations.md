@@ -38,6 +38,7 @@ These are all the non-vendor specific annotations inherited from full Modelica t
 
 These are the new annotations introduced in Base Modelica, each explained in more detail below:
 - [`Protected`](#protected) — Indicate whether component declaration comes from protected section in original full Modelica model
+- [`solverMethod`](#solvermethod) — Discretization method for a clocked sub-partition
 
 
 ### `Protected`
@@ -102,6 +103,17 @@ package 'M'
   end 'M';
 end 'M';
 ```
+
+### `solverMethod`
+
+Form:
+```
+String solverMethod = "ImplicitEuler";
+```
+
+The `solverMethod` annotation is only allowed on a `subpartition`.
+The recognized method names are the same as for the `solverMethod` named argument of the `Clock` constructor in full Modelica.
+
 
 
 ## Vendor annotations
