@@ -57,3 +57,18 @@ Presentation to the Modelica Language Group to seek confirmation that it is mean
 - Feedback from the Modelica Language Group
 - Test implementations (<tool list>)
 - Refactoring of the Modelica Specification
+
+
+## Slide content
+
+### Base Modelica Key Features: Array dimensions
+
+References:
+- [Array size](../differences.md#array-size)
+- [`constsize`](differences.md#the-constsize-expression), [rationale](../constsize.md)
+
+Main points:
+- In an array type, each dimension has a size that is either _constant_ or _flexible_
+- Component declarations outside functions may only specify constant array sizes
+- The `constsize`-expression allows expressing constant assertions on array dimensions
+- In an array equation, the array type must have constant sizes
