@@ -33,21 +33,21 @@ Presentation to the Modelica Language Group to seek confirmation that it is mean
 ### Base Modelica Design Goals
 
 ### Base Modelica Key Features
-- Get rid of the obviously irrelevant parts of the grammar. 
-- Get rid of connect equations.
-- Get rid of conditional components. 
-- Get rid of unbalanced if-equations. 
-- Handle array dimensions with parameter variability. [Henrik]
+- Get rid of the obviously irrelevant parts of the grammar
+- Get rid of connect equations
+- Get rid of conditional components
+- Get rid of unbalanced if-equations
+- Array dimensions [Henrik]
 - Define allowed forms of type aliases
-- Allowing array subscripting on general expressions.
-- Investigate need for final. 
+- Allowing array subscripting on general expressions
+- Investigate need for final
 - More explicit initialization
-- Get rid of record member variability prefixes constant and parameter.
+- Get rid of record member variability prefixes constant and parameter
 - Base Modelica types are constant
-- Simplify modifications.
-- Simplify record construction and function default arguments.
-- Figure out what to do with synchronous features.
-- Source locations pointing back to the original Modelica code.
+- Simplify modifications
+- Simplify record construction and function default arguments
+- Figure out what to do with synchronous features
+- Source locations pointing back to the original Modelica code
 
 ### Base Modelica Examples
 
