@@ -1,6 +1,6 @@
 # Built-in functions and operators
 
-## Flat Modelica and Modelica the same
+## Base Modelica and Modelica the same
 
 * abs
 * sign
@@ -41,7 +41,7 @@
 * vector
 * matrix
 * cat
-* String (quite complicated function with many kinds of arguments; could be de-overloaded before Flat Modelica)
+* String (quite complicated function with many kinds of arguments; could be de-overloaded before Base Modelica)
 * promote (a built-in operator used to describe other operators)
 * der
 * noEvent
@@ -51,7 +51,7 @@
 * change
 * reinit
 * EnumType(i) (indexed constant array, etc)
-* Integer(enum) (easy to implement even if it could be a Flat Modelica function)
+* Integer(enum) (easy to implement even if it could be a Base Modelica function)
 * transpose
 * outerProduct
 * symmetric
@@ -73,11 +73,11 @@ Maybe also fill, etc affected?
 
 ## Only in Full Modelica
 
-* ~~cardinality~~ (handle connections before Flat Modelica)
-* ~~inStream~~ (handle connections before Flat Modelica)
-* ~~actualStream~~ (handle connections before Flat Modelica)
-* ~~getInstanceName~~ (handled before Flat Modelica; there is no instance name anymore)
+* ~~cardinality~~ (handle connections before Base Modelica)
+* ~~inStream~~ (handle connections before Base Modelica)
+* ~~actualStream~~ (handle connections before Base Modelica)
+* ~~getInstanceName~~ (handled before Base Modelica; there is no instance name anymore)
 
-## New in Flat Modelica
+## New in Base Modelica
 
 * [realParameterEqual](differences.md#connect-equations) (test exact equality of Real parameters)
