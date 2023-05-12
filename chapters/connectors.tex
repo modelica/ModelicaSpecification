@@ -904,7 +904,16 @@ They only generate nodes and edges in the virtual graph for analysis purposes.
 \subsection{Generation of Connection Graph Equations}\label{generation-of-connection-graph-equations}
 
 Before connection equations are generated, the virtual connection graph is transformed into a set of spanning trees by removing optional spanning tree edges from the graph.
-This is performed in the following way:
+
+Before that processing any redundant breakable branches are removed in each connection set:
+\begin{enumerate}
+\item
+  This is done by building a spanning tree within each connection set.
+\item
+  Breakable branches that are not part of any such spanning tree are redundant and removed.
+\end{enumerate}
+
+The virtual connection graph is then transformed in the following way:
 \begin{enumerate}
 \item
   Every root node defined via the \lstinline!Connections.root!-equation is a definite root of one spanning tree.
@@ -922,8 +931,11 @@ After this analysis, the \firstuse{connection graph equations}\index{connection 
 \item
   For every optional spanning-tree edge (i.e., a \lstinline!connect(A, B)! equation), in one of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}.
 \item
-  For every optional spanning-tree edge not in any of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}, except for overdetermined type or record instances \lstinline!R!.
+  For every optional non-redundant spanning-tree edge not in any of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}, except for overdetermined type or record instances \lstinline!R!.
   Here the equations \lstinline!0 = R.equalityConstraint(A.R, B.R)! are generated instead of \lstinline!A.R = B.R!.
+\item
+  For every redundant and removed spanning-tree edge (i.e., a \lstinline!connect(A, B)! equation), not in any of the spanning trees, the connection equations for flow-elements are generated according to \cref{generation-of-connection-equations}.
+  Non-flow elements will not generate any equations.
 \end{enumerate}
 
 \subsection{Examples}\label{examples-of-overconstrained-connectors}
