@@ -98,7 +98,7 @@ The full Modelica PR https://github.com/modelica/ModelicaSpecification/pull/3129
 
 ## Connect equations
 
-There are no `connect` equations in Flat Modelica.
+There are no `connect` equations in Base Modelica.
 
 To make this possible, a new builtin function `realParameterEqual` is provided.
 The two arguments to `realParameterEqual` must be `Real` parameter expressions, and the result is a `Boolean` (of variability determined from the arguments as usual).
@@ -123,7 +123,7 @@ equation
   connect(a1.c, a2.c);
 end M;
 ```
-In Flat Modelica one needs to use the `realParameterEqual` function:
+In Base Modelica one needs to use the `realParameterEqual` function:
 ```
 package 'M'
 model 'M'
@@ -152,7 +152,7 @@ end 'M';
 
 ## When-Equations
 
-The `when`-equations in Flat Modelica are more restricted compared to full Modelica.
+The `when`-equations in Base Modelica are more restricted compared to full Modelica.
 In summary:
 - `when`-equations have no meaning at all for the initialization problem:
   * No special treatment of `initial()` as a `when`-clause trigger expression.
@@ -160,10 +160,10 @@ In summary:
 - It is not allowed to have `when`-equations inside `if`-equations and `for`-equations.
 
 Here, the _special treatment_ of `when initial() then` refers to the special meaning of such a `when`-equation in the initialization problem, including the special meaning of `reinit` when activated by `initial()`.
-Hence, the first `when`-clause triggered by `initial()` in full Modelica needs to be turned into `initial equation` form in Flat Modelica, with `reinit`-equations replaced by equality-equations.
-This also means that in Flat Modelica, the triggering condition `initial()` will have the same effect as the triggering condition `true and initial()`, namely that they will never trigger the `when`-clause because the expression never undergoes a positive edge.
+Hence, the first `when`-clause triggered by `initial()` in full Modelica needs to be turned into `initial equation` form in Base Modelica, with `reinit`-equations replaced by equality-equations.
+This also means that in Base Modelica, the triggering condition `initial()` will have the same effect as the triggering condition `true and initial()`, namely that they will never trigger the `when`-clause because the expression never undergoes a positive edge.
 
-The implicit initial equations `x = pre(x)` in full Modelica (in case no `when`-clause is activated with `initial()`) need to be made explicit in Flat Modelica.
+The implicit initial equations `x = pre(x)` in full Modelica (in case no `when`-clause is activated with `initial()`) need to be made explicit in Base Modelica.
 
 Regarding `when`-equations inside `if`-equations and `for`-equations, full Modelica only allows this where the `if`-equation conditions and `for`-equation ranges are parameter expressions.
 Hence, it is only with a small loss of generality that it is being assumed that these conditions and ranges should be possible to evaluate during translation, allowing an `if`-equation to be reduced to one of its branches, or a `for`-equation to be unrolled.
@@ -171,9 +171,9 @@ Hence, it is only with a small loss of generality that it is being assumed that 
 
 ## When-Statements
 
-Unlike the `when`-equations, there are no restrictions on the `when`-statements in Flat Modelica relative to full Modelica.
+Unlike the `when`-equations, there are no restrictions on the `when`-statements in Base Modelica relative to full Modelica.
 
-Note that `reinit` is not allowed in a `when`-statement, so the notable thing about `when`-statements in Flat Modelica is that they may be triggerd by `initial()` just like in Full Modelica.
+Note that `reinit` is not allowed in a `when`-statement, so the notable thing about `when`-statements in Base Modelica is that they may be triggerd by `initial()` just like in Full Modelica.
 
 ### Rationale
 
@@ -1307,20 +1307,20 @@ See [`protected` annotation](annotations.md#protected).
 
 ## Clock partitions
 
-The implicit clock partitioning carried out by tools for full Modelica is made explicit in Flat Modelica.
+The implicit clock partitioning carried out by tools for full Modelica is made explicit in Base Modelica.
 The equations solved in a clocked sub-partition are placed in a dedicated `subpartition` construct, and the variables being determined by the sub-partition can be determined by a simple inspection of the equations, as explained below.
 See _base-partition_ and related rules in the [grammar](grammar.md#clock-partitions) for details on the syntax.
 
 Note that the component declarations for variables solved in a sub-partition are not syntactically placed inside the `subpartition` construct because of the way that the sub-clocks and base-clocks cut across the instance hierarchy.
 
-In Flat Modelica, every clock is declared as a component with a name, at the top of some `partition`.
+In Base Modelica, every clock is declared as a component with a name, at the top of some `partition`.
 Sometimes, this name will correspond to the name of a clock in full Modelica, sometimes it will be an automatically generated name.
 Tools may find it useful to include the clock components in a simulation result, but doing so is not required and there is no standard for what to store.
 
-Instead of the binary clocked `sample` operator in full Modelica, Flat Modelica has an unary `sample(…)` operator.
+Instead of the binary clocked `sample` operator in full Modelica, Base Modelica has an unary `sample(…)` operator.
 It is only allowed inside the equations and algorithms of a `subpartition`, and the semantics is that the argument expression is sampled at the clock ticks of the current sub-partition.
 
-A Flat Modelica model with clock partitioning can look like this:
+A Base Modelica model with clock partitioning can look like this:
 ```
 package 'M'
 model 'M'
@@ -1374,7 +1374,7 @@ Here, _clock-name_ must be the name of a `Clock` declared within the current `pa
 `solverMethod` is only required when the sub-partition contains continuous-time equations, and specifies the time discretization method.
 It is an error if a named argument is specified multiple times.
 
-In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Flat Modelica unary `sample(…)` operator.
+In the equations and algorithms of a `subpartition`, references to variables from the continuous-time partition must appear inside the Base Modelica unary `sample(…)` operator.
 Similarly, references to variables from another sub-partition must appear inside the `noClock(…)` or `previous(…)` operators.
 It is not allowed to reference variables determined in another clocked base-partition, except when wrapped in `hold()`.
 (The expression `hold(x)` is a continuous-time expression and needs to be sampled before it can appear in a clocked partition.)
@@ -1384,6 +1384,6 @@ Hence, the variables determined by a `subpartition` are found as all component r
 
 The `noClock(…)` may only be used to refer to variables determined by an earlier `subpartition` of the same `partition`.
 This means that there cannot be cyclic dependencies between the sub-partitions, and that evaluation of a `partition` at a clock tick can always be performed by executing the `subpartitions` in order of appearance.
-Note that `noClock(…)` in may sometimes be wrapped around a variable in Flat Modelica where there was no wrapping in the original full Modelica model.
+Note that `noClock(…)` in may sometimes be wrapped around a variable in Base Modelica where there was no wrapping in the original full Modelica model.
 
-Note that if we want to extend Flat Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
+Note that if we want to extend Base Modelica to be used as sub-components this implies that we have to decide whether to clock the component or not; that is similar to the need for external sampling in eFMI.
