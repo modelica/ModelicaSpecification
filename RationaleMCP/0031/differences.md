@@ -811,9 +811,9 @@ For example, the full Modelica
 ```
 translates to the Base Modelica
 ```
-  parameter Real p; /* Full Modelica final parameter has no declaration equation in Base Modelica. */
+  parameter Real 'p'; /* Full Modelica final parameter has no declaration equation in Base Modelica. */
 initial equation
-  p = 4.2; /* From full Modelica final declaration equation. */
+  'p' = 4.2; /* From full Modelica final declaration equation. */
 ```
 
 The handling of guess values needed to solve parameters from nonlinear equations is the same as for time-varying variables, and is described in the next section.
