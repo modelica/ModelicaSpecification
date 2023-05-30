@@ -1010,6 +1010,7 @@ except as first argument of sub-clock conversion operators: \lstinline!subSample
 
 The resulting set of connected components, is the partitioning of the equations and variables, $S_{ij} = \left\langle E_{ij},\, V_{ij} \right\rangle$, according to sub-clocks.
 
+The connected components (corresponding to the sub-clocks) are then further split into strongly connected components corresponding to systems of equations.
 The resulting sets of equations and variables shall be possible to solve separately, meaning that systems of equations cannot involve different sub-clocks.
 
 It can be noted that:
@@ -1041,6 +1042,33 @@ u = hold(yd2);
 0 = f5(der(x3), x3);
 0 = f6(y, x1, u);
 \end{lstlisting}
+\end{example}
+
+\begin{example}
+Forbidding systems of equations involving different sub-clocks means that the following is forbidden:
+\begin{lstlisting}[language=modelica]
+  Real a;
+  //Real x=a+z;
+  Real y=superSample(a+z, 2);
+  Real z;
+equation
+  a+z = sample(time, Clock(1,100));
+  0 = subSample(y, 2)+a;
+\end{lstlisting}
+Here \lstinline!a! and \lstinline!z! are part of one sub-clock, and \lstinline!y! of another, and the system of equations involve both of them.
+
+The following legal example solves the issues in the previous example by replacing \lstinline!a! by \lstinline!x-z! (and simplifying the equations).
+Additionally, it shows that it is not required that the sub-clocks can necessarily be sorted:
+\begin{lstlisting}[language=modelica]
+  Real x=sample(time, Clock(1,100));
+  Real y=superSample(x, 2);
+  Real z=subSample(y, 2)+x;
+\end{lstlisting}
+Here \lstinline!x! and \lstinline!z! are part of one sub-clock partition, and \lstinline!y! of another.
+The equations form three equation systems with one equation in each (hence trivially satisfying the requirement that only variables from one sub-clock partition are being solved).
+The equation systems need to be solved in a strict order, but the first and last equation system belong to one sub-clock, while the second equation system belongs to another sub-clock.
+This illustrates that there is no guarantee that the sub-clock partitions can be ordered in agreement with the equation systems.
+Note that equation systems with more than one equation are also allowed in sub-clock partitions.
 \end{example}
 
 \subsection{Sub-Clock Inferencing}\label{sub-clock-inferencing}
