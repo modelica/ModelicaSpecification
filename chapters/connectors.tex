@@ -58,7 +58,7 @@ The three main tasks are to:
 \item
   Build connection sets from \lstinline!connect!-equations.
 \item
-  Generate equations for the complete model.
+  Generate equations for the complete model (\willintroduce{connection equations}).
 \end{itemize}
 
 \subsection{Connection Sets}\label{connection-sets}
@@ -107,15 +107,20 @@ A non-parameter array element may be declared with array dimensions \lstinline!:
 This applies to both variables of simple types, and variables of structured types.
 
 Then connections containing expandable connectors are elaborated:
-\begin{itemize}
+\begin{enumerate}
 \item
-  One connector in the \lstinline!connect!-equation must reference a declared component, and if the other connector is an undeclared element in a declared expandable connector it is handled as follows (elements that are only potentially present are not seen as declared):
+  If a connect-equation references a potentially present component \emph{as part of the argument} it will be marked as being present, which will allow a connection to an undeclared connector inside it.
+  The rule does not apply for the complete argument.
+\item
+  After that at least one connector in the connect equation must reference a declared component.
+\item
+  If the other connector is undeclared it must be in a declared component and is handled as follows:
   \begin{itemize}
   \item
     The expandable connector instance is automatically augmented with a new component having the used name and corresponding type.
   \item
     If the undeclared component is subscripted, an array variable is created, and a connection to the specific array element is performed.
-    Introducing elements in an array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e.\ as if they were only potentially present, and the same note regarding the use of \lstinline!size! also applies here).
+    Introducing elements in an array gives an array with at least the specified elements, other elements are either not created or have a default value (i.e., as if they were only potentially present, and the same note regarding the use of \lstinline!size! also applies here).
   \item
     If the variable on the other side of the \lstinline!connect!-equation is \lstinline!input! or \lstinline!output! the new component will be either \lstinline!input! or \lstinline!output! to satisfy the restrictions in \cref{restrictions-of-connections-and-connectors} for a non-expandable connector.
     \begin{nonnormative}
@@ -124,12 +129,15 @@ Then connections containing expandable connectors are elaborated:
     \end{nonnormative}
     For an array the \lstinline!input!/\lstinline!output! property can be deduced separately for each array element.
   \end{itemize}
+\end{enumerate}
 
+Additionally:
+\begin{itemize}
 \item
   When two expandable connectors are connected, each is augmented with the variables that are only declared in the other expandable connector (the new variables are neither \lstinline!input! nor \lstinline!output!).
   This is repeated until all connected expandable connector instances have matching variables.
   \begin{nonnormative}
-  I.e.\ each of the connector instances is expanded to be the union of all connector variables.
+  I.e., each of the connector instances is expanded to be the union of all connector variables.
   \end{nonnormative}
 
 \item
@@ -186,7 +194,7 @@ Often they have the same name, but it is not required.
 \item
   All components in an expandable connector are seen as connector instances even if they are not declared as such.
   \begin{nonnormative}
-  I.e.\ it is possible to connect to e.g.\ a \lstinline!Real! variable.
+  I.e., it is possible to connect to, e.g., a \lstinline!Real! variable.
   \end{nonnormative}
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -289,7 +297,7 @@ It is an error if there are expressions referring to potentially present variabl
 This elaboration implies that expandable connectors can be connected even if they do not contain the same components.
 
 \begin{nonnormative}
-A tool may remove undefined variables in an expandable connector, or set them to the default value, e.g.\ zero for \lstinline!Real! variables.
+A tool may remove undefined variables in an expandable connector, or set them to the default value, e.g., zero for \lstinline!Real! variables.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -309,7 +317,7 @@ Furthermore, it is important to note that these elaboration rules must consider:
 \end{nonnormative}
 
 \begin{example}
-Engine system with sensors, controllers, actuator and plant that exchange information via a bus (i.e.\ via expandable connectors):
+Engine system with sensors, controllers, actuator and plant that exchange information via a bus (i.e., via expandable connectors):
 \begin{lstlisting}[language=modelica]
 import Modelica.Units.SI;
 import Modelica.Blocks.Interfaces.RealInput;
@@ -378,7 +386,7 @@ connect(a, b);
 \end{lstlisting}
 the primitive components of \lstinline!a! and \lstinline!b! form a connection set, together with an indication of whether they are from an inside or an outside connector.
 \begin{definition}[Primitive elements]\label{primitive-elements}\index{primitive element}\index{element!primitive}
-The primitive elements are of simple types or of types defined as \lstinline!operator record! (i.e.\ a component of an \lstinline!operator record! type is not split into sub-components).
+The primitive elements are of simple types or of types defined as \lstinline!operator record! (i.e., a component of an \lstinline!operator record! type is not split into sub-components).
 \end{definition}
 The elements of the connection sets are tuples of primitive variables together with an indication of inside or outside; if the same tuple belongs to two connection sets those two sets are merged, until every tuple is only present in one set.
 Composite connector types are broken down into primitive components.
@@ -416,7 +424,7 @@ Each connection set is used to generate equations for potential and flow (zero-s
   $z_{1} + z_{2} + (-z_{3}) + \ldots + z_{n} = \mathbf{0}$ (flow variables)
 \end{itemize}
 
-The bold-face $\mathbf{0}$ represents an array or scalar zero of appropriate dimensions (i.e.\ the same size as $z$).
+The bold-face $\mathbf{0}$ represents an array or scalar zero of appropriate dimensions (i.e., the same size as $z$).
 
 For an \lstinline!operator record! type this uses the operator \lstinline!'0'! -- which must be defined in the operator record -- and all of the flow variables for the \lstinline!operator record!
 must be of the same \lstinline!operator record! type.
@@ -585,7 +593,7 @@ This corresponds to a direct connection of the resistor.
 I.e., a connection set must -- unless the model or block is partial -- contain one source of a signal (\cref{enum:exc-conn-case} covers the case where a connector of a component is left unconnected and the source given textually).
 \end{nonnormative}
 \item
-  Variables from a protected outside connector must be part of a connection set containing at least one inside connector or one declared public outside connector (i.e.\ it shall not be an implicitly defined part of an expandable connector).
+  Variables from a protected outside connector must be part of a connection set containing at least one inside connector or one declared public outside connector (i.e., it shall not be an implicitly defined part of an expandable connector).
   \begin{nonnormative}
   Otherwise it would not be possible to deduce the causality for the expandable connector element.
   \end{nonnormative}
@@ -608,11 +616,16 @@ I.e., a connection set must -- unless the model or block is partial -- contain o
 
 \subsection{Balancing Restriction and Size of Connectors}\label{balancing-restriction-and-size-of-connectors}
 
-For each non-partial non-expandable connector class the number of flow variables shall be equal to the number of variables that are neither \lstinline!parameter!, \lstinline!constant!, \lstinline!input!, \lstinline!output!, \lstinline!stream! nor \lstinline!flow!.
+For each non-partial non-simple non-expandable connector class the number of flow variables shall be equal to the number of variables that are neither \lstinline!parameter!, \lstinline!constant!, \lstinline!input!, \lstinline!output!, \lstinline!stream! nor \lstinline!flow!.
 The \emph{number of variables} is the number of all elements in the connector class after expanding all records and arrays to a set of scalars of primitive types.
 The number of variables of an overdetermined type or record class (see \cref{overconstrained-equation-operators-for-connection-graphs}) is the size of the output argument of the corresponding \lstinline!equalityConstraint!() function.
+A simple connector class is not expandable, has some time-varying variables, and has neither \lstinline!input!, \lstinline!output!, \lstinline!stream! nor \lstinline!flow! variables.
 \begin{nonnormative}
 Expandable connector classes are excluded from this, since their component declarations are only a form of constraint.
+\end{nonnormative}
+A component of a simple connector class must be declared as \lstinline!input!, \lstinline!output!, or \lstinline!protected!.
+\begin{nonnormative}
+A simple connector class is thus always unbalanced, but since it is used with causality or not visible to the outside it does not unbalance the model.
 \end{nonnormative}
 
 \begin{example}
@@ -974,9 +987,11 @@ At the place where the source frequency, i.e., essentially variable theta, is de
   AC_Plug p;
 equation
   Connections.root(p.theta);
-  der(p.theta) = 2*Modelica.Constants.pi*50 // 50 Hz;
+  p.theta = 2*Modelica.Constants.pi*50*time; // 50 Hz
 \end{lstlisting}
 The graph analysis performed with the virtual connection graph identifies the connectors, where the \lstinline!AC_Angle! needs not to be passed between components, in order to avoid redundant equations.
+
+Note that the different sources do not integrate the frequency, as that increases the risk of numerical errors.
 \end{nonnormative}
 
 \subsubsection{A 3-Dimensional Mechanical Systems Overdetermined Connector}\label{an-overdetermined-connector-for-3-dimensional-mechanical-systems}\label{a-3-dimensional-mechanical-systems-overdetermined-connector}

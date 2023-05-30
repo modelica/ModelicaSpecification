@@ -121,7 +121,7 @@ The following rules apply to \lstinline!import!-clauses:
   The \emph{order} of \lstinline!import!-clauses does not matter.
 \item
   One can only import \emph{from} packages, not from other kinds of classes.
-  Both packages and classes can be imported \emph{into} i.e., they may contain \lstinline!import!-clauses.
+  Both packages and classes can be imported \emph{into}, i.e., they may contain \lstinline!import!-clauses.
 \item
   An imported package or definition should always be referred to by its fully qualified name in the \lstinline!import!-clause.
 \item
@@ -144,7 +144,7 @@ In addition a tool may define an internal list of libraries, since it is
 in general not advisable for a program installation to modify global
 environment variables. The version information for a library (as defined
 in \cref{annotations-for-version-handling}) may also be used during this search to search for a
-specific version of the library (e.g.\ if Modelica library version 2.2 is
+specific version of the library (e.g., if Modelica library version 2.2 is
 needed and the first directory in \lstinline!MODELICAPATH! contain Modelica library
 version 2.1, whereas the second directory contains Modelica version 2.2,
 then Modelica library version 2.2 is loaded from the second directory.).
@@ -172,7 +172,7 @@ as the file \filename{C:\textbackslash{}lib2\textbackslash{}ComplexNumbers.mo}.
   \label{fig:roots}
 \end{figure}
 
-Assume that we want to access the package \lstinline!MyLib.Pack2! in \cref{fig:roots} above, e.g.\ through an \lstinline!import!-clause \lstinline!import MyLib.Pack2;!.
+Assume that we want to access the package \lstinline!MyLib.Pack2! in \cref{fig:roots} above, e.g., through an \lstinline!import!-clause \lstinline!import MyLib.Pack2;!.
 During lookup we first try to find a package \lstinline!MyLib! corresponding to the first part of the name in the import-statement.
 It is not found in the top-level scope since it has not previously been loaded into the environment.
 
@@ -244,7 +244,7 @@ constants stored in different ways is preserved).
 
 \subsection{Single File Mapping}\label{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}\label{single-file-mapping}
 
-When mapping a package or class-hierarchy to a file (e.g.\ the file \filename{A.mo}), that file shall only define a single class \lstinline!A! with a
+When mapping a package or class-hierarchy to a file (e.g., the file \filename{A.mo}), that file shall only define a single class \lstinline!A! with a
 name matching the name of the nonstructured entity. In a file hierarchy the files shall have the extension \filename{.mo}.
 
 A \filename{.mo} file defining more than one class cannot be part of the mapping
@@ -328,3 +328,187 @@ Consider a top-level package \lstinline!Modelica! and a class
 \filename{modelica:/Modelica/Mechanics/C.jpg} is illegal.
 The references \filename{modelica:/Modelica.Mechanics/C.jpg} and \filename{modelica:/Modelica/C.jpg} must also refer to two distinct resources.
 \end{example}
+
+\section{Multilingual Descriptions}\label{multilingual-descriptions}\index{translation!multilingual libraries}
+
+\begin{nonnormative}
+Descriptive texts in a model or library are usually formulated in English.
+This section describes how a tool can present the library in another language.
+Translated Modelica text is provided by external files, so that no modification of the original Modelica text is required.
+\end{nonnormative}
+
+The texts in following Modelica constructs should be translated:
+\begin{itemize}
+\item description strings of component declarations and classes
+\item strings in the following annotations:
+\begin{itemize}
+\item \lstinline!Text.string!, \lstinline!Text.textString!
+\item \lstinline!missingInnerMessage!, \lstinline!obsolete!, \lstinline!unassignedMessage!
+\item \lstinline!Dialog.group!, \lstinline!Dialog.tab!
+\item
+  \lstinline!Dialog.loadSelector.caption!, \lstinline!Dialog.loadSelector.filter!,
+  \ifpdf\\\else\fi% Avoid comma ending up at beginning of wrapped line in PDF output.
+  \lstinline!Dialog.saveSelector.caption!, \lstinline!Dialog.saveSelector.filter!
+\item \lstinline!Documentation.info!, \lstinline!Documentation.revisions!
+\item \lstinline!Figure.title!, \lstinline!Figure.caption!, \lstinline!Figure.group!, \lstinline!Plot.title!, \lstinline!Axis.label!, \lstinline!Curve.legend!
+\item \lstinline!mustBeConnected!
+\end{itemize}
+\end{itemize}
+
+\begin{nonnormative}
+None of the translatable constructs can have any impact on simulation results.
+\end{nonnormative}
+
+Comments (delimited as well as rest-of-line) are not translated.
+Only constructs given entirely by one or more concatenated string literals are translated, using nothing but the operator \lstinline!+! for concatenation.
+In order to have parameter values as part of the texts the special substitution syntax is preferable (see \cref{text} and \cref{variable-replacements}), and translators need to be aware of these substrings in order to make good translations.
+
+\begin{example}
+Consider:
+\begin{lstlisting}[language=modelica]
+annotation($\ldots$, Text(string = "1st Frequency: %f1"),
+               Text(string = "2nd Frequency: " + String(w2 / (2 * pi))), $\ldots$);
+\end{lstlisting}
+In this example only \lstinline!"1st Frequency is %f1."! can be translated; the second \lstinline!Text.string! doesn't consist entirely of concatenated string literals, and is hence completely excluded from translation.
+\end{example}
+
+The files to support translation must be provided along with the library.
+They must be stored in the resources directory \filename{modelica://$\mathit{LibraryName}$/Resources/Language/}.
+
+Two kind of files in \textcite{GettextManual} format have to be provided:
+\begin{enumerate}
+\item Template file \filename{$\mathit{LibraryName}$.pot} (Portable Object Template), one file per library which is stored as the resource \filename{modelica://$\mathit{LibraryName}$/Resources/Language/$\mathit{LibraryName}$.pot}.
+It describes all translatable strings in the library, but does not contain any translations.
+The pattern \filename{$\mathit{LibraryName}$} denotes the toplevel class name of the library.
+\item One file for each supported language with the name \filename{$\mathit{LibraryName}$.$\mathit{language}$.po} (Portable Object), as the resource \filename{modelica://$\mathit{LibraryName}$/Resources/Language/$\mathit{LibraryName}$.$\mathit{language}$.po}.
+This file is a copy of the associated template file, but extended with the translations in the specified language.
+The pattern \filename{$\mathit{language}$} stands for the ISO 639-1 language code, e.g., \filename{de} or \filename{sv}.
+\end{enumerate}
+
+The detailed format of these files is described in \textcite{GettextManual}.
+Use of translation files in other formats (including the binary MO file format) is not standardized in Modelica.
+For Modelica translations, only the keywords \lstinline!msgctxt!, \lstinline!msgid! and \lstinline!msgstr! are used, meaning that a translation entry looks like this:
+\begin{lstlisting}
+#: $\mathit{filename}$:$\mathit{lineNumber}$
+#, no-c-format
+msgctxt $\mathit{messageContext}$
+msgid $\mathit{messageIdentifier}$
+msgstr $\mathit{messageTranslation}$
+\end{lstlisting}
+The restriction to a few keywords makes it easier for tools to support the format without relying on the implementation from \textcite{GettextManual}.
+
+The use of \lstinline!no-c-format! ensures that translation tools will not parse \lstinline!"%class"! as the format specifier \lstinline!%c! followed by \emph{lass}.
+
+\begin{nonnormative}
+In the remainder of this section, several facts about the gettext specification are interleaved non-normatively for easy access to some of the gettext basics.
+Always refer to the external gettext specification for full detail or in case of doubt.
+
+All text strings are in double quotes and encoded with UTF-8 characters.
+Comments start with an \lstinline!#! and are continued until the end of line.
+Spaces outside strings are ignored and used as separators.
+
+The files consist of a header and a body.
+The header is marked with an empty \lstinline!msgid! and looks like this:
+\begin{lstlisting}
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-15 10:52+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+\end{lstlisting}
+All general terms in the header should be replaced by specific information.
+
+Following the header, there is one translation entry for each string to be translated.
+It can start with an optional comment describing the location (file name and line number) of the text to translate.
+Multiple occurences of the same string can be listed here, separated by space.
+\end{nonnormative}
+
+The $\mathit{messageContext}$ following the keyword \lstinline!msgctxt! shall be the full name of the Modelica class (e.g., \lstinline!"Modelica.Blocks.Math.Sin"!) where the text appears.
+Short class definitions do not appear here.
+Texts in such classes belong to the enclosing full class definition.
+
+The text string which shall be translated is used as $\mathit{messageIdentifier}$ (following the \lstinline!msgid! keyword), and shall contain the original string from the Modelica code.
+% Describe down-quoting and concatenation of Modelica string literals.
+Note that if a \lstinline!msgid! string is given more than once in the same context, all occurrences are translated with the same (last) translation!
+
+\begin{nonnormative}
+The $\mathit{messageTranslation}$ (following the keyword \lstinline!msgstr!) is the translation of $\mathit{messageIdentifier}$ and is typically edited using special tools for translators.
+In the template file this string is empty by definition.
+If this is empty in a language specific file the $\mathit{messageIdentifier}$ may be used instead.
+\end{nonnormative}
+
+\begin{nonnormative}
+Since in Modelica control sequences also start with a backslash and another backslash is used to use sequences literally or to hide double quotes, no change is required here.
+But Modelica allows strings to go over more than one line, gettext does not.
+Therefore, line breaks in Modelica must be encoded with \lstinline!"\n"! for gettext.
+
+In order to avoid long lines in the translated strings (following \lstinline!msgid! or \lstinline!msgstr!), strings may be split into smaller parts given on consecutive lines.
+E.g., the Modelica description
+\begin{lstlisting}
+"A
+B\"C" + "D\nE"
+\end{lstlisting}
+evaluates to:\par
+\hspace{1em}\begin{minipage}{0.5\textwidth}
+A\\
+B"CD\\
+E
+\end{minipage}\par
+which in the translation entry looks like:
+\begin{lstlisting}
+msgid ""
+"A\n"
+"B\"CD\n"
+"E"
+\end{lstlisting}
+\end{nonnormative}
+
+\begin{example}
+Consider a simple sine-source:
+\begin{lstlisting}[language=modelica]
+within MyPackage.Sources;
+model Sine "Sine"
+  parameter Frequency f=2 "Frequency";
+  RealOutput y=sin(2*pi*f*time); // Relying on imported types
+  /* Could add details. Note that this is not translated */
+  annotation(Icon(graphics={Text(extent={{0,0},{40,40}},
+                        textString="Frequency: %f")}));
+end Sine;
+\end{lstlisting}
+The entries for translating this model into Swedish could look like this:
+\begin{lstlisting}
+#: MyPackage/Sources/package.mo:10126
+#, no-c-format
+msgctxt "MyPackage.Sources.Sine"
+msgid "Sine"
+msgstr "Sinus"
+#: MyPackage/Sources/package.mo:10127
+#, no-c-format
+msgctxt "MyPackage.Sources.Sine"
+msgid "Frequency"
+msgstr "Frekvens"
+#: MyPackage/Sources/package.mo:10131
+#, no-c-format
+msgctxt "MyPackage.Sources.Sine"
+msgid "Frequency: %f"
+msgstr "Frekvens: %f"
+\end{lstlisting}
+\end{example}
+
+\begin{nonnormative}
+To support the translation of these strings a number of free and commercial tools exist in context of GNU gettext.
+\end{nonnormative}
+

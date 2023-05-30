@@ -14,26 +14,21 @@ The following small example shows the most important elements:
 
 \begin{itemize}
 \item
-  A periodic clock is defined with \lstinline!Clock(3)!. The argument
-  of \lstinline!Clock! defines the sampling interval (for details see \cref{clock-constructors}).
+  A periodic clock is defined with \lstinline!Clock(3)!.
+  The argument of \lstinline!Clock! defines the sampling interval (for details see \cref{clock-constructors}).
 \item
-  Clocked variables (such as \lstinline!yd!, \lstinline!xd!, \lstinline!ud!) are associated uniquely
-  with a clock and can only be directly accessed when the associated
-  clock is active. Since all variables in a clocked equation must belong
-  to the same clock, clocking errors can be detected at compile time. If
-  variables from different clocks shall be used in an equation, explicit
-  cast operators must be used, such as \lstinline!sample! to convert
-  from continuous-time to clocked discrete-time or \lstinline!hold! to
-  convert from clocked discrete-time to continuous-time.
+  Clocked variables (such as \lstinline!yd!, \lstinline!xd!, \lstinline!ud!) are associated uniquely with a clock and can only be directly accessed when the associated clock is active.
+  Since all variables in a clocked equation must belong to the same clock, clocking errors can be detected at compile time.
+  If variables from different clocks shall be used in an equation, explicit cast operators must be used, such as \lstinline!sample! to convert from continuous-time to clocked discrete-time or \lstinline!hold! to convert from clocked discrete-time to continuous-time.
 \item
-  A continuous-time variable is sampled at a clock tick with
-  \lstinline!sample!. The operator returns the value of the
-  continuous-time variable when the clock is active.
+  A continuous-time variable is sampled at a clock tick with \lstinline!sample!.
+  The operator returns the value of the continuous-time variable when the clock is active.
 \item
-  When no argument is defined for \lstinline!Clock!, the clock is
-  deduced by clock inference.
+  When no argument is defined for \lstinline!Clock!, the clock is deduced by clock inference.
 \item
-  For a \lstinline!when!-clause with an associated clock, all equations inside the \lstinline!when!-clause are clocked with the given clock.  All equations on an associated clock are treated together and in the same way regardless of whether they are inside a \lstinline!when!-clause or not.  This means that automatic sampling and hold of variables inside the \lstinline!when!-clause does not apply (explicit sampling and hold is required) and that general equations can be used in such \lstinline!when!-clauses (this is not allowed for \lstinline!when!-clauses with \lstinline!Boolean! conditions, that require a variable reference on the left-hand side of an equation).
+  For a \lstinline!when!-clause with an associated clock, all equations inside the \lstinline!when!-clause are clocked with the given clock.
+  All equations on an associated clock are treated together and in the same way regardless of whether they are inside a \lstinline!when!-clause or not.
+  This means that automatic sampling and hold of variables inside the \lstinline!when!-clause does not apply (explicit sampling and hold is required) and that general equations can be used in such \lstinline!when!-clauses (this is not allowed for \lstinline!when!-clauses with \lstinline!Boolean! conditions, that require a variable reference on the left-hand side of an equation).
 \item
   The \lstinline!when!-clause in the controller could also be removed
   and the controller could just be defined by the equations:
@@ -43,9 +38,8 @@ E * xd = A * previous(xd) + B * yd;
     ud = C * previous(xd) + D * yd;
 \end{lstlisting}
 \item
-  \lstinline!previous(xd)! returns the value of \lstinline!xd! at
-  the previous clock tick. At the first sample instant, the start value
-  of \lstinline!xd! is returned.
+  \lstinline!previous(xd)! returns the value of \lstinline!xd! at the previous clock tick.
+  At the first sample instant, the start value of \lstinline!xd! is returned.
 \item
   A discrete-time signal (such as \lstinline!ud!) is converted to a continuous-time signal with \lstinline!hold!.
 \item
@@ -60,7 +54,8 @@ E * xd = A * previous(xd) + B * yd;
 \section{Rationale for Clocked Semantics}\label{rationale-for-clocked-semantics}
 
 \begin{nonnormative}
-Periodically sampled control systems could also be defined with standard \lstinline!when!-clauses, see \cref{when-equations}, and the \lstinline!sample! operator, see \cref{event-related-operators-with-function-syntax}.  For example:
+Periodically sampled control systems could also be defined with standard \lstinline!when!-clauses, see \cref{when-equations}, and the \lstinline!sample! operator, see \cref{event-related-operators-with-function-syntax}.
+For example:
 \begin{lstlisting}[language=modelica]
 when sample(0, 3) then
   xd = A * pre(xd) + B * y;
@@ -79,8 +74,8 @@ assigned in the \lstinline!when!-clause can be directly accessed outside of the
 Using standard \lstinline!when!-clauses works well for individual simple sampled blocks, but the synchronous approach using clocks and clocked equations provide the following benefits (especially for large sampled systems):
 \begin{enumerate}
 \item
-  Possibility to detect inconsistent sampling rate, since clock partitioning (see \cref{clock-partitioning}),
-  replaces the automatic sample and hold semantics. Examples:
+  Possibility to detect inconsistent sampling rate, since clock partitioning (see \cref{clock-partitioning}), replaces the automatic sample and hold semantics.
+  Examples:
   \begin{enumerate}
   \def\labelenumii{\alph{enumii}.}
   \item
@@ -88,60 +83,34 @@ Using standard \lstinline!when!-clauses works well for individual simple sampled
     controller part, but by accident different when-conditions are
     given, then this is accepted (no error is detected).
   \item
-    If a sampled data library such as the
-    Modelica\_LinearSystems2.Contoller library is used, at every block
-    the sampling of the block has to be defined as integer multiple of a
-    base sampling rate. If several blocks should belong to the same
-    controller part, and different integer multiples are given, then the
-    translator has to accept this (no error is detected).
+    If a sampled data library such as the Modelica\_LinearSystems2.Contoller library is used, at every block the sampling of the block has to be defined as integer multiple of a base sampling rate.
+    If several blocks should belong to the same controller part, and different integer multiples are given, then the translator has to accept this (no error is detected).
   \end{enumerate}
-  Note: Clocked systems can mix different sampling rates
-  in well-defined ways when needed.
+  Note: Clocked systems can mix different sampling rates in well-defined ways when needed.
 \item
-  Fewer initial conditions are needed, as only a subset of clocked
-  variables need initial conditions -- the clocked state variables (see \cref{clocked-state-variables}).
-  For a standard \lstinline!when!-clause all variables
-  assigned in a \lstinline!when!-clause must have an initial value
-  because they might be used, before they are assigned a value the first
-  time. As a result, all these variables are ``discrete-time states''
-  although in reality only a subset of them need an initial
-  value.
+  Fewer initial conditions are needed, as only a subset of clocked variables need initial conditions -- the clocked state variables (see \cref{clocked-state-variables}).
+  For a standard \lstinline!when!-clause all variables assigned in a \lstinline!when!-clause must have an initial value because they might be used, before they are assigned a value the first time.
+  As a result, all these variables are ``discrete-time states'' although in reality only a subset of them need an initial value.
 \item
-  More general equations can be used, compared to standard \lstinline!when!-clauses that require
-  a restricted form of equations where the left hand side has to be a variable, in order
-  to identify the variables that are assigned in the \lstinline!when!-clause.
-  This restriction can be circumvented for standard \lstinline!when!-clauses, but is
-  absent for clocked equations and make it more convenient to define
-  nonlinear control algorithms.
+  More general equations can be used, compared to standard \lstinline!when!-clauses that require a restricted form of equations where the left hand side has to be a variable, in order to identify the variables that are assigned in the \lstinline!when!-clause.
+  This restriction can be circumvented for standard \lstinline!when!-clauses, but is absent for clocked equations and make it more convenient to define nonlinear control algorithms.
 \item
-  Clocked equations allow clock inference,
-  meaning that the sampling need only be given once for a sub-system.
-  For a standard \lstinline!when!-clause the condition (sampling) must be explicitly
-  propagated to all blocks, which is tedious and error prone for large systems.
+  Clocked equations allow clock inference, meaning that the sampling need only be given once for a sub-system.
+  For a standard \lstinline!when!-clause the condition (sampling) must be explicitly propagated to all blocks, which is tedious and error prone for large systems.
 \item
-  Possible to use general continuous-time models in synchronous models (e.g.\ some advanced controllers use an inverse model of a plant in the feedforward path of the controller, see \textcite{ThummelEtAl2005InverseModels}).
+  Possible to use general continuous-time models in synchronous models (e.g., some advanced controllers use an inverse model of a plant in the feedforward path of the controller, see \textcite{ThummelEtAl2005InverseModels}).
   This powerful feature of Modelica to use a nonlinear plant model in a controller would require to export the continuous-time model with an embedded integration method and then import it in an environment where the rest of the controller is defined.
   With clocked equations, clocked controllers with continuous-time models can be directly defined in Modelica.
 \item
-  Clocked equations are straightforward to optimize because they are
-  evaluated exactly once at each an event instant.
-  In contrast a standard \lstinline!when!-clause with \lstinline!sample! conceptually
-  requires several evaluations of the model (in some cases tools
-  can optimize this to avoid unneeded evaluations).
-  The problem for the standard \lstinline!when!-clause is that after \lstinline!v!
-  is changed, \lstinline!pre(v)! shall be updated and the model re-evaluated,
-  since the equations could depend on \lstinline!pre(v)!.
-  For clocked equations this iteration can be omitted
-  since \lstinline!previous(v)! can only occur in the clocked equations
-  that are only run the first event iterations.
+  Clocked equations are straightforward to optimize because they are evaluated exactly once at each event instant.
+  In contrast a standard \lstinline!when!-clause with \lstinline!sample! conceptually requires several evaluations of the model (in some cases tools can optimize this to avoid unneeded evaluations).
+  The problem for the standard \lstinline!when!-clause is that after \lstinline!v! is changed, \lstinline!pre(v)! shall be updated and the model re-evaluated, since the equations could depend on \lstinline!pre(v)!.
+  For clocked equations this iteration can be omitted since \lstinline!previous(v)! can only occur in the clocked equations that are only run the first event iterations.
 \item
   Clocked subsystems using arithmetic blocks are straightforward to optimize.
-  When a standard math-block (e.g.\ addition) is part of a clocked sub-system it is automatically
-  clocked and only evaluated when the clocked equations trigger.
-  For standard \lstinline!when!-clauses one either needs a separate sampled math-block for each operation, or
-  it will conceptually be evaluated all the time.
-  However, tools may perform a similar optimization for standard \lstinline!when!-clauses
-  and it is only relevant in large sampled systems.
+  When a standard math-block (e.g., addition) is part of a clocked sub-system it is automatically clocked and only evaluated when the clocked equations trigger.
+  For standard \lstinline!when!-clauses one either needs a separate sampled math-block for each operation, or it will conceptually be evaluated all the time.
+  However, tools may perform a similar optimization for standard \lstinline!when!-clauses and it is only relevant in large sampled systems.
 \end{enumerate}
 \end{nonnormative}
 
@@ -158,7 +127,10 @@ In this section various terms are defined.
 %  \subfloat[A piecewise-constant variable.]{\includegraphics{piecewise}\label{fig:piecewise-constant-variable}}
 %  \subfloat[A clock variable.]{\includegraphics{clock}\label{fig:clock-variable}}
 %  \subfloat[A clocked variable.]{\includegraphics{clocked}\label{fig:clocked-variable}}
-%  \caption{The different kinds of discrete-time variables.  The \lstinline!hold! extrapolation of the clocked variable is illustrated with dashed green lines.}
+%  \caption{%
+%    The different kinds of discrete-time variables.
+%    The \lstinline!hold! extrapolation of the clocked variable is illustrated with dashed green lines.
+%  }
 %\end{figure}
 
 In \cref{discrete-time-expressions} the term \emph{discrete-time} Modelica expression and in \cref{continuous-time-expressions} the term \emph{continuous-time} Modelica expression is defined.
@@ -166,9 +138,10 @@ In this chapter, two additional kinds of discrete-time expressions/variables are
 The different kinds of discrete-time variables in Modelica are defined below.
 
 \begin{definition}[Piecewise-constant variable]\index{piecewise-constant variable}
-(See \cref{discrete-time-expressions}.)  Variables $m(t)$ of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, and \lstinline!String! that are
-\emph{constant} inside each interval $t_{i} \leq t < t_{i+1}$ (i.e., piecewise constant continuous-time variables).  In other words, $m(t)$ changes
-value only at events: $m(t) = m(t_{i})$, for $t_{i} \leq t < t_{i+1}$.  Such variables depend continuously on time and they are discrete-time variables.
+(See \cref{discrete-time-expressions}.)
+Variables $m(t)$ of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, and \lstinline!String! that are \emph{constant} inside each interval $t_{i} \leq t < t_{i+1}$ (i.e., piecewise constant continuous-time variables).
+In other words, $m(t)$ changes value only at events: $m(t) = m(t_{i})$, for $t_{i} \leq t < t_{i+1}$.
+Such variables depend continuously on time and they are discrete-time variables.
 See \cref{fig:piecewise-constant-variable}.
 \end{definition}
 
@@ -198,27 +171,34 @@ Clock c3 = subSample(c2, 4);
   \begin{center}
     \includegraphics{clock}
   \end{center}
-  \caption{A clock variable.  The value of a clock variable is not defined -- the plot marks only indicate \emph{when} the clock is active.}\label{fig:clock-variable}
+  \caption{%
+    A clock variable.
+    The value of a clock variable is not defined -- the plot marks only indicate \emph{when} the clock is active.
+  }\label{fig:clock-variable}
 \end{figure}
 
 \begin{definition}[Clocked variable]\label{def:clocked-variable}\index{clocked!variable}
-The elements of clocked variables $r(t_{i})$ are of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, \lstinline!String! that are associated uniquely with
-a clock $c(t_{i})$. A clocked variable can only be directly accessed at the event instant where the associated clock is active.  A constant and a parameter can always be used at a place
-where a clocked variable is required.
+The elements of clocked variables $r(t_{i})$ are of base type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, enumeration, \lstinline!String! that are associated uniquely with a clock $c(t_{i})$.
+A clocked variable can only be directly accessed at the event instant where the associated clock is active.
+A constant and a parameter can always be used at a place where a clocked variable is required.
 \begin{nonnormative}
 Note that clock variables are not included in this list.
 This implies that clock variables cannot be used where clocked variables are required.
 \end{nonnormative}
 
-At time instants where the associated clock is not active, the value of a clocked variable can be inquired by using an explicit cast operator, see below.  In such a case \lstinline!hold! semantics is
-used, in other words the value of the clocked variable from the last event instant is used.  See \cref{fig:clocked-variable}.
+At time instants where the associated clock is not active, the value of a clocked variable can be inquired by using an explicit cast operator, see below.
+In such a case \lstinline!hold! semantics is used, in other words the value of the clocked variable from the last event instant is used.
+See \cref{fig:clocked-variable}.
 \end{definition}
 
 \begin{figure}[H]
   \begin{center}
     \includegraphics{clocked}
   \end{center}
-  \caption{A clocked variable.  The \lstinline!hold! extrapolation of the value at the last event instant is illustrated with dashed green lines.}\label{fig:clocked-variable}
+  \caption{
+    A clocked variable.
+    The \lstinline!hold! extrapolation of the value at the last event instant is illustrated with dashed green lines.
+  }\label{fig:clocked-variable}
 \end{figure}
 
 \subsection{Base-Clock and Sub-Clock Partitions}\label{base-clock-and-sub-clock-partitions}
@@ -226,8 +206,8 @@ used, in other words the value of the clocked variable from the last event insta
 There are two kinds of \firstuse[clock!partition]{clock partitions}:
 
 \begin{definition}[Base-clock partition]\index{base-clock partition}\index{clock!partition!base-clock}
-A base-clock partition identifies a set of equations and a set of variables which must be executed together in one task.  Different base-clock partitions can be associated to separate tasks for
-asynchronous execution.
+A base-clock partition identifies a set of equations and a set of variables which must be executed together in one task.
+Different base-clock partitions can be associated to separate tasks for asynchronous execution.
 \end{definition}
 
 \begin{definition}[Sub-clock partition]\index{sub-clock partition}\index{clock!partition!sub-clock}
@@ -237,10 +217,8 @@ partition, i.e., synchronized when the ticks of the respective clocks are simult
 
 \subsection{Argument Restrictions (Component Expression)}\label{argument-restrictions-component-expression}
 
-The built-in operators (with function syntax) defined in the following
-sections have partially restrictions on their input arguments that are
-not present for Modelica functions. To define the restrictions, the
-following term is used.
+The built-in operators (with function syntax) defined in the following sections have partially restrictions on their input arguments that are not present for Modelica functions.
+To define the restrictions, the following term is used.
 
 \begin{definition}[Component expression]\label{def:component-expression}\index{component!expression (argument restriction)}
 A component expression is a \lstinline[language=grammar]!component-reference! which is a valid expression, i.e., not referring to models or blocks with equations.
@@ -399,7 +377,10 @@ At the second clock tick at time $t_{\mathrm{start}} + \mathit{interval}_{1}$, t
 If $\mathit{interval}$ is a parameter expression, the clock defines a periodic clock.
 
 \begin{nonnormative}
-Note, the clock is defined with \lstinline!previous($\mathit{interval}$)!.  Therefore, for sorting the input argument is treated as known.  The given interval and time shift can be modified by using the \lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample! and \lstinline!backSample! operators on the returned clock, see \cref{sub-clock-conversion-operators}.  There are restrictions where this operator can be used, see \lstinline!Clock! expressions below.
+Note, the clock is defined with \lstinline!previous($\mathit{interval}$)!.
+Therefore, for sorting the input argument is treated as known.
+The given interval and time shift can be modified by using the \lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample! and \lstinline!backSample! operators on the returned clock, see \cref{sub-clock-conversion-operators}.
+There are restrictions where this operator can be used, see \lstinline!Clock! expressions below.
 \end{nonnormative}
 \end{semantics}
 \end{operatordefinition*}
@@ -467,7 +448,8 @@ exclusive associations of clocks are possible in one base partition:
 \item
   Exactly one event clock.
 \item
-  A default clock, if neither a real interval, nor a rational interval nor an event clock is associated with a base partition.  In this case the default clock is associated with the fastest sub-clock partition.
+  A default clock, if neither a real interval, nor a rational interval nor an event clock is associated with a base partition.
+  In this case the default clock is associated with the fastest sub-clock partition.
   \begin{nonnormative}
   Typically, a tool will use \lstinline!Clock(1.0)! as a default clock and will raise a warning, that it selected a default clock.
   \end{nonnormative}
@@ -585,12 +567,15 @@ sample($u$, $\mathit{clock}$)
 \begin{semantics}
 Input argument $u$ is a continuous-time expression according to \cref{continuous-time-expressions}.
 The optional input argument $\mathit{clock}$ is of type \lstinline!Clock!, and can in a call be given as a named argument (with the name $\mathit{clock}$), or as positional argument.
-The operator returns a clocked variable that has $\mathit{clock}$ as associated clock and has the value of the left limit of $u$ when $\mathit{clock}$ is active (that is the value of $u$ just before the event of \lstinline!c! is triggered).
+The operator returns a clocked variable that has $\mathit{clock}$ as associated clock and has the value of the left limit of $u$ when $\mathit{clock}$ is active (that is the value of $u$ just before the event of $\mathit{clock}$ is triggered).
 If $\mathit{clock}$ is not provided, it is inferred, see \cref{sub-clock-inferencing}.
 \begin{nonnormative}
-Since the operator returns the left limit of $u$, it introduces an infinitesimal small delay between the continuous-time and the clocked partition.  This corresponds to the reality, where a sampled data system cannot act infinitely fast and even for a very idealized simulation, an infinitesimal small delay is present.  The consequences for the sorting are discussed below.
+Since the operator returns the left limit of $u$, it introduces an infinitesimal small delay between the continuous-time and the clocked partition.
+This corresponds to the reality, where a sampled data system cannot act infinitely fast and even for a very idealized simulation, an infinitesimal small delay is present.
+The consequences for the sorting are discussed below.
 
-Input argument $u$ can be a general expression, because the argument is continuous-time and therefore has always a value.  It can also be a constant, a parameter or a piecewise constant expression.
+Input argument $u$ can be a general expression, because the argument is continuous-time and therefore has always a value.
+It can also be a constant, a parameter or a piecewise constant expression.
 
 Note that \lstinline!sample! is an overloaded function:
 If \lstinline!sample! has two positional input arguments and the second argument is of type \lstinline!Real!, it is the operator from \cref{event-related-operators-with-function-syntax}.
@@ -625,7 +610,9 @@ initial equation
   der(y) = 0;
 \end{lstlisting}
 
-The value of \lstinline!yc! at the first clock tick is $\text{\lstinline!yc!} = 2$ (and not $\text{\lstinline!yc!} = 1$).  The reason is that the continuous-time model \lstinline!der(y) + y = 2! is first initialized and after initialization \lstinline!y! has the value 2.  At the first clock tick at $\text{\lstinline!time!} = 0$, the left limit of \lstinline!y! is 2 and therefore $\text{\lstinline!yc!} = 2$.
+The value of \lstinline!yc! at the first clock tick is $\text{\lstinline!yc!} = 2$ (and not $\text{\lstinline!yc!} = 1$).
+The reason is that the continuous-time model \lstinline!der(y) + y = 2! is first initialized and after initialization \lstinline!y! has the value 2.
+At the first clock tick at $\text{\lstinline!time!} = 0$, the left limit of \lstinline!y! is 2 and therefore $\text{\lstinline!yc!} = 2$.
 \end{example}
 
 \subsubsection{Sorting of a Simulation Model}
@@ -661,11 +648,14 @@ The operators listed below convert between synchronous clocks.
 These operators have the following properties:
 \begin{itemize}
 \item
-  The input argument $u$ is a clocked expression or an expression of type \lstinline!Clock!.  (The operators can operate on all types of clocks.)  If $u$ is a clocked expression, the operator returns a clocked variable that has the same type as the expression.  If $u$ is an expression of type \lstinline!Clock!, the operator returns a \lstinline!Clock! -- except for \lstinline!noClock! where it is an error.
+  The input argument $u$ is a clocked expression or an expression of type \lstinline!Clock!.
+  (The operators can operate on all types of clocks.)
+  If $u$ is a clocked expression, the operator returns a clocked variable that has the same type as the expression.
+  If $u$ is an expression of type \lstinline!Clock!, the operator returns a \lstinline!Clock! -- except for \lstinline!noClock! where it is an error.
 \item
   The optional input arguments \lstinline!factor! (defaults to 0, with \lstinline!min = 0!), and \lstinline!resolution! (defaults to 1, with \lstinline!min = 1!) are parameter expressions of type \lstinline!Integer!.
 \item
-  Calls of the operators can use named arguments for the multi-letter arguments (i.e.\ not for $u$) with the given names, or positional arguments.
+  Calls of the operators can use named arguments for the multi-letter arguments (i.e., not for $u$) with the given names, or positional arguments.
 \begin{nonnormative}
 Named arguments can make the calls easier to understand.
 \end{nonnormative}
@@ -690,7 +680,9 @@ If $\mathit{factor}$ is not provided or is equal to zero, it is inferred, see \c
 superSample($u$, factor=$\mathit{factor}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-The clock of \lstinline!y = superSample($u$, $\mathit{factor}$)! is $\mathit{factor}$ times faster than the clock of $u$.  At every tick of the clock of \lstinline!y!, the operator returns the value of $u$ from the last tick of the clock of $u$.  The first activation of the clock of \lstinline!y! coincides with the first activation of the clock of $u$, and then the interval between activations of the clock of $u$ is split equidistantly into $\mathit{factor}$ activations, such that the activation $1 + k \cdot \mathit{factor}$ of \lstinline!y! coincides with the $1 + k$ activation of $u$.
+The clock of \lstinline!y = superSample($u$, $\mathit{factor}$)! is $\mathit{factor}$ times faster than the clock of $u$.
+At every tick of the clock of \lstinline!y!, the operator returns the value of $u$ from the last tick of the clock of $u$.
+The first activation of the clock of \lstinline!y! coincides with the first activation of the clock of $u$, and then the interval between activations of the clock of $u$ is split equidistantly into $\mathit{factor}$ activations, such that the activation $1 + k \cdot \mathit{factor}$ of \lstinline!y! coincides with the $1 + k$ activation of $u$.
 \begin{nonnormative}
 Thus \lstinline!subSample(superSample($u$, $\mathit{factor}$), $\mathit{factor}$)! = $u$.
 \end{nonnormative}
@@ -714,7 +706,8 @@ Clock y4 = superSample(y1, 5); // error
 shiftSample($u$, shiftCounter=$k$, resolution=$\mathit{resolution}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-The operator \lstinline!c = shiftSample($u$, $k$, $\mathit{resolution}$)! splits the interval between ticks of $u$ into $\mathit{resolution}$ equidistant intervals $i$.  The clock \lstinline!c! then ticks $k$ intervals $i$ after each tick of $u$.
+The operator \lstinline!c = shiftSample($u$, $k$, $\mathit{resolution}$)! splits the interval between ticks of $u$ into $\mathit{resolution}$ equidistant intervals $i$.
+The clock \lstinline!c! then ticks $k$ intervals $i$ after each tick of $u$.
 
 It leads to
 \begin{lstlisting}[language=modelica]
@@ -723,7 +716,8 @@ shiftSample($u$, $k$, $\mathit{resolution}$) =
 \end{lstlisting}
 
 \begin{nonnormative}
-Note, due to the restriction of \lstinline!superSample! on event clocks, \lstinline!shiftSample! can only shift the number of ticks of the event clock, but cannot introduce new ticks.  Example:
+Note, due to the restriction of \lstinline!superSample! on event clocks, \lstinline!shiftSample! can only shift the number of ticks of the event clock, but cannot introduce new ticks.
+Example:
 \begin{lstlisting}[language=modelica]
 // Rational interval clock
 Clock u  = Clock(3, 10);            // ticks: 0, 3/10, 6/10, $\ldots$
@@ -792,7 +786,9 @@ Clock y2 = backSample(y1, 2);     // ticks: 1.0, 2.0, $\ldots$
 noClock($u$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-The clock of \lstinline!y = noClock($u$)! is always inferred, and $u$ must be part of the same base-clock as \lstinline!y!.  At every tick of the clock of \lstinline!y!, the operator returns the value of $u$ from the last tick of the clock of $u$.  If \lstinline!noClock($u$)! is called before the first tick of the clock of $u$, the start value of $u$ is returned.
+The clock of \lstinline!y = noClock($u$)! is always inferred, and $u$ must be part of the same base-clock as \lstinline!y!.
+At every tick of the clock of \lstinline!y!, the operator returns the value of $u$ from the last tick of the clock of $u$.
+If \lstinline!noClock($u$)! is called before the first tick of the clock of $u$, the start value of $u$ is returned.
 \end{semantics}
 \end{operatordefinition}
 
@@ -815,7 +811,8 @@ Before the clock of \lstinline!u! ticks, \lstinline!yb = u.start!.
 \begin{nonnormative}
 Clarification of \lstinline!noClock! operator:
 
-Note, that \lstinline!noClock(u)! is not equivalent to \lstinline!sample(hold(u))!.  Consider the following model:
+Note, that \lstinline!noClock(u)! is not equivalent to \lstinline!sample(hold(u))!.
+Consider the following model:
 \begin{lstlisting}[language=modelica]
 model NoClockVsSampleHold
   Clock clk1 = Clock(0.1);
@@ -832,7 +829,8 @@ equation
 end NoClockVsSampleHold;
 \end{lstlisting}
 
-Due to the infinitesimal delay of \lstinline!sample!, \lstinline!z! will not show the current value of \lstinline!x! as \lstinline!clk2! ticks, but will show its previous value (left limit).  However, \lstinline!y! will show the current value, since it has no infinitesimal delay.
+Due to the infinitesimal delay of \lstinline!sample!, \lstinline!z! will not show the current value of \lstinline!x! as \lstinline!clk2! ticks, but will show its previous value (left limit).
+However, \lstinline!y! will show the current value, since it has no infinitesimal delay.
 \end{nonnormative}
 
 Note that it is not legal to compute the derivative of the \lstinline!sample!, \lstinline!subSample!, \lstinline!superSample!, \lstinline!backSample!,
@@ -840,7 +838,7 @@ Note that it is not legal to compute the derivative of the \lstinline!sample!, \
 
 \section{Clocked When-Clause}\label{clocked-when-clause}
 
-In addition to the previously discussed conditional \lstinline!when!-clause, a \emph{clocked} \lstinline!when!-clause\index{clocked!when-clause@\robustinline{when}-clause}\index{when-clause@\robustinline{when}-clause!clocked} is introduced:
+In addition to the previously discussed \lstinline!when!-equation (see \cref{when-equations}), a \emph{clocked} \lstinline!when!-clause\index{clocked!when-clause@\robustinline{when}-clause}\index{when-clause@\robustinline{when}-clause!clocked} is introduced:
 % TODO: Can't have angle brackets and \emph in the same mathescape due to LaTeXML issue:
 % - https://github.com/brucemiller/LaTeXML/issues/1477
 % Once we cut the MathJax dependency, change to single mathescape for better character spacing.
@@ -851,7 +849,9 @@ when $\mathit{clockExpression}$ then
 end when;
 \end{lstlisting}
 
-The clocked \lstinline!when!-clause cannot be nested and does not have any \lstinline!elsewhen! part.  It cannot be used inside an algorithm.  General equations are allowed in a clocked \lstinline!when!-clause.
+The clocked \lstinline!when!-clause cannot be nested and does not have any \lstinline!elsewhen! part.
+It cannot be used inside an algorithm.
+General equations are allowed in a clocked \lstinline!when!-clause.
 
 For a clocked \lstinline!when!-clause, all equations inside the \lstinline!when!-clause are clocked with the same clock given by the $\mathit{clockExpression}$.
 
@@ -861,7 +861,8 @@ This section defines how clock-partitions and clocks associated with
 equations are inferred.
 
 \begin{nonnormative}
-Typically clock partitioning is performed before sorting the equations.  The benefit is that clocking and symbolic transformation errors are separated.
+Typically clock partitioning is performed before sorting the equations.
+The benefit is that clocking and symbolic transformation errors are separated.
 \end{nonnormative}
 
 Every clocked variable is uniquely associated with exactly one clock.
@@ -872,26 +873,25 @@ In the latter case it is called a \firstuse[clocked!equation]{clocked equation}\
 The associated clock is either explicitly defined by a \lstinline!when!-clause, see \cref{sub-clock-conversion-operators}, or it is implicitly defined by the requirement that a clocked equation, a clocked expression and a clocked algorithm section must have the same clock as the variables used in them with exception of the expressions used as first arguments in the conversion operators of \cref{partitioning-operators}.
 \firstuse[clock!inference]{Clock inference} means to infer the clock of a variable, an equation, an expression or an algorithm section if the clock is not explicitly defined and is deduced from the required properties in the previous two paragraphs.
 
-All variables in an expression without clock conversion operators must
-have the same clock to infer the clocks for each variable and
-expression. The clock inference works both forward and backwards
-regarding the data flow and is also being able to handle algebraic
-loops. The clock inference method uses the set of variable incidences of
-the equations, i.e., what variables that appear in each equation.
+All variables in an expression without clock conversion operators must have the same clock to infer the clocks for each variable and expression.
+The clock inference works both forward and backwards regarding the data flow and is also being able to handle algebraic loops.
+The clock inference method uses the set of variable incidences of the equations, i.e., what variables that appear in each equation.
 
-Note that incidences of the first argument of clock conversion operators
-of \cref{partitioning-operators} are handled specially.
+Note that incidences of the first argument of clock conversion operators of \cref{partitioning-operators} are handled specially.
+
+\begin{nonnormative}
+As clock partitions are solely determined by the equations, two different clock partitions can have clocks defined by the same expressions.
+It is a quality of implementation issue that such partitions are executed synchronously, e.g., by putting them in the same task in a real-time simulation context.
+\end{nonnormative}
 
 \subsection{Flattening of Model}\label{flattening-of-model}
 
-The clock partitioning is conceptually performed after model flattening,
-i.e., redeclarations have been elaborated, arrays of model components
-expanded into scalar model components, and overloading resolved.
+The clock partitioning is conceptually performed after model flattening, i.e., redeclarations have been elaborated, arrays of model components expanded into scalar model components, and overloading resolved.
 Furthermore, function calls to inline functions have been inlined.
 
 \begin{nonnormative}
-This is called \emph{conceptually}, because a tool might do this more efficiently in a different way, provided the result is the same as if everything is flattened.  For example,
-array and matrix equations and records don't not need to be expanded if they have the same clock.
+This is called \emph{conceptually}, because a tool might do this more efficiently in a different way, provided the result is the same as if everything is flattened.
+For example, array and matrix equations and records don't not need to be expanded if they have the same clock.
 \end{nonnormative}
 
 Furthermore, each non-trivial expression (non-literal, non-constant, non-parameter, non-variable), $\mathit{expr}_{i}$, appearing as first argument of a clock conversion operator (except \lstinline!hold! and \lstinline!backSample!) is recursively replaced by a unique variable, $v_{i}$, and the equation $v_{i} = \mathit{expr}_{i}$ is added to the equation set.
@@ -1010,6 +1010,7 @@ except as first argument of sub-clock conversion operators: \lstinline!subSample
 
 The resulting set of connected components, is the partitioning of the equations and variables, $S_{ij} = \left\langle E_{ij},\, V_{ij} \right\rangle$, according to sub-clocks.
 
+The connected components (corresponding to the sub-clocks) are then further split into strongly connected components corresponding to systems of equations.
 The resulting sets of equations and variables shall be possible to solve separately, meaning that systems of equations cannot involve different sub-clocks.
 
 It can be noted that:
@@ -1043,6 +1044,33 @@ u = hold(yd2);
 \end{lstlisting}
 \end{example}
 
+\begin{example}
+Forbidding systems of equations involving different sub-clocks means that the following is forbidden:
+\begin{lstlisting}[language=modelica]
+  Real a;
+  //Real x=a+z;
+  Real y=superSample(a+z, 2);
+  Real z;
+equation
+  a+z = sample(time, Clock(1,100));
+  0 = subSample(y, 2)+a;
+\end{lstlisting}
+Here \lstinline!a! and \lstinline!z! are part of one sub-clock, and \lstinline!y! of another, and the system of equations involve both of them.
+
+The following legal example solves the issues in the previous example by replacing \lstinline!a! by \lstinline!x-z! (and simplifying the equations).
+Additionally, it shows that it is not required that the sub-clocks can necessarily be sorted:
+\begin{lstlisting}[language=modelica]
+  Real x=sample(time, Clock(1,100));
+  Real y=superSample(x, 2);
+  Real z=subSample(y, 2)+x;
+\end{lstlisting}
+Here \lstinline!x! and \lstinline!z! are part of one sub-clock partition, and \lstinline!y! of another.
+The equations form three equation systems with one equation in each (hence trivially satisfying the requirement that only variables from one sub-clock partition are being solved).
+The equation systems need to be solved in a strict order, but the first and last equation system belong to one sub-clock, while the second equation system belongs to another sub-clock.
+This illustrates that there is no guarantee that the sub-clock partitions can be ordered in agreement with the equation systems.
+Note that equation systems with more than one equation are also allowed in sub-clock partitions.
+\end{example}
+
 \subsection{Sub-Clock Inferencing}\label{sub-clock-inferencing}
 
 For each base-clock partition, the base interval needs to be determined and for each sub-clock partition, the sub-sampling factors and shift need to be determined.
@@ -1051,7 +1079,8 @@ This constraint set is used to solve for all intervals and sub-sampling factors 
 The model is erroneous if no solution exist.
 
 \begin{nonnormative}
-It must be possible to determine that the constraint set is valid at compile time.  However, in certain cases, it could be possible to defer providing actual numbers until run-time.
+It must be possible to determine that the constraint set is valid at compile time.
+However, in certain cases, it could be possible to defer providing actual numbers until run-time.
 \end{nonnormative}
 
 It is required that accumulated sub- and supersampling factors in the range of 1 to 2\textsuperscript{63} can be handled.
@@ -1071,10 +1100,8 @@ This feature also allows defining multi-rate systems: Different parts of the con
 methods between clock ticks, e.g., a very fast sub-system with an implicit solver with a small step-size and a slow sub-system with an explicit solver with a large step-size.
 \end{nonnormative}
 
-With the language elements defined in this section, continuous-time
-equations can be used in clocked partitions. Hereby, the continuous-time
-equations are solved with the defined integration method between clock
-ticks.
+With the language elements defined in this section, continuous-time equations can be used in clocked partitions.
+Hereby, the continuous-time equations are solved with the defined integration method between clock ticks.
 
 From the view of the continuous-time partition, the clock ticks are not interpreted as events, but as step-sizes of the integrator that the integrator must exactly hit.
 Hence, no event handling is triggered at clock ticks (provided an explicit event is not triggered from the model at this time instant).
@@ -1091,14 +1118,10 @@ Alternatively, relations might be interpreted literally, so that events are no l
 However, even if relations do not generate events, when-clauses and operators \lstinline!edge! and \lstinline!change! should behave as normal.
 \end{nonnormative}
 
-From the view of the clocked partition, the continuous-time
-partition is discretized and the discretized continuous-time variables
-have only a value at a clock tick. Therefore, such a partition is
-handled in the same way as any other clocked partition. Especially,
-operators such as \lstinline!sample!, \lstinline!hold!, \lstinline!subSample! must be used to communicate
-signals of the discretized continuous-time partition with other
-partitions. Hereby, a discretized continuous-time partition is seen as a
-clocked partition.
+From the view of the clocked partition, the continuous-time partition is discretized and the discretized continuous-time variables have only a value at a clock tick.
+Therefore, such a partition is handled in the same way as any other clocked partition.
+Especially, operators such as \lstinline!sample!, \lstinline!hold!, \lstinline!subSample! must be used to communicate signals of the discretized continuous-time partition with other partitions.
+Hereby, a discretized continuous-time partition is seen as a clocked partition.
 
 
 \subsection{Clocked Discrete-Time and Discretized Continuous-Time}\label{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}
@@ -1136,8 +1159,8 @@ The integration method associated with a clocked discretized continuous-time par
 A predefined type \lstinline!ModelicaServices.Types.SolverMethod! defines the methods supported by the respective tool by using the \lstinline!choices! annotation.
 
 \begin{nonnormative}
-The \lstinline!ModelicaServices! package contains tool specific definitions.  A string is used instead of an enumeration, since different tools might have different values and then the
-integer mapping of an enumeration is misleading since the same value might characterize different integrators.
+The \lstinline!ModelicaServices! package contains tool specific definitions.
+A string is used instead of an enumeration, since different tools might have different values and then the integer mapping of an enumeration is misleading since the same value might characterize different integrators.
 \end{nonnormative}
 
 The following names of solver methods are standardized:
@@ -1165,8 +1188,9 @@ If the solver method is \lstinline!"External"!, then the partition associated wi
 \lstinline!interval()! using a solution method defined in the simulation environment.
 
 \begin{nonnormative}
-An example of such a solution method could be to have a table of the clocks that are associated with discretized continuous-time partitions and a method selection per clock.  In such
-a case, the solution method might be a variable step solver with step-size control that integrates between two clock ticks. The simulation environment might also combine all partitions associated with method \lstinline!"External"!, as well as all continuous-time partitions, and integrate them together with the solver selected by the simulation environment.
+An example of such a solution method could be to have a table of the clocks that are associated with discretized continuous-time partitions and a method selection per clock.
+In such a case, the solution method might be a variable step solver with step-size control that integrates between two clock ticks.
+The simulation environment might also combine all partitions associated with method \lstinline!"External"!, as well as all continuous-time partitions, and integrate them together with the solver selected by the simulation environment.
 \end{nonnormative}
 
 If the solver method is \emph{not} \lstinline!"External"!, then the partition is
@@ -1259,7 +1283,8 @@ Assume the differential equation
 equation
   der(x) = -x + u;
 \end{lstlisting}
-shall be transformed to a clocked discretized continuous-time partition with the \lstinline!"ExplicitEuler"! method.  The following model is a manual implementation:
+shall be transformed to a clocked discretized continuous-time partition with the \lstinline!"ExplicitEuler"! method.
+The following model is a manual implementation:
 \begin{lstlisting}[language=modelica]
   input Real u;
   parameter Real x_start = 1;
@@ -1286,7 +1311,7 @@ equation
 For the implicit integration methods the efficiency can be enhanced by utilizing the discretization formula during the symbolic transformation of the equations.
 For example, linear differential equations are then mapped to linear and not non-linear algebraic equation systems, and also the structure of the equations can be utilized.
 For details see \textcite{ElmqvistOtterCellier1995InlineIntegration}.
-It might be necessary to associate additional data for an implicit integration method, e.g.\ the relative tolerance to solve the non-linear algebraic equation systems, or the maximum number of iterations in case of hard realtime requirements.
+It might be necessary to associate additional data for an implicit integration method, e.g., the relative tolerance to solve the non-linear algebraic equation systems, or the maximum number of iterations in case of hard realtime requirements.
 This data is tool specific and is typically either defined with a vendor annotation or is given in the simulation environment.
 \end{nonnormative}
 
@@ -1358,17 +1383,15 @@ Here \lstinline!z! is a continuous-time equation connected directly to both \lst
 
 \section{Initialization of Clocked Partitions}\label{initialization-of-clocked-partitions}
 
-The standard scheme for initialization of Modelica models does not apply
-for clocked discrete-time partitions. Instead, initialization is
-performed in the following way:
+The standard scheme for initialization of Modelica models does not apply for clocked discrete-time partitions.
+Instead, initialization is performed in the following way:
 \begin{itemize}
 \item
   Clocked discrete-time variables cannot be used in initial equation or
   initial algorithm sections.
 \item
-  Attribute \lstinline!fixed! cannot be applied to clocked discrete-time
-  variables. The attribute \lstinline!fixed! is true for variables to which
-  \lstinline!previous! is applied, otherwise false.
+  Attribute \lstinline!fixed! cannot be applied to clocked discrete-time variables.
+  The attribute \lstinline!fixed! is true for variables to which \lstinline!previous! is applied, otherwise false.
 \end{itemize}
 
 \section{Other Operators}\label{other-operators}
@@ -1393,7 +1416,9 @@ It is an error if these operators are called in the continuous-time partition.
 firstTick($u$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-This operator returns true at the first tick of the clock of the expression, in which this operator is called.  The operator returns false at all subsequent ticks of the clock.  The optional argument $u$ is only used for clock inference, see \cref{clock-partitioning}.
+This operator returns true at the first tick of the clock of the expression, in which this operator is called.
+The operator returns false at all subsequent ticks of the clock.
+The optional argument $u$ is only used for clock inference, see \cref{clock-partitioning}.
 \end{semantics}
 \end{operatordefinition}
 
@@ -1402,7 +1427,9 @@ This operator returns true at the first tick of the clock of the expression, in 
 interval($u$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-This operator returns the interval between the previous and present tick of the clock of the expression, in which this operator is called.  The optional argument $u$ is only used for clock inference, see \cref{clock-partitioning}.  At the first tick of the clock the following is returned:
+This operator returns the interval between the previous and present tick of the clock of the expression, in which this operator is called.
+The optional argument $u$ is only used for clock inference, see \cref{clock-partitioning}.
+At the first tick of the clock the following is returned:
 \begin{enumerate}
 \item If the specified clock interval is a parameter expression, this value is returned.
 \item Otherwise the start value of the variable specifying the interval is returned.
@@ -1413,8 +1440,8 @@ The return value of \lstinline!interval! is a scalar \lstinline!Real! number.
 \end{operatordefinition}
 
 \begin{example}
-A discrete PI controller is parameterized with the parameters of a continuous PI controller, in order that the discrete block is robust against changes in the sample
-period.  This is achieved by discretizing a continuous PI controller (here with an implicit Euler method):
+A discrete PI controller is parameterized with the parameters of a continuous PI controller, in order that the discrete block is robust against changes in the sample period.
+This is achieved by discretizing a continuous PI controller (here with an implicit Euler method):
 \begin{lstlisting}[language=modelica]
 block ClockedPI
   parameter Real T "Time constant of continuous PI controller";
@@ -1494,7 +1521,8 @@ model ClockTicks
 end ClockTicks;
 \end{lstlisting}
 
-A possible implementation model is shown below using Modelica~3.2 semantics.  The base-clock is determined to 0.001 seconds and the sub-sampling factors to 1000 and 60000.
+A possible implementation model is shown below using Modelica~3.2 semantics.
+The base-clock is determined to 0.001 seconds and the sub-sampling factors to 1000 and 60000.
 
 \begin{lstlisting}[language=modelica]
 model ClockTicksWithModelica32

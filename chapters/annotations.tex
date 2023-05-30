@@ -158,13 +158,15 @@ record Axis
   Real max "Axis upper bound, in 'unit'";
   String unit = "" "Unit of axis tick labels";
   String label "Axis label";
+  AxisScale scale = Linear() "Mapping between axis values and position on axis"
 end Axis;
 \end{lstlisting}
 
 When an axis bound is not provided, the tool computes one automatically.
 
-An empty \lstinline!unit! means that the axis is unitless, and each expression plotted against it may use its own unit determined by the tool.  The tool is responsible for conveying the information
-about choice of unit for the different variables, for instance by attaching this information to curve legends.
+A non-empty \lstinline!unit! shall match \lstinline[language=grammar]!unit-expression! in \cref{unit-expressions}.
+An empty \lstinline!unit! means that the axis is unitless, and each expression plotted against it may use its own unit determined by the tool.
+The tool is responsible for conveying the information about choice of unit for the different variables, for instance by attaching this information to curve legends.
 
 The Modelica tool is responsible for showing that values at the axis tick marks are expressed in \lstinline!unit!, so the axis \lstinline!label! shall not contain this information.
 
@@ -179,6 +181,49 @@ When \lstinline!label! is not provided, the tool produces a default label.
 Providing the empty string as \lstinline!label! means that no label should be shown.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!label!.
 The Modelica tool is responsible for showing the unit used for values at the axis tick marks, so the axis \lstinline!label! shall not contain the unit.
+
+The type of \lstinline!scale! is defined as an empty partial record:
+\begin{lstlisting}[language=modelica]
+partial record AxisScale
+end AxisScale;
+\end{lstlisting}%
+\annotationindex{AxisScale}
+
+The standardized annotations extending from \lstinline!AxisScale! are \lstinline!Linear! and  \lstinline!Log!, but it is also allowed to use a vendor-specific annotation.
+
+Use \lstinline!Linear! for a linear mapping between axis values and position on axis:
+\begin{lstlisting}[language=modelica]
+record Linear
+  extends AxisScale;
+end Linear;
+\end{lstlisting}%
+\index{Linear@\robustinline{Linear} (axis scale)}
+
+Use \lstinline!Log! for a logarithmic mapping between axis values and position on axis:
+\begin{lstlisting}[language=modelica]
+record Log
+  extends AxisScale;
+  Integer base(min = 2) = 10;
+end Log;
+\end{lstlisting}%
+\index{Log@\robustinline{Log} (axis scale)}
+
+The \lstinline!base! of a \lstinline!Log! scale determines preferred positions of major axis ticks.
+It is not required that the presentation of axis tick labels reflect the \lstinline!base! setting.
+For example, when \lstinline!base! is 10, major axis ticks should preferrably be placed at integer powers of 10, and natural alternatives that a tool may use for major axis tick labels could look like $0.001$ or $10^{-3}$.
+Under some circumstances, such as when the axis range does not span even a single order of magnitude, a tool may disregard the preference in order to get useful axis ticks.
+
+\begin{example}
+A \emph{symmetric log} axis scale is sometimes used for axes spanning across several orders of magnitude of both positive and negative values.
+Details vary, but the mapping from value to linear position along axis is some variation of $y \mapsto \operatorname{sign}(y)\, \operatorname{log}(1 + \frac{\abs{y}}{10^{\alpha}})$.
+A tool may implement this as a vendor-specific axis scale:
+\begin{lstlisting}[language=modelica]
+Axis(
+  min = -1e5, max = 1e5,
+  scale = __NameOfVendor_symlog(1),
+)
+\end{lstlisting}
+\end{example}
 
 \subsubsection{Plot Curves}\label{plot-curves}
 
@@ -365,15 +410,48 @@ The annotation listed below, in addition to annotations described in \crefrange{
 The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base class of the type-declaration.
 In the case of multiple conflicting annotations it is handled similarly to modifiers (e.g., an \lstinline!Evaluate! annotation on the component declaration takes precedence).
 In the case of hierarchical components it is applied to all components, overriding any \lstinline!Evaluate!-setting for specific components.
-The annotation \lstinline!Evaluate! only has effect for a component declared with the prefix \lstinline!parameter!.
+The annotation \lstinline!Evaluate! is only allowed for parameters and constants.
 
-If \lstinline!Evaluate = true!, the model developer proposes to utilize the value for the symbolic processing. In that case, it is not possible to change the parameter value after symbolic pre-processing.
+Setting \lstinline!Evaluate = true! for an evaluable parameter, means that it must be an evaluated parameter (i.e., its value must be determined during translation, similar to a constant).
+For a non-evaluable parameter, it has no impact and it is recommended to issue a warning in most cases.
+The exception for recommending this warning is when the parameter is non-evaluable due to dependency on a parameter with \lstinline!Evaluate = false!, as this could be a sign of intentional overriding of \lstinline!Evaluate = true!, see example below.
+For both evaluable parameters and constants, the model developer further proposes to utilize the value for symbolic processing.
+A constant can never be changed after translation, and it is normal for its value to be used for symbolic processing even without \lstinline!Evaluate = true!.
 
-If \lstinline!Evaluate = false!, the model developer proposes to not utilize the value of the corresponding parameter for the symbolic processing.
+For a parameter, \lstinline!Evaluate = false! ensures that the parameter is a non-evaluable parameter according to \cref{component-variability} (meaning it is not allowed to be used where an evaluable expression (\cref{evaluable-expressions}) is expected).
+For both parameters and constants -- even when the value can be determined during translation -- the model developer further proposes to not utilize the value for symbolic processing.
 
 \begin{nonnormative}
-\lstinline!Evaluate! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
+\lstinline!Evaluate = true! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
+
+Conversely, a possible use of \lstinline!Evaluate = false! is to ensure that a parameter can be changed after translation, even when a tool might be tempted to evaluate it to improve the efficiency of the generated code.
 \end{nonnormative}
+
+\begin{example}
+When a parameter has \lstinline!Evaluate = true! for optimization reasons (not because it needs to be evaluable), it is possible to prevent the value from being determined during translation without modifying the original model:
+\begin{lstlisting}[language=modelica]
+model M_evaluable
+  /* Here, 'b' is evaluable, and will be evaluated. */
+  parameter Boolean b = false annotation(Evaluate = true);
+  Real x(start = 1.0, fixed = true);
+equation
+  if b then /* No need for b to be evaluable. */
+    der(x) = x;
+  else
+    der(x) = -x;
+  end if;
+end M_evaluable;
+
+model M_non_evaluable
+  /* Here, 'bn' is non-evaluable, which in turn will cause 'b' to be
+   * non-evaluable, thereby preventing it from being determined during
+   * translation.
+   */
+  extends M_evaluable(b = bn);
+  parameter Boolean bn = false annotation(Evaluate = false);
+end M_non_evaluable;
+\end{lstlisting}
+\end{example}
 \end{semantics}
 \end{annotationdefinition}
 
@@ -489,6 +567,38 @@ end PartialWithSupport;
 The protected components and connections needed to internally handle the support-connector is omitted.
 \end{example}
 
+A connector component declaration may have the following annotation:
+\begin{lstlisting}[language=modelica]
+annotation(mayOnlyConnectOnce = "message");
+\end{lstlisting}%
+\annotationindex{mayOnlyConnectOnce}
+
+It makes it an error if the connector is connected from the outside and:
+\begin{itemize}
+\item For non-stream connectors the connection set has more than two elements.
+\item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
+\end{itemize}
+For an array of connectors it applies separately to each element.
+
+\begin{nonnormative}
+This annotation is intended for non-causal connectors, see \cref{restrictions-of-connections-and-connectors}.
+The connection handling operates on connection sets, and thus this restriction should also operate on those sets.
+The set handling avoids the case where only one of two equivalent models generate diagnostics.
+The stream connector part is primarily intended to exclude sensor-variables, see \cref{connection-of-3-stream-connectors-where-one-mass-flow-rate-is-identical-to-zero-n-3-and}, but also excludes non-reversible outgoing flows.
+\end{nonnormative}
+
+\begin{example}
+This can be used for components that implement mixing of fluids where it is not desired to combine that with the normal stream-connector mixing.
+\begin{lstlisting}[language=modelica]
+partial model MultiPort
+  parameter Integer n = 0 annotation(Dialog(connectorSizing = true));
+  FluidPort_a port_a(redeclare package Medium = Medium);
+  FluidPorts_b ports_b[n](redeclare each package Medium = Medium)
+    annotation (mayOnlyConnectOnce = "Should only connect once per element!");
+end MultiPort;
+\end{lstlisting}
+\end{example}
+
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
 A graphical representation of a class consists of two abstraction
@@ -535,7 +645,7 @@ Note that the ordered sequence is syntactically a valid Modelica annotation, alt
 is no mechanism for defining an array of heterogeneous objects in Modelica.
 \end{nonnormative}
 
-These \lstinline!Icon!, \lstinline!Diagram!, and \lstinline!Documentation! annotations are only allowed directly in classes (e.g.\ not on components or connections).
+These \lstinline!Icon!, \lstinline!Diagram!, and \lstinline!Documentation! annotations are only allowed directly in classes (e.g., not on components or connections).
 The allowed annotations for a short class definition is the union of the allowed annotations in classes and on \lstinline!extends!-clauses.
 
 \subsection{Common Definitions}\label{common-definitions}
@@ -581,7 +691,7 @@ The attribute \lstinline!initialScale! specifies the default component size as
 application may use a different default value of \lstinline!initialScale!.
 
 The attribute \lstinline!grid! specifies the spacing between grid points which can
-be used by tools for alignment of points in the coordinate system, e.g.\ ``snap-to-grid''.
+be used by tools for alignment of points in the coordinate system, e.g., ``snap-to-grid''.
 Its use and default value is tool-dependent.
 
 \begin{lstlisting}[language=modelica]
@@ -598,7 +708,7 @@ A coordinate system for an icon could for example be defined as:
 \begin{lstlisting}[language=modelica]
 CoordinateSystem(extent = {{-10, -10}, {10, 10}});
 \end{lstlisting}
-i.e.\ a coordinate system with width 20 units and height 20 units.
+i.e., a coordinate system with width 20 units and height 20 units.
 \end{example}
 
 The coordinate systems for the icon and diagram layers are by default defined as follows; where the array of \lstinline!GraphicItem! represents an ordered list of graphical primitives.
@@ -614,7 +724,7 @@ record Diagram "Representation of the diagram layer"
   GraphicItem[:] graphics;
 end Diagram;
 \end{lstlisting}
-The coordinate system (including \lstinline!preserveAspectRatio!) of a class is defined by the following priority:
+The coordinate system attributes (\lstinline!extent! and \lstinline!preserveAspectRatio!) of a class are separately defined by the following priority:
 \begin{enumerate}
 \item
   The coordinate system annotation given in the class (if specified).
@@ -622,7 +732,7 @@ The coordinate system (including \lstinline!preserveAspectRatio!) of a class is 
   The coordinate systems of the first base class where the extent on the \lstinline!extends!-clause specifies a null-region (if any).
   Note that null-region is the default for base classes, see \cref{extends-clause}.
 \item
-  The default coordinate system \lstinline!CoordinateSystem(extent = {{-100, -100}, {100, 100}})!.
+  The default coordinate system \lstinline!CoordinateSystem(preserveAspectRatio=true, extent = {{-100, -100}, {100, 100}})!.
 \end{enumerate}
 
 \subsubsection{Graphical Properties}\label{graphical-properties}
@@ -696,29 +806,29 @@ The extent/points of the filled shape describe the theoretical zero-thickness fi
 
 A component instance can be placed within a diagram or icon layer.
 It has an annotation with a \lstinline!Placement! modifier to describe the placement.
-Placements are defined in term of coordinate systems transformations:
+Placements are defined in terms of coordinate system transformations:
 \begin{lstlisting}[language=modelica]
 record Transformation
-  Point origin = {0, 0};
   Extent extent;
   Real rotation(quantity = "angle", unit = "deg") = 0;
+  Point origin = {0, 0};
 end Transformation;
 \end{lstlisting}%
 \annotationindex{Transformation}
-The origin attribute defines the position of the component in the coordinate system of the enclosing class.
-The \lstinline!extent! defines the position, size and flipping of the component, relative to the \lstinline!origin! attribute.
-The \lstinline!extent! is defined relative to the \lstinline!origin! attribute of the component instance.
-Given an extent \lstinline!{{$x_{1}$, $y_{1}$}, {$x_{2}$, $y_{2}$}}!, $x_{2} < x_{1}$ defines horizontal flipping and $y_{2} < y_{1}$ defines vertical flipping around the center of the object.
-
-The \lstinline!rotation! attribute specifies rotation of the extent around the point defined by the \lstinline!origin! attribute.
-
-The graphical operations are applied in the order: scaling, flipping and rotation.
+The attributes are applied in the order \lstinline!extent!, \lstinline!rotation!, \lstinline!origin!, as follows:
+\begin{enumerate}
+\item
+  The \lstinline!extent! of the component icon is mapped to the \lstinline!extent! rectangle (possibly shifting, scaling, and flipping contents).
+\item
+  The \lstinline!rotation! specifies counter-clockwise rotation around the origin (that is \lstinline!{0, 0}!, not the \lstinline!origin! attribute).
+\item
+  The \lstinline!origin! specifies a shift (moving \lstinline!{0, 0}! to \lstinline!origin!).
+\end{enumerate}
 
 \begin{lstlisting}[language=modelica]
 record Placement
   Boolean visible = true;
   Transformation transformation "Placement in the diagram layer";
-
   Boolean iconVisible "Visible in icon layer; for public connector";
   Transformation iconTransformation
     "Placement in the icon layer; for public connector";
@@ -815,21 +925,19 @@ connect(a.x, b.x)
 \end{example}
 
 The optional \lstinline!Text!\index{Text@\robustinline{Text}!\robustinline{connect} annotation} primitive defines a text that will be written on the connection line.
-It has the following definition (\emph{it is not equal to the \lstinline!Text! primitive as part of graphics -- the differences are marked as bold lines}):
-% NOTE: Technically just the names -- not the entire lines are marked in bold
+It has the following definition (it is not equal to the \lstinline!Text! primitive as part of graphics -- the differences are marked after \emph{Note} in the description-strings):
 \begin{lstlisting}[language=modelica]
 record Text
   extends GraphicItem;
-  extends FilledShape;
   Extent extent;
-  String string;
+  String string "Note: different name";
   Real fontSize = 0 "unit pt";
   String fontName;
   TextStyle textStyle[:];
-  Color textColor = lineColor;
+  Color textColor = Color.Black;
   TextAlignment horizontalAlignment =
-    if index < 0 then TextAlignment.Right else TextAligment.Left;
-  Integer index;
+    if index < 0 then TextAlignment.Right else TextAligment.Left "Note: different default";
+  Integer index "Note: new";
 end Text;
 \end{lstlisting}
 
@@ -845,11 +953,10 @@ The \lstinline!textColor! attribute defines the color of the text.  The text is 
 connect(controlBus.axisControlBus1, axis1.axisControlBus)
   annotation(
     Text(string = "%first", index = -1, extent = [-6, 3; -6, 7]),
-    Line(points =
-      {{-80,-10},{-80,-14.5},{-79,-14.5},{-79,-17},{-65,-17},{-65,-65},{-25,-65}})
+    Line(points = {{41, 30}, {50, 30}, {50, 50}, {58, 50}})
   );
 \end{lstlisting}
-Draws a connection line and adds the text \emph{axisControlBus1} ending at $(-6,\, 3) + (-25,\, -65)$ and 4 vertical units of space for the text.
+Draws a connection line and adds the text \emph{axisControlBus1} ending at $(-6,\, 3) + (58,\, 50)$ and 4 vertical units of space for the text.
 Using a height of zero, such as \lstinline!extent = [-6, 3; -6, 3]! is deprecated, but gives similar result.
 \end{example}
 
@@ -956,20 +1063,18 @@ A text string is specified as follows:
 \begin{lstlisting}[language=modelica]
 record Text
   extends GraphicItem;
-  extends FilledShape;
   Extent extent;
   String textString;
   Real fontSize = 0 "unit pt";
   String fontName;
   TextStyle textStyle[:];
-  Color textColor = lineColor;
+  Color textColor = Color.Black;
   TextAlignment horizontalAlignment = TextAlignment.Center;
 end Text;
 \end{lstlisting}%
 \annotationindex{Text}
 The \lstinline!textColor! attribute defines the color of the text.
 The text is drawn with transparent background and no border around the text (and without outline).
-The contents inherited from \lstinline!FilledShape! is deprecated, but kept for compatibility reasons.
 
 There are a number of common macros that can be used in the text, and they should be replaced when displaying the text as follows (in order such that the earliest ones have precedence, and using the longest sequence of identifier characters -- alphanumeric and underscore):
 \begin{itemize}
@@ -1247,13 +1352,11 @@ annotation(absoluteValue = false);
 \end{lstlisting}%
 \annotationindex{absoluteValue}
 
-If \lstinline!false!, then the variable defines a relative quantity, and if true an absolute quantity.
+If \lstinline!false!, then the variable defines a relative quantity, and if \lstinline!true! an absolute quantity.
 
 \begin{nonnormative}
-When converting between units (in the user-interface for plotting and entering parameters), the \lstinline!offset! must be
-ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
-This annotation is used in the Modelica Standard Library, for example in
-\lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
+When converting between units (in the user-interface for plotting and entering parameters), the unit offset must be ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
+This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
 \end{nonnormative}
 
 A model or block definition may contain:
@@ -1639,7 +1742,7 @@ The conversion should generate correct Modelica models using the new version of 
 corresponding to the old version.
 
 \begin{nonnormative}
-Whenever possible tools should preserve the original style of the model, e.g.\ use of imports.
+Whenever possible tools should preserve the original style of the model, e.g., use of imports.
 Conversions should be applied in all places where named element are used in code, including Modelica URIs (for example, in \lstinline!Documentation! annotations).
 \end{nonnormative}
 
@@ -1647,7 +1750,7 @@ These functions can be called with literal strings or array of strings
 and vectorize according to \cref{scalar-functions-applied-to-array-arguments}.
 
 All of these convert-functions only use inheritance among user models, and not in the library that is used for the conversion -- thus conversions of base classes will require multiple conversion calls; this ensures that the conversion is independent of the new library structure.
-The name of the class used as argument to \lstinline!convertElement! and \lstinline!convertModifiers! is similarly the old name of the class, i.e.\ the name before it is possibly converted by \lstinline!convertClass!.
+The name of the class used as argument to \lstinline!convertElement! and \lstinline!convertModifiers! is similarly the old name of the class, i.e., the name before it is possibly converted by \lstinline!convertClass!.
 
 \begin{nonnormative}
 Specifying conversions using the old name of a class allows the conversion to be done without access to the old
@@ -1668,7 +1771,7 @@ convertClass("Modelica.SIunits", "Modelica.Units.SI");
 convertClass("Modelica.SIunits.Icons", "Modelica.Units.Icons");
 \end{lstlisting}
 This ensures that for example \lstinline!Modelica.SIunits.Length! is converted to \lstinline!Modelica.Units.SI.Length!
-and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.SIunits.Icons!.
+and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.Units.Icons!.
 \end{example}
 
 \paragraph*{convertClassIf("OldClass", "oldElement", "whenValue", "NewClass")}\label{convertclassifoldclass-oldelement-whenvalue-newclass}\annotationindex{convertClassIf}
@@ -1681,7 +1784,7 @@ These are considered before \lstinline!convertClass! and \lstinline!convertMessa
 
 The old element should be of a \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String!, or enumeration
 type and the match is based on the literal value of the modifier.
-For string elements the value argument to \lstinline!convertClassIf! shall be up-quoted, e.g.\ \lstinline!"\"My String\""!,
+For string elements the value argument to \lstinline!convertClassIf! shall be up-quoted, e.g., \lstinline!"\"My String\""!,
 and for enumeration literals only the enumeration literal part of the old value matters, e.g., \lstinline!red!
 for \lstinline!"Colors.red"!.
 
@@ -1769,7 +1872,7 @@ Having a parameter for explicitly enabling the different cases means that instea
 connector \lstinline!B! is connected, there will be a parameter for enabling connector \lstinline!B!, and the conversion ensures that
 each component of model \lstinline!A! will have this parameter set accordingly.
 
-In case a parameter is simply renamed it is preferable to use \lstinline!convertElement!, since that also handles e.g.\ binding equations
+In case a parameter is simply renamed it is preferable to use \lstinline!convertElement!, since that also handles, e.g., binding equations
 using the parameter.
 \end{nonnormative}
 
@@ -1890,9 +1993,9 @@ String revisionId    "Revision identifier of the version management system used
 \annotationindex{versionDate}\annotationindex{versionBuild}\annotationindex{dateModified}\annotationindex{revisionId}
 
 \begin{example}
-\begin{lstlisting}[language=modelica,mathescape=false]
+\begin{lstlisting}[language=modelica,mathescape=false,escapechar=!]
 package Modelica
-  $\ldots$
+  !\ldots!
   annotation(
     version = "3.0.1",
     versionDate = "2008-04-10",
@@ -1946,7 +2049,7 @@ The meanings of these annotations are:
   \end{nonnormative}
 \item
   \lstinline!revisionId! is a tool specific revision identifier
-  possibly generated by a source code management system (e.g.\ Subversion
+  possibly generated by a source code management system (e.g., Subversion
   or CVS). This information exactly identifies the library
   source code in the source code management system.
 \end{itemize}
@@ -1993,7 +2096,7 @@ Define what parts of a class are visible.
 \end{definition}
 
 \begin{definition}[Obfuscation]\index{obfuscation!access control}
-Changing a Modelica class or generated code so that it is difficult to inspect by a user (e.g.\ by automatically renaming variables to non-meaningful names).
+Changing a Modelica class or generated code so that it is difficult to inspect by a user (e.g., by automatically renaming variables to non-meaningful names).
 \end{definition}
 
 \begin{definition}[Encryption]\index{encryption!access control}
@@ -2156,7 +2259,7 @@ end Authorization;
 
 record License
   String licensee = "" "Optional string to show information about the licensee";
-  String id[:] "Unique machine identifications, e.g.\ MAC addresses";
+  String id[:] "Unique machine identifications, e.g., MAC addresses";
   String features[:] = fill("", 0) "Activated library license features";
   String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
   String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
