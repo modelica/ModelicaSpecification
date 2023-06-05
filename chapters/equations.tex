@@ -104,7 +104,7 @@ for IDENT in expression loop
 
 The \lstinline!expression! of a \lstinline!for!-equation shall be a vector expression, where more general array expressions are treated as vector of vectors or vector of matrices.
 It is evaluated once for each \lstinline!for!-equation, and is evaluated in the scope immediately enclosing the \lstinline!for!-equation.
-The expression of a \lstinline!for!-equation shall be a parameter expression.
+The expression of a \lstinline!for!-equation shall be evaluable.
 The iteration range of a \lstinline!for!-equation can also be specified as \lstinline!Boolean! or as an enumeration type, see \cref{types-as-iteration-ranges} for more information.
 The loop-variable (\lstinline!IDENT!) is in scope inside the loop-construct and shall not be assigned to.
 For each element of the evaluated vector expression, in the normal order, the loop-variable gets the value of that element and that is used to evaluate the body of the \lstinline!for!-loop.
@@ -204,7 +204,7 @@ If \lstinline!expression! is a clocked expression, the equation is referred to a
 The equations within a \lstinline!when!-equation are activated only at the instant when the scalar expression or any of the elements of the vector expression becomes true.
 
 \begin{example}
-The order between the equations in a \lstinline!when!-equation does not matter, e.g.
+The order between the equations in a \lstinline!when!-equation does not matter, e.g.:
 \begin{lstlisting}[language=modelica]
 equation
   when x > 2 then
@@ -442,7 +442,7 @@ reinit(x, expr);
 \end{lstlisting}
 
 The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
-\lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e.\ \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
+\lstinline!x! is a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e., \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
 \lstinline!expr! needs to be type-compatible with \lstinline!x!.
 For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several \lstinline!when!- or \lstinline!elsewhen!-clauses of the same \lstinline!when!-equation is allowed).
 If there are multiple \lstinline!reinit! for a variable inside the same \lstinline!when!- or \lstinline!elsewhen!-clause, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
@@ -578,7 +578,7 @@ If computation or communication time has to be simulated, this property has to b
 An \firstuse{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
 Events are for example defined by the condition occurring in a \lstinline!when!-clause, \lstinline!if!-equation, or \lstinline!if!-expression.
 
-The integration is halted and an event occurs whenever an event generation expression, e.g.\ \lstinline!x > 2! o or \lstinline!floor(x)!, changes its value.
+The integration is halted and an event occurs whenever an event generation expression, e.g., \lstinline!x > 2! o or \lstinline!floor(x)!, changes its value.
 An event generating expression has an internal buffer, and the value of the expression can only be changed at event instants.
 If the evaluated expression is inconsistent with the buffer, that will trigger an event and the buffer will be updated with a new value at the event instant.
 During continuous integration event generation expression has the constant value of the expression from the last event instant.
@@ -624,9 +624,9 @@ z = smooth(0, if u > uMax then uMax elseif u < uMin then uMin else u);
 In this case \lstinline!x = y = z!, but a tool might generate events for \lstinline!z!.
 The \lstinline!if!-expression is taken literally without inducing state events.
 
-The \lstinline!smooth! operator is useful, if e.g.\ the modeler can guarantee that the used \lstinline!if!-expressions fulfill at least the continuity requirement of integrators.
+The \lstinline!smooth! operator is useful, if, e.g., the modeler can guarantee that the used \lstinline!if!-expressions fulfill at least the continuity requirement of integrators.
 In this case the simulation speed is improved, since no state event iterations occur during integration.
-The \lstinline!noEvent! operator is used to guard against \emph{outside domain} errors, e.g.\ \lstinline!y = if noEvent(x >= 0) then sqrt(x) else 0.!
+The \lstinline!noEvent! operator is used to guard against \emph{outside domain} errors, e.g., \lstinline!y = if noEvent(x >= 0) then sqrt(x) else 0.!
 \end{example}
 
 All equations and assignment statements within \lstinline!when!-clauses and all assignment statements within \lstinline!function! classes are implicitly treated with \lstinline!noEvent!, i.e., relations within the scope of these operators never induce state or time events.
@@ -650,7 +650,7 @@ Modelica is based on the synchronous data flow principle (\cref{synchronous-data
 
 \begin{nonnormative}
 The rules for the synchronous data flow principle guarantee that variables are always defined by a unique set of equations.
-It is not possible that a variable is e.g.\ defined by two equations, which would give rise to conflicts or non-deterministic behavior.
+It is not possible that a variable is, e.g., defined by two equations, which would give rise to conflicts or non-deterministic behavior.
 Furthermore, the continuous and the discrete parts of a model are always automatically ``synchronized''.
 Example:
 \begin{lstlisting}[language=modelica]
@@ -682,7 +682,7 @@ Here, it is well-defined if both conditions become true at the same time instant
 There is no guarantee that two different events occur at the same time instant.
 
 \begin{nonnormative}
-As a consequence, synchronization of events has to be explicitly programmed in the model, e.g.\ via counters.
+As a consequence, synchronization of events has to be explicitly programmed in the model, e.g., via counters.
 Example:
 \begin{lstlisting}[language=modelica]
   Boolean fastSample, slowSample;
@@ -745,7 +745,7 @@ similarly as \lstinline!when false then!.
 There is no special handling of inactive \lstinline!when!-statements during initialization, instead variables assigned in \lstinline!when!-statements are initialized using \lstinline!v := pre(v)! before the body of the algorithm (since they are discrete), see \cref{execution-of-an-algorithm-in-a-model}.
 \end{nonnormative}
 
-Further constraints, necessary to determine the initial values of all variables (depending on the component variability, see \cref{component-variability-prefixes-discrete-parameter-constant} for definitions), can be defined in the following ways:
+Further constraints, necessary to determine the initial values of all variables (depending on the component variability, see \cref{component-variability} for definitions), can be defined in the following ways:
 \begin{enumerate}
 \item
   As equations in an \lstinline!initial equation!\indexinline{initial equation} section or as assignments in an \lstinline!initial algorithm!\indexinline{initial algorithm} section.
@@ -770,7 +770,7 @@ Further constraints, necessary to determine the initial values of all variables 
   \end{itemize}
 \end{enumerate}
 
-Constants shall be determined by declaration equations (see \cref{component-variability-prefixes-discrete-parameter-constant}), and \lstinline!fixed = false! is not allowed.
+Constants shall be determined by declaration equations (see \cref{constants}), and \lstinline!fixed = false! is not allowed.
 For parameters, \lstinline!fixed! defaults to \lstinline!true!.
 For other variables, \lstinline!fixed! defaults to \lstinline!false!.
 
@@ -787,7 +787,7 @@ In this case a diagnostic message is recommended in a simulation model.
 This is used in libraries to give rudimentary defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters that should be set properly.
 \end{nonnormative}
 
-All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e.\ there must be additional equations for them -- and the \lstinline!start!-value can be used as a guess-value during initialization.
+All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e., there must be additional equations for them -- and the \lstinline!start!-value can be used as a guess-value during initialization.
 
 \begin{nonnormative}
 In the case a parameter has both a binding equation and \lstinline!fixed = false! a diagnostic is recommended, but the parameter should be solved from the binding equation.
@@ -808,7 +808,7 @@ It may be difficult for a user to figure out how many initial equations have to 
 These non-normative considerations are addressed as follows.
 A tool may add or remove initial equations automatically according to the rules below such that the resulting system is structurally nonsingular:
 \begin{itemize}
-\item A missing initial value of a discrete-time variable (see \cref{component-variability-prefixes-discrete-parameter-constant} -- this does not include parameter and constant variables) which does not influence the simulation result, may be automatically set to the start value or its default without informing the user.
+\item A missing initial value of a discrete-time variable (see \cref{component-variability} -- this does not include parameter and constant variables) which does not influence the simulation result, may be automatically set to the start value or its default without informing the user.
 For example, variables assigned in a \lstinline!when!-clause which are not accessed outside of the \lstinline!when!-clause and where \lstinline!pre! is not explicitly used on these variables, do not have an effect on the simulation.
 \item A \lstinline!start!-attribute that is not fixed may be treated as fixed with a diagnostic.
 \item A consistent start value or initial equation may be removed with a diagnostic.

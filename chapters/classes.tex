@@ -46,7 +46,7 @@ end A;
 \end{example}
 
 All elements defined under the heading \lstinline!protected! are regarded as protected.  All other elements (i.e., defined
-under the heading \lstinline!public!, without headings or in a separate file) are public (i.e.\ not protected).  Regarding
+under the heading \lstinline!public!, without headings or in a separate file) are public (i.e., not protected).  Regarding
 inheritance of protected and public elements, see \cref{inheritance-of-protected-and-public-elements}.
 
 
@@ -130,7 +130,7 @@ declaration :
 
 \begin{nonnormative}
 The declaration of a component states the type, access, variability, data flow, and other properties of the component.
-A \lstinline[language=grammar]!component-clause! i.e., the whole declaration, contains type prefixes followed by a \lstinline[language=grammar]!type-specifier! with optional \lstinline[language=grammar]!array-subscripts! followed by a \lstinline[language=grammar]!component-list!.
+A \lstinline[language=grammar]!component-clause!, i.e., the whole declaration, contains type prefixes followed by a \lstinline[language=grammar]!type-specifier! with optional \lstinline[language=grammar]!array-subscripts! followed by a \lstinline[language=grammar]!component-list!.
 
 There is no semantic difference between variables declared in a single declaration or in multiple declarations.
 For example, regard the following single declaration (\lstinline[language=grammar]!component-clause!) of two matrix variables:
@@ -164,6 +164,7 @@ If the \lstinline[language=grammar]!type-specifier! of the component declaration
 % Seems sufficient to just have \indexinline variant of 'partial' in index.
 A class defined with \lstinline!partial!\indexinline{partial} in the \lstinline[language=grammar]!class-prefixes! is called a \firstuse[---]{partial} class.
 Such a class is allowed to be incomplete, and cannot be instantiated in a simulation model; useful, e.g., as a base class.
+See \cref{short-class-definitions} regarding short class definition semantics of propagating \lstinline!partial!.
 
 If the \lstinline[language=grammar]!type-specifier! of the component does not denote a built-in type, the name of the type is looked up (\cref{static-name-lookup}).
 The found type is flattened with a new environment and the partially flattened enclosing class of the component.
@@ -177,7 +178,8 @@ The new environment is the result of merging
 \end{itemize}
 in that order.
 
-Array dimensions shall be scalar non-negative parameter expressions of type \lstinline!Integer!, a reference to a type (which must an enumeration type or \lstinline!Boolean!, see \cref{enumeration-types}), or the colon operator denoting that the array dimension is left unspecified (see \cref{array-declarations}).  All variants can also be part of short class definitions.
+Array dimensions shall be scalar non-negative evaluable expressions of type \lstinline!Integer!, a reference to a type (which must an enumeration type or \lstinline!Boolean!, see \cref{enumeration-types}), or the colon operator denoting that the array dimension is left unspecified (see \cref{array-declarations}).
+All variants can also be part of short class definitions.
 
 \begin{example}
 Variables with array dimensions:
@@ -224,7 +226,8 @@ An exception is \lstinline!input! for components whose type is of the special cl
 
 In addition, instances of classes extending from \lstinline!ExternalObject! may have type prefixes \lstinline!parameter! and \lstinline!constant!, and in functions also type prefixes \lstinline!input! and \lstinline!output!, see \cref{external-objects}.
 
-Variables declared with the \lstinline!stream! type prefix shall be a subtype of \lstinline!Real!.
+Variables declared with the \lstinline!stream! type prefix shall be a subtype of \lstinline!Real!, or a \lstinline!record! component where all the primitive elements shall be a subtype of \lstinline!Real!.
+The members of the record may not have the \lstinline!stream! type prefix.
 This is further restricted in \cref{definition-of-stream-connectors}.
 
 Variables declared with the \lstinline!input! type prefix must not also have the prefix \lstinline!parameter! or \lstinline!constant!.
@@ -239,7 +242,7 @@ The corresponding rules for the type prefixes \lstinline!discrete!, \lstinline!p
 
 \begin{nonnormative}
 The prefixes \lstinline!flow!, \lstinline!stream!, \lstinline!input! and \lstinline!output! could be treated more uniformly above, and instead rely on other rules forbidding combinations.
-The type prefix \lstinline!stream! cannot be applied to structured components.
+The type prefix \lstinline!stream! can be applied to structured components, specifically records.
 The type prefix \lstinline!flow! can be applied to structured components, see \cref{generation-of-connection-equations}.
 Note that there are no specific restrictions if an operator record component has the type prefix \lstinline!flow!, since the members of an operator record cannot have any of the prefixes \lstinline!flow!, \lstinline!stream!, \lstinline!input! or \lstinline!output!.
 \end{nonnormative}
@@ -296,36 +299,57 @@ end UseFirstOrder;
   function.
 \end{itemize}
 
+
+\subsection{Component Variability Prefixes}\label{component-variability-prefixes-discrete-parameter-constant}
+
+The prefixes \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant! of a component declaration are called \firstuse[variability!prefix]{variability prefixes} and are the basis for defining in which situation the variable values of a component are initialized (see \cref{events-and-synchronization} and \cref{initialization-initial-equation-and-initial-algorithm}) and when they are changed during simulation.
+Further details on how the prefixes relate to component variability, as well as rules applying to components the different variabilities, are given in \cref{component-variability}.
+
+
 \subsection{Acyclic Bindings of Constants and Parameters}\label{acyclic-bindings-of-constants-and-parameters}
 
-The unexpanded binding equations for parameters and constants in the translated model must be acyclic after flattening; except that cycles are allowed if the cycles disappear when evaluating parameters having annotation \lstinline!Evaluate = true! that are not part of the cycle.
-Thus it is not possible to introduce equations for parameters by cyclic dependencies.
+For a constant or parameter \lstinline!v! with declaration equation, the expression of the declaration equation in the flattended model must not depend on \lstinline!v! itself, neither directly nor indirectly via other variables' declaration equations.
+To satisfy this condition, dependencies shall be removed as needed by applying simplifications based on values of constants (except with \lstinline!Evaluate = false!) and all other \willintroduce{evaluable parameters} (\cref{component-variability}) that don't depend on \lstinline!v!.
+It is not permitted to expand a non-scalar declaration equation into scalar equations to satisfy the condition.
 
-\begin{nonnormative}
-There is no exception for parameters with \lstinline!fixed = false!, despite the fact that such parameters are generally allowed to be initialized from systems of dependent equations.
-% Saying "binding equation" below even though it's called a "declaration equation", for consistency with the normative paragraph above.
-However, a parameter with \lstinline!fixed = false! can use an initial equation instead of a binding equation, allowing for cyclic dependencies.
-\end{nonnormative}
+That the value of an evaluable parameter is used for these simplifications does not mean that it has to be determined during translation, but if \lstinline!v! is found to be an evaluable parameter, then a Modelica tool will be able to break all cycles involving \lstinline!v! by making some (possibly none or all) of the other evaluable parameters determined during translation.
+Hence, evaluation of a constant or evaluable parameter can never require solving systems of equations; they can always be sorted so that they can be solved one at a time with the natural causality (i.e., the declaration equation is used to determine the value of the component to which it belongs).
 
 \begin{example}
+Direct and indirect cyclic dependency:
 \begin{lstlisting}[language=modelica]
-constant Real p = 2 * q;
-constant Real q = sin(p); // Illegal since p = 2 * q, q = sin(p) are cyclical
+/* All of the following are illegal: */
+parameter Real r = 2 * sin(r); // Depends directly on r.
+parameter Real p = 2 * q;      // Indirect dependency on p via q = sin(p).
+parameter Real q = sin(p);     // Indirect dependency on q via p = 2 * q.
+\end{lstlisting}
+\end{example}
 
+\begin{example}
+While declaration equations must not be cyclical, the use of initial equations can still introduce valid cyclic dependencies between parameters:
+\begin{lstlisting}[language=modelica]
+  parameter Real p = 2 * q; // This is the only declaration equation.
+  parameter Real q(fixed = false);
+initial equation
+  q = sin(p); // OK, not a declaration equation.
+\end{lstlisting}
+\end{example}
+
+\begin{example}
+Breaking cyclic dependency.
+\begin{lstlisting}[language=modelica]
 model ABCD
   parameter Real A[n, n];
   parameter Integer n = size(A, 1);
 end ABCD;
 
 final ABCD a;
-// Illegal since cyclic dependencies between size(a.A,1) and a.n
+// Illegal cyclic dependency between size(a.A, 1) and a.n.
 
 ABCD b(redeclare Real A[2, 2] = [1, 2; 3, 4]);
 // Legal since size of A is no longer dependent on n.
 
 ABCD c(n = 2); // Legal since n is no longer dependent on the size of A.
-
-parameter Real r = 2 * sin(r); // Illegal, since r = 2 * sin(r) is cyclic
 
 partial model PartialLumpedVolume
   parameter Boolean use_T_start = true "= true, use T_start, otherwise h_start"
@@ -337,10 +361,10 @@ partial model PartialLumpedVolume
       Medium.specificEnthalpy_pTX(p_start, T_start, X_start) else Medium.h_default
     annotation(Dialog(tab = "Initialization", enable = not use_T_start));
 end PartialLumpedVolume;
-// Cycle for T_start and h_start, but ok since disappears
+// Cycle for T_start and h_start, but still valid since cycle disappears
 // when evaluating use_T_start
 
-// Illegal since the unexpanded bindings have cycles for both x and y
+// The unexpanded bindings have illegal cycles for both x and y
 // (even if they would disappear if bindings were expanded).
 model HasCycles
   parameter Integer n = 10;
@@ -351,62 +375,98 @@ end HasCycles;
 \end{lstlisting}
 \end{example}
 
-\subsection{Component Variability Prefixes}\label{component-variability-prefixes-discrete-parameter-constant}
 
-The prefixes \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant! of a component declaration are called \firstuse[variability!prefix]{variability prefixes}\index{component variability}\index{declared variability}\index{variability!declared|see{declared variability}} and define in which situation the variable values of a component are initialized (see \cref{events-and-synchronization} and \cref{initialization-initial-equation-and-initial-algorithm}) and when they are changed during simulation:
+\subsection{Conditional Component Declaration}\label{conditional-component-declaration}
+
+A component declaration can have a \lstinline!condition-attribute!: \lstinline!if!~\emph{expression}.
+
+\begin{example}
+\begin{lstlisting}[language=modelica]
+  parameter Integer level(min=1)=1;
+  Motor motor;
+  Level1 component1(J=J) if level==1 "Conditional component";
+  Level2 component2 if level==2 "Conditional component";
+  Level3 component3(J=component1.J) if level<2 "Conditional component";
+  // Illegal modifier on component3 since component1.J is conditional
+  // Even if we can see that component1 always exist if component3 exist
+equation
+  connect(component1$\ldots$, $\ldots$) "Connection to conditional component 1";
+  connect(component2.n, motor.n) "Connection to conditional component 2";
+  connect(component3.n, motor.n) "Connection to conditional component 3";
+  component1.u=0; // Illegal
+\end{lstlisting}
+\end{example}
+
+The \emph{expression} must be a \lstinline!Boolean! scalar expression, and must be a parameter expression.
+
+\begin{nonnormative}
+A parameter expression is required since it shall be evaluated at compile time.
+\end{nonnormative}
+
+A redeclaration of a component shall not include a condition attribute;
+and the condition attribute is kept from the original declaration (see
+\cref{interface-compatibility-or-subtyping}).
+
+If the \lstinline!Boolean! expression is false the component (including its modifier) is removed from the flattened DAE, and connections to/from the component are removed.
+A component declared with a condition-attribute can only be modified and/or used in connections.
+
+\begin{nonnormative}
+Adding the component and then removing it ensures that the component is valid.
+
+If a connect equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
+
+There are annotations to handle the case where the connector should be connected when activated, see \cref{annotations-for-the-graphical-user-interface}.
+\end{nonnormative}
+
+
+\section{Component Variability}\label{component-variability}
+
+As briefly mentioned in \cref{component-variability-prefixes-discrete-parameter-constant}, the component variability prefixes are the basis for defining \firstuse{component variability}\index{declared variability}\index{variability!declared|see{declared variability}}.
+Combined with some other information about the components and analysis of expression variability (\cref{variability-of-expressions}), they define the component variabilities as follows:
 \begin{itemize}
 \item
-  A variable \lstinline!vc! declared with \lstinline!constant!\indexinline{constant} prefix remains constant during simulation, with a value that is unaffected even by the initialization problem.
+  A variable \lstinline!vc! declared with \lstinline!constant!\indexinline{constant} prefix does not change during simulation, with a value that is unaffected even by the initialization problem (i.e., determined during translation).
   This is called a \firstuse[---]{constant}, or \firstuse[constant!variable]{constant variable}\index{component variability!constant}.
+  For further details, see \ref{constants}.
 \item
-  A variable \lstinline!vc! declared with the \lstinline!parameter!\indexinline{parameter} prefix has a value determined at initialization, and keeps that value during the entire simulation.
-  Thus it is known and non-changing during transient analysis.
-  This is called a \firstuse[---]{parameter}, or \firstuse[parameter!variable]{parameter variable}\index{component variability!parameter}.
+  A variable \lstinline!ep! is called a \firstuse[parameter!evaluable]{evaluable parameter variable}\index{component variability!evaluable parameter} if all of the following applies:
+  \begin{itemize}
+  \item
+    It is declared with the \lstinline!parameter!\indexinline{parameter} prefix.
+  \item
+    It has \lstinline!fixed = true!.
+  \item
+    It does not have annotation \lstinline!Evaluate = false!.
+  \item
+    The declaration equation -- or \lstinline!start!-attribute if no declaration equation is given (see \cref{initialization-initial-equation-and-initial-algorithm}) -- is given by an evaluable expression (\cref{evaluable-expressions}).
+  \end{itemize}
+  It is also simply called an \firstuse[---]{evaluable parameter}.
+  An evaluable parameter does not change during transient analysis, with a value either determined during translation (similar to having prefix \lstinline!constant!, and is then called an \firstuse[parameter!evaluated]{evaluated parameter}) or by the initialization problem (similar to a \willintroduce{non-evaluable parameter}, see item below).
+  At which of these stages the value is determined is tool dependent.
+  For further details, see \ref{parameters}.
+\item
+  A variable \lstinline!np! declared with the \lstinline!parameter!\indexinline{parameter} prefix, is called a \firstuse[parameter!non-evaluable]{non-evaluable parameter variable}\index{component variability!non-evaluable parameter} unless it is an evaluable parameter.
+  It is also simply called a \firstuse[---]{non-evaluable parameter}.
+  It does not change during transient analysis, with a value determined by the initialization problem.
+  For further details, see \ref{parameters}.
 \item
   A \firstuse[discrete-time!variable]{discrete-time variable}\index{component variability!discrete-time} \lstinline!vd! is a variable that is discrete-valued (that is, not of \lstinline!Real! type) or assigned in a \lstinline!when!-clause.
   The \lstinline!discrete!\indexinline{discrete} prefix may be used to clarify that a variable is discrete-time.
-  It has a vanishing time derivative between events.
-  Note that this is not the same as saying that \lstinline!der(vd)=0! almost everywhere, as the derivative is not even defined at the events.
-  It is not allowed to apply \lstinline!der! to discrete-time variables.
   During transient analysis the variable can only change its value at event instants (see \cref{events-and-synchronization}).
+  For further details, see \ref{discrete-time-variables}.
 \item
   A \firstuse[continuous-time!variable]{continuous-time variable}\index{component variability!continuous-time} is a \lstinline!Real! variable without any prefix that is not assigned in a \lstinline!when!-clause.
-  A continuous-time variable \lstinline!vn! may have a non-vanishing time derivative (provided \lstinline!der(vn)! is allowed this can be expressed as \lstinline!der(vn) <> 0!) and may also change its value discontinuously at any time during transient analysis (see \cref{events-and-synchronization}).
-  It may also contain a combination of these effects.
-  Regarding existence of \lstinline!der(vn)!, see \cref{modelica:der}.
+  The variable can change both continuously and discontinuously at any time.
+  For further details, see \ref{continuous-time-variables}.
 \end{itemize}
 
-Components declared as \lstinline!constant! shall have an associated declaration equation with a constant expression, if the constant is directly in the simulation model, or used in the simulation model.
-The value of a constant can be modified after it has been given a value, unless the constant is declared \lstinline!final! or modified with a \lstinline!final! modifier.
-A constant without an associated declaration equation can be given one by using a modifier.
+The term \firstuse[---]{parameter variable} or just \firstuse[---]{parameter} refers to a variable that is either an evaluable or non-evaluable parameter variable.
 
-If a \lstinline!Real! variable is declared with the prefix \lstinline!discrete!\indexinline{discrete} it must in a simulation model be assigned in a \lstinline!when!-clause, either by an assignment or an equation.
-The variable assigned in a \lstinline!when!-clause shall not be defined in a sub-component of \lstinline!model! or \lstinline!block! specialized class.
-(This is to keep the property of balanced models.)
-
-A \lstinline!Real! variable assigned in a \lstinline!when!-clause is a discrete-time variable,
-even though it was not declared with the prefix \lstinline!discrete!. A \lstinline!Real!
-variable not assigned in any \lstinline!when!-clause and without any type prefix is
-a continuous-time variable.
-
-The default variability for \lstinline!Integer!, \lstinline!String!,
-\lstinline!Boolean!, or \lstinline!enumeration!
-variables is discrete-time, and it is not possible to declare
-continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or
-\lstinline!enumeration! variables.
-
-\begin{nonnormative}
-The restriction that discrete-valued variables (of type \lstinline!Boolean!, etc) cannot be
-declared with continuous-time variability is one of the foundations of the expression variability rules
-that will ensure that any discrete-valued expression has at most discrete-time variability, see \cref{variability-of-expressions}.
-\end{nonnormative}
-
-The variability of expressions and restrictions on variability for
-definition equations is given in \cref{variability-of-expressions}.
+The variability of expressions and restrictions on variability for declaration equations is given in \cref{variability-of-expressions}.
 
 \begin{nonnormative}
 Note that discrete-time \emph{expressions} include parameter expressions, whereas discrete-time \emph{variables} do not include parameter variables.
-The reason can intuitively be explained as follows
+The reason can intuitively be explained as follows:
 \begin{itemize}
 \item When discussing variables we also want to consider them as left-hand-side variables in assignments, and thus a lower variability would be a problem.
 \item When discussing expressions we only consider them as right-hand-side expressions in those assignment, and thus a lower variability can automatically be included; and additionally we have sub-expressions where lower variability is not an issue.
@@ -453,7 +513,7 @@ model Inertia
   parameter Boolean state = true;
   $\ldots$
 equation
-  J*a = t1 - t2;
+  J * a = t1 - t2;
   if state then // code which is removed during symbolic
     der(v) = a; // processing, if state=false
     der(r) = v;
@@ -461,17 +521,14 @@ equation
 end Inertia;
 \end{lstlisting}
 
-A constant variable is similar to a parameter with the difference
-that constants cannot be changed after translation and usually not
-changed after they have been given a value. It can be used to represent
-mathematical constants, e.g.
+A constant variable is similar to a parameter with the difference that constants cannot be changed after translation and usually not changed after they have been given a value.
+It can be used to represent mathematical constants, e.g.:
 \begin{lstlisting}[language=modelica]
-final constant Real PI = 4*atan(1);
+final constant Real PI = 4 * atan(1);
 \end{lstlisting}
 
-There are no continuous-time \lstinline!Boolean!, \lstinline!Integer! or \lstinline!String!
-variables. In the rare cases they are needed they can be
-faked by using \lstinline!Real! variables, e.g.:
+There are no continuous-time \lstinline!Boolean!, \lstinline!Integer! or \lstinline!String! variables.
+In the rare cases they are needed they can be faked by using \lstinline!Real! variables, e.g.:
 \begin{lstlisting}[language=modelica]
   Boolean off1, off1a;
   Real off2;
@@ -483,24 +540,113 @@ equation
   u2 = if noEvent(off2 > 0.5) then s2 else 0; // no state events
 \end{lstlisting}
 
-Since \lstinline!off1! is a discrete-time variable, state events are
-generated such that \lstinline!off1! is only changed at event instants.
+Since \lstinline!off1! is a discrete-time variable, state events are generated such that \lstinline!off1! is only changed at event instants.
 Variable \lstinline!off2! may change its value during continuous integration.
-Therefore, \lstinline!u1! is guaranteed to be continuous during continuous
-integration whereas no such guarantee exists for \lstinline!u2!.
+Therefore, \lstinline!u1! is guaranteed to be continuous during continuous integration whereas no such guarantee exists for \lstinline!u2!.
 \end{nonnormative}
 
-\subsubsection{Variability of Structured Entities}\label{variability-of-structured-entities}
 
-For elements of structured entities with variability prefixes the most
-restrictive of the variability prefix and the variability of the
-component wins (using the default variability for the component if there
-is no variability prefix on the component).
+\subsection{Constants}\label{constants}
+
+Constant variables (defined in \cref{component-variability}) shall have an associated declaration equation with a constant expression, if the constant is directly in the simulation model, or used in the simulation model.
+The value of a constant can be modified after it has been given a value, unless the constant is declared \lstinline!final! or modified with a \lstinline!final! modifier.
+A constant without an associated declaration equation can be given one by using a modifier.
+
+By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that the value of a constant (or evaluable parameter, see below) to be used in simplifications is possible to obtain by evaluation of an evaluable expression where values are available for all component subexpressions.
+
+
+\subsection{Parameters}\label{parameters}
+
+Parameter variables are divided into evaluable parameter variables and non-evaluable parameter variables, both defined in \cref{component-variability}.
+
+By the acyclic binding rule in \cref{acyclic-bindings-of-constants-and-parameters}, it follows that a value for an evaluable parameter is possible to obtain during translation, compare \cref{constants}.
+Making use of that value during translation turns the evaluable parameter into an evaluated parameter, and it must be ensured that the parameter cannot be assigned a different value after translation, as this would invalidate the use of the original value during translation.
+
+\begin{example}
+A particularly demanding aspect of this evaluation is the potential presence of external functions.
+Hence, if it is known that a parameter won't be used by an evaluable expression, a user can make it clear that the external function is not meant to be evaluated during translation by using \lstinline!Evaluate = false!:
+\begin{lstlisting}[language=modelica]
+import length = Modelica.Utilities.Strings.length; // Pure external function
+parameter Integer n = length("Hello");             // Evaluable parameter
+parameter Integer p = length("Hello")
+  annotation(Evaluate = false);                    // Non-evaluable parameter
+parameter Boolean b = false;                       // Evaluable parameter
+
+/* Fulfillment of acyclic binding rule might cause evaluation of n;
+ * to break the cycle, a tool might evaluate either b, n, or both:
+ */
+parameter Real x = if b and n < 3 then 1 - x else 0;
+
+/* Fulfillment of acyclic binding rule cannot cause evaluation of p;
+ * to break the cycle, evaluation of b is the only option:
+ */
+parameter Real y = if b and p < 3 then 1 - y else 0;
+\end{lstlisting}
+\end{example}
+
+\begin{nonnormative}
+For a parameter in a valid model, presence of \lstinline!Evaluate! (\cref{modelica:Evaluate}) makes it possible to tell immediately whether it is an evaluable or non-evaluable parameter, at least as long as the warning described in \cref{modelica:Evaluate} isn't triggered.
+To see this, note that \lstinline!Evaluate = false! makes it a non-evaluable parameter by definition, and that \lstinline!Evaluate = true! would trigger the warning if the parameter is non-evaluable.
+\end{nonnormative}
+
+\begin{nonnormative}
+With every non-evaluable parameter, there is at least one reason why it isn't an evaluable parameter.
+This information is useful to maintain in tools, as it allows generation of informative error messages when a violation of evaluable expression variability is detected.
+For example:
+\begin{lstlisting}[language=modelica]
+  parameter Integer n =
+    if b then 1 else 2;    // Non-evaluable parameter due to variability of b.
+  parameter Boolean b(fixed = false);
+                           // Non-evaluable parameter due to fixed = false.
+  Real[n] x;               // Variability error: n must be evaluable.
+initial equation
+  b = n > 3;
+\end{lstlisting}
+Here, a good error message for the variability error can include the information that the reason for \lstinline!n! being a non-evaluable parameter is that it has a dependency on the non-evaluable parameter \lstinline!b!.
+\end{nonnormative}
+
+\begin{nonnormative}
+Related to evaluable parameters, the term \firstuse{structural parameter} is also used in the Modelica community.
+This term has no meaning defined by the specification, and the meaning may vary from one context to another.
+One common meaning, however, is that in the context of a given tool, a parameter is called \emph{structural} if the tool has decided to evaluate it because it controls some variation of the equation structure that the tool is unable to leave undecided during translation.
+With this interpretation of \emph{structural parameter}, it follows that such a structural parameter must also be an evaluable parameter, while there are typically many evaluable parameters that are not structural.
+\end{nonnormative}
+
+
+\subsection{Discrete-Time Variables}\label{discrete-time-variables}
+
+A discrete-time variable (defined in \cref{component-variability}) has a vanishing time derivative between events.
+Note that this is not the same as saying that \lstinline!der(vd) = 0! almost everywhere, as the derivative is not even defined at the events.
+It is not allowed to apply \lstinline!der! to discrete-time variables.
+
+If a \lstinline!Real! variable is declared with the prefix \lstinline!discrete!\indexinline{discrete} it must in a simulation model be assigned in a \lstinline!when!-clause, either by an assignment or an equation.
+The variable assigned in a \lstinline!when!-clause shall not be defined in a sub-component of \lstinline!model! or \lstinline!block! specialized class.
+(This is to keep the property of balanced models.)
+
+A \lstinline!Real! variable assigned in a \lstinline!when!-clause is a discrete-time variable, even though it was not declared with the prefix \lstinline!discrete!. A \lstinline!Real! variable not assigned in any \lstinline!when!-clause and without any type prefix is a continuous-time variable.
+
+The default variability for \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or \lstinline!enumeration! variables is discrete-time, and it is not possible to declare continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or \lstinline!enumeration! variables.
+
+\begin{nonnormative}
+The restriction that discrete-valued variables (of type \lstinline!Boolean!, etc) cannot be declared with continuous-time variability is one of the foundations of the expression variability rules that will ensure that any discrete-valued expression has at most discrete-time variability, see \cref{variability-of-expressions}.
+\end{nonnormative}
+
+
+\subsection{Continuous-Time Variables}\label{continuous-time-variables}
+
+A continuous-time variable (defined in \cref{component-variability}) \lstinline!vn! may have a non-vanishing time derivative (provided \lstinline!der(vn)! is allowed this can be expressed as \lstinline!der(vn) <> 0!) and may also change its value discontinuously at any time during transient analysis (see \cref{events-and-synchronization}).
+It may also contain a combination of these effects.
+Regarding existence of \lstinline!der(vn)!, see \cref{modelica:der}.
+
+
+\subsection{Variability of Structured Entities}\label{variability-of-structured-entities}
+
+For elements of structured entities with variability prefixes the most restrictive of the variability prefix and the variability of the component wins (using the default variability for the component if there is no variability prefix on the component).
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
 record A
-  constant Real pi=3.14;
+  constant Real pi = 3.14;
   Real y;
   Integer i;
 end A;
@@ -516,47 +662,6 @@ A b;
 \end{lstlisting}
 \end{example}
 
-\subsection{Conditional Component Declaration}\label{conditional-component-declaration}
-
-A component declaration can have a \lstinline!condition-attribute!: \lstinline!if!~\emph{expression}.
-
-\begin{example}
-\begin{lstlisting}[language=modelica]
-  parameter Integer level(min=1)=1;
-  Motor motor;
-  Level1 component1(J=J) if level==1 "Conditional component";
-  Level2 component2 if level==2 "Conditional component";
-  Level3 component3(J=component1.J) if level<2 "Conditional component";
-  // Illegal modifier on component3 since component1.J is conditional
-  // Even if we can see that component1 always exist if component3 exist
-equation
-  connect(component1$\ldots$, $\ldots$) "Connection to conditional component 1";
-  connect(component2.n, motor.n) "Connection to conditional component 2";
-  connect(component3.n, motor.n) "Connection to conditional component 3";
-  component1.u=0; // Illegal
-\end{lstlisting}
-\end{example}
-
-The \emph{expression} must be a \lstinline!Boolean! scalar expression, and must be a parameter expression.
-
-\begin{nonnormative}
-A parameter expression is required since it shall be evaluated at compile time.
-\end{nonnormative}
-
-A redeclaration of a component shall not include a condition attribute;
-and the condition attribute is kept from the original declaration (see
-\cref{interface-compatibility-or-subtyping}).
-
-If the \lstinline!Boolean! expression is false the component (including its modifier) is removed from the flattened DAE, and connections to/from the component are removed.
-A component declared with a condition-attribute can only be modified and/or used in connections.
-
-\begin{nonnormative}
-Adding the component and then removing it ensures that the component is valid.
-
-If a connect equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
-
-There are annotations to handle the case where the connector should be connected when activated, see \cref{annotations-for-the-graphical-user-interface}.
-\end{nonnormative}
 
 \section{Class Declarations}\label{class-declarations}
 
@@ -644,20 +749,18 @@ composition :
 
 A class definition of the form
 \begin{lstlisting}[language=modelica]
-class IDENT1 = IDENT2 class-modification;
+class IDENT1 = type-specifier class-modification;
 \end{lstlisting}
-
-is identical, except that IDENT2 may be replaceable and for the lexical
+is identical, except that \lstinline!type-specifier! (the base-class) may be replaceable and for the lexical
 scope of modifiers, where the short class definition does not introduce
 an additional lexical scope for modifiers, to the longer form
-
 \begin{lstlisting}[language=modelica]
 class IDENT1
-  extends IDENT2 class-modification;
+  extends type-specifier class-modification;
 end IDENT1;
 \end{lstlisting}
 
-An exception to the above is that if the short class definition is declared as \lstinline!encapsulated!, then the modifiers follow the rules for encapsulated classes and cannot be looked up in the enclosing scope.
+An exception to the above is that if the short class definition is declared as \lstinline!encapsulated!, then the type-specifier and modifiers follow the rules for encapsulated classes and cannot be looked up in the enclosing scope.
 
 \begin{example}
 Demonstrating the difference in scopes:
@@ -682,6 +785,7 @@ model A
   $\ldots$
 end A;
 \end{lstlisting}
+The type-specifiers \lstinline!.Resistor! rely on global name lookup (see \ref{composite-name-lookup}), due to the encapsulated restriction.
 \end{example}
 
 A short class definition of the form
@@ -741,7 +845,15 @@ Real x[:]=foo(time);
 
 \subsection{Combining Base Classes and Other Elements}\label{restriction-on-combining-base-classes-and-other-elements}\label{combining-base-classes-and-other-elements}
 
-It is not legal to combine equations, algorithms, components, base classes, or protected elements with an extends from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, or a simple type.
+It is not legal to combine equations, algorithms, components, non-empty base classes (see below), or protected elements with an extends from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, or a simple type.
+
+\begin{definition}[Empty class]\index{empty-class}
+A class without equations, algorithms, or components, and where any base-classes are themselves empty.
+\end{definition}
+
+\begin{nonnormative}
+An empty class may contain annotations, such as graphics, and can be used more freely as base-class than other classes.
+\end{nonnormative}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -810,7 +922,7 @@ May only be predefined types, enumerations, array of type, or classes extending 
 The normal modeling class in Modelica.
 
 \item \lstinline!block!\indexinline{block} --
-Same as \lstinline!model! with the restriction that each connector component of a \lstinline!block! must have prefixes \lstinline!input! and/or \lstinline!output! for all connector variables.
+Same as \lstinline!model! with the restriction that each public connector component of a \lstinline!block! must have prefixes \lstinline!input! and/or \lstinline!output! for all connector variables.
 
 \begin{nonnormative}
 The purpose is to model input/output blocks of block diagrams.  Due to the restrictions on \lstinline!input! and \lstinline!output! prefixes,
@@ -926,7 +1038,7 @@ and the translator will give an error. In fact, it is guaranteed that a
 redeclaration cannot lead to an unbalanced model any more.
 \end{nonnormative}
 
-The restrictions below apply after flattening -- i.e.\ inherited components are included -- possibly modified.  The corresponding restrictions on connectors and connections are in
+The restrictions below apply after flattening -- i.e., inherited components are included -- possibly modified.  The corresponding restrictions on connectors and connections are in
 \cref{restrictions-of-connections-and-connectors}.
 
 \begin{definition}[Local number of unknowns]\index{local number of unknowns}
@@ -957,7 +1069,7 @@ The local number of unknowns of a \lstinline!model! or \lstinline!block! class i
 The local equation size of a \lstinline!model! or \lstinline!block! class is the sum of the following numbers:
 \begin{itemize}
 \item
-  The number of equations defined locally (i.e.\ not in any \lstinline!model! or \lstinline!block! component), including binding equations, and equations generated from \lstinline!connect!-equations.
+  The number of equations defined locally (i.e., not in any \lstinline!model! or \lstinline!block! component), including binding equations, and equations generated from \lstinline!connect!-equations.
   \begin{nonnormative}
   This includes the proper count for \lstinline!when!-clauses (see \cref{when-equations}), and algorithms (see \cref{algorithm-sections}), and is also used for
   the flat Hybrid DAE formulation (see \cref{modelica-dae-representation}).
@@ -965,7 +1077,7 @@ The local equation size of a \lstinline!model! or \lstinline!block! class is the
 \item
   The number of input and flow variables present in each (top-level) public connector component.
   \begin{nonnormative}
-  This represents the number of connection equations that will be provided when the class is used.
+  This represents the number of connection equations that will be provided when the class is used, due to the balancing restrictions for connectors, see \cref{balancing-restriction-and-size-of-connectors}.
   \end{nonnormative}
 \item
   The number of (top-level) public input variables that neither are connectors nor have binding equations.
@@ -1006,7 +1118,7 @@ It is a quality of implementation for a tool to verify this property in general,
 \begin{definition}[Globally balanced]\index{globally balanced}\index{balanced!globally}
 Similarly as locally balanced, but including all unknowns and equations
 from all components. The global number of unknowns is computed by
-expanding all unknowns (i.e.\ excluding parameters and constants) into a
+expanding all unknowns (i.e., excluding parameters and constants) into a
 set of scalars of primitive types. This should match the global equation
 size defined as:
 \begin{itemize}
@@ -1027,7 +1139,7 @@ The following restrictions hold:
 \item
   In a non-partial \lstinline!model! or \lstinline!block!, all non-connector inputs of \lstinline!model! or \lstinline!block! components must have binding equations.
   \begin{nonnormative}
-  E.g.\ if the model contains a component, \lstinline!firstOrder! (of specialized class \lstinline!model!) and \lstinline!firstOrder! has
+  E.g., if the model contains a component, \lstinline!firstOrder! (of specialized class \lstinline!model!) and \lstinline!firstOrder! has
   \lstinline!input Real u! then there must be a binding equation for \lstinline!firstOrder.u!.
   Note that this also applies to components inherited from a partial base-class provided the current class is non-partial.
   \end{nonnormative}
@@ -1097,7 +1209,7 @@ C \cdot \text{der}(u) &= p.i;
 \end{align*}
 and 2 equations corresponding to the 2 flow variables \lstinline!p.i! and \lstinline!n.i!.
 
-These are 5 equations in 5 unknowns (locally balanced model).  A more detailed analysis would reveal that this is structurally non-singular, i.e.\ that
+These are 5 equations in 5 unknowns (locally balanced model).  A more detailed analysis would reveal that this is structurally non-singular, i.e., that
 the hybrid DAE will not contain a singularity independent of actual values.
 
 If the equation \lstinline!u = p.v - n.v! would be missing in the \lstinline!Capacitor! model, there would be 4 equations in 5 unknowns and the model
@@ -1189,10 +1301,10 @@ partial model BaseProperties "Interface of medium model"
 end BaseProperties;
 \end{lstlisting}
 
-The use of connector here is a special design pattern.
+The model \lstinline!BaseProperties! together with its use in derived classes and as component relies on a special design pattern defined below.
 The variables \lstinline!p!, \lstinline!h!, \lstinline!Xi! are marked as input to get correct equation count.
 Since they are connectors they should neither be given binding equations in derived classes nor when using the model.
-The design pattern is to give textual equations for them (as below); using \lstinline!connect!-equations for these connectors would be possible (and would work) but is not part of the design.
+The design pattern, which is used in this case, is to give textual equations for them (as below); using \lstinline!connect!-equations for these connectors would be possible (and would work) but is not part of the design pattern.
 
 This partial model defines that \lstinline!T!, \lstinline!d!, \lstinline!u! can be computed from
 the medium model, provided \lstinline!p!, \lstinline!h!, \lstinline!Xi! are given.  Every medium with
@@ -1390,14 +1502,14 @@ Note that only the values of \lstinline!x! and \lstinline!y! are declared to be 
 
 It is not possible to combine extends from the predefined types, enumeration types, or this \lstinline!Clock! type with other components.
 
-The names \lstinline!Real!\index{Real@\robustinline{Real}!reserved name}, \lstinline!Integer!\index{Integer@\robustinline{Integer}!reserved name}, \lstinline!Boolean!\index{Boolean@\robustinline{Boolean}!reserved name} and \lstinline!String!\index{String@\robustinline{String}!reserved name} are reserved such that it is illegal to declare an element with these names.
+The names \lstinline!Real!\index{Real@\robustinline{Real}!reserved name}, \lstinline!Integer!\index{Integer@\robustinline{Integer}!reserved name}, \lstinline!Boolean!\index{Boolean@\robustinline{Boolean}!reserved name} and \lstinline!String!\index{String@\robustinline{String}!reserved name} have restrictions similar to keywords, see \cref{modelica-keywords}.
 
 \begin{nonnormative}
 Hence, it is possible to define a normal class called \lstinline!Clock! in a package and extend from it.
 \end{nonnormative}
 
 \begin{nonnormative}
-It also follows that the only way to declare a subtype of e.g.\ \lstinline!Real! is to use the \lstinline!extends! mechanism.
+It also follows that the only way to declare a subtype of, e.g., \lstinline!Real! is to use the \lstinline!extends! mechanism.
 \end{nonnormative}
 
 The definitions use \lstinline!RealType!\indexinline{RealType}, \lstinline!IntegerType!\indexinline{IntegerType}, \lstinline!BooleanType!\indexinline{BooleanType}, \lstinline!StringType!\indexinline{StringType}, \lstinline!EnumType!\indexinline{EnumType} as mnemonics corresponding to machine representations.
@@ -1439,6 +1551,11 @@ end Real;
 \index{nominal@\robustinline{nominal}!attribute of \robustinline{Real}}%
 \index{unbounded@\robustinline{unbounded}!attribute of \robustinline{Real}}%
 \index{stateSelect@\robustinline{stateSelect}!attribute of \robustinline{Real}}
+
+The \lstinline!unit! and \lstinline!displayUnit! attributes may be either the empty string or a string matching \lstinline[language=grammar]!unit-expression! in \cref{unit-expressions}.
+The meaning of the empty string depends on the context.
+For the input and output components of a function, the empty string allows different units to be used in different calls to the function.
+For a non-function component, the empty string allows the unit (or display unit) to be inferred by the tool.
 
 The \lstinline!nominal! attribute is meant to be used for scaling purposes and to
 define tolerances in relative terms, see \cref{attributes-start-fixed-nominal-and-unbounded}.
@@ -1696,7 +1813,7 @@ There can be no enumeration variables declared using \lstinline!enumeration(:)! 
 
 The attributes \lstinline!start! and \lstinline!fixed! define the initial conditions for a variable.  \lstinline!fixed = false! means an initial guess, i.e., value may be changed by static analyzer.  \lstinline!fixed = true! means a required value.  The resulting consistent set of values for \emph{all} model variables is used as initial values for the analysis to be performed.
 
-The attribute \lstinline!nominal! gives the nominal value for the variable.  The user need not set it even though the standard does not define a default value.  The lack of default allows the tool to propagate the nominal attribute based on equations, and if there is no value to propagate the tool should use a non-zero value, it may use additional information (e.g.\ \lstinline!min! attribute) to find a suitable value, and as last resort use 1.  If \lstinline!unbounded = true! it indicates that the state may grow without bound, and the error in absolute terms shall be controlled.
+The attribute \lstinline!nominal! gives the nominal value for the variable.  The user need not set it even though the standard does not define a default value.  The lack of default allows the tool to propagate the nominal attribute based on equations, and if there is no value to propagate the tool should use a non-zero value, it may use additional information (e.g., \lstinline!min! attribute) to find a suitable value, and as last resort use 1.  If \lstinline!unbounded = true! it indicates that the state may grow without bound, and the error in absolute terms shall be controlled.
 
 \begin{nonnormative}
 The nominal value can be used by an analysis tool to determine appropriate tolerances or epsilons, or may be used for scaling.  For example, the tolerance for an integrator could be computed as \lstinline!tol * (abs(nominal) + (if x.unbounded then 0 else abs(x)))!.  A default value is not provided in order that in cases such as \lstinline!a = b!, where \lstinline!b! has a nominal value but not \lstinline!a!, the nominal value can be propagated to the other variable).

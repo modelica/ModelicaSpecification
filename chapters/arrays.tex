@@ -40,7 +40,7 @@ There is no distinction between a row and column vector.
 The following table shows the two possible forms of declarations and defines the terminology.
 % Is the use of "class" here meant to exclude types defined as array aliases (see comment in table below)?
 \lstinline!C! is a placeholder for any class, including the built-in type classes \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, \lstinline!String!, and enumeration types.
-The type of a dimension upper bound expression, e.g.\ $n$, $m$, $p$, \ldots in the table below, need to be a subtype of \lstinline!Integer! or \lstinline!EB! for a class \lstinline!EB! that is an enumeration type or subtype of the \lstinline!Boolean! type.
+The type of a dimension upper bound expression, e.g., $n$, $m$, $p$, \ldots in the table below, need to be a subtype of \lstinline!Integer! or \lstinline!EB! for a class \lstinline!EB! that is an enumeration type or subtype of the \lstinline!Boolean! type.
 
 Colon (\lstinline!:!) indicates that the dimension upper bound is unknown and is a subtype of \lstinline!Integer!.
 The size of such a variable can be determined from its binding equation, or the size of any of its array attributes, see also \cref{flexible-array-sizes-and-resizing-of-arrays-in-functions}.
@@ -51,7 +51,7 @@ Upper and lower array dimension index bounds are described in \cref{array-dimens
 An array indexed by \lstinline!Boolean! or enumeration type can only be used in the following ways:
 \begin{itemize}
 \item
-  Subscripted using expressions of the appropriate type (i.e.\ \lstinline!Boolean! or the enumerated type).
+  Subscripted using expressions of the appropriate type (i.e., \lstinline!Boolean! or the enumerated type).
 \item
   Binding equations of the form \lstinline!x1 = x2! are allowed for arrays independent of whether the index types of dimensions are subtypes of \lstinline!Integer!, \lstinline!Boolean!, or enumeration types.
 \end{itemize}
@@ -227,7 +227,7 @@ Let \lstinline!C = promote(A, $n$)!, with $n_{\mathrm{A}}$ = \lstinline!ndims(A)
 
 The argument $n$ must be a constant that can be evaluated during translation, as it determines the number of dimensions of the returned array.
 \begin{nonnormative}
-An $n$ that is not a constant that can be evaluated during translation for \lstinline!promote! complicates matrix handling as it can change matrix-equations in subtle ways (e.g.\ changing inner products to matrix multiplication).
+An $n$ that is not a constant that can be evaluated during translation for \lstinline!promote! complicates matrix handling as it can change matrix-equations in subtle ways (e.g., changing inner products to matrix multiplication).
 \end{nonnormative}
 \end{semantics}
 \end{operatordefinition}
@@ -580,6 +580,7 @@ function-name "(" expression1 for iterators ")"
 is a \firstuse{reduction expression}.
 The expressions in the iterators of a reduction expression shall be vector expressions.
 They are evaluated once for each reduction expression, and are evaluated in the scope immediately enclosing the reduction expression.
+If \lstinline!expression1! contains event-generating expressions, the expressions inside the iterators shall be evaluable.
 
 For an iterator:
 \begin{lstlisting}[language=grammar]
@@ -753,6 +754,7 @@ array "(" expression for iterators ")"
 \end{lstlisting}
 is an \firstuse[array!constructor!with iterators]{array constructor with iterators}.
 The expressions inside the iterators of an array constructor shall be vector expressions.
+If \lstinline!expression! contains event-generating expressions, the expressions inside the iterators shall be evaluable.
 They are evaluated once for each array constructor, and are evaluated in the scope immediately enclosing the array constructor.
 
 For an iterator:
@@ -860,7 +862,7 @@ For convenience, a special syntax is supported for the concatenation along the f
 \item
   \lstinline![A] = promote(A, max(2, ndims(A)))!, i.e., \lstinline![A] = A!, if \lstinline!A! has 2 or more dimensions, and it is a matrix with the elements of \lstinline!A!, if \lstinline!A! is a scalar or a vector.
 \item
-  There must be at least one argument (i.e.\ \lstinline![]! is not defined).
+  There must be at least one argument (i.e., \lstinline![]! is not defined).
 \end{itemize}
 
 \begin{example}
@@ -1268,10 +1270,23 @@ This is a consequence of the parsing rules, since `\lstinline!2.!' is a lexical 
 
 \subsection{Element-wise Exponentiation}\label{element-wise-exponentiation}
 
-Exponentiation \lstinline!a ^ b! is defined as \lstinline[language=C]!pow(double a, double b)! in the ANSI~C library if both \lstinline!a! and \lstinline!b! are
-\lstinline!Real! scalars. A \lstinline!Real! scalar value is returned.  If \lstinline!a! or \lstinline!b! are \lstinline!Integer! scalars, they are
-automatically promoted to \lstinline!Real!.  Consequences of exceptional situations, such as ($\text{\lstinline!a!} = 0.0$ and $\text{\lstinline!b!} \leq 0.0$,
-$\text{\lstinline!a!} < 0$ and \lstinline!b! is not an integer) or overflow are undefined.
+Exponentiation \lstinline!a ^ b! always returns a \lstinline!Real! scalar value, and it is required that \lstinline!a! and \lstinline!b! are scalar \lstinline!Real! or \lstinline!Integer! expressions.
+The result should correspond to mathematical exponentiation with the following special cases:
+\begin{itemize}
+\item For any value of \lstinline!a! (including $0.0$) and an \lstinline!Integer! $\text{\lstinline!b!} = 0$, the result is $1.0$.
+\item If $\text{\lstinline!a!} < 0$ and \lstinline!b! is an \lstinline!Integer!, the result is defined as $\pm |a|^b$, with sign depending on whether \lstinline!b! is even (positive) or odd (negative).
+\item A deprecated semantics is to treat $\text{\lstinline!a!} < 0$ and a \lstinline!Real! \lstinline!b! having a non-zero integer value as if \lstinline!b! were an \lstinline!Integer!.
+\item For $\text{\lstinline!a!} = 0$ and $\text{\lstinline!b!} > 0$, the result is $0.0$.
+\item
+  Other exceptional situations are illegal.
+  For example: $\text{\lstinline!a!} = 0.0$ and $\text{\lstinline!b!} = 0.0$ for a \lstinline!Real b!, $\text{\lstinline!a!} = 0.0$ and $\text{\lstinline!b!} < 0$, or $\text{\lstinline!a!} < 0$ and \lstinline!b! does not have an integer value.
+\end{itemize}
+
+\begin{nonnormative}
+Except for defining the special case of $0.0^0$ it corresponds to \lstinline[language=C]!pow(double a, double b)! in the ANSI~C library.
+The result is always \lstinline!Real! as negative exponents can give non-integer results also when both operands are \lstinline!Integer!.
+The special treatment of \lstinline!Integer! exponents makes it possible to use $x^n$ in a power series.
+\end{nonnormative}
 
 Element-wise exponentiation \lstinline!a .^ b! of numeric scalars, vectors, matrices, or arrays \lstinline!a! and \lstinline!b! requires a numeric type class for
 \lstinline!a! and \lstinline!b! and either \lstinline!size(a) = size(b)! or scalar \lstinline!a! or scalar \lstinline!b!.
@@ -1299,7 +1314,7 @@ $n \times m \times \ldots$ & $n \times m \times \ldots$ & $n \times m \times \ld
 2.^[1, 2; 3, 4]  // error; same as 2.0 ^ [1, 2; 3, 4]
 2 .^[1, 2; 3, 4] // fine; element-wise exponentiation
 \end{lstlisting}
-This is a consequence of the parsing rules, i.e.\ since \lstinline!2.! could be a lexical unit it seen as a lexical unit; using a space after
+This is a consequence of the parsing rules, i.e., since \lstinline!2.! could be a lexical unit it seen as a lexical unit; using a space after
 literals solves the problem.
 \end{example}
 
@@ -1330,7 +1345,7 @@ The following holds for slice operations:
 \item
   If \lstinline!m! is also an array component, the slice operation is valid only if \lstinline!size(a[1].m)! = \lstinline!size(a[2].m)! = \ldots
 \item
-  The slicing operation can be combined with indexing, e.g.\ \lstinline!a.m[1]!.  It returns the array of components \lstinline!{a[1].m[1], a[2].m[1], $\ldots$}!,
+  The slicing operation can be combined with indexing, e.g., \lstinline!a.m[1]!.  It returns the array of components \lstinline!{a[1].m[1], a[2].m[1], $\ldots$}!,
   and does not require that \lstinline!size(a[1].m) = size(a[2].m)!.  The number of subscripts on \lstinline!m! must not be greater than the number of array dimension
   for \lstinline!m! (the number can be smaller, in which case the missing trailing indices are assumed to be `\lstinline!:!'), and is only valid if
   \lstinline!size(a[1].m[$\ldots$]) = size(a[2].m[$\ldots$])!.
