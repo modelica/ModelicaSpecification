@@ -223,7 +223,7 @@ To define the restrictions, the following term is used.
 \begin{definition}[Component expression]\label{def:component-expression}\index{component!expression (argument restriction)}
 A component expression is a \lstinline[language=grammar]!component-reference! which is a valid expression, i.e., not referring to models or blocks with equations.
 % "an element of records" below looks strange:
-In detail, it is an instance of a (a) base type, (b) derived type, (c) record, (d) an array of such an instance (a-c), (e) one or more elements of such an array (d) defined by index expressions which are parameter expressions (see below), or (f) an element of records.
+In detail, it is an instance of a (a) base type, (b) derived type, (c) record, (d) an array of such an instance (a-c), (e) one or more elements of such an array (d) defined by index expressions which are evaluable expressions (see below), or (f) an element of records.
 \begin{nonnormative}
 The essential features are that one or several values are associated with the instance, that start values can be defined on these values, and that no equations are associated with the instance.
 A component expression can be constant or can vary with time.
@@ -231,14 +231,15 @@ A component expression can be constant or can vary with time.
 \end{definition}
 
 In the following sections, when defining an operator with function calling syntax, there are some common restrictions being used for the input arguments (operands).
-For example, an input argument to the operator may be required to be a component expression (\cref{def:component-expression}) or parameter expression (\cref{variability-of-expressions}).
+For example, an input argument to the operator may be required to be a component expression (\cref{def:component-expression}) or evaluable expression (\cref{variability-of-expressions}).
 To emphasize that there are no such restrictions, an input argument may be said to be just an \emph{expression}.
 
 \begin{nonnormative}
 The reason for restricting an input argument to be a component expression is that the start value of the input argument is returned before the first tick of the clock of the input argument and this
 is not possible for a general expression.
 
-The reason for restricting an input argument to be a parameter expression is that the value of the input argument needs to be evaluated during translation, in order that clock analysis can be performed during translation.
+The reason for restricting an input argument to be a evaluable expression is that the value of the input argument needs to be evaluated during translation, in order that clock analysis can be performed during translation.
+In some cases there is a special handling of parameter expressions, which indicates that their values are not needed during translation.
 \end{nonnormative}
 
 \begin{example}
@@ -259,13 +260,13 @@ y6 = previous(R);     // error (component, not component expression)
 \end{example}
 
 \begin{example}
-The named argument \lstinline!factor! of \lstinline!subSample! is restricted to be a parameter expression.
+The named argument \lstinline!factor! of \lstinline!subSample! is restricted to be an evaluable expression.
 \begin{lstlisting}[language=modelica]
 Real u;
 parameter Real p=3;
 $\ldots$
 y1 = subSample(u, factor = 3);         // fine (literal)
-y2 = subSample(u, factor = 2 * p - 3); // fine (parameter expression)
+y2 = subSample(u, factor = 2 * p - 3); // fine (evaluable expression)
 y3 = subSample(u, factor = 3 * u);     // error (general expression)
 \end{lstlisting}
 \end{example}
@@ -319,11 +320,11 @@ Clock(intervalCounter=$\mathit{intervalCounter}$, resolution=$\mathit{resolution
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 \firstuse[rational interval clock]{Rational interval clock}.
-The first input argument, $\mathit{intervalCounter}$, is a clocked component expression (\cref{def:component-expression}) or a parameter expression of type \lstinline!Integer! with \lstinline!min = 0!.
-The optional second argument $\mathit{resolution}$ (defaults to 1) is a parameter expression of type \lstinline!Integer! with \lstinline!min = 1! and \lstinline!unit = "Hz"!.
-If $\mathit{intervalCounter}$ is a parameter expression with value zero, the period of the clock is derived by clock inference, see \cref{sub-clock-inferencing}.
+The first input argument, $\mathit{intervalCounter}$, is a clocked component expression (\cref{def:component-expression}) or an evaluable expression of type \lstinline!Integer! with \lstinline!min = 0!.
+The optional second argument $\mathit{resolution}$ (defaults to 1) is an evaluable expression of type \lstinline!Integer! with \lstinline!min = 1! and \lstinline!unit = "Hz"!.
+If $\mathit{intervalCounter}$ is an evaluable expression with value zero, the period of the clock is derived by clock inference, see \cref{sub-clock-inferencing}.
 
-If $\mathit{intervalCounter}$ is a parameter expression greater than zero, the clock defines a periodic clock.
+If $\mathit{intervalCounter}$ is an evaluable expression greater than zero, the clock defines a periodic clock.
 If $\mathit{intervalCounter}$ is a clocked component expression it must be greater than zero.
 The result is of base type \lstinline!Clock! that ticks when \lstinline!time! becomes $t_{\mathrm{start}}$, $t_{\mathrm{start}} + \mathit{interval}_{1}$, $t_{\mathrm{start}} + \mathit{interval}_{1} + \mathit{interval}_{2}$, \@\ldots{}
 The clock starts at the start of the simulation $t_{\mathrm{start}}$ or when the controller is switched on.
@@ -456,8 +457,8 @@ exclusive associations of clocks are possible in one base partition:
 \end{enumerate}
 
 Clock variables can be used in a restricted form of expressions.
-Generally, every expression switching between clock variables must have parameter variability (in order that clock analysis can be performed when translating a model).
-Thus subscripts on clock variables and conditions of if-then-else switching between clock variables must be parameter expressions, and there are similar restrictions for sub-clock conversion operators \cref{sub-clock-conversion-operators}.
+Generally, every expression switching between clock variables must be an evaluable expression (in order that clock analysis can be performed when translating a model).
+Thus subscripts on clock variables and conditions of if-then-else switching between clock variables must be evaluable expressions, and there are similar restrictions for sub-clock conversion operators \cref{sub-clock-conversion-operators}.
 Otherwise, the following expressions are allowed:
 \begin{itemize}
 \item
@@ -653,14 +654,14 @@ These operators have the following properties:
   If $u$ is a clocked expression, the operator returns a clocked variable that has the same type as the expression.
   If $u$ is an expression of type \lstinline!Clock!, the operator returns a \lstinline!Clock! -- except for \lstinline!noClock! where it is an error.
 \item
-  The optional input arguments \lstinline!factor! (defaults to 0, with \lstinline!min = 0!), and \lstinline!resolution! (defaults to 1, with \lstinline!min = 1!) are parameter expressions of type \lstinline!Integer!.
+  The optional input arguments \lstinline!factor! (defaults to 0, with \lstinline!min = 0!), and \lstinline!resolution! (defaults to 1, with \lstinline!min = 1!) are evaluable expressions of type \lstinline!Integer!.
 \item
   Calls of the operators can use named arguments for the multi-letter arguments (i.e., not for $u$) with the given names, or positional arguments.
 \begin{nonnormative}
 Named arguments can make the calls easier to understand.
 \end{nonnormative}
 \item
-  The input arguments \lstinline!shiftCounter! and \lstinline!backCounter! are parameter expressions of type \lstinline!Integer! with \lstinline!min = 0!.
+  The input arguments \lstinline!shiftCounter! and \lstinline!backCounter! are evaluable expressions of type \lstinline!Integer! with \lstinline!min = 0!.
 \end{itemize}
 
 \begin{operatordefinition}[subSample]
@@ -1074,7 +1075,7 @@ Note that equation systems with more than one equation are also allowed in sub-c
 \subsection{Sub-Clock Inferencing}\label{sub-clock-inferencing}
 
 For each base-clock partition, the base interval needs to be determined and for each sub-clock partition, the sub-sampling factors and shift need to be determined.
-The sub-clock partition intervals are constrained by \lstinline!subSample! and \lstinline!superSample! factors which might be known (or parameter expression) or unspecified, as well as by \lstinline!shiftSample!, \lstinline!shiftCounter! and \lstinline!resolution!, or \lstinline!backSample!, \lstinline!backCounter! and \lstinline!resolution!.
+The sub-clock partition intervals are constrained by \lstinline!subSample! and \lstinline!superSample! factors which might be known (or evaluable expression) or unspecified, as well as by \lstinline!shiftSample!, \lstinline!shiftCounter! and \lstinline!resolution!, or \lstinline!backSample!, \lstinline!backCounter! and \lstinline!resolution!.
 This constraint set is used to solve for all intervals and sub-sampling factors and shift of the sub-clock partitions.
 The model is erroneous if no solution exist.
 
