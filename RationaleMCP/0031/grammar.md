@@ -206,7 +206,7 @@ end _F;
 > _global-constant_ → **constant** _type-specifier_ _array-subscripts_? _declaration_ _comment_
 
 > _type-prefix_ →\
-> &emsp; ( **flow** | **stream** )?\
+> &emsp; ~~( **flow** | **stream** )?~~\
 > &emsp; ( **discrete** | **parameter** | **constant** )?\
 > &emsp; ( **input** | **output** )?
 
