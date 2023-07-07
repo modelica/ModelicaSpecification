@@ -13,6 +13,7 @@ This shifts the responsibility of providing the necessary license information fr
 | Date | Description |
 | --- | --- |
 | 2017-12-07 | Thomas Beutlich. Based on input from Christian Bertsch at [FMI#417](https://github.com/modelica/fmi-standard/issues/417) |
+| 2023-07-07 | Hans Olsson. Added prototype implementation |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
@@ -60,8 +61,8 @@ The following commits at the Git repository at https://github.com/modelica-3rdpa
      There is some redundancy here in specifying the license directory many times in the Modelica URIs, but this is not a serious issue.
      Again, the `__ModelicaAssociation` prefix was added for Modelica-compliant tool-neutrality
 
-Currently, no prototype tool implementation is available.
-The estimated implementation effort for exporting Modelica models with exported licenses is rather low.
+Currently, a simple prototype is implemented in Dymola, supporting top-level and function annotation (both variants) and including them in the documentation folder in the FMI.
+As previously estimated implementation effort for exporting Modelica models with exported licenses is rather low.
 A tool needs to collect the license information of all utilized top-level Modelica packages and all utilized external functions and copy these files to the specified export directory depending on the export target system.
 
 ## Required Patents
