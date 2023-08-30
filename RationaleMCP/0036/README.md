@@ -108,7 +108,7 @@ https://specification.modelica.org/master/synchronous-language-elements.html#sol
 4. This declaration equation is ignored for the equation count.
 
 This makes it clear that the variable is an actual state, just integrated differently.
-Note that even if it reuses reinit it avoids the problems with the reinit(x, xs) proposal.
+Note that even if the proposed syntax reuses the `reinit` keyword, it avoids the problems with the alternative `reinit(x, xs)` proposal.
 
 Step (3) requires that it is a state (guaranteed by (1)), and that it is a continuous variable in a "Clocked Discretized Continuous-Time Partition", as stated at the start.
 
