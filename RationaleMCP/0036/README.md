@@ -5,7 +5,7 @@ Hans Olsson
 
 # Summary
 The main idea is that in many cases we use a model within a model (e.g. in Model-Predictive-Control and Feedback Linearization), 
-and we need to update those states in the model within the model based on more accurate measurements of during the simulation, 
+and we need to update those states in the model within the model based on more accurate measurements of them during the simulation, 
 and have the state-updating as part of the model (and not as some tool-specific solution).
 
 # Revisions
@@ -17,6 +17,7 @@ and have the state-updating as part of the model (and not as some tool-specific 
 | 2021-04-29 | Hans Olsson. Added test-cases and more complete proposal. |
 | 2022-02-14 | Hans Olsson. More test-cases. |
 | 2022-05-03 | Hans Olsson. Update specification text, clarified that ready |
+| 2023-08-30 | Hans Olsson. Review comments |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -59,11 +60,12 @@ Finally having a conditional setting of states is more complicated, and reinit a
 ## Proposed alternative
 Use a special binding equation:
 
-Real x=measurement(xs);
+Real x=reinit(xs);
 
-This special operator, measurement, is only legal in a "Clocked Discretized Continuous-Time Partition" and only in this way and its meaning is discussed in the semantics part.
+This new use of reinit can be separated from the existing use of reinit.
+An alternative would be to introduce a new operator, measurement, only legal in a "Clocked Discretized Continuous-Time Partition" and only in this way and its meaning is discussed in the semantics part.
 
-The name of the operator can be discussed. The prototype re-used "reinit" to avoid introducing new reserved words.
+The name of the operator can be discussed. The current proposal re-uses "reinit" to avoid introducing new reserved words.
 
 Key points:
 - Associated with state, not measurement variable.
@@ -80,6 +82,10 @@ Remaining:
 - Name of operator (measurement, reinit, ...). Proposal: reinit
 - Must the partition have a discretization method? Proposal: No 
 - Write specification text (a few paragraphs)
+
+The reason the partition doesn't need a discretization method is that if we use reinit for all states there is nothing to integrate with the discretization method making it a meaingless choice.
+Obviously it is possible to specify a discretization method even if not used.
+However, if the intent is to require that all states are measured the proposed semantics allow a check for that.
 
 # Semantics
 The operator is only legal in a "Clocked Discretized Continuous-Time Partition", but the original semantics was unclear
