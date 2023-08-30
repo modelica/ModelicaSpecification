@@ -142,7 +142,7 @@ The package [TestSettingStates](TestSettingStates.mo) contain a trivial example 
 ![Plot showing result](BothControl.png)
 
 # Required Patents
-At best of your knowledge state any patents that would be required for implementation of this proposal.
+At best of my knowledge no patents would be required for implementation of this proposal.
 
 # References
 https://modelica.org/events/modelica2017/proceedings/html/submissions/ecp17132517_OlssonMattssonOtterPfeifferBurgerHenriksson.pdf
