@@ -33,8 +33,6 @@ Version | Link                                                              | Pu
 1.1     | [PDF](https://modelica.org/documents/ModelicaSpec11.pdf)          | 1998    | [HTML](https://specification.modelica.org/maint/3.6/modelica-revision-history.html#modelica-1-1) |
 1.0     | [PDF](https://modelica.org/documents/Modelica1.pdf)               | 1997    | |
 
-More Info on released versions: https://www.modelica.org/documents
-
 ## Contribution
 1. If you find an error and are not certain that you can correct it, first check that it is not already reported and then open an [issue](https://github.com/modelica/ModelicaSpecification/issues) describing it in detail - focusing on why it should be changed.
 2. If you are confident that you can correct the issue, fork this repository and create a pull-request and in the pull-request explain the issue and the correction; you will also have to sign a CLA.
