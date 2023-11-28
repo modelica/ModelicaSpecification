@@ -1,12 +1,10 @@
 \chapter{Arrays}\label{arrays}
 
-A non-record array can be regarded as a collection of type compatible values, \cref{type-compatible-expressions}.
-An array of records may contain scalar record values whose elements differ in their dimension sizes, but apart from that they must be of the same type.
+An array of the specialized classes \lstinline!type!, \lstinline!record!, and \lstinline!connector! can be regarded as a collection of type compatible values, \cref{type-compatible-expressions}.
+Thus an array of the specialized classes \lstinline!record! or \lstinline!connector! may contain scalar values whose elements differ in their dimension sizes, but apart from that they must be of the same type.
 Such heterogenous arrays may only be used completely, sliced as specified, or indexed.
-An array of arrays must have the same dimension sizes for all of the arrays (with the same exception for records).
-Modelica arrays can be multidimensional and are ``rectangular'',
-which in the case of matrices has the consequence that all rows in a
-matrix have equal length, and all columns have equal length.
+An array of other specialized classes can only be used sliced as specified, or indexed.
+Modelica arrays can be multidimensional and are ``rectangular'', which in the case of matrices has the consequence that all rows in a matrix have equal length, and all columns have equal length.
 
 Each array has a certain dimensionality, i.e., number of dimensions.
 The degenerate case of a \firstuse{scalar} variable is not really an array, but can be regarded as an array with zero dimensions.
@@ -440,10 +438,10 @@ inputs for the reduction operator with the same name.
 \tablehead{Expression} & \tablehead{Description} & \tablehead{Details}\\
 \hline
 \hline
-{\lstinline!min($A$)!} & Least element or array & \Cref{modelica:min-of-array} \\
+{\lstinline!min($A$)!} & Least element of array & \Cref{modelica:min-of-array} \\
 {\lstinline!min($x$, $y$)!} & Least of two scalars & \Cref{modelica:min-binary} \\
 {\lstinline!min($\ldots$ for $\ldots$)!} & Reduction to least value & \Cref{modelica:min-reduction} \\
-{\lstinline!max($A$)!} & Greatest element or array & \Cref{modelica:max-of-array} \\
+{\lstinline!max($A$)!} & Greatest element of array & \Cref{modelica:max-of-array} \\
 {\lstinline!max($x$, $y$)!} & Greatest of two scalars & \Cref{modelica:max-binary} \\
 {\lstinline!max($\ldots$ for $\ldots$)!} & Reduction to greatest value & \Cref{modelica:max-reduction} \\
 % Not saying "scalar sum" for symmetry with the product case below:
@@ -946,6 +944,9 @@ A vector expression can be used to pick out selected rows, columns and elements 
 The number of dimensions of the expression is reduced by the number of scalar index arguments.
 If the number of index arguments is smaller than the number of dimensions of the array, the trailing indices will use `\lstinline!:!'.
 
+It is possible to index a general expression by enclosing it in parenthesis.
+Note that while the subscripts are applied to a \lstinline[language=grammar]!output-expression-list! in the grammar, it is only semantically valid when the \lstinline[language=grammar]!output-expression-list! represents an expression.
+
 It is also possible to use the array access operator to assign to element/elements of an array in algorithm sections.
 This is called an \firstuse[assignment statement!indexed]{indexed assignment statement}.
 If the index is an array the assignments take place in the order given by the index array.
@@ -971,6 +972,10 @@ Array indexing in assignment statements:
 \begin{lstlisting}[language=modelica]
 v[{j, k}] := {2, 3}; // Same as: v[j] := 2; v[k] := 3;
 v[{1, 1}] := {2, 3}; // Same as: v[1] := 3;
+\end{lstlisting}
+Array indexing of general expression:
+\begin{lstlisting}[language=modelica]
+(a*a)[:, j]    // Vector of the j'th column of a*a
 \end{lstlisting}
 If \lstinline!x! is a vector, \lstinline!x[1]! is a scalar, but the slice \lstinline!x[1:5]! is a vector
 (a vector-valued or colon index expression causes a vector to be returned).
@@ -1208,7 +1213,7 @@ A * x = b;
 x * A = b; // same as transpose([x])*A*b
 [v] * transpose([v]) // outer product
 v * A * v // scalar
-tranpose([v]) * A * v // vector with one element
+transpose([v]) * A * v // vector with one element
 \end{lstlisting}
 \end{example}
 
@@ -1447,14 +1452,16 @@ Multiplication of two empty matrices results in a zero matrix of corresponding n
 \begin{lstlisting}[language=modelica]
 Real[0, m] * Real[m, n] = Real[0, n] // empty matrix
 Real[m, n] * Real[n, 0] = Real[m, 0] // empty matrix
-Real[m, 0] * Real[0, n] = fill(0.0, m, n) // non-empty matrix of zeros
+Real[m, 0] * Real[0, n] = fill(0.0, m, n) // matrix of zeros
 \end{lstlisting}
+Note that \lstinline!fill(0.0, m, n)! will be an empty matrix if \lstinline!m! or \lstinline!n! is zero.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-Real u[p], x[n], y[q], A[n, n], B[n, p], C[q, n], D[q, p];
-der(x) = A * x + B * u
-y = C * x + D * u
+  Real u[p], x[n], y[q], A[n, n], B[n, p], C[q, n], D[q, p];
+equation
+  der(x) = A * x + B * u
+  y = C * x + D * u
 \end{lstlisting}
 Assume $\text{\lstinline!n!} = 0$, $\text{\lstinline!p!} > 0$, $\text{\lstinline!q!} > 0$: Results in \lstinline!y = D * u!.
 \end{example}

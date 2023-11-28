@@ -222,7 +222,8 @@ A \firstuse{prefix} is property of an element of a class definition which can be
 Type prefixes (that is, \lstinline!flow!, \lstinline!stream!, \lstinline!discrete!, \lstinline!parameter!, \lstinline!constant!, \lstinline!input!, \lstinline!output!) shall only be applied for type, record, operator record, and connector components -- see also record specialized class, \cref{specialized-classes}.
 This is further restricted below; some of these combinations of type prefixes and specialized classes are not legal.
 
-An exception is \lstinline!input! for components whose type is of the special class function type (these can only be used for function formal parameters and has special semantics, see \cref{functional-input-arguments-to-functions}), and the \lstinline!input! prefix is not applied to the elements of the component and is allowed even if the elements have \lstinline!input! or \lstinline!output! prefix.
+An exception is \lstinline!input! for components whose type is of the specialized class \lstinline!function! (these can only be used for function formal parameters and has special semantics, see \cref{functional-input-arguments-to-functions}).
+In this case, the \lstinline!input! prefix is not applied to the elements of the component, and the prefix is allowed even if the elements of the component have \lstinline!input! or \lstinline!output! prefix.
 
 In addition, instances of classes extending from \lstinline!ExternalObject! may have type prefixes \lstinline!parameter! and \lstinline!constant!, and in functions also type prefixes \lstinline!input! and \lstinline!output!, see \cref{external-objects}.
 
@@ -233,7 +234,7 @@ This is further restricted in \cref{definition-of-stream-connectors}.
 Variables declared with the \lstinline!input! type prefix must not also have the prefix \lstinline!parameter! or \lstinline!constant!.
 
 The type prefix \lstinline!flow! of a component that is not a primitive element (see \cref{primitive-elements}), is also applied to the elements of the component (this is done after verifying that the type prefixes occurring on elements of the component are correct).
-Primitive elements with the \lstinline!flow! type prefix shall be a subtype of \lstinline!Real! or an operator record defining an additive group, see \cref{generation-of-connection-equations}.
+Primitive elements with the \lstinline!flow! type prefix shall be a subtype of \lstinline!Real!, \lstinline!Integer!, or an operator record defining an additive group, see \cref{generation-of-connection-equations}.
 
 The type prefixes \lstinline!input! and \lstinline!output! of a structured component (except as described above) are also applied to the elements of the component (this is done after verifying that the type prefixes occurring on elements of the component are correct).
 
@@ -397,10 +398,10 @@ equation
 \end{lstlisting}
 \end{example}
 
-The \emph{expression} must be a \lstinline!Boolean! scalar expression, and must be a parameter expression.
+The \emph{expression} must be a \lstinline!Boolean! scalar expression, and must be an evaluable expression.
 
 \begin{nonnormative}
-A parameter expression is required since it shall be evaluated at compile time.
+An evaluable expression is required since it shall be evaluated at compile time.
 \end{nonnormative}
 
 A redeclaration of a component shall not include a condition attribute;
@@ -413,7 +414,7 @@ A component declared with a condition-attribute can only be modified and/or used
 \begin{nonnormative}
 Adding the component and then removing it ensures that the component is valid.
 
-If a connect equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
+If a \lstinline!connect!-equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
 
 There are annotations to handle the case where the connector should be connected when activated, see \cref{annotations-for-the-graphical-user-interface}.
 \end{nonnormative}
@@ -429,7 +430,7 @@ Combined with some other information about the components and analysis of expres
   This is called a \firstuse[---]{constant}, or \firstuse[constant!variable]{constant variable}\index{component variability!constant}.
   For further details, see \ref{constants}.
 \item
-  A variable \lstinline!ep! is called a \firstuse[parameter!evaluable]{evaluable parameter variable}\index{component variability!evaluable parameter} if all of the following applies:
+  A variable \lstinline!ep! is called an \firstuse[parameter!evaluable]{evaluable parameter variable}\index{component variability!evaluable parameter} if all of the following applies:
   \begin{itemize}
   \item
     It is declared with the \lstinline!parameter!\indexinline{parameter} prefix.
@@ -747,13 +748,11 @@ composition :
 
 \subsection{Short Class Definitions}\label{short-class-definitions}
 
-A class definition of the form
+A \firstuse{short class definition} is a class definition in the form
 \begin{lstlisting}[language=modelica]
 class IDENT1 = type-specifier class-modification;
 \end{lstlisting}
-is identical, except that \lstinline!type-specifier! (the base-class) may be replaceable and for the lexical
-scope of modifiers, where the short class definition does not introduce
-an additional lexical scope for modifiers, to the longer form
+Except that \lstinline!type-specifier! (the base-class) may be replaceable, and that the short class definition does not introduce an additional lexical scope for modifiers, it is identical to the longer form
 \begin{lstlisting}[language=modelica]
 class IDENT1
   extends type-specifier class-modification;
@@ -847,7 +846,7 @@ Real x[:]=foo(time);
 
 It is not legal to combine equations, algorithms, components, non-empty base classes (see below), or protected elements with an extends from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, or a simple type.
 
-\begin{definition}[Empty class]\index{empty-class}
+\begin{definition}[Empty class]\index{empty class}\label{empty-class}
 A class without equations, algorithms, or components, and where any base-classes are themselves empty.
 \end{definition}
 
@@ -1084,6 +1083,12 @@ The local equation size of a \lstinline!model! or \lstinline!block! class is the
   \begin{nonnormative}
   I.e., top-level inputs are treated as known variables.  This represents the number of binding equations that will be provided when the class is used.
   \end{nonnormative}
+\item
+  For over-determined connectors, \cref{equation-operators-for-overconstrained-connection-based-equation-systems1}, each spanning tree without any root node adds the difference between the size of the over-determined type or record and the size of the output of \lstinline!equalityConstraint!.
+\begin{nonnormative}
+  By definition this term is zero in simulation models, but relevant for checking component models.
+  There are no other changes in the variable and equation count for models -- but a restriction on the size of the output of \lstinline!equalityConstraint!, \cref{balancing-restriction-and-size-of-connectors}.
+\end{nonnormative}
 \end{itemize}
 \end{definition}
 
@@ -1552,10 +1557,17 @@ end Real;
 \index{unbounded@\robustinline{unbounded}!attribute of \robustinline{Real}}%
 \index{stateSelect@\robustinline{stateSelect}!attribute of \robustinline{Real}}
 
+The following attributes shall be evaluable: \lstinline!quantity!, \lstinline!unit!, \lstinline!displayUnit!, \lstinline!fixed!, and \lstinline!stateSelect!.
+
 The \lstinline!unit! and \lstinline!displayUnit! attributes may be either the empty string or a string matching \lstinline[language=grammar]!unit-expression! in \cref{unit-expressions}.
 The meaning of the empty string depends on the context.
 For the input and output components of a function, the empty string allows different units to be used in different calls to the function.
 For a non-function component, the empty string allows the unit (or display unit) to be inferred by the tool.
+
+\begin{nonnormative}
+That \lstinline!displayUnit! is evaluable allows tools to verify that the default display unit is consistent with the \lstinline!unit!.
+Unlike the \lstinline!unit!, \lstinline!displayUnit! is just a default, tools may allow using other compatible display units for a translated model.
+\end{nonnormative}
 
 The \lstinline!nominal! attribute is meant to be used for scaling purposes and to
 define tolerances in relative terms, see \cref{attributes-start-fixed-nominal-and-unbounded}.
@@ -1588,6 +1600,8 @@ end Integer;
 \index{start@\robustinline{start}!attribute of \robustinline{Integer}}%
 \index{fixed@\robustinline{fixed}!attribute of \robustinline{Integer}}
 
+The following attributes shall be evaluable: \lstinline!quantity!, and \lstinline!fixed!.
+
 The minimal recommended number range for \lstinline!IntegerType! is from -2147483648 to +2147483647, corresponding to a two's-complement 32-bit integer implementation.
 
 The fallback value is the closest value to $0$ consistent with the \lstinline!min! and \lstinline!max! bounds.
@@ -1608,6 +1622,8 @@ end Boolean;
 \index{start@\robustinline{start}!attribute of \robustinline{Boolean}}%
 \index{fixed@\robustinline{fixed}!attribute of \robustinline{Boolean}}%
 
+The following attributes shall be evaluable: \lstinline!quantity!, and \lstinline!fixed!.
+
 The fallback value is \lstinline!false!.
 
 \subsection{String Type}\label{string-type}
@@ -1625,6 +1641,8 @@ end String;
 \index{quantity@\robustinline{quantity}!attribute of \robustinline{String}}%
 \index{start@\robustinline{start}!attribute of \robustinline{String}}%
 \index{fixed@\robustinline{fixed}!attribute of \robustinline{String}}
+
+The following attributes shall be evaluable: \lstinline!quantity!, and \lstinline!fixed!.
 
 A \lstinline!StringType! value (such as $\langle\mathit{value}\rangle$ or other textual attributes of built-in types) may contain any Unicode data (and nothing else).
 
@@ -1751,6 +1769,8 @@ equation
   assert(min <= $\langle$$\mbox{\emph{value}}$$\rangle$ and $\langle$$\mbox{\emph{value}}$$\rangle$ <= max, "Variable value out of limit");
 end E;
 \end{lstlisting}
+
+The following attributes shall be evaluable: \lstinline!quantity!, and \lstinline!fixed!.
 
 The fallback value is the \lstinline!min! bound.
 
