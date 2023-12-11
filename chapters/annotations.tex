@@ -2121,10 +2121,13 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
   of the class).
 \item
   \lstinline!Access.icon!\\
-  The class can be instantiated and public parameter, constant, input, output variables as well as public connectors can be accessed, as well as the \lstinline!Icon! annotation, as defined in \cref{annotations-for-graphical-objects} (the declared information of these elements can be shown).  Additionally, the class name and its description text can be accessed.
+  The class can be instantiated and public parameter, constant, input, output variables as well as public connectors can be accessed, as well as the \lstinline!Icon! annotation, as defined in \cref{annotations-for-graphical-objects} (the declared information of these elements can be shown).
+  Additionally, the class name and its description text can be accessed.
 \item
   \lstinline!Access.documentation!\\
-  Same as \lstinline!Access.icon! and additionally the \lstinline!Documentation! annotation (as defined in \cref{annotations-for-documentation}) can be accessed.  HTML-generation in the \lstinline!Documentation! annotation is normally performed before encryption, but the generated HTML is intended to be used with the encrypted package.  Thus the HTML-generation should use the same access as the encrypted version -- even before encryption.
+  Same as \lstinline!Access.icon! and additionally the \lstinline!Documentation! annotation (as defined in \cref{annotations-for-documentation}) can be accessed.
+  HTML-generation in the \lstinline!Documentation! annotation is normally performed before encryption, but the generated HTML is intended to be used with the encrypted package.
+  Thus the HTML-generation should use the same access as the encrypted version -- even before encryption.
 \item
   \lstinline!Access.diagram!\\
   Same as \lstinline!Access.documentation! and additionally, the \lstinline!Diagram! annotation, and all components and \lstinline!connect!-equations that have a graphical annotation can be accessed.
@@ -2142,24 +2145,80 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
   Same as \lstinline!Access.packageText! and additionally the class, or part of the class, can be copied.
 \end{enumerate}
 
-The \lstinline!access! annotation holds for the respective class and all classes
-that are hierarchically on a lower level, unless overridden by a
-\lstinline!Protection! annotation with \lstinline!access!.
-Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate!
-has no effect.
+The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
+Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
 
 \begin{example}
 If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
 \end{example}
 
+Classes should not use other classes in ways that contradict this protection.
+Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
+
+\begin{example}
+For instance a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
+
+Consider the following invalid use of a class with \lstinline!Access.hide!:
+\begin{lstlisting}[language=modelica]
+package P
+  block MySecret
+    RealOutput y = time;
+    annotation(Protection(access = Access.hide));
+  end MySecret;
+  model M
+    MySecret mySecret
+     annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));
+    Integrator integrator
+     annotation(Placement(
+       transformation(origin = {70, 30}, extent = {{-10, -10}, {10, 10}})));
+  equation
+    connect(mySecret.y, integrator.u)
+      annotation(Line(origin = {49.5, 30}, points = {{-8.5, 0}, {8.5, -0}}));
+    annotation(Protection(access = Access.diagram));
+  end M;
+
+  model M2
+    // The class MySecret is a simpler Modelica.Blocks.Sources.ContinuousClock
+    MySecret mySecret annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));
+    annotation(Protection(access = Access.packageDuplicate));
+  end M2;
+end P;
+\end{lstlisting}
+In order to not reveal the existence of the class \lstinline!P.MySecret! in \lstinline!P.M!, a tool may choose to show the diagram of \lstinline!P.M! with both \lstinline!mySecret! and all connections to it removed.
+(The tool could also choose to not show the diagram of \lstinline!P.M! at all, or even reject to load the package \lstinline!P! altogether.)
+As long as the invalid use of \lstinline!P.MySecret! occurs within the same top level package as where the class is defined (here, \lstinline!P!), a tool is allowed to silently ignore the use for purposes of model translation.
+When simulating \lstinline!P.M!, the tool must not store \lstinline!mySecret.y!.
+
+It is not specified whether a tool hides the entire text of \lstinline!P.M2!, hides just the declaration, or shows the entire text of the \lstinline!P.M2!.
+In order to support development of valid protected packages, it is of course OK and expected that a tool will report the invalid use of \lstinline!P.MySecret! in \lstinline!P.M! and \lstinline!P.M2! (revealing its existence in a diagnostic) during development of the package.
+\end{example}
+
+\begin{example}
+With the same package \lstinline!P! as in the previous example, consider the following invalid use outside of \lstinline!P!:
+\begin{lstlisting}[language=modelica]
+model My
+  // There exist a class P.MySecret
+  P.MySecret a
+    annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));
+end My;
+\end{lstlisting}
+Regardless of the protection of \lstinline!My!, a tool must act as if \lstinline!P.MySecret! did not exist.
+For example, translation of \lstinline!My! must fail with a standard error message about reference to the non-existing class \lstinline!P.MySecret!.
+Further, just like when being misused inside the package \lstinline!P!, the tool must not reveal that it knows about the icon of \lstinline!P.MySecret!.
+With such precautions taken, showing the text or diagram of \lstinline!My! is permitted as it doesn't reveal the actual existence of \lstinline!P.MySecret!.
+\end{example}
+
 \begin{nonnormative}
-It is currently not standardized which result variables are
-accessible for plotting. It seems natural to not introduce new flags for
-this, but reuse the \lstinline!Access.XXX! definition, e.g., for \lstinline!Access.icon!
-only the variables can be stored in a result file that can also be
-inspected in the class, and for \lstinline!Access.nonPackageText! all public
-and protected variables can be stored in a result file, because all
-variables can be inspected in the class.
+It is currently not standardized which result variables are accessible for plotting.
+It seems natural to not introduce new flags for this, but reuse the \lstinline!Access.XXX! definition.
+For instance:
+\begin{itemize}
+\item For \lstinline!Access.icon! only the variables can be stored in a result file that can also be inspected in the class.
+\item For \lstinline!Access.nonPackageText! all public and protected variables can be stored in a result file, because all variables can be inspected in the class.
+\end{itemize}
 
 \begin{lstlisting}[language=modelica]
 package CommercialFluid // Access icon, documentation, diagram
