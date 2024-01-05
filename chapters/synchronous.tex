@@ -207,27 +207,28 @@ There are two kinds of \firstuse[clock!partition]{clock partitions}:
 
 \begin{definition}[Base-partition]\index{base-partition}\index{clock!partition!base-}
 A base-partition identifies a set of equations and a set of variables which must be executed together in one task.
-Different base partitions can be associated to separate tasks for asynchronous execution.
+Different base-partitions can be associated to separate tasks for asynchronous execution.
 \end{definition}
 
 \begin{definition}[Sub-partition]\index{sub-partition}\index{clock!partition!sub-}
-A sub-partition identifies a subset of equations and a subset of variables of a base-partition which are partially synchronized with other sub-partitions of the same base
-partition, i.e., synchronized when the ticks of the respective clocks are simultaneous.
+A sub-partition identifies a subset of equations and a subset of variables of a base-partition which are partially synchronized with other sub-partitions of the same base-partition, i.e., synchronized when the ticks of the respective clocks are simultaneous.
 \end{definition}
 
-The terminology for the partitions are as follows:
+The terminology for the partitions is as follows:
 \begin{itemize}
-\item \willintroduce{Clocked base-partitions}.
-\begin{itemize}
-\item \willintroduce{Discrete-time sub-partitions}.
-\item \willintroduce{Discretized sub-partitions}.
-\end{itemize}
-\item \willintroduce{Continuous-time base-partition}.
+\item
+  \willintroduce{Clocked base-partitions}.
+  \begin{itemize}
+  \item \willintroduce{Discrete-time sub-partitions}.
+  \item \willintroduce{Discretized sub-partitions}.
+  \end{itemize}
+\item
+  \willintroduce{Continuous-time base-partition}.
 \end{itemize}
 \begin{nonnormative}
 Previously the discrete-time sub-partitions were called \emph{clocked discrete-time} (\emph{sub-clock} partition)\index{clocked discrete-time}\index{discrete-time!clocked}.
-And discretized sub-partitions were called \emph{discretized continuous-time} (\emph{sub-clock} partition)\index{discretized continuous-time}\index{continuous-time!discretized}.
-When emphasizing that the partitions are clock partitions sub-clock partition can still be referred to as \emph{sub-clock partitions}\index{sub-clock!partition}; and similarly for base-partition\index{base-clock!partition}.
+Further, discretized sub-partitions were called \emph{discretized continuous-time} (\emph{sub-clock} partition)\index{discretized continuous-time}\index{continuous-time!discretized}.
+When emphasizing that the partitions are clock partitions, sub-partitions can still be referred to as \emph{sub-clock partitions}\index{sub-clock!partition}; and similarly for base-partition\index{base-clock!partition}.
 \end{nonnormative}
 
 \subsection{Argument Restrictions (Component Expression)}\label{argument-restrictions-component-expression}
@@ -937,9 +938,7 @@ Additionally, it means that every sub-partition directly referencing \lstinline!
 
 \subsection{Base-Partitioning}\label{base-clock-partitioning}
 
-The goal is to identify all clocked equations and variables that should
-be executed together in the same task, as well as to identify the
-continuous-time partition.
+The goal is to identify all clocked equations and variables that should be executed together in the same task, as well as to identify the continuous-time base-partition.
 
 The base-partitioning is performed with base-clock inference which
 uses the following incidence definition:
@@ -1012,9 +1011,7 @@ u = hold(yd2);                   // incidence(e) = {u}
 
 \subsection{Sub-Partitioning}\label{sub-clock-partitioning}
 
-For each clocked base-partition B\textsubscript{i}, identified in
-\cref{base-clock-partitioning}, the sub-partitioning is performed with sub-clock inference
-which uses the following incidence definition:
+For each clocked base-partition B\textsubscript{i}, identified in \cref{base-clock-partitioning}, the sub-partitioning is performed with sub-clock inference which uses the following incidence definition:
 
 $\operatorname{incidence}(e)$ =
 \begin{list}{}{\setlength{\leftmargin}{2em}\setlength{\topsep}{-\parskip}}
@@ -1137,7 +1134,7 @@ However, even if relations do not generate events, when-clauses and operators \l
 \end{nonnormative}
 
 From the viewpoint of other partitions, the discretized continuous-time variables only have values at clock ticks (internally it may be more complicated, see \cref{solver-methods}).
-Therefore, outside the discretized partions themselves, they are treated similarly to discrete-time partitions.
+Therefore, outside the discretized sub-partitions themselves, they are treated similarly to discrete-time sub-partitions.
 Especially, operators such as \lstinline!sample!, \lstinline!hold!, \lstinline!subSample! must be used to communicate signals of the discretized sub-partition with other partitions.
 
 \subsection{Discrete-time and Discretized Sub-Partitions}\label{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}\label{clocked-and-discretized-partition}
@@ -1161,7 +1158,7 @@ That is, a discrete-time sub-partition is a standard sampled data system describ
 A discretized sub-partition has to be solved with a \emph{solver method} of \cref{solver-methods}.
 When \lstinline!previous(x)! is used on a continuous-time state variable \lstinline!x!, then \lstinline!previous(x)! uses the start value of \lstinline!x! as value for the first clock tick.
 
-The use of the operator \lstinline!sample! from \cref{event-related-operators-with-function-syntax} in a discretized partition is problematic.
+The use of the operator \lstinline!sample! from \cref{event-related-operators-with-function-syntax} in a discretized sub-partition is problematic.
 A diagnostic is recommended, especially if the operator is intended to generate events faster than the clock ticks, and otherwise the sampling should ideally be adjusted to the clock ticks.
 
 \begin{nonnormative}
@@ -1169,8 +1166,8 @@ The reason for not disallowing \lstinline!sample! in a discretized sub-partition
 Note that even if the sampling is slower than the clock ticks (or even the same rate) it still introduces the problem of possibly uneven sampling.
 \end{nonnormative}
 
-In a discrete-time sub-partition all event generating mechanisms no longer apply.
-Especially neither relations, nor any of the built-in operators of \cref{event-triggering-mathematical-functions} (event triggering mathematical functions) will trigger an event.
+In a discrete-time sub-partition none of the event generating mechanisms apply.
+Especially neither relations, nor any of the built-in operators of \cref{event-triggering-mathematical-functions} (event triggering mathematical functions) will trigger events.
 
 \subsection{Solver Methods}\label{solver-methods}
 
@@ -1206,7 +1203,7 @@ If a tool does not support the integration method defined in a model, typically 
 If the solver method is \lstinline!"External"!, then the sub-partition associated with this method is integrated by the simulation environment for an interval of length of \lstinline!interval()! using a solution method defined in the simulation environment.
 
 \begin{nonnormative}
-An example of such a solution method could be to have a table of the clocks that are associated with discretized partitions and a method selection per clock.
+An example of such a solution method could be to have a table of the clocks that are associated with discretized sub-partitions and a method selection per clock.
 In such a case, the solution method might be a variable step solver with step-size control that integrates between two clock ticks.
 The simulation environment might also combine all partitions associated with method \lstinline!"External"!, as well as all continuous-time partitions, and integrate them together with the solver selected by the simulation environment.
 \end{nonnormative}
@@ -1335,7 +1332,7 @@ This data is tool specific and is typically either defined with a vendor annotat
 \subsection{Associating a Solver to a Sub-Partition}\label{associating-a-solver-to-a-partition}
 
 A \lstinline!SolverMethod! can be associated to a clock with the overloaded \lstinline!Clock! constructor \lstinline!Clock($c$, solverMethod=$\ldots$)!, see \cref{clock-constructors}.
-If a clock is associated with a sub-clock of a clocked sub-partition and a \lstinline!SolverMethod! is associated with this clock, then the sub-partition is integrated with it.
+If a clock is associated with a sub-clock of a discretized sub-partition and a \lstinline!SolverMethod! is associated with this clock, then the sub-partition is integrated with it.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
