@@ -818,7 +818,9 @@ Here, \lstinline!A! and \lstinline!B! are connector instances that may be hierar
 connect(A, B)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Defines \firstuse{optional spanning-tree edge} from the overdetermined type or record instances in connector instance \lstinline!A! to the corresponding overdetermined type or record instances in connector instance \lstinline!B! for a virtual connection graph.
+Except for redundant connections it defines an \firstuse{optional spanning-tree edge} from the overdetermined type or record instances in connector \lstinline!A! to the corresponding overdetermined type or record instances in connector \lstinline!B! for a virtual connection graph.
+E.g., from \lstinline!A.R! to \lstinline!B.R!.
+The full explanation will be given in \cref{generation-of-connection-graph-equations}.
 The types of the corresponding overdetermined type or record instances shall be the same.
 \end{semantics}
 \end{operatordefinition*}
@@ -903,26 +905,61 @@ They only generate nodes and edges in the virtual graph for analysis purposes.
 
 \subsection{Generation of Connection Graph Equations}\label{generation-of-connection-graph-equations}
 
+When generating connection graph equations, only the overdetermined components of a connector are considered.
+The connection graph equations replace the equality-equations for variables that are neither flow nor stream in \cref{generation-of-connection-equations}.
+
+\subsubsection{Handle Connect-Equation Redundancy}
+In order to eliminate any redundant \lstinline!connect!-equation the following preparation is needed.
+\begin{nonnormative}
+In the common case where there is no \lstinline!connect!-equation redundancy, a consequence of this preparation is that a \lstinline!connect!-equation between connectors with \emph{one} overdetermined component may be directly turned into \emph{one} optional spanning-tree edge.
+\end{nonnormative}
+\begin{enumerate}
+\item
+  The connection sets are built similarly to the normal way, but keeping the overdetermined components as primitives.
+\item
+  Instead of generating the equality-equation for an overdetermined component, an optional spanning-tree edge in the virtual connection graph is constructed.
+\end{enumerate}
+\begin{nonnormative}
+If a connection set contains $n$ overdetermined components, and was built from $m$ \lstinline!connect!-equations, then the connection set has a \lstinline!connect!-equation redundancy of $m - (n - 1) \geq 0$.
+If there is no \lstinline!connect!-equation redundancy (i.e., if $m=n-1$), the optional spanning-tree edges can be chosen to correspond to the \lstinline!connect!-equations for overdetermined connectors.
+If there is a non-zero \lstinline!connect!-equation redundancy, there will always exist \lstinline!connect!-equations without a corresponding optional spanning-tree edge.
+
+It is called \emph{redundancy} since this number of \lstinline!connect!-equations could be removed without changing the connection set or the generated equations.
+Situations with non-zero \lstinline!connect!-equation redundancy include connectors connected directly to themselves, duplicated connections, and having all three pair-wise connections between the connectors \lstinline!a!, \lstinline!b! and \lstinline!c!.
+The latter case can be used to consistently handle conditional components (so that disabling \lstinline!b! does not break the connection between \lstinline!a! and \lstinline!c!).
+\end{nonnormative}
+The selected optional spanning tree edges, together with all required spanning tree edges generated from \lstinline!Connections.branch!, and nodes corresponding to definite and potential roots form the virtual connection graph.
+
+\subsubsection{Spanning Trees}
 Before connection equations are generated, the virtual connection graph is transformed into a set of spanning trees by removing optional spanning tree edges from the graph.
 This is performed in the following way:
 \begin{enumerate}
 \item
-  Every root node defined via the \lstinline!Connections.root!-equation is a definite root of one spanning tree.
+  Root nodes are selected as follows:
+\begin{enumerate}
+\item
+  Every definite root node defined via the \lstinline!Connections.root!-equation is a root of one spanning tree.
+  It is an error if two (or more) definite root nodes are connected through required spanning tree edges.
 \item
   The virtual connection graph may consist of sets of subgraphs that are not connected together.
-  Every subgraph in this set shall have at least one root node or one potential root node in a simulation model.
-  If a graph of this set does not contain any root node, then one potential root node in this subgraph that has the lowest priority number is selected to be the root of that subgraph.
+  Every subgraph in this set shall have at least one definite root node or one potential root node in a simulation model.
+  If a graph of this set does not contain any definite root node, then one potential root node in this subgraph that has the lowest priority number is selected to be the root of that subgraph.
   The selection can be inquired in a class with function \lstinline!Connections.isRoot!, see table above.
+\end{enumerate}
 \item
-  If there are n selected roots in a subgraph, then optional spanning-tree edges have to be removed such that the result shall be a set of n spanning trees with the selected root nodes as roots.
+  If there is a cycle among required spanning-tree-edges it is an error, as it is not possible to construct a spanning tree.
+\item
+  For a subgraph with $n$ selected roots, optional spanning-tree edges are removed such that the result is a set of $n$ spanning trees with the selected root nodes as roots.
 \end{enumerate}
 
+\subsubsection{Equations}
 After this analysis, the \firstuse{connection graph equations}\index{connection equations!connection graph} are generated in the following way:
 \begin{enumerate}
 \item
-  For every optional spanning-tree edge (i.e., a \lstinline!connect(A, B)! equation), in one of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}.
+  For every remaining optional spanning-tree edge in any of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}.
+  For \lstinline!connect(A, B)! with overdetermined connector \lstinline!R!, this corresponds to the optional spanning-tree edge between \lstinline!A.R! and \lstinline!B.R! generating the equation \lstinline!A.R = B.R!.
 \item
-  For every optional spanning-tree edge not in any of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}, except for overdetermined type or record instances \lstinline!R!.
+  For every remaining optional spanning-tree edge not in any of the spanning trees, the connection equations are generated according to \cref{generation-of-connection-equations}, except for overdetermined type or record instances \lstinline!R!.
   Here the equations \lstinline!0 = R.equalityConstraint(A.R, B.R)! are generated instead of \lstinline!A.R = B.R!.
 \end{enumerate}
 
@@ -933,7 +970,10 @@ After this analysis, the \firstuse{connection graph equations}\index{connection 
   \begin{center}
     \includegraphics{overdetermined}
   \end{center}
-  \caption{Example of a virtual connection graph.}
+  \caption{%
+  Example of a virtual connection graph.
+  Breakable branches refer to optional spanning-tree edges, and nonbreakable to required spanning-tree edges.
+   }
 \end{figure}
 \end{example}
 
