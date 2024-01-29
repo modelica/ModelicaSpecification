@@ -538,22 +538,22 @@ When determining the type of a function call, the sizes of output array variable
 
 Example:
 ```
-model M
-  function f
-    input Integer n;
-    input Real[:] x;
-    output Real[n + size(x, 1)] y;
-  protected
-    Real[:] a;
-  algorithm
-    a := {0.5}; /* OK: Constant size can be assigned to flexible size. */
-    ...
-  end f;
-  parameter Integer p = 2;
-  constant Integer c = 3;
-  Real[2] a = fill(1.0, p); /* Error: expression has flexible size. */
-  Real[5] b = f(c, a); /* OK. */
-end M;
+function 'f'
+  input Integer 'n';
+  input Real[:] 'x';
+  output Real['n' + size('x', 1)] 'y';
+  Real[:] 'a';
+algorithm
+  'a' := {0.5}; /* OK: Constant size can be assigned to flexible size. */
+  ...
+end 'f';
+
+model 'M'
+  parameter Integer 'p' = 2;
+  constant Integer 'c' = 3;
+  Real[2] 'a' = fill(1.0, 'p'); /* Error: expression has flexible size. */
+  Real[5] 'b' = f('c', 'a'); /* OK. */
+end 'M';
 ```
 
 #### Change and reason for the change
