@@ -18,7 +18,7 @@ pipeline {
   stage('build') {
     agent {
       docker {
-        image 'modelicaspec/latexml:20200804'
+        image 'modelicaspec/latexml:20221130'
         label 'linux'
         alwaysPull true
       }
@@ -29,8 +29,11 @@ pipeline {
     steps {
       sh 'mkdir -p /tmp/jenkins'
       sh 'latexmk -pdf MLS.tex'
-      sh 'latexml --path=media MLS.tex --dest MLS.xml'
-      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=css/LaTeXML-maybeMathJax.js --navigationtoc=context --css=css/MLS.css --css=css/LaTeXML-navbar-left.css --dest MLS.html'
+      sh 'latexml MLS.tex --includestyles --path=media --dest MLS.xml'
+      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest index.html'
+      sh '.scripts/patch-viewport.sh'
+      sh '.scripts/patch-body-ios-hover.sh'
+      sh 'ln -s index.html MLS.html'
       sh 'ln -s preface.html Chx1.html'
       sh 'ln -s lexical-structure.html Ch2.html'
       sh 'ln -s operators-and-expressions.html Ch3.html'
@@ -51,17 +54,17 @@ pipeline {
       sh 'ln -s annotations.html Ch18.html'
       sh 'ln -s unit-expressions.html Ch19.html'
       sh 'ln -s the-modelica-standard-library.html Ch20.html'
-      sh 'ln -s glossary.html A1.html'
       sh 'ln -s modelica-concrete-syntax.html A2.html'
       sh 'ln -s modelica-dae-representation.html A3.html'
       sh 'ln -s derivation-of-stream-equations.html A4.html'
       sh 'ln -s modelica-revision-history.html A5.html'
-      sh 'ln -s literature.html A6.html'
+      sh 'ln -s bib.html A6.html'
+      sh 'ln -s bib.html literature.html'
       sh script: '! (find . -type l -xtype l | egrep \'.*\')', label: 'Verify symbolic links work'
-      sh 'tar czf MLS.tar.gz *.html *.css media css/'
+      sh 'tar czf MLS.tar.gz *.html *.css *.js media/ css/'
       archiveArtifacts artifacts: 'MLS.tar.gz', fingerprint: true
       archiveArtifacts artifacts: 'MLS.pdf', fingerprint: true
-      stash name: 'MLS', includes: '*.html,*.css,MLS.pdf,media/**,css/**,MLS.tar.gz'
+      stash name: 'MLS', includes: '*.html,*.css,*.js,MLS.pdf,media/**,css/**,MLS.tar.gz'
     }
   }
   stage('upload') {
@@ -73,7 +76,9 @@ pipeline {
         anyOf {
           buildingTag()
           anyOf {
+            branch 'jenkins'
             branch 'master'
+            branch 'maint/**'
           }
         }
       }
@@ -85,16 +90,28 @@ pipeline {
     steps {
       unstash name: 'MLS'
       sh "test ! -z ${env.GIT_BRANCH}"
-      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(remoteDirectory: "${env.GIT_BRANCH}", sourceFiles: '*.html,*.css,MLS.pdf,media/**,css/**')])])
+      sshagent (credentials: ['Hudson-SSH-Key']) {
+        sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
+        sh "test -d specification.modelica.org || git clone git@github.com:modelica/specification.modelica.org"
+        sh "cd specification.modelica.org/ && git fetch && git reset --hard origin/master"
+        sh "rm -rf  'specification.modelica.org/${env.GIT_BRANCH}' && mkdir -p  'specification.modelica.org/${env.GIT_BRANCH}'"
+        sh "cp -a *.html *.css *.js MLS.pdf media css 'specification.modelica.org/${env.GIT_BRANCH}'"
+        sh """
+        cd specification.modelica.org
+        git add '${env.GIT_BRANCH}'
+        if ! git diff-index --quiet origin/master --; then
+          git config user.name "Automatic Build"
+          git config user.email "noreply@modelica.org"
+          git commit --amend -m "Initial commit"
+          git push -f
+        fi
+        """
+      }
     }
   }
   stage('index') {
     agent {
-      docker {
-        image 'modelicaspec/markdown:20190307'
-        label 'linux'
-        alwaysPull true
-      }
+      label 'linux'
     }
     when {
       allOf {
@@ -106,8 +123,25 @@ pipeline {
       beforeAgent true
     }
     steps {
-      sh 'python3 .CI/index.py'
-      sshPublisher(publishers: [sshPublisherDesc(configName: 'ModelicaSpecification', transfers: [sshTransfer(sourceFiles: 'index.html')])])
+      script {
+        docker.image('modelicaspec/markdown:20190307').inside {
+          sh 'python3 .CI/index.py'
+        }
+      }
+      sshagent (credentials: ['Hudson-SSH-Key']) {
+        sh 'ssh-keyscan github.com >> ~/.ssh/known_hosts'
+        sh "test -d specification.modelica.org || git clone git@github.com:modelica/specification.modelica.org"
+        sh "cd specification.modelica.org/ && git fetch && git reset --hard origin/master"
+        sh "cp -a index.html specification.modelica.org/"
+        sh """
+        cd specification.modelica.org
+        git add index.html
+        if ! git diff-index --quiet origin/master --; then
+          git commit --amend -m "Initial commit"
+          git push -f
+        fi
+        """
+      }
     }
   }
   }
