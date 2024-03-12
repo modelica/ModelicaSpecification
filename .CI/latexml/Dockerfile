@@ -5,7 +5,7 @@ ENV PATH="/usr/local/texlive/bin/x86_64-linux:${PATH}"
 RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirrors.txt, /etc/apt/sources.list \
  && apt-get update \
  && export DEBIAN_FRONTEND=noninteractive \
- && apt-get install -qy perl ca-certificates make libxslt1.1 libxslt-dev libxml2 libxml2-dev gcc wget curl git unzip cpanminus --no-install-recommends --no-install-suggests \
+ && apt-get install -qy perl ca-certificates make libxslt1.1 libxslt-dev libxml2 libxml2-dev gcc wget curl git unzip cpanminus cm-super --no-install-recommends --no-install-suggests \
  && export PATH="/tmp/texlive/bin/x86_64-linux:$PATH" \
  && REMOTE="http://mirror.ctan.org/systems/texlive/tlnet" \
  && INSTALL="/tmp/install-texlive" \

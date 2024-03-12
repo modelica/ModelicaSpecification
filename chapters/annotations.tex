@@ -58,8 +58,11 @@ record Documentation
   /*literal*/ constant String info = "" "Description of the class";
   /*literal*/ constant String revisions = "" "Revision history";
   Figure[:] figures = {}; "Simulation result figures";
+  String[:] styleSheets = {} "Style sheets for documentation";
 end Documentation;
 \end{lstlisting}
+
+The \lstinline!styleSheets! may also be given as a single string, see \cref{style-sheets}.
 
 How the tool interprets the information in \lstinline!Documentation! is unspecified.
 
@@ -88,6 +91,22 @@ Example:
 <a href="modelica:/MultiBody.Joints.Revolute#info">Revolute</a>
 \end{lstlisting}
 
+\subsubsection{Style Sheets}\label{style-sheets}
+
+Inside the \lstinline!Documentation! annotation, each element of the \lstinline!styleSheets! annotation array specifies a cascading style sheet.
+The style sheets are used when displaying the \lstinline!info! and \lstinline!revisions! annotations found in the \lstinline!Documentation! annotations of the package.
+The \lstinline!styleSheets! annotation is only considered for top-level packages, and applies to the entire package.
+The style sheets will be cascaded in the given order.
+Specifying just a string for \lstinline!styleSheets! has the same meaning as specifying a singleton array containing the string.
+\begin{nonnormative}
+It is recommended to use \lstinline[language=CSS]!class! and \lstinline[language=CSS]!id! selectors with a \lstinline[language=CSS]!$NameOfLibrary$-! prefix to avoid collisions when the content is included in a larger context.
+\end{nonnormative}
+The style sheet rules should not use type or universal selectors, due to possible interference with tool-specific styling.
+
+Vendors should use a \lstinline[language=CSS]!$NameOfVendor$-! prefix to style vendor generated HTML content surrounding the user provided documentation.
+If tools want to give users (of that tool) the possibility to override the tool-specific CSS they can document that.
+The prefix is used to avoid this happening by accident.
+
 \subsection{Figures}\label{annotations-for-figures}\label{figures}
 
 Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
@@ -95,7 +114,7 @@ Inside the \lstinline!Documentation! annotation, each element of the \lstinline!
 record Figure
   /*literal*/ constant String title = "" "Title meant for display";
   /*literal*/ constant String identifier = "" "Identifier meant for programmatic access";
-  /*literal*/ constant String group = "" "Name of plot group";
+  /*literal*/ constant String group = "" "Name of figure group";
   /*literal*/ constant Boolean preferred = false "Automatically display figure after simulation";
   Plot[:] plots "Plots";
   /*literal*/ constant String caption = "" "Figure caption";
@@ -233,6 +252,7 @@ record Curve
   expression x = time "X coordinate values";
   expression y "Y coordinate values";
   /*literal*/ constant String legend "Legend";
+  /*literal*/ constant Integer zOrder = 0 "Drawing order control";
 end Curve;
 \end{lstlisting}
 
@@ -251,6 +271,10 @@ When the \lstinline!unit! of an \lstinline!Axis! is non-empty, it is an error if
 When \lstinline!legend! is not provided, the tool produces a default based on \lstinline!x! and/or \lstinline!y!.
 Providing the empty string as \lstinline!legend! means that the curve shall be omitted from the plot legend.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!legend!.
+The order of presentation within the plot legend corresponds to order of appearance in the \lstinline!curves! of a \lstinline!Plot!.
+
+The \lstinline!zOrder! gives control over drawing order, with higher values corresponding to closer to front.
+Ties are resolved using order of appearance in the \lstinline!curves! of a \lstinline!Plot!, with later appearance corresponding to closer to front.
 
 \subsubsection{Escape Sequences}\label{text-markup-escape-sequences}
 
@@ -488,6 +512,11 @@ end experiment;
 The \lstinline!experiment! annotation defines the start time (\lstinline!StartTime!) in {[}s{]}, the stop time (\lstinline!StopTime!) in {[}s{]}, the suitable time resolution for the result grid (\lstinline!Interval!) in {[}s{]}, and the relative integration tolerance (\lstinline!Tolerance!) for simulation experiments to be carried out with the model or block at hand.
 When \lstinline!Interval! or \lstinline!Tolerance! is not provided, the tool is responsible for applying appropriate defaults.
 
+The experiment options are inherited, and the derived class may override individual inherited options.
+\begin{nonnormative}
+The inheritance makes it useful to have an \lstinline!experiment! annotation also in partial models, e.g., a template for a number of similar test cases.
+\end{nonnormative}
+
 If \lstinline!StopTime! is set in a non-partial model, it is required to be a simulation model.
 Tools can allow users to override these settings without modifying the model.
 \end{semantics}
@@ -645,8 +674,8 @@ annotation(
 \end{lstlisting}
 \end{example}
 
-The graphics is specified as an ordered sequence of graphical primitives, which are described below.
-First, base class contents are drawn according to the order of the \lstinline!extends!-clauses, and then graphical primitives are drawn according to the order such that later objects can cover earlier ones.
+The graphics is specified as an ordered sequence of graphical primitives described below.
+Base class contents are drawn behind the graphical primitives of the current class, with base classes ordered from back to front according to the order of the \lstinline!extends!-clauses, and graphical primitives according to order of appearance in the annotation.
 
 \begin{nonnormative}
 Note that the ordered sequence is syntactically a valid Modelica annotation, although there
@@ -942,7 +971,7 @@ record Text
   Real fontSize = 0 "unit pt";
   String fontName;
   TextStyle textStyle[:];
-  Color textColor = Color.Black;
+  Color textColor = Black;
   TextAlignment horizontalAlignment =
     if index < 0 then TextAlignment.Right else TextAligment.Left "Note: different default";
   Integer index "Note: new";
@@ -1076,7 +1105,7 @@ record Text
   Real fontSize = 0 "unit pt";
   String fontName;
   TextStyle textStyle[:];
-  Color textColor = Color.Black;
+  Color textColor = Black;
   TextAlignment horizontalAlignment = TextAlignment.Center;
 end Text;
 \end{lstlisting}%
@@ -2140,10 +2169,13 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
   of the class).
 \item
   \lstinline!Access.icon!\\
-  The class can be instantiated and public parameter, constant, input, output variables as well as public connectors can be accessed, as well as the \lstinline!Icon! annotation, as defined in \cref{annotations-for-graphical-objects} (the declared information of these elements can be shown).  Additionally, the class name and its description text can be accessed.
+  The class can be instantiated and public parameter, constant, input, output variables as well as public connectors can be accessed, as well as the \lstinline!Icon! annotation, as defined in \cref{annotations-for-graphical-objects} (the declared information of these elements can be shown).
+  Additionally, the class name and its description text can be accessed.
 \item
   \lstinline!Access.documentation!\\
-  Same as \lstinline!Access.icon! and additionally the \lstinline!Documentation! annotation (as defined in \cref{annotations-for-documentation}) can be accessed.  HTML-generation in the \lstinline!Documentation! annotation is normally performed before encryption, but the generated HTML is intended to be used with the encrypted package.  Thus the HTML-generation should use the same access as the encrypted version -- even before encryption.
+  Same as \lstinline!Access.icon! and additionally the \lstinline!Documentation! annotation (as defined in \cref{annotations-for-documentation}) can be accessed.
+  HTML-generation in the \lstinline!Documentation! annotation is normally performed before encryption, but the generated HTML is intended to be used with the encrypted package.
+  Thus the HTML-generation should use the same access as the encrypted version -- even before encryption.
 \item
   \lstinline!Access.diagram!\\
   Same as \lstinline!Access.documentation! and additionally, the \lstinline!Diagram! annotation, and all components and \lstinline!connect!-equations that have a graphical annotation can be accessed.
@@ -2161,24 +2193,80 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
   Same as \lstinline!Access.packageText! and additionally the class, or part of the class, can be copied.
 \end{enumerate}
 
-The \lstinline!access! annotation holds for the respective class and all classes
-that are hierarchically on a lower level, unless overridden by a
-\lstinline!Protection! annotation with \lstinline!access!.
-Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate!
-has no effect.
+The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
+Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
 
 \begin{example}
 If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
 \end{example}
 
+Classes should not use other classes in ways that contradict this protection.
+Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
+
+\begin{example}
+For instance a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
+
+Consider the following invalid use of a class with \lstinline!Access.hide!:
+\begin{lstlisting}[language=modelica]
+package P
+  block MySecret
+    RealOutput y = time;
+    annotation(Protection(access = Access.hide));
+  end MySecret;
+  model M
+    MySecret mySecret
+     annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));
+    Integrator integrator
+     annotation(Placement(
+       transformation(origin = {70, 30}, extent = {{-10, -10}, {10, 10}})));
+  equation
+    connect(mySecret.y, integrator.u)
+      annotation(Line(origin = {49.5, 30}, points = {{-8.5, 0}, {8.5, -0}}));
+    annotation(Protection(access = Access.diagram));
+  end M;
+
+  model M2
+    // The class MySecret is a simpler Modelica.Blocks.Sources.ContinuousClock
+    MySecret mySecret annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));
+    annotation(Protection(access = Access.packageDuplicate));
+  end M2;
+end P;
+\end{lstlisting}
+In order to not reveal the existence of the class \lstinline!P.MySecret! in \lstinline!P.M!, a tool may choose to show the diagram of \lstinline!P.M! with both \lstinline!mySecret! and all connections to it removed.
+(The tool could also choose to not show the diagram of \lstinline!P.M! at all, or even reject to load the package \lstinline!P! altogether.)
+As long as the invalid use of \lstinline!P.MySecret! occurs within the same top level package as where the class is defined (here, \lstinline!P!), a tool is allowed to silently ignore the use for purposes of model translation.
+When simulating \lstinline!P.M!, the tool must not store \lstinline!mySecret.y!.
+
+It is not specified whether a tool hides the entire text of \lstinline!P.M2!, hides just the declaration, or shows the entire text of the \lstinline!P.M2!.
+In order to support development of valid protected packages, it is of course OK and expected that a tool will report the invalid use of \lstinline!P.MySecret! in \lstinline!P.M! and \lstinline!P.M2! (revealing its existence in a diagnostic) during development of the package.
+\end{example}
+
+\begin{example}
+With the same package \lstinline!P! as in the previous example, consider the following invalid use outside of \lstinline!P!:
+\begin{lstlisting}[language=modelica]
+model My
+  // There exist a class P.MySecret
+  P.MySecret a
+    annotation(Placement(
+       transformation(origin = {30, 30}, extent = {{-10, -10}, {10, 10}})));
+end My;
+\end{lstlisting}
+Regardless of the protection of \lstinline!My!, a tool must act as if \lstinline!P.MySecret! did not exist.
+For example, translation of \lstinline!My! must fail with a standard error message about reference to the non-existing class \lstinline!P.MySecret!.
+Further, just like when being misused inside the package \lstinline!P!, the tool must not reveal that it knows about the icon of \lstinline!P.MySecret!.
+With such precautions taken, showing the text or diagram of \lstinline!My! is permitted as it doesn't reveal the actual existence of \lstinline!P.MySecret!.
+\end{example}
+
 \begin{nonnormative}
-It is currently not standardized which result variables are
-accessible for plotting. It seems natural to not introduce new flags for
-this, but reuse the \lstinline!Access.XXX! definition, e.g., for \lstinline!Access.icon!
-only the variables can be stored in a result file that can also be
-inspected in the class, and for \lstinline!Access.nonPackageText! all public
-and protected variables can be stored in a result file, because all
-variables can be inspected in the class.
+It is currently not standardized which result variables are accessible for plotting.
+It seems natural to not introduce new flags for this, but reuse the \lstinline!Access.XXX! definition.
+For instance:
+\begin{itemize}
+\item For \lstinline!Access.icon! only the variables can be stored in a result file that can also be inspected in the class.
+\item For \lstinline!Access.nonPackageText! all public and protected variables can be stored in a result file, because all variables can be inspected in the class.
+\end{itemize}
 
 \begin{lstlisting}[language=modelica]
 package CommercialFluid // Access icon, documentation, diagram
@@ -2307,7 +2395,7 @@ package can also decrypt it.
 // File MyLibrary\package.mo
 package MyLibrary
   annotation(Protection(License(libraryKey="15783-A39323-498222-444ckk4ll",
-  licenseFile="MyLibraryAuthorization_Tool.mo_lic), $\ldots$));
+  licenseFile="MyLibraryAuthorization_Tool.mo_lic"), $\ldots$));
 end MyLibrary;
 
 // File MyLibrary\MyLibraryAuthorization_Tool.mo\
