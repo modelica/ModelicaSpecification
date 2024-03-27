@@ -15,7 +15,7 @@ The document is organized as follows:
 * [Introduction of what is meant by the unit of a variable](#the-unit-of-a-modelica-variable)
 * [Description of the objects used in the inference algorithm](#unit-constraints-and-meta-expressions)
 * [Definition of unit equivalence and convertibility](#unit-equivalence-and-convertibility)
-* [Unit inference algorihtm](#unit-inference)
+* [Unit inference algorithm](#unit-inference)
 * [Application to Modelica](#unit-constraints-of-a-modelica-model)
 * [Modelica operators on units](#modelica-operators-on-units)
 * [Extensions and limitations](#possible-extensions-and-current-limits)
