@@ -90,3 +90,267 @@ Note that exponentiation includes the prefix.
 
 The unit expression \lstinline!"T"! means tesla, but note that the letter \lstinline!T! is also the symbol for the prefix tera which has a multiplier value of 10\textsuperscript{12}.
 \end{example}
+
+
+\section{Unit Checking}\label{unit-checking}
+
+How to verify that units are used in compatible ways is current not fully determined by the specification.
+This section gives rules for certain situations, but in general tools should reason according to standard dimensional analysis.
+
+
+\subsection{Standard Dimensional Analysis}\label{standard-dimensional-analysis}
+
+This section gives an incomplete characterization of ``standard dimensional analysis'', also referred to as just \firstuse{dimensional analysis}.
+What is described below applies to unit checking in Modelica -- \emph{dimensional analysis} could have additional meanings in other contexts.
+While Modelica has a concept of \willintroduce{empty units} (described in later sections), standard dimensional analysis only deals with non-empty units such as \lstinline!"m"!, \lstinline!"m/s"!, or \lstinline!"1"!.
+It consists of two parts:
+\begin{itemize}
+\item
+  Unit compatibility requirements.
+\item
+  Rules for deriving the unit of an expression.
+\end{itemize}
+
+Unit compatibility requirements that must be met in Modelica:
+\begin{itemize}
+\item
+  Dimensional homogeneity: The two sides of an equation or assignment statement must have the same unit.
+\item
+  The expression of a binding equation must have the same unit as the component to which it belongs (special case of dimensional homogeneity).
+\item
+  The two operands of the additive operators \lstinline!+! and \lstinline!-! must have the same unit.
+\item
+  The two connectors in a \lstinline!connect!-equation must agree on all units inside the connectors (follows from dimensional homogeneity and additive operator rule).
+\item
+  In a function call, the unit of an argument expression must match the unit of the corresponding function input component.
+\item
+  Other situations where unit compatibility might seem natural are currently not covered by the specification, but could become additional unit compatibility requirements in the future.
+\end{itemize}
+The requirements above apply to non-empty as well as empty units, but both \willintroduce{unit propagation} and \willintroduce{unit inference} (described below) need to be considered when verifying the requirements.
+
+% TODO: Replace these examples by giving unit semantics where operators and built-in functions are defined in the specification,
+% and just include some links to places where such semantics are given.
+Unit derivation in Modelica:
+\begin{itemize}
+\item
+  The result of additive operators has the same unit as the operands.
+\item
+  The result of multiplication has a unit obtained by multiplying the operands' units.
+\item
+  Built-in operators such as \lstinline!pre! and \lstinline!previous! preserve units, while \lstinline!der! changes the unit by dividing it by \lstinline!"s"!.
+\item
+  Other expressions are not yet covered by the specification.
+\end{itemize}
+
+
+\subsection{Empty and Undefined Units}\label{empty-and-undefined-units}
+
+In situations where the specification does not prescribe how to determine the unit of an expression, the unit of that expression is said to be \firstuse[undefined unit]{undefined}.
+It is then not possible for a tool to reject or approve the equation (or other construct) with support in the specification, and options for the tool include silently not performing unit checking, or applying checks based on dimensional analysis.
+
+The unit of an expression can also be defined as being \firstuse[empty unit]{empty}, see below.
+In certain places (see below), expressions with empty unit can be implicitly cast to suitable units.
+When an expression with empty unit is implicitly cast to some unit, that unit is referred to as the \firstuse{inferred unit} of the expression.
+
+
+\subsection{Unit Propagation}\label{unit-propagation}
+
+The main work of unit checking is performed on the flattened model, with the exception that \lstinline!connect!-equations need to be considered for \firstuse{unit propagation}.
+
+Unit propagation is the act of replacing the empty unit of an instantiated component by some other unit in order to fulfill some of the most obvious unit compatibility requirements.
+It is the first step of the unit checking procedure, being independent of both unit derivation and unit inference.
+Unit propagation takes place in the following situations:
+\begin{itemize}
+\item
+  Simple binding equations (\cref{equation-categories}):
+  When a component is declared with empty \lstinline!unit!-attribute and has a binding equation with just a component reference on the right-hand side, the unit of the right-hand side replaces the empty unit.
+\item
+  \lstinline!connect!-equations:
+  Units can be propagated in both directions of a \lstinline!connect!-equation.
+\end{itemize}
+
+Notation: The \emph{\lstinline!unit!-attribute of a component} refers to the attribute as given in the model.
+The \emph{unit of a component} refers to the component's unit after unit propagation has been carried out.
+
+\begin{nonnormative}
+The reason to not propagate units of non-simple binding equations is to avoid bootstrapping problems where unit propagation depends on unit derivation, and unit derivation depends on unit propagation.
+If the restrictions on unit propagation would be relaxed in the future, this would be a backwards compatible change as it only means that there would be less need to write out units explicitly.
+\end{nonnormative}
+
+\begin{nonnormative}
+For unit propagation in \lstinline!connect!-equations, it is recommended to perform the propagation on the connection sets to avoid diagnostics involving two connectors where neither is declared with a non-empty unit.
+By considering a connection set, a diagnostic message can omit all the connectors where the unit is empty, and only report examples of connectors in the set with mismatched non-empty units.
+\end{nonnormative}
+
+\begin{example}
+The following illustrates unit propagation and its limitations:
+\begin{lstlisting}[language=modelica]
+Real x(unit = "m") = 1.0; // OK: No unit propagation.
+Real y = x;               // OK: Unit propagation assigns y the unit "m".
+Real z = y;               // OK: Unit propagation assigns z the unit "m".
+Real w = 2 * z;           // Error: No unit propagation as 2 * z isn't simple.
+\end{lstlisting}
+(The rules making the binding equation for \lstinline!x! OK will be given in the sections below.)
+\end{example}
+
+
+\subsection{Bottom-Up Unit Derivation}\label{bottom-up-unit-derivation}
+
+After completed unit propagation, the unit of every expression shall be determined in order to be able to verify unit compatibility requirements.
+The derivation is a bottom-up analysis of the expression tree, involving expression-specific rules and a simple form of unit inference.
+Separate rules assign units to all expression tree leaves (such as variables and literals).
+For a general non-leaf expression $\mathit{op}(e_{1},\, e_{2},\, \ldots, e_{n})$ where $\mathit{op}$ symolizes the kind of expression and the $e_{i}$ represent the immediate children in the expression tree, unit derivation follows these steps:
+\begin{enumerate}
+\item
+  Derive the unit of each subexpression $e_{i}$.
+  The so obtained unit of the expression might be empty as well as non-empty.
+\item
+  If there is a unit derivation rule for $\mathit{op}$ matching the units of the $e_{i}$, apply that rule.
+  Note that some expressions can handle subexpressions with empty unit, often assigning the empty unit to the entire $\mathit{op}$-expression as well.
+\item
+  Otherwise:
+  \begin{enumerate}
+  \def\labelenumii{\alph{enumii}.}
+  \item
+    Infer a non-empty unit for each $e_{i}$ that has empty unit, and let $e'_{i}$ denote the subexpressions after unit inference.
+    How the unit is inferred depends on the kind of expression, and is described in \cref{unit-inference}.
+  \item
+    If there is a unit derivation rule for $\mathit{op}(e'_{1},\, e'_{2},\, \ldots, e'_{n})$, apply that rule.
+  \item
+    Otherwise, the $\mathit{op}$-expression has a unit error.
+  \end{enumerate}
+\end{enumerate}
+
+
+\subsection{Unit Inference}\label{unit-inference}
+
+In Modelica unit checking, \firstuse{unit inference} refers to the implicit casting of an expression with empty unit to a corresponding expression with non-empty unit.
+An expression having empty unit always gets an inferred non-empty unit when appearing in a context where the empty unit is not allowed.
+
+When encountering the empty unit in the following situations, the inferred unit is (uniquely) determined by ensuring that unit compatibility requirements are fulfilled:
+\begin{itemize}
+\item
+  In binding equations and modifications:
+  \begin{itemize}
+  \item The entire expression of the binding or modification, provided that the left-hand side component has non-empty \lstinline!unit!-attribute.
+  \item When the entire expression is an array construction, array concatenation and array range, then apply rules recursively for the direct subexpressions.
+  \end{itemize}
+\item
+  The entire argument expression in a function call.
+% To keep the design close to the bare minimum, this part is currently excluded:
+%\item
+%  For a translation-time constant with value 0.0:
+%  \begin{itemize}
+%  \item Expressions constituting the entire side of an equality or relation.
+%  \item The right hand side of an assignment.
+%  \item The direct subexpressions of array construction, array concatenation, and array range.
+%  \end{itemize}
+\item
+  Otherwise, the inferred unit is \lstinline!"1"!.
+\end{itemize}
+
+\begin{example}
+Consider unit inference in the binding equation below:
+\begin{lstlisting}[language=modelica]
+Real y(unit = "m") = 1.5;
+\end{lstlisting}
+With the pseudo-code form \lstinline!unit($e$, $u$)! representing the expression $e$ having empty unit being cast to unit $u$, the binding equation after unit inference could be expressed explicitly as:
+\begin{lstlisting}[language=modelica]
+Real y(unit = "m") = unit(1.5, "m"); // Using pseudo-code operator 'unit'.
+\end{lstlisting}
+Note that unit inference has not changed the empty unit of \lstinline!1.5! itself, but that it has introduced an implicit unit cast \emph{around} \lstinline!1.5! in order to fulfill the unit compatibility requirement.
+\end{example}
+
+\begin{example}
+Consider the following unit error:
+\begin{lstlisting}[language=modelica]
+  RealInput u = 1.5;
+  RealOutput y(unit = "m");
+equation
+  connect(u, y);
+\end{lstlisting}
+Here, the \lstinline!unit!-attribute of \lstinline!u! is empty, but the unit of \lstinline!u! is \lstinline!"m"! after unit propagation.
+It follows that the binding equation for \lstinline!u! has a unit error since the inferred unit of \lstinline!1.5! is \lstinline!"1"!.
+Note that relaxing the unit inference rules so that \lstinline!1.5! would get inferred unit based on the unit (instead of the \lstinline!unit!-attribute) of \lstinline!u! would be dangerous, as the meaning of \lstinline!1.5! could then change due to unit changes in remote parts of the model.
+\end{example}
+
+
+\subsection{Expressions with Empty Unit}\label{expressions-with-empty-unit}
+
+This section describes conditions under which an expression has empty unit.
+Conditions not given here must not be interpreted as definitely not implying empty unit; instead, the unit may be currently undefined for some expressions, allowing the unit to be properly defined in future versions of the specification.
+
+The following expressions are the only ones having empty unit:
+\begin{itemize}
+\item
+  \lstinline!Real! literals.
+\item
+  \lstinline!Real! component references where the component's unit (after unit propagation has been carried out) is empty (possibly by not being specified).
+\item
+  \lstinline!Integer! expressions implicitly cast to \lstinline!Real!.
+\item
+  The following compound expressions result in the empty unit if and only if all operands have empty unit:
+  \begin{itemize}
+    \item \lstinline!Real!-valued numeric operator expressions.
+    \item Function calls to \lstinline!Real!-valued built-in functions (see \cref{built-in-mathematical-functions-and-external-built-in-functions}, \cref{modelica:der}, \cref{modelica:pre}, \cref{modelica:abs}, \cref{modelica:sqrt}, \cref{modelica:floor}, etc.).
+  \end{itemize}
+  If one of the operands has non-empty unit, all operands must have non-empty unit, meaning that operands with empty unit get inferred unit \lstinline!"1"!.
+\item
+  Function calls to \lstinline!Real!-valued user-defined functions where:
+  \begin{itemize}
+    \item All \lstinline!Real! function inputs and outputs have empty declared unit (possibly by not being specified).
+    \item All \lstinline!Real! argument expressions have empty unit.
+  \end{itemize}
+\end{itemize}
+
+\begin{example}
+Consider unit checking of the following binding equation:
+\begin{lstlisting}[language=modelica]
+Real y(unit = "m") = 1 + 2.5 * 3;
+\end{lstlisting}
+The unit of the binding equation right-hand side is determined as follows:
+\begin{itemize}
+\item The \lstinline!Real! literal \lstinline!2.5! has empty unit.
+\item The \lstinline!Integer! literals \lstinline!1! and \lstinline!3! are implicitly cast to \lstinline!Real!, and therefore have empty unit.
+\item The multiplication \lstinline!2.5 * 3! has empty unit, as both multiplication operands have empty unit.
+\item The addition \lstinline!1 + (2.5 * 3)! has empty unit, as both addition operands have empty unit.
+\item The entire right-hand side expression gets inferred unit \lstinline!"m"! in order to be compatible with the component's declared \lstinline!unit!-attribute.
+\end{itemize}
+\end{example}
+
+\begin{example}
+Consider unit checking of the following erroneous binding equation for \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+Real x(unit = "m") = 1.0;
+Real y(unit = "m") = (x * x) / 2;
+\end{lstlisting}
+The unit of the binding equation right-hand side is determined as follows:
+\begin{itemize}
+\item The unit of \lstinline!x! is \lstinline!"m"!, and dimensional analysis gives that \lstinline!x * x! has unit \lstinline!"m2"!
+\item The \lstinline!Integer! literal \lstinline!2! is implicitly cast to \lstinline!Real!, and therefore has empty unit.
+\item As the left operand of \lstinline!(x * x) / 2! has non-empty unit, the right operand is implicitly cast to unit \lstinline!"1"!.
+\item Dimensional analysis then gives that the unit of \lstinline!(x * x) / 2! is \lstinline!"m2"!, which is an error due to the required unit being \lstinline!"m"!.
+\end{itemize}
+\end{example}
+
+\begin{example}
+Consider the potential consequences of an undefined unit in the following binding equation for \lstinline!y!:
+\begin{lstlisting}[language=modelica]
+function f
+  input Real u;
+  output Real y = u;
+end f;
+Real x(unit = "m2") = 1.57;
+Real y(unit = "m") = f(x);
+\end{lstlisting}
+To see that the unit of the binding equation right-hand side is undefined, note that the unit of the function call \lstinline!f(x)! is not covered by the specification, and hence has undefined unit.
+If a tool wants to proceed according to ``standard dimensional analysis'', alternatives include:
+\begin{itemize}
+\item
+  Ingore the unit of the input passed to \lstinline!f!, and assume that the call expression always gets the declared unit of the output, namely the empty unit.
+  As the unit of \lstinline!f(x)! is assumed empty, it gets inferred unit \lstinline!"m"!.
+\item
+  Analyze \lstinline!f! and conclude that it preserves any unit.
+  The unit of \lstinline!f(x)! then becomes \lstinline!"m2"!, which is a unit error for the binding equation.
+\end{itemize}
+\end{example}
