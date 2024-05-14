@@ -35,6 +35,7 @@ These are all the non-vendor specific annotations inherited from full Modelica t
 These are all the non-vendor specific annotations inherited from full Modelica that are relevant for parameter input and simulation output:
 - `HideResult` — Applied to a parameter or variable, implies the variable should not be included in the simulation output
 - `choices` — Applied to a parameter or variable, can be used to enumerate and tag different values for parameter input
+- `experiment` — Applied to the flat model, provide the default start time, stop time, tolerance, and interval length
 
 These are the new annotations introduced in Base Modelica, each explained in more detail below:
 - [`Protected`](#protected) — Indicate whether component declaration comes from protected section in original full Modelica model
