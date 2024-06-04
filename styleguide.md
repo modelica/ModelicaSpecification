@@ -68,11 +68,13 @@ This means that the most restrictive derivatives should be written first.
 ### Things with name/keyword in the language
 
 As a general rule, when a concept is directly related to a construct in the Modelica language with a certain name/keyword, then the language concept is referred to using a hyphenated combination of the language name/keyword in code style, with a qualifying natural language word written as normal text.
+Annotations are an exception to this rule.
 Examples:
 
 Appearance | LaTeX source | Comment
 --- | --- | ---
 `connect`-equation | `\lstinline!connect!-equation` |
+`inverse` annotation | `\lstinline!inverse! annotation` |
 `if`-equation | `\lstinline!if!-equation` |
 `if`-expression | `\lstinline!if!-expression` |
 `when`-clause | `\lstinline!when!-clause` | A branch of a `when`-equation or `when`-statement
