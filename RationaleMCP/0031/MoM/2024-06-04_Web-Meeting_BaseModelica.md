@@ -17,8 +17,8 @@
 * Discuss specification issues, e.g. annotation
 
 ## To Do:
-[x] Provide feedback on the ticket [all]
-[ ] Create a table of the examples including column to characterize the test case [Francesco]
+- [x] Provide feedback on the ticket [all]
+- [x] Create a table of the examples including column to characterize the test case [Francesco]
 
 ### Update on the discussion with other companies
 New poll was sent today.
