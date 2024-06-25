@@ -46,7 +46,7 @@ These are the new annotations introduced in Base Modelica, each explained in mor
 
 Form:
 ```
-Boolean protected = false;
+Boolean Protected = false;
 ```
 
 The `Protected` annotation is only allowed on a non-function component declaration.
