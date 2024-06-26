@@ -73,9 +73,9 @@ Upquoting a Modelica component reference always results in a valid (Base) Modeli
 | `der(foo)` | `'der(foo)'` | Input is not valid component reference, but result is still valid identifier |
 | `'foo\` | `'\'foo\\'` | Same as above. |
 
-To obtain the Base Modelica component reference out of a Modelica component reference,
+To obtain the Base Modelica component reference out of a Modelica component reference:
 1. Strip whitespace and comments.
-1. Upquote
+1. Upquote.
 
 Examples:
 
