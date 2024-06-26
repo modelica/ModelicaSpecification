@@ -74,9 +74,7 @@ The _S-CHAR_ accepts Unicode other than " and \\:
 > &emsp; **end** _IDENT_ **;**
 
 Here, the _VERSION-HEADER_ is a Base Modelica variant of the not yet standardized language version header for Modelica proposed in [MCP-0015](https://github.com/modelica/ModelicaSpecification/tree/MCP/0015/RationaleMCP/0015):
-> _VERSION-HEADER_ → `^\U+FEFF?//![ ]base[ ][0-9]+[.][0-9]+[r.][0-9]+$`
-
-The `\U+FEFF?` at the very beginning is an optional byte order mark.
+> _VERSION-HEADER_ → `^//![ ]base[ ][0-9]+[.][0-9]+[r.][0-9]+$`
 
 The _IDENT_ in the _base-modelica_ rule must be the same identifier as in the _long-class-specifier_ following **model**.
 
@@ -88,6 +86,8 @@ package _F
   end _F;
 end _F;
 ```
+
+Note that there is no optional byte order mark, in agreement with the use of byte order mark being deprecated in full Modelica.
 
 
 ## B22 Class definition
