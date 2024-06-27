@@ -782,6 +782,27 @@ For non-scalar arguments the function is vectorized according to \cref{vectorize
 \begin{nonnormative}
 For \lstinline!Real! parameters and constants the result is a zero scalar or array of the same size as the variable.
 \end{nonnormative}
+
+\begin{example}
+For continuous expression we have several cases.
+\begin{lstlisting}[language=modelica]
+  Real when1, x1, x2, x3, w1, y1, y2, y3;
+equation
+  when sample(1, 1) then
+    when1 = ...;
+  end when;
+  x1 = if time>=0 then 0 else time; // Continuous
+  x2 = if time<1 then 0 else time;  // Not continuous
+  x3 = x1 * x2;    // The product is continuous, despite x2
+  
+  w1 = der(when1); // Explicitly illegal
+  y1 = der(x1);    // Ok
+  y2 = der(x2);    // Not ok at time=1
+  y3 = der(x3);    // Ok
+\end{lstlisting}
+Since it is difficult to prove whether expressions are continuous, tools can dynamically check the continuity such that \lstinline!x2! only generates an error when the integration reaches the discontinuity.
+\end{example}
+
 \end{semantics}
 \end{operatordefinition}
 
