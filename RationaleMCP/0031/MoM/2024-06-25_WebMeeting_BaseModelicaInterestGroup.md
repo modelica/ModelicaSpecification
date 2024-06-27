@@ -15,10 +15,10 @@
 - [x] Erik Danielsson (COMSOL)
 - [x] Francesco Casella (Politecnico di Milano, OSMC)
 - [x] Henrik Tidefelt (Wolfram)
-- [x] Ingo Czerwinski (DIgSILENT, SW Architect)
+- [x] Ingo Czerwinski (DIgSILENT)
 - [x] Jeff Hiller (COMSOL Buisness Development)
 - [x] Joel Andersson (CasADi, Developer)
-- [x] Johannes Rues (DIgSILENT, Team Manager dynamic simulation)
+- [x] Johannes Ruess (DIgSILENT)
 - [x] JadonClugston (JuliaHub, Sw Engineer)
 - [x] James Goppert (Purdue University)
 
@@ -52,7 +52,7 @@ Decision that integrating more and more Modelica would be beneficial.
 
 * Benfit to enable exchange with other tools
 * Power systems domain lacks standards
-* BaseModelica seen as an opportunity to integrate controller models, overcomming FMI overhead.
+* BaseModelica seen as an opportunity to integrate controller models, overcomming the usual overhead of C-interfaces.
 
 Francesco:
 
