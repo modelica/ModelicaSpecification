@@ -103,10 +103,9 @@ Named argument & none & {\lstinline!$\mathit{ident}$ = $\mathit{expr}$!} & {\lst
 \end{center}
 \end{table}
 
-The postfix array index and postfix access operators are not merely expression operators in the normal sense that \lstinline!a.b[1]! can be treated as \lstinline!a.(b[1])!.
-Instead, these operators need to be considered jointly to identify an entire \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) which is the smallest unit that can be seen as an expression in itself.
-Postfix access can only be applied immediately to a \lstinline[language=grammar]!component-reference!; not even parentheses around the left operand are allowed.
-Postfix array index can additionally be applied if there are parentheses around the left operand, see \cref{indexing}.
+The postfix array index and postfix access operators can both be part of a \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) and be applied to general expressions when the left operand is parenthesized.
+Directly using both postfix access operator and postfix array index in a \lstinline[language=grammar]!component-reference! has a special intuitive meaning.
+See \cref{indexing} and \cref{member-access-operator}.
 
 \begin{example}
 Relative precedence of postfix array index and postfix access.
@@ -127,7 +126,9 @@ a.x         // OK: Component reference of type Real[3, 2]
 (a.x)[2]    // OK: Component reference of type Real[2] - same as a[2].x[:]
 (a.x)[2, :] // OK: Component reference of type Real[2] - same as a[2].x[:]
 a[3]        // OK: Component reference of type R
-(a[3]).x    // Error: Invalid use of parentheses
+(a[3]).x    // OK: Like a[3].x, but not a component reference
+(a[3]).x[1] // Error.
+((a[3]).x)[1] // OK: Like a[3].x[1], but not a component reference
 \end{lstlisting}
 The relation between \lstinline!a.x!, \lstinline!a.x[2]!, and \lstinline!(a.x)[2]! illustrates the effect of giving higher precedence to array index than postfix access.
 Had the precedence been equal, this would have changed the meaning of \lstinline!a.x[2]! to the same thing that \lstinline!(a.x)[2]! expresses, being a component reference of type \lstinline!Real[2]!.
@@ -355,10 +356,19 @@ Integer sign_of_i2 = if i < 0 then -1 else if i == 0 then 0 else 1;
 \subsection{Member Access Operator}\label{member-access-operator}
 
 It is possible to access members of a class instance using dot notation, i.e., the \lstinline!.! operator.
+It is also possible to select a record member of a general expression by enclosing it in parentheses.
+Note that while the selection is applied to an \lstinline[language=grammar]!output-expression-list! in the grammar, it is only semantically valid when the \lstinline[language=grammar]!output-expression-list! represents an expression.
+
+In case the first operand is an array it is seen as a slicing operation, see \cref{slice-operation}.
 
 \begin{example}
-\lstinline!R1.R! for accessing the resistance component \lstinline!R! of resistor \lstinline!R1!.
-Another use of dot notation: local classes which are members of a class can of course also be accessed using dot notation on the name of the class, not on instances of the class.
+The component reference \lstinline!R1.R! accesses the resistance component \lstinline!R! of resistor \lstinline!R1!.
+
+The qualified class name \lstinline!A.B! is a reference to the local class \lstinline!B! which is a member of the class \lstinline!A!.
+Note that the left operand in this case is a class, not an instance of the class.
+
+\lstinline!(Complex(2, 3)).re! constructs the record \lstinline!Complex(2, 3)! and then selects the \lstinline!re! component in it.
+\lstinline!Complex(2, 3).re! is not valid syntax.
 \end{example}
 
 \subsection{Built-in Variable time}\label{built-in-variable-time}\indexinline{time}
