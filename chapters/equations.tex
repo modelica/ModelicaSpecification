@@ -325,6 +325,7 @@ equation
   end when;
 \end{lstlisting}
 Here, variable \lstinline!y! is held constant when the \lstinline!when!-equation is deactivated and \lstinline!x! is computed from the first equation using the value of \lstinline!y! from the previous event instant.
+Note that during event iterations \lstinline!y! will be solved from a system of two equations.
 \end{nonnormative}
 
 \begin{example}
@@ -793,6 +794,12 @@ Continuous-time \lstinline!Real! variables \lstinline!vc! have exactly one initi
 
 Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!.
 If this is not the case for some variables \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
+In detail this means that during initialization initial equations and normal equations are solved with \lstinline!v! and \lstinline!pre(v)! as unknowns without any event iterations.
+Then only the normal equations are solved repeatedly (each time after \lstinline!v! is copied to \lstinline!pre(v)!) until \lstinline!v = pre(v)!.
+
+\begin{nonnormative}
+Tools may optimize initialization by not computing unnecessary \lstinline!pre(v)!, and only performing the event iteration if necessary.
+\end{nonnormative}
 
 A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.
 This may require to differentiate equations for index reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.
