@@ -79,8 +79,8 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Settle the name (originally _Flat Modelica_), considering that scalarization isn't mandatory. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bname-of-the-game/RationaleMCP/0031/name-of-the-game.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3224)
 - [ ] Reject or add support for non-constant `nominal`-attribute.
 - [ ] Remove byte order mark, as it is already deprecated in full Modelica. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3528)
-- [ ] Discuss how a Base Modelica model interacts with other loaded classes. Proposal: in no way, Base Modelica models should be atomic and without any dependencies on outside stuff.
-- [ ] Discuss how to manage the Resources directory and modelica URIs when flattening models that involve them
+- [ ] Base Modelica package shall have no dependencies on other loaded classes.
+- [ ] Management of resources and Modelica URIs.
 
 ### Base Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Base Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
