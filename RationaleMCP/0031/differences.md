@@ -10,6 +10,10 @@ The definitions before the `model` either define types or global constants.
 
 ## Lexical scoping and record definitions
 
+For purposes of lookup, a Base Modelica package shall be handled as a top-level Modelica package:
+- During the lookup process, if an identifier is not found within the Base Modelica package, it must refer to a Base Modelica built-in entity.
+- Global name lookup of `.x` (or `.x.y.z`) requires `x` to be a built-in or the name of the Base Modelica package.
+
 Lookup in Base Modelica is significantly simplified compared to full Modelica due to the restricted top level structure of a Base Modelica program, but there are two more restrictions on top of that explained in this section.
 
 Taken together, the two restrictions can be summarized concisely as follows:
