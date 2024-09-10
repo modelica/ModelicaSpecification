@@ -16,7 +16,8 @@ If the annotation is described by a \lstinline!record! \emph{class} the annotati
 
 A declaration equation for a component or record member specifies a default to be used when no corresponding annotation is given.
 An array record member without declaration equation and with size specified by colon (\lstinline!:!) defaults to being empty.
-Default behavior can also be specified in the text as an alternative to a declaration equation.
+Default behavior can also be specified in the text as an alternative to a declaration equation, or implicitly by saying "if specified".
+If the description states the annotation only has an effect for specific values it implies that the default is a value that has no effect.
 When there is no declaration equation and no other explanation of default behavior in the text for a record member, an annotation modifier for the record must contain a modifier for that member.
 
 Component declaration annotations always have default behavior, as all annotations are optional.
@@ -571,7 +572,7 @@ This annotation can both be used for models intended as test-cases for implement
 For state machines it is useful to have single instances of local classes.
 To this end a class may use the annotation:
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant Boolean singleInstance = false;
+/*literal*/ constant Boolean singleInstance;
 \end{lstlisting}%
 \annotationindex{singleInstance}
 
@@ -582,12 +583,12 @@ The intent is to remove the class when the component is removed and to prevent d
 
 A connector component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String mustBeConnected = "";
+/*literal*/ constant String mustBeConnected;
 \end{lstlisting}%
 \annotationindex{mustBeConnected}
 
-If non-empty it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
-The string value should provide the reason why it must be connected.
+If specified it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+The string value should provide the reason why it must be connected, and should be non-empty.
 For an array of connectors it applies separately to each element.
 
 \begin{nonnormative}
@@ -611,17 +612,17 @@ The protected components and connections needed to internally handle the support
 
 A connector component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String mayOnlyConnectOnce = "";
+/*literal*/ constant String mayOnlyConnectOnce ;
 \end{lstlisting}%
 \annotationindex{mayOnlyConnectOnce}
 
-If non-empty it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
+If specified it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
 \begin{itemize}
 \item For non-stream connectors the connection set has more than two elements.
 \item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
 \end{itemize}
 For an array of connectors it applies separately to each element.
-The string value should provide the reason why it may only be connected once.
+The string value should provide the reason why it may only be connected once, and should be non-empty.
 
 \begin{nonnormative}
 This annotation is intended for non-causal connectors, see \cref{restrictions-of-connections-and-connectors}.
@@ -1304,7 +1305,7 @@ The $\mathit{view}$ is a \lstinline!String! literal where \lstinline!"info"! mea
 If not specified the default view is tool-specific.
 
 \begin{lstlisting}
-/*literal*/ constant Boolean DocumentationClass = false;
+/*literal*/ constant Boolean DocumentationClass;
 \end{lstlisting}%
 \annotationindex{DocumentationClass}
 
@@ -1317,16 +1318,18 @@ For example, the description texts of the classes might be displayed instead of 
 \end{nonnormative}
 
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String defaultComponentName = "$\mathit{name}$";
+/*literal*/ constant String defaultComponentName;
 \end{lstlisting}%
 \annotationindex{defaultComponentName}
 
-When creating a component of the given class, the recommended component name is \emph{name}.
+When creating a component of the given class, and the annotation is specified it gives the recommended component name.
 If the default name cannot be used (e.g., since it is already in use), another name based on \lstinline!defaultComponentName! shall be derived automatically, except as described under \lstinline!defaultComponentPrefixes!.
+It is an error if the string is not a valid identifier.
 When automatically deriving a name, any trailing `\lstinline!1!' in the \lstinline!defaultComponentName! shall be disregarded.
+if not specified the recommended component name is tool-specific.
 
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String defaultComponentPrefixes = "$\mathit{prefixes}$";
+/*literal*/ constant String defaultComponentPrefixes;
 \end{lstlisting}%
 \annotationindex{defaultComponentPrefixes}
 
@@ -1337,6 +1340,7 @@ type-prefix type-specifier component-declaration
 
 The following prefixes may be included in the string \lstinline!prefixes!: \lstinline!inner!,
 \lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
+The default is an empty string.
 
 \begin{nonnormative}
 In combination with \lstinline!defaultComponentName! it can be used to make it easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
@@ -1344,12 +1348,13 @@ If the prefixes contain \lstinline!inner! or \lstinline!outer! and the default n
 \end{nonnormative}
 
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String missingInnerMessage = "$\mathit{message}$";
+/*literal*/ constant String missingInnerMessage;
 \end{lstlisting}%
 \annotationindex{missingInnerMessage}
 
 When an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner!
-component, the literal string message may be used as part of a diagnostic message (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
+component, the literal string message may be used as part of a diagnostic message if specified (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
+The default is a tool-specific diagnostic message.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1377,6 +1382,7 @@ If \lstinline!false!, then the variable defines a relative quantity, and if \lst
 \begin{nonnormative}
 When converting between units (in the user-interface for plotting and entering parameters), the unit offset must be ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
 This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
+For most types there is no unit offset and the annotation is not needed for them.
 \end{nonnormative}
 
 A model or block definition may contain:
@@ -1385,7 +1391,7 @@ A model or block definition may contain:
 \end{lstlisting}%
 \annotationindex{defaultConnectionStructurallyInconsistent}
 
-If \lstinline!true!, it is stated that a default connection will result in a structurally inconsistent model or block\footnote{%
+Only has an effect if \lstinline!true!, when it is stated that a default connection will result in a structurally inconsistent model or block\footnote{%
   For the precise definition of \emph{structurally inconsistent}, see \textcite{Pantelides1988ConsistentInitialization}.}%
 .
 A "default connection" is constructed by instantiating the respective \lstinline!model! or \lstinline!block! and for every input \lstinline!u! providing an equation \lstinline!0 = f(u)!, and for every (potential, flow) pair of the form \lstinline!(v, i)!, providing an equation of the form \lstinline!0 = f(v, i)!.
@@ -1400,21 +1406,23 @@ This annotation avoids then to show a wrong error message.
 
 A class may have the following annotation:
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String obsolete = "$\mathit{message}$";
+/*literal*/ constant String obsolete;
 \end{lstlisting}%
 \annotationindex{obsolete}
 
+Only has an effect if specified (and in that case the string should be non-empty).
 It indicates that the class ideally should not be used anymore and gives a message indicating the recommended action.
 This annotation is not inherited, the assumption is that if a class uses an obsolete class (as a base class or as the class of one of the components) that shall be updated -- ideally without impacting users of the class.
 If that is not possible the current class can have also have an \lstinline!obsolete! annotation.
 
 A component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-/*literal*/ constant String unassignedMessage = "$\mathit{message}$";
+/*literal*/ constant String unassignedMessage;
 \end{lstlisting}%
 \annotationindex{unassignedMessage}
 
-When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string \lstinline!"$\mathit{message}$"! can be used as a diagnostic message.
+Only has an effect if specified (and in that case the string should be non-empty).
+When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string can be used as a diagnostic message.
 
 \begin{nonnormative}
 When using BLT partitioning, this means if a variable \lstinline!a! or one of its aliases \lstinline!b = a! or \lstinline!b = -a! cannot be assigned, the message is displayed.
