@@ -78,7 +78,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Source locations pointing back to the original Modelica code. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bsource-locations/RationaleMCP/0031/source-locations.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3295)
 - [x] Settle the name (originally _Flat Modelica_), considering that scalarization isn't mandatory. [Design](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031%2Bname-of-the-game/RationaleMCP/0031/name-of-the-game.md), [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3224)
 - [ ] Reject or add support for non-constant `nominal`-attribute.
-- [ ] Remove byte order mark, as it is already deprecated in full Modelica. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3528)
+- [x] Remove byte order mark, as it is already deprecated in full Modelica. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3528)
 - [ ] Base Modelica package shall have no dependencies on other loaded classes.
 - [ ] Management of resources and Modelica URIs.
 
