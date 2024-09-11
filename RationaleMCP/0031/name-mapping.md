@@ -40,7 +40,7 @@ Additional requirements:
 
 ### Component references
 
-In Modelica, a component reference is a very restricted form of a gneralized expression where literal array subscripting and record member referencing can be applied to any sub-expression.  As such, they are identified with their abstract syntax tree representation.  In particular, their textual input form is insensitive to whitespace and comments.
+In Modelica, a component reference is a very restricted form of a generalized expression where literal array subscripting and record member referencing can be applied to any sub-expression.  As such, they are identified with their abstract syntax tree representation.  In particular, their textual input form is insensitive to whitespace and comments.
 
 In Base Modelica, a component reference appears as an encoded string that is to be parsed the same way as a generalized Modelica expression for a Modelica component reference.  However, a Base Modelica component reference is not allowed to contain whitespace or comments.
 
@@ -73,9 +73,9 @@ Upquoting a Modelica component reference always results in a valid (Base) Modeli
 | `der(foo)` | `'der(foo)'` | Input is not valid component reference, but result is still valid identifier |
 | `'foo\` | `'\'foo\\'` | Same as above. |
 
-To obtain the Base Modelica component reference out of a Modelica component reference,
+To obtain the Base Modelica component reference out of a Modelica component reference:
 1. Strip whitespace and comments.
-1. Upquote
+1. Upquote.
 
 Examples:
 

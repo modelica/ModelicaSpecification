@@ -46,7 +46,7 @@ These are the new annotations introduced in Base Modelica, each explained in mor
 
 Form:
 ```
-Boolean protected = false;
+Boolean Protected = false;
 ```
 
 The `Protected` annotation is only allowed on a non-function component declaration.
@@ -59,7 +59,7 @@ The annotation does not come with any hard semantics, but can be useful for thin
 When the Base Modelica is generated from a full Modelica model, a component coming from a protected section (except inside functions) in the full Modelica model shall have the annotation `Protected = true` in Base Modelica.
 A component coming from a public section must not have the `Protected = true` annotation.
 
-When the Base Modelica is not generated from a full Modelica model, the `protected` annotation needs to be understood by comparison to the case of full Modelica origin.
+When the Base Modelica is not generated from a full Modelica model, the `Protected` annotation needs to be understood by comparison to the case of full Modelica origin.
 
 For example, consider the following full Modelica model:
 ```
@@ -82,9 +82,9 @@ end 'M';
 Note that in full Modelica a protected section can occur at any level of the component hierarchy, as shown by the following example:
 ```
 model M
-   Real x;
+  Real x;
 protected
-   Real p;
+  Real p;
 end M;
 
 model N
