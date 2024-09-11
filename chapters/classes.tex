@@ -383,18 +383,19 @@ A component declaration can have a \lstinline!condition-attribute!: \lstinline!i
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  parameter Integer level(min=1)=1;
+  parameter Boolean electric = true;
+  parameter Boolean heatPort = false;
   Motor motor;
-  Level1 component1(J=J) if level==1 "Conditional component";
-  Level2 component2 if level==2 "Conditional component";
-  Level3 component3(J=component1.J) if level<2 "Conditional component";
-  // Illegal modifier on component3 since component1.J is conditional
-  // Even if we can see that component1 always exist if component3 exist
+  Level1 component1(J=J) if simple "Conditional component";
+  Level2 component2(J=component1.J) if not electric "Conditional component";
+  // Illegal modifier on component2 since component1.J does not exist when component2 exists.
+  Level3 component3(J=component1.J) if electric and heatPort "Conditional component";
+  // Legal modifier since component1 always exists if component3 exists
 equation
   connect(component1$\ldots$, $\ldots$) "Connection to conditional component 1";
   connect(component2.n, motor.n) "Connection to conditional component 2";
   connect(component3.n, motor.n) "Connection to conditional component 3";
-  component1.u=0; // Illegal
+  component1.u=0; // Not a good idea, is illegal if electric is false
 \end{lstlisting}
 \end{example}
 
@@ -409,7 +410,9 @@ and the condition attribute is kept from the original declaration (see
 \cref{interface-compatibility-or-subtyping}).
 
 If the \lstinline!Boolean! expression is \lstinline!false!, the component (including its modifier) is removed from the flattened DAE, and connections to/from the component are removed.
-A component declared with a condition-attribute can only be modified and/or used in connections.
+Such a component can only be modified, used in connections, and/or used in a modifier of another conditional component with a \lstinline!false! condition.
+
+There are no restrictions on the component if the \lstinline!Boolean! expression is \lstinline!true!.
 
 \begin{nonnormative}
 Adding the component and then removing it ensures that the component is valid.
