@@ -777,6 +777,7 @@ der($\mathit{expr}$)
 The time derivative of $\mathit{expr}$.
 If the expression $\mathit{expr}$ is a scalar it needs to be a subtype of \lstinline!Real!.
 The expression and all its time-varying subexpressions must be continuous and semi-differentiable.
+An exception is when the operator \lstinline!reinit! (\Cref{modelica:reinit}) is activated, as not even states are continuous.
 If $\mathit{expr}$ is an array, the operator is applied to all elements of the array.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 \begin{nonnormative}
@@ -801,6 +802,20 @@ equation
   y3 = der(x3);    // Ok
 \end{lstlisting}
 Since it is difficult to prove whether expressions are continuous, tools can dynamically check the continuity such that \lstinline!x2! only generates an error when the integration reaches the discontinuity.
+\end{example}
+
+\begin{example}
+Exception for reinit:
+\begin{lstlisting}[language=modelica]
+  Real x4, x5, x6;
+equation
+  when sample(1, 1) then
+    reinit(x4, 0);
+  end when;
+  der(x4) = time;
+  x5 = x4 * x4;
+  x6 = der(x5); // Allowed even if x5 is not continuous, since that is due to reinit
+\end{lstlisting}
 \end{example}
 
 \end{semantics}
