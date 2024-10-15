@@ -232,7 +232,6 @@ The declaration of functions follow these rules:
   If a function is declared as \lstinline!impure! any function extending from it shall be declared as \lstinline!impure!.
 \item
   A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be impure, but without any restriction on calling them.
-  Similarly they can be part of systems of equations without restrictions.
   Except for the function \lstinline!Modelica.Utilities.Streams.print!, a diagnostic must be given if called in a simulation model.
 \end{itemize}
 
@@ -281,9 +280,15 @@ With the prefix keyword \lstinline!impure!\indexinline{impure} it is stated that
   Binding equations for external objects.
 \end{itemize}
 
-For initial equations, initial algorithms, and bindings it is an error
-if the function calls are part of systems of equations and thus have to
-be called multiple times.
+For initial equations, initial algorithms, and bindings it is an error if the function calls are part of systems of equations and thus have to be called multiple times.
+
+\begin{nonnormative}
+It is still possible to call an impure function in a system of equations in specific ways.
+Specifically for the deprecated case of external functions assumed to be impure, and when using \lstinline!pure(expression)! to call an impure function in a pure function.
+The side-effect semantics are undefined in this case.
+Specifically the number of calls with external side-effects is unspecified.
+However, for impure functions where the outputs only depend on the inputs the system of equations should be solved correctly.
+\end{nonnormative}
 
 \begin{nonnormative}
 A tool is not allowed to perform any optimizations on function
@@ -294,13 +299,6 @@ allowed.
 
 By \cref{function-compatibility-or-function-subtyping-for-functions}, it follows that an impure function can only be passed as argument to a function formal parameter of impure type.
 A function having a formal function parameter that is \lstinline!impure! must be marked \lstinline!pure! or \lstinline!impure!.
-
-\begin{nonnormative}
-The side-effect semantics are undefined if the function call of an impure function is part of an algebraic loop.
-Specifically the number of calls with external side-effects is unspecified.
-However, for impure functions where the outputs only depend on the inputs the algebraic loop should be solved correctly.
-This can occur for the deprecated case of external functions assumed to be impure, or when using \lstinline!pure(expression)! to call an impure function in a pure function.
-\end{nonnormative}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
