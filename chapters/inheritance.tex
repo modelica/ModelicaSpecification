@@ -418,7 +418,11 @@ A flattening of class \lstinline!C4! will give an object with the following vari
 
 \subsection{Single Modification}\label{single-modification}
 
-Two arguments of a modification shall not modify the same element, attribute, or description-string.  When using qualified names the different qualified names starting with the same identifier are merged into one modifier.  If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
+Two arguments of a modification shall not modify the same element, attribute, or description-string.
+When using qualified names the different qualified names starting with the same identifier are merged into one modifier.
+This merged modifier can be described as a purely syntactic rewriting to an equivalent modifier, except in the case of replaceable redeclarations without a constraining type, see \cref{redeclaration}.
+The latter is described in the example below.
+If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -434,6 +438,11 @@ class C3
   // Ok, different attributes designated (unit, displayUnit and value)
   // identical to:
   C4 b(x(final unit = "V", displayUnit = "mV") = 5.0));
+
+  C4 c(final x, final x.unit = "V", x.displayUnit = "mV");
+  // OK, different attributes and "final x" in itself is OK,
+  // identical to (the final on unit is redundant):
+  C4 d(final x(final unit = "V", displayUnit = "mV"));
 end C3;
 \end{lstlisting}
 
@@ -451,6 +460,44 @@ The following examples are correct:
 m1(r = 1.5, r(start = 2.0))
 m1(r = 1.6, r "x")
 m1(r = R(), r(y(min = 2)))
+\end{lstlisting}
+
+Modifiers can be merged for non-replaceable redeclarations, or replaceable redeclarations with a constraining type, see \cref{redeclaration}.
+\begin{lstlisting}[language=modelica]
+model Test
+  model A
+    replaceable Real x = 1;
+  end A;
+
+  A a(redeclare Real x, x.start = 2);
+  // Identical to A a(redeclare Real x(start=2));
+  A a(redeclare replaceable Real x constrainedby Real, x.start = 2);
+  // Identical to A a(redeclare Real x constrainedby Real(start=2));
+end Test;
+\end{lstlisting}
+
+For replaceable redeclarations without a constraining type the merging is not a local syntactic rewrite as it requires the constraining type, see \cref{redeclaration}.
+\begin{lstlisting}[language=modelica]
+model Test
+  partial model Base
+    parameter Real p;
+  end Base;
+
+  model Implementation
+    extends Base;
+    parameter Real q;
+  end Implementation;
+
+  model A
+    replaceable Base b constrainedby Base(p=1);
+  end A;
+
+  A a(redeclare replaceable Implementation b, b.q=1);
+  // This is treated the same as
+  // A a(redeclare replaceable Implementation b constrainedby Base(q=1));
+  // This is no longer a local syntactic rewrite as the constrainedby
+  // references the constraining class
+end Test;
 \end{lstlisting}
 \end{example}
 
