@@ -8,6 +8,25 @@ The structure of the annotation content is the same as a class modification (\ls
 (For replaceable class declarations with a \lstinline[language=grammar]!constraining-clause! also refer to \cref{constraining-clause-annotations}.)
 The specification in this document defines the semantic meaning if a tool implements any of these annotations.
 
+\section{Notation for Annotation Definitions}\label{notation-for-annotation-definitions}
+
+Annotations are defined using the syntactic forms of Modelica component declarations and record definitions, with the following special semantics.
+If the annotation is described by a component declaration, the annotation is used in the form of a value modifier for the same name.
+If the annotation is described by a \lstinline!record! \emph{class} the annotation is used in the form of a modifier for a \lstinline!record! \emph{component} with the same name.
+
+A declaration equation for a component or record member specifies a default to be used when no corresponding annotation is given.
+An array record member without declaration equation and with size specified by colon (\lstinline!:!) defaults to being empty.
+Default behavior can also be specified in the text as an alternative to a declaration equation, or implicitly by saying \emph{if specified}.
+If the description states that the annotation only has an effect for specific values it implies that the default is a value that has no effect.
+When there is no declaration equation and no other explanation of default behavior in the text for a record member, an annotation modifier for the record must contain a modifier for that member.
+
+As all annotations are optional, component declaration annotations will always have default behavior.
+The default behavior is either the implicit absence of any of the effects for defined values of the annotation, or explicitly defined as corresponding to one of the valid values.
+
+When an annotation is defined with a component variability prefix (\cref{component-variability-prefixes-discrete-parameter-constant}), this restricts the allowed variability of corresponding annotation modifiers analogously to the rules in \cref{variability-of-expressions}.
+If the annotation is declared as an \lstinline!/*evaluable*/ parameter! the corresponding modifier is further restricted to be evaluable.
+If the annotation is declared as a \lstinline!/*literal*/ constant! the corresponding modifier is further restricted to be a literal value.
+
 \section{Vendor-Specific Annotations}\label{vendor-specific-annotations}
 
 A vendor may -- anywhere inside an annotation -- add specific, possibly undocumented, annotations which are not intended to be interpreted by other tools.
@@ -36,10 +55,10 @@ This introduces a new attribute \lstinline!__NameOfVendor_shadow! for the \lstin
 The \fmtannotationindex{Documentation} annotation has the following contents, where the \lstinline!info! and \lstinline!revisions! annotations are described in \cref{annotation-info-revisions}, and the \lstinline!figures! annotation is described in \cref{annotations-for-figures}:
 \begin{lstlisting}[language=modelica]
 record Documentation
-  String info = "" "Description of the class";
-  String revisions = "" "Revision history";
+  /*literal*/ constant String info = "" "Description of the class";
+  /*literal*/ constant String revisions = "" "Revision history";
   Figure[:] figures = {}; "Simulation result figures";
-  String[:] styleSheets = {} "Style sheets for documentation";
+  /*literal*/ constant String[:] styleSheets = {} "Style sheets for documentation";
 end Documentation;
 \end{lstlisting}
 
@@ -91,23 +110,23 @@ The prefix is used to avoid this happening by accident.
 Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
 \begin{lstlisting}[language=modelica]
 record Figure
-  String title = "" "Title meant for display";
-  String identifier = "" "Identifier meant for programmatic access";
-  String group = "" "Name of figure group";
-  Boolean preferred = false "Automatically display figure after simulation";
+  /*literal*/ constant String title = "" "Title meant for display";
+  /*literal*/ constant String identifier = "" "Identifier meant for programmatic access";
+  /*literal*/ constant String group = "" "Name of figure group";
+  /*literal*/ constant Boolean preferred = false "Automatically display figure after simulation";
   Plot[:] plots "Plots";
-  String caption = "" "Figure caption";
+  /*literal*/ constant String caption = "" "Figure caption";
 end Figure;
 \end{lstlisting}
 
 A \fmtannotationindex{Figure} is a graphical container that can contain several \lstinline!plots! described by \fmtannotationindex{Plot} annotations:
 \begin{lstlisting}[language=modelica]
 record Plot
-  String title "Title meant for display";
-  String identifier = "" "Identifier meant for programmatic access";
+  /*literal*/ constant String title "Title meant for display";
+  /*literal*/ constant String identifier = "" "Identifier meant for programmatic access";
   Curve[:] curves "Plot curves";
-  Axis x "X axis properties";
-  Axis y "Y axis properties";
+  /*literal*/ constant Axis x "X axis properties";
+  /*literal*/ constant Axis y "Y axis properties";
 end Plot;
 \end{lstlisting}
 
@@ -153,11 +172,11 @@ The \lstinline!caption! attribute of \lstinline!Figure! can use the restricted f
 Properties may be defined for each \lstinline!Plot! axis\annotationindex{Axis}:
 \begin{lstlisting}[language=modelica]
 record Axis
-  Real min "Axis lower bound, in 'unit'";
-  Real max "Axis upper bound, in 'unit'";
-  String unit = "" "Unit of axis tick labels";
-  String label "Axis label";
-  AxisScale scale = Linear() "Mapping between axis values and position on axis"
+  /*literal*/ constant Real min "Axis lower bound, in 'unit'";
+  /*literal*/ constant Real max "Axis upper bound, in 'unit'";
+  /*literal*/ constant String unit = "" "Unit of axis tick labels";
+  /*literal*/ constant String label "Axis label";
+  /*literal*/ constant AxisScale scale = Linear() "Mapping between axis values and position on axis"
 end Axis;
 \end{lstlisting}
 
@@ -202,7 +221,7 @@ Use \lstinline!Log! for a logarithmic mapping between axis values and position o
 \begin{lstlisting}[language=modelica]
 record Log
   extends AxisScale;
-  Integer base(min = 2) = 10;
+  /*literal*/ constant Integer base(min = 2) = 10;
 end Log;
 \end{lstlisting}%
 \index{Log@\robustinline{Log} (axis scale)}
@@ -231,8 +250,8 @@ The actual data to plot is specified in the \lstinline!curves!\annotationindex{C
 record Curve
   expression x = time "X coordinate values";
   expression y "Y coordinate values";
-  String legend "Legend";
-  Integer zOrder = 0 "Drawing order control";
+  /*literal*/ constant String legend "Legend";
+  /*literal*/ constant Integer zOrder = 0 "Drawing order control";
 end Curve;
 \end{lstlisting}
 
@@ -408,8 +427,8 @@ The annotation listed below, in addition to annotations described in \crefrange{
 \end{center}
 
 \begin{annotationdefinition}[Evaluate]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"Evaluate" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean Evaluate;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base class of the type-declaration.
@@ -425,6 +444,8 @@ A constant can never be changed after translation, and it is normal for its valu
 
 For a parameter, \lstinline!Evaluate = false! ensures that the parameter is a non-evaluable parameter according to \cref{component-variability} (meaning it is not allowed to be used where an evaluable expression (\cref{evaluable-expressions}) is expected).
 For both parameters and constants -- even when the value can be determined during translation -- the model developer further proposes to not utilize the value for symbolic processing.
+
+If the annotation is missing for a parameter or constant the evaluation of the component is tool-dependent.
 
 \begin{nonnormative}
 \lstinline!Evaluate = true! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
@@ -482,10 +503,10 @@ The annotations listed below define how models can be checked, translated, and s
 \begin{synopsis}
 \begin{lstlisting}[language=modelica]
 record experiment
-  Real StartTime(unit = "s") = 0;
-  Real StopTime(unit = "s");
-  Real Interval(unit = "s");
-  Real Tolerance(unit = "1");
+  /*literal*/ constant Real StartTime(unit = "s") = 0;
+  /*literal*/ constant Real StopTime(unit = "s");
+  /*literal*/ constant Real Interval(unit = "s");
+  /*literal*/ constant Real Tolerance(unit = "1");
 end experiment;
 \end{lstlisting}
 \end{synopsis}
@@ -504,8 +525,8 @@ Tools can allow users to override these settings without modifying the model.
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[HideResult]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"HideResult" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean HideResult;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 \lstinline!HideResult = true! defines that the model developer proposes to not show the simulation results of the corresponding component.
@@ -523,14 +544,18 @@ By setting \lstinline!HideResult = false!, the modeler would like to have the va
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[TestCase]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"TestCase" "(" "shouldPass" "=" ( false | true ) ")"
+\begin{synopsis}\begin{lstlisting}
+record TestCase
+  /*literal*/ constant Boolean shouldPass;
+end TestCase;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 If \lstinline!shouldPass! is \lstinline!false! it indicates that the translation or the simulation of the model should fail.
 If a tools checks a package where classes have \lstinline!shouldPass = false! they should not generate errors, and checking may even be skipped.
 On the other hand, models with \lstinline!shouldPass = false! may be useful for creation of negative tests in tool-specific ways.
 Similarly as a class with \lstinline!obsolete! annotation, a class with \lstinline!TestCase! annotation (regardless of the value of \lstinline!shouldPass!) shall not be used in other models, unless those models also have a \lstinline!TestCase! annotation.
+
+If the \lstinline!TestCase! annotation is missing it is a normal model -- there are thus no restrictions on the use of the model, and the model shall not contain errors.
 
 \begin{nonnormative}
 The intent of the test-case can be included in the documentation of the class.
@@ -544,23 +569,25 @@ This annotation can both be used for models intended as test-cases for implement
 \subsection{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
 For state machines it is useful to have single instances of local classes.
-This can be done using:
+To this end a class may use the annotation:
 \begin{lstlisting}[language=modelica]
-annotation(singleInstance = true)
-\end{lstlisting}
+/*literal*/ constant Boolean singleInstance;
+\end{lstlisting}%
+\annotationindex{singleInstance}
 
-The annotation \fmtannotationindex{singleInstance} in a class indicates that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
+Only has effect when \lstinline!true!, meaning that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
 
 \subsection{Connection Restrictions}\label{connection-restrictions}
 
 A connector component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(mustBeConnected = "message");
+/*literal*/ constant String mustBeConnected;
 \end{lstlisting}%
 \annotationindex{mustBeConnected}
 
-It makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+If specified it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+The string value must be non-empty and provide the reason why it must be connected.
 For an array of connectors it applies separately to each element.
 
 \begin{nonnormative}
@@ -584,16 +611,17 @@ The protected components and connections needed to internally handle the support
 
 A connector component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(mayOnlyConnectOnce = "message");
+/*literal*/ constant String mayOnlyConnectOnce ;
 \end{lstlisting}%
 \annotationindex{mayOnlyConnectOnce}
 
-It makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
+If specified it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
 \begin{itemize}
 \item For non-stream connectors the connection set has more than two elements.
 \item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
 \end{itemize}
 For an array of connectors it applies separately to each element.
+The string value must be non-empty and provide the reason why it may only be connected once.
 
 \begin{nonnormative}
 This annotation is intended for non-causal connectors, see \cref{restrictions-of-connections-and-connectors}.
@@ -700,10 +728,10 @@ Its use and default value is tool-dependent.
 
 \begin{lstlisting}[language=modelica]
 record CoordinateSystem
-  Extent extent;
-  Boolean preserveAspectRatio = true;
-  Real initialScale = 0.1;
-  DrawingUnit grid[2];
+  /*literal*/ constant Extent extent;
+  /*literal*/ constant Boolean preserveAspectRatio = true;
+  /*literal*/ constant Real initialScale = 0.1;
+  /*literal*/ constant DrawingUnit grid[2];
 end CoordinateSystem;
 \end{lstlisting}
 
@@ -864,13 +892,13 @@ Each \lstinline!extends!-clause (and short class definition, as stated in \cref{
 
 \begin{lstlisting}[language=modelica]
 record IconMap
-  Extent extent = {{0, 0}, {0, 0}};
-  Boolean primitivesVisible = true;
+  /*literal*/ constant Extent extent = {{0, 0}, {0, 0}};
+  /*literal*/ constant Boolean primitivesVisible = true;
 end IconMap;
 
 record DiagramMap
-  Extent extent = {{0, 0}, {0, 0}};
-  Boolean primitivesVisible = true;
+  /*literal*/ constant Extent extent = {{0, 0}, {0, 0}};
+  /*literal*/ constant Boolean primitivesVisible = true;
 end DiagramMap;
 \end{lstlisting}%
 \annotationindex{IconMap}\annotationindex{DiagramMap}
@@ -1269,19 +1297,19 @@ end OnMouseDownEditString;
 This section describes the annotations that are used to define properties of the graphical user interface.
 
 \begin{lstlisting}[language=modelica]
-annotation(preferredView = $\mathit{view}$)
+/*literal*/ constant String preferredView;
 \end{lstlisting}
 
 The \fmtannotationindex{preferredView} annotation defines the default view when selecting the class.
 The $\mathit{view}$ is a \lstinline!String! literal where \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
+If not specified the default view is tool-specific.
 
-\begin{lstlisting}[language=grammar]
-  documentation-class-annotation:
-     annotation "(" DocumentationClass "=" true ")"
+\begin{lstlisting}
+/*literal*/ constant Boolean DocumentationClass;
 \end{lstlisting}%
 \annotationindex{DocumentationClass}
 
-Only allowed as class annotation on any kind of class and implies that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
+Only allowed as class annotation on any kind of class and only having effect when \lstinline!true!, meaning that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
 If the annotation \lstinline!preferredView! is explicitly set for a class, it has precedence over a \lstinline!DocumentationClass! annotation.
 
 \begin{nonnormative}
@@ -1290,16 +1318,18 @@ For example, the description texts of the classes might be displayed instead of 
 \end{nonnormative}
 
 \begin{lstlisting}[language=modelica]
- annotation(defaultComponentName = "name")
+/*literal*/ constant String defaultComponentName;
 \end{lstlisting}%
 \annotationindex{defaultComponentName}
 
-When creating a component of the given class, the recommended component name is \emph{name}.
+When creating a component of the given class, and the annotation is specified it gives the recommended component name.
 If the default name cannot be used (e.g., since it is already in use), another name based on \lstinline!defaultComponentName! shall be derived automatically, except as described under \lstinline!defaultComponentPrefixes!.
+It is an error if the string is not a valid identifier.
 When automatically deriving a name, any trailing `\lstinline!1!' in the \lstinline!defaultComponentName! shall be disregarded.
+If not specified, the names of new components are tool-specific.
 
 \begin{lstlisting}[language=modelica]
-annotation(defaultComponentPrefixes = "prefixes")
+/*literal*/ constant String defaultComponentPrefixes;
 \end{lstlisting}%
 \annotationindex{defaultComponentPrefixes}
 
@@ -1310,6 +1340,7 @@ type-prefix type-specifier component-declaration
 
 The following prefixes may be included in the string \lstinline!prefixes!: \lstinline!inner!,
 \lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
+The default is an empty string.
 
 \begin{nonnormative}
 In combination with \lstinline!defaultComponentName! it can be used to make it easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
@@ -1317,12 +1348,13 @@ If the prefixes contain \lstinline!inner! or \lstinline!outer! and the default n
 \end{nonnormative}
 
 \begin{lstlisting}[language=modelica]
-annotation(missingInnerMessage = "message")
+/*literal*/ constant String missingInnerMessage;
 \end{lstlisting}%
 \annotationindex{missingInnerMessage}
 
-When an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner!
-component, the literal string message may be used as part of a diagnostic message (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
+Only has an effect if specified, and the string must then be non-empty.
+When specified and an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner! component, the string message may be used as part of a diagnostic message (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
+The default is a tool-specific diagnostic message.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1341,7 +1373,7 @@ inner replaceable World world;
 
 A simple type or component of a simple type may have:
 \begin{lstlisting}[language=modelica]
-annotation(absoluteValue = false);
+/*literal*/ constant Boolean absoluteValue = true;
 \end{lstlisting}%
 \annotationindex{absoluteValue}
 
@@ -1350,15 +1382,16 @@ If \lstinline!false!, then the variable defines a relative quantity, and if \lst
 \begin{nonnormative}
 When converting between units (in the user-interface for plotting and entering parameters), the unit offset must be ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
 This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
+For most types there is no unit offset and the annotation is not needed for them.
 \end{nonnormative}
 
 A model or block definition may contain:
 \begin{lstlisting}[language=modelica]
-annotation(defaultConnectionStructurallyInconsistent = true)
+/*literal*/ constant Boolean defaultConnectionStructurallyInconsistent;
 \end{lstlisting}%
 \annotationindex{defaultConnectionStructurallyInconsistent}
 
-If \lstinline!true!, it is stated that a \emph{default connection} will result in a structurally inconsistent model or block\footnote{%
+Only has an effect if \lstinline!true!, when it is stated that a \emph{default connection} will result in a structurally inconsistent model or block\footnote{%
   For the precise definition of \emph{structurally inconsistent}, see \textcite{Pantelides1988ConsistentInitialization}.}%
 .
 Here, the \emph{default connection} is constructed by instantiating the respective \lstinline!model! or \lstinline!block! and for every input \lstinline!u! providing an equation \lstinline!0 = f(u)!, and for every (potential, flow) pair of the form \lstinline!(v, i)!, providing an equation of the form \lstinline!0 = f(v, i)!.
@@ -1373,21 +1406,23 @@ This annotation avoids then to show a wrong error message.
 
 A class may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(obsolete = "message");
+/*literal*/ constant String obsolete;
 \end{lstlisting}%
 \annotationindex{obsolete}
 
+Only has an effect if specified, and the string must then be non-empty.
 It indicates that the class ideally should not be used anymore and gives a message indicating the recommended action.
 This annotation is not inherited, the assumption is that if a class uses an obsolete class (as a base class or as the class of one of the components) that shall be updated -- ideally without impacting users of the class.
 If that is not possible the current class can have also have an \lstinline!obsolete! annotation.
 
 A component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(unassignedMessage = "message");
+/*literal*/ constant String unassignedMessage;
 \end{lstlisting}%
 \annotationindex{unassignedMessage}
 
-When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string \lstinline!"message"! can be used as a diagnostic message.
+Only has an effect if specified, and the string must then be non-empty.
+When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string can be used as a diagnostic message.
 
 \begin{nonnormative}
 When using BLT partitioning, this means if a variable \lstinline!a! or one of its aliases \lstinline!b = a! or \lstinline!b = -a! cannot be assigned, the message is displayed.
@@ -1412,21 +1447,21 @@ end Frame;
 A component declaration or a short replaceable class definition may have the following annotation:
 \begin{lstlisting}[language=modelica]
 record Dialog
-  String tab = "General";
-  String group = "";
-  Boolean enable = true;
-  Boolean showStartAttribute = false;
-  Boolean colorSelector = false;
-  Selector loadSelector;
-  Selector saveSelector;
-  Selector directorySelector;
-  String groupImage = "";
-  Boolean connectorSizing = false;
+  /*literal*/ constant String tab = "General";
+  /*literal*/ constant String group = "";
+  /*evaluable*/ parameter Boolean enable = true;
+  /*literal*/ constant Boolean showStartAttribute = false;
+  /*literal*/ constant Boolean colorSelector = false;
+  /*literal*/ constant Selector loadSelector;
+  /*literal*/ constant Selector saveSelector;
+  /*literal*/ constant Selector directorySelector;
+  /*literal*/ constant String groupImage = "";
+  /*literal*/ constant Boolean connectorSizing = false;
 end Dialog;
 
 record Selector
-  String filter = "";
-  String caption = "";
+  /*literal*/ constant String filter = "";
+  /*literal*/ constant String caption = "";
 end Selector;
 \end{lstlisting}%
 \annotationindex{Dialog}
@@ -1933,14 +1968,18 @@ This allows a tool to access multiple versions of the same package.
 
 Besides version information, a top-level class can have additionally the following top-level annotations to specify associated information to the version number:%
 \begin{lstlisting}[language=modelica]
-String versionDate   "UTC date of first version build (in format: YYYY-MM-DD)";
-Integer versionBuild "Larger number is a more recent maintenance update";
-String dateModified  "UTC date and time of the latest change to the package
-                      in the following format (with one space between date
-                      and time): YYYY-MM-DD hh:mm:ssZ";
-String revisionId    "Revision identifier of the version management system used
-                      to manage this library. It marks the latest submitted
-                      change to any file belonging to the package";
+/*literal*/ constant String versionDate
+   "UTC date of first version build (in format: YYYY-MM-DD)";
+/*literal*/ constant Integer versionBuild
+   "Larger number is a more recent maintenance update";
+/*literal*/ constant String dateModified
+   "UTC date and time of the latest change to the package
+    in the following format (with one space between date
+    and time): YYYY-MM-DD hh:mm:ssZ";
+/*literal*/ constant String revisionId
+   "Revision identifier of the version management system used
+    to manage this library. It marks the latest submitted
+    change to any file belonging to the package";
 \end{lstlisting}%
 \annotationindex{versionDate}\annotationindex{versionBuild}\annotationindex{dateModified}\annotationindex{revisionId}
 
@@ -2052,12 +2091,15 @@ annotation(Protection($\ldots$));
 
 A class may have the following annotations to define what parts of a class are visible, and only the parts explicitly listed as visible below can be accessed (if a class is encrypted and no \lstinline!Protection! annotation is defined, the access annotation has the default value \lstinline!Access.documentation!):
 \begin{lstlisting}[language=modelica]
-type Access =
-  enumeration(hide, icon, documentation, diagram,
+record Protection
+  /*literal*/ constant Access access;
+  $\ldots$
+end Protection;
+type Access = enumeration(hide, icon, documentation, diagram,
               nonPackageText, nonPackageDuplicate,
               packageText, packageDuplicate);
-annotation(Protection(access = Access.documentation));
 \end{lstlisting}
+The other members of this record are given in \cref{licensing}.
 
 The items of the \fmtannotationindex{Access} enumeration have the following meanings:
 \begin{enumerate}
@@ -2202,14 +2244,16 @@ end CommercialFluid;
 In this section annotations within the \lstinline!Protection! annotation are defined to restrict the usage of the encrypted package:
 \begin{lstlisting}[language=modelica]
 record Protection
-  $\ldots$
-  String features[:] = fill("", 0) "Required license features";
+  /*literal*/ constant Access access;
+  /*literal*/ constant String features[:] "Required license features";
+
   record License
-    String libraryKey;
-    String licenseFile = "" "Optional, default mapping if empty";
+    /*literal*/ constant String libraryKey;
+    /*literal*/ constant String licenseFile = "" "Optional, default mapping if empty";
   end License;
 end Protection;
 \end{lstlisting}
+See \cref{protection-of-classes} for a description of \lstinline!access!, and note that licensing information uses another record \lstinline!Protection! with different contents given below.
 The \fmtannotationindex{License} annotation has only an effect on the top of an encrypted class and is then valid for the whole class hierarchy.
 (Usually the licensed class is a package.)
 The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
@@ -2236,20 +2280,22 @@ In order that the protected class can be used either a tool specific license man
 The license file is standardized.
 It is a Modelica package without classes that has a \lstinline!Protection! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
 \begin{lstlisting}[language=modelica]
-record Authorization
-  String licensor = "" "Optional string to show information about the licensor";
-  String libraryKey "Matching the key in the class. Must be encrypted and not visible";
-  License license[:] "Definition of the license options and of the access rights";
-end Authorization;
+record Protection
+  record Authorization
+    /*literal*/ constant String licensor = "" "Optional string to show information about the licensor";
+    /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
+    /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
+  end Authorization;
 
-record License
-  String licensee = "" "Optional string to show information about the licensee";
-  String id[:] "Unique machine identifications, e.g., MAC addresses";
-  String features[:] = fill("", 0) "Activated library license features";
-  String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
-  String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
-  String operations[:] = fill("", 0) "Library usage conditions";
-end License;
+  record License
+    /*literal*/ String licensee = "" "Optional string to show information about the licensee";
+    /*literal*/ String id[:] "Unique machine identifications, e.g., MAC addresses";
+    /*literal*/ String features[:] "Activated library license features";
+    /*literal*/ String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
+    /*literal*/ String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
+    /*literal*/ String operations[:] "Library usage conditions";
+  end License;
+end Protection;
 \end{lstlisting}%
 \index{Authorization@\robustinline{Authorization}!license file}\index{License@\robustinline{License}!license file}
 
