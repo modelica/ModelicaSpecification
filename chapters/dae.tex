@@ -16,6 +16,7 @@ In a first step, a Modelica translator transforms a hierarchical Modelica simula
 
 As a result of this transformation process, a set of equations is obtained consisting of differential, algebraic and discrete equations of the following form where ($v := \lbrack p; t; \dot{x}; x; y; z; m; \text{\lstinline!pre!}(z); \text{\lstinline!pre!}(m)\rbrack$):
 \begin{subequations}
+\label{eq:hydrid-dae}
 \begin{equation}\label{eq:dae}
 0 = f_{\mathrm{x}}(v, c)
 \end{equation}
@@ -32,7 +33,6 @@ m := f_{\mathrm{m}}(v, c)
 \begin{equation}\label{eq:crossing}
 c := f_{\mathrm{c}}(\mathit{relation}(v))
 \end{equation}
-\label{eq:hydrid-dae}
 \end{subequations}
 and where
 \begin{itemize}
@@ -74,14 +74,20 @@ and where
 
 \item
   $\mathit{relation}(v)$:
-  A relation containing variables $v_{i}$, e.g.\ $v_{1} > v_{2}$, $v_{3} \geq 0$.
+  A relation containing variables $v_{i}$, e.g., $v_{1} > v_{2}$, $v_{3} \geq 0$.
 \end{itemize}
 
 For simplicity, the special cases of \lstinline!noEvent! and \lstinline!reinit! are not contained in the equations above and are not discussed below.
 
 The key difference between the two groups of discrete-time variables $z$ and and $m$ here is how they are determined.
 The interpretation of the solved form of \eqref{eq:dae-discrete-valued} is that given values for everything else, there is a closed-form solution for $m$ in the form of a sequence of assignments to each of the variables of $m$ in turn -- there must be no cyclic dependencies between the equations used to solve for $m$.
-Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in solved form, at most requiring flipping sides of the equation to obtain the used assignment form.
+Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in almost solved form:
+\begin{itemize}
+\item
+  Non-\lstinline!Integer! equations at most requiring flipping sides of the equation to obtain the used assignment form.
+\item
+  For \lstinline!Integer! equations the solved variable must appear uniquely as a term (without any multiplicative factor) on either side of the equation, at most requiring addition or subtraction of other terms in the equation to obtain the used assignment form.
+\end{itemize}
 The interpretation of the non-solved form of \eqref{eq:dae-discrete-real} at events, on the other hand, is that at events, the discrete-time \lstinline!Real! variables $z$ are solved together with the continuous-time variables using \eqref{eq:dae} and \eqref{eq:dae-discrete-real}.
 
 \begin{example}
@@ -170,7 +176,7 @@ Clocked variables are handled similarly as $z$ and $m$ (depending on type), but 
 
 Solving \eqref{eq:hydrid-dae} for the unknowns is non-trivial, because this set of equations contains not only \lstinline!Real!, but also discrete-valued unknowns.
 Usually, in a first step these equations are sorted and in many cases the discrete-valued unknowns $m$ can be just computed by a forward evaluation sequence.
-In some cases, there remain systems of equations involving $m$ due to cyclic dependencies with $y$ and $z$ (e.g.\ for ideal diodes, Coulomb friction elements), and specialized algorithms have to be used to solve them.
+In some cases, there remain systems of equations involving $m$ due to cyclic dependencies with $y$ and $z$ (e.g., for ideal diodes, Coulomb friction elements), and specialized algorithms have to be used to solve them.
 
 Due to the construction of the equations by \emph{flattening} a Modelica model, the hybrid DAE \eqref{eq:hydrid-dae} contains a huge number of sparse equations.
 Therefore, direct simulation of \eqref{eq:hydrid-dae} requires sparse matrix methods.

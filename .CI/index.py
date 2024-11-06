@@ -55,7 +55,7 @@ tail = """    </div>
 
   <script>
     var data = {
-      "versions": ["3.6-dev", "3.5", "3.4"]
+      "versions": ["3.7-dev", "3.6", "3.5", "3.4"]
     };
 
     var buildSelect = function(select, data){
@@ -85,7 +85,7 @@ tail = """    </div>
 
     var buildLink = function(version){
       var link = '';
-      if(version == '3.6-dev'){
+      if(version == '3.7-dev'){
         link = 'https://specification.modelica.org/master/MLS.html';
       }else{
         link = 'https://specification.modelica.org/maint/' + version + '/MLS.html';
@@ -94,7 +94,7 @@ tail = """    </div>
     }
 
     var updateSearch = function(version){
-      if(version == '3.6-dev'){
+      if(version == '3.7-dev'){
         search.algoliaOptions.facetFilters = [
           "version:master",
           "tags:specification",
@@ -129,7 +129,7 @@ tail = """    </div>
           advancedSyntax: true,
           typoTolerance: false,
           hitsPerPage: 16,
-          facetFilters: ["version:3.5", "tags:specification"]
+          facetFilters: ["version:3.6", "tags:specification"]
         }
       });
     });
