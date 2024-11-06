@@ -383,18 +383,19 @@ A component declaration can have a \lstinline!condition-attribute!: \lstinline!i
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  parameter Integer level(min=1)=1;
+  parameter Boolean electric = true;
+  parameter Boolean heatPort = false;
   Motor motor;
-  Level1 component1(J=J) if level==1 "Conditional component";
-  Level2 component2 if level==2 "Conditional component";
-  Level3 component3(J=component1.J) if level<2 "Conditional component";
-  // Illegal modifier on component3 since component1.J is conditional
-  // Even if we can see that component1 always exist if component3 exist
+  Level1 component1(J=J) if electric "Conditional component";
+  Level2 component2(J=component1.J) if not electric "Conditional component";
+  // Illegal modifier on component2 since component1.J does not exist when component2 exists.
+  Level3 component3(J=component1.J) if electric and heatPort "Conditional component";
+  // Legal modifier since component1 always exists if component3 exists
 equation
   connect(component1$\ldots$, $\ldots$) "Connection to conditional component 1";
   connect(component2.n, motor.n) "Connection to conditional component 2";
   connect(component3.n, motor.n) "Connection to conditional component 3";
-  component1.u=0; // Illegal
+  component1.u=0; // Not a good idea, is illegal if electric is false
 \end{lstlisting}
 \end{example}
 
@@ -408,15 +409,17 @@ A redeclaration of a component shall not include a condition attribute;
 and the condition attribute is kept from the original declaration (see
 \cref{interface-compatibility-or-subtyping}).
 
-If the \lstinline!Boolean! expression is false the component (including its modifier) is removed from the flattened DAE, and connections to/from the component are removed.
-A component declared with a condition-attribute can only be modified and/or used in connections.
+If the \lstinline!Boolean! expression is \lstinline!false!, the component (including its modifier) is removed from the flattened DAE, and connections to/from the component are removed.
+Such a component can only be modified, used in connections, and/or used in a modifier of another conditional component with a \lstinline!false! condition.
+
+There are no restrictions on the component if the \lstinline!Boolean! expression is \lstinline!true!.
 
 \begin{nonnormative}
 Adding the component and then removing it ensures that the component is valid.
 
 If a \lstinline!connect!-equation defines the connection of a non-conditional component \lstinline!c1! with a conditional component \lstinline!c2! and \lstinline!c2! is de-activated, then \lstinline!c1! must still be a declared element.
 
-There are annotations to handle the case where the connector should be connected when activated, see \cref{annotations-for-the-graphical-user-interface}.
+There are annotations to handle the case where the connector should be connected when activated, see \cref{connection-restrictions}.
 \end{nonnormative}
 
 
@@ -620,7 +623,7 @@ A discrete-time variable (defined in \cref{component-variability}) has a vanishi
 Note that this is not the same as saying that \lstinline!der(vd) = 0! almost everywhere, as the derivative is not even defined at the events.
 It is not allowed to apply \lstinline!der! to discrete-time variables.
 
-If a \lstinline!Real! variable is declared with the prefix \lstinline!discrete!\indexinline{discrete} it must in a simulation model be assigned in a \lstinline!when!-clause, either by an assignment or an equation.
+If a \lstinline!Real! variable in a simulation model is declared with the prefix \lstinline!discrete!\indexinline{discrete}, it must be assigned in a \lstinline!when!-clause, either by an assignment or an equation.
 The variable assigned in a \lstinline!when!-clause shall not be defined in a sub-component of \lstinline!model! or \lstinline!block! specialized class.
 (This is to keep the property of balanced models.)
 

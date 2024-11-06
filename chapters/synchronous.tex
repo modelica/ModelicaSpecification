@@ -412,9 +412,10 @@ Clock(condition=$\mathit{condition}$, startInterval=$\mathit{startInterval}$)
 \firstuse[event clock]{Event clock}.
 The first input argument, $\mathit{condition}$, is a continuous-time expression of type \lstinline!Boolean!.
 The optional $\mathit{startInterval}$ argument (defaults to 0) is the value returned by \lstinline!interval()! at the first tick of the clock, see \cref{initialization-of-clocked-partitions}.
-The result is of base type \lstinline!Clock! that ticks when \lstinline!edge($\mathit{condition}$)! becomes \lstinline!true!.
+The result is of base type \lstinline!Clock! that ticks when \lstinline!edge(pre($\mathit{condition}$))! becomes \lstinline!true!.
 \begin{nonnormative}
 This clock is used to trigger a clocked base-partition due to a state event (that is a zero-crossing of a \lstinline!Real! variable) in an unclocked base-partition, or due to a hardware interrupt that is modeled as \lstinline!Boolean! in the simulation model.
+The additional \lstinline!pre! delays the event clock one event iteration, but does not introduce any time-delay.
 \end{nonnormative}
 
 \begin{example}
@@ -423,6 +424,18 @@ Clock c = Clock(angle > 0, 0.1); // before first tick of c:
                                  // interval(c) = 0.1
 \end{lstlisting}
 \end{example}
+
+\begin{example}
+Demonstrating the subtle effect of the additional \lstinline!pre!:
+\begin{lstlisting}[language=modelica]
+  Boolean b = time >= 0.5;
+  Clock c = Clock(b);
+  Boolean b2 = sample(b, c);
+\end{lstlisting}
+The first tick of \lstinline!c! (the clock of \lstinline!b2!) is at \lstinline!0.5! where \lstinline!b2! is \lstinline!true!.
+This is because both the event clock and sample introduce a delay of one event iteration, keeping them synchronized.
+\end{example}
+
 
 \begin{nonnormative}
 The implicitly given interval and time shift can be modified by using the \lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample! and \lstinline!backSample! operators on the returned clock, see \cref{sub-clock-conversion-operators}, provided the base interval is not smaller than the implicitly given interval.
@@ -1310,7 +1323,7 @@ equation
     first = false;
     if previous(first) then
       // first clock tick (initialize system)
-      x = previous (x);
+      x = previous(x);
     else
       // second and further clock tick
       x = previous(x) + interval() * previous(der_x);
@@ -1469,10 +1482,10 @@ block ClockedPI
   Real Ts = interval(u);
 equation
   /* Continuous PI equations: der(x) = u / T; y = k * (x + u);
-   * Discretization equation: der(x) = (x - previous (x)) / Ts;
+   * Discretization equation: der(x) = (x - previous(x)) / Ts;
    */
   when Clock() then
-    x = previous (x) + Ts / T * u;
+    x = previous(x) + Ts / T * u;
     y = k * (x + u);
   end when;
 end ClockedPI;
@@ -1499,7 +1512,7 @@ equation
   z = if  firstTick() then 0 else
   previous(z) + Ts / T * (uc - y_meas);
   y = xc + k * (xc + uc);
-  yc = hold (y);
+  yc = hold(y);
 end MixedController;
 \end{lstlisting}
 \end{example}
