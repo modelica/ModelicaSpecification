@@ -8,11 +8,11 @@ all: MLS.pdf MLS.html
 
 .PHONY: clean-pdf
 clean-pdf:
-	-rm *.aux MLS.log MLS.toc MLS.pdf
+	-rm MLS.pdf MLS.log *.out *.aux chapters/*.aux *.toc *.fls *.bbl *.bcf *.blg *.run.xml *.idx *.ilg *.ind
 
 .PHONY: clean-html
 clean-html:
-	-rm MLS.xml LaTeXML.cache *.html *.css *.js
+	-rm MLS.xml LaTeXML.cache MLS.fdb_latexmk *.html *.css *.js
 
 .PHONY: clean
 clean: clean-pdf clean-html
@@ -22,7 +22,7 @@ MLS.pdf: *.tex chapters/*.tex
 
 # Seems to be some issue with graphicpath, so set path here as well
 # Not using %.html since nmake does not support it (instead using old-style suffix rules)
-MLS.html: MLS.tex chapters/*.tex
+index.html: MLS.tex chapters/*.tex
 	$(LATEXMLPREFIX)latexml MLS.tex --includestyles --path=media --dest MLS.xml
 	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest $@
 	.scripts/patch-viewport.sh

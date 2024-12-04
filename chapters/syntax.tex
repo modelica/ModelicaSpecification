@@ -9,10 +9,10 @@ The following syntactic metasymbols are used (extended BNF):
 \tablehead{Syntax} & \tablehead{Description}\\
 \hline
 \hline
-\lstinline[language=grammar]![ $\ldots$ ]! & Optional\\
-\lstinline[language=grammar]!{ $\ldots$ }! & Repeat zero or more times\\
-\lstinline[language=grammar]!$\ldots$ | $\ldots$! & Alternatives\\
-\lstinline[language=grammar]!"$\mathit{text}$"! & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
+{\lstinline[language=grammar]![ $\ldots$ ]!} & Optional\\
+{\lstinline[language=grammar]!{ $\ldots$ }!} & Repeat zero or more times\\
+{\lstinline[language=grammar]!$\ldots$ | $\ldots$!} & Alternatives\\
+{\lstinline[language=grammar]!"$\mathit{text}$"!} & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
 \hline
 \end{tabular}
 \end{center}
@@ -57,18 +57,16 @@ Note:
   Modelica uses the same comment syntax as C++ and Java (i.e., \lstinline!//! signals the start of a line comment and \lstinline!/* $\ldots$ */! is a multi-line comment); comments may contain any Unicode character.
   Modelica also has structured comments in the form of annotations and string comments.
 \item
-  Each \lstinline[language=grammar]!description-string! or string in annotations (that is, a \lstinline[language=grammar]!STRING! with production \lstinline[language=grammar]!annotation-clause! in the grammar) may contain any member of the Unicode character set.
-  All other strings have to contain only the subset of Unicode characters identical with the 7-bit US-ASCII character set.
-  \begin{nonnormative}
-  As a consequence, operators like `\lstinline!>!' or `\lstinline!<!', and external functions only operate on ASCII strings and not on Unicode-strings.
-  Within a \lstinline[language=grammar]!description-string! the tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define optionally begin and end of content that is HTML encoded.
-  \end{nonnormative}
-\item
   In the grammar, keywords of the Modelica language are highlighted with color, for example, \lstinline[language=grammar]!equation!.
 \item
   Productions use hyphen as separator both in the grammar and in the text.
   (Previously the grammar used underscore.)
 \end{itemize}
+
+\begin{nonnormative}
+Within a description-string the optional tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define the start and end of content that is HTML encoded.
+\end{nonnormative}
+
 
 \section{Grammar}\label{grammar}
 
@@ -173,10 +171,19 @@ import-list :
 
 \begin{lstlisting}[language=grammar]
 extends-clause :
-   extends type-specifier [ class-modification ] [ annotation-clause ]
+   extends type-specifier [ class-or-inheritance-modification ] [ annotation-clause ]
 
 constraining-clause :
    constrainedby type-specifier [ class-modification ]
+
+class-or-inheritance-modification :
+   "(" [ argument-or-inheritance-modification-list ] ")"
+
+argument-or-inheritance-modification-list :
+    ( argument | inheritance-modification ) { "," ( argument | inheritance-modification ) }
+
+inheritance-modification :
+    break ( connect-equation | IDENT )
 \end{lstlisting}
 
 \subsection{Component Clause}\label{component-clause}
@@ -207,9 +214,12 @@ declaration :
 
 \begin{lstlisting}[language=grammar]
 modification :
-   class-modification [ "=" expression ]
-   | "=" expression
-   | ":=" expression
+   class-modification [ "=" modification-expression ]
+   | "=" modification-expression
+
+modification-expression :
+   expression
+   | break
 
 class-modification :
    "(" [ argument-list ] ")"
@@ -245,20 +255,21 @@ short-class-definition :
    class-prefixes short-class-specifier
 \end{lstlisting}
 
+
 \subsection{Equations}\label{equations1}
 
 \begin{lstlisting}[language=grammar]
 equation-section :
-   [ initial ] equation { equation ";" }
+   [ initial ] equation { some-equation ";" }
 
 algorithm-section :
    [ initial ] algorithm { statement ";" }
 
-equation :
+some-equation :
    ( simple-expression "=" expression
      | if-equation
      | for-equation
-     | connect-clause
+     | connect-equation
      | when-equation
      | component-reference function-call-args
    )
@@ -279,12 +290,12 @@ statement :
 
 if-equation :
    if expression then
-     { equation ";" }
+     { some-equation ";" }
    { elseif expression then
-     { equation ";" }
+     { some-equation ";" }
    }
    [ else
-     { equation ";" }
+     { some-equation ";" }
    ]
    end if
 
@@ -301,7 +312,7 @@ if-statement :
 
 for-equation :
    for for-indices loop
-     { equation ";" }
+     { some-equation ";" }
    end for
 
 for-statement :
@@ -322,9 +333,9 @@ while-statement :
 
 when-equation :
    when expression then
-     { equation ";" }
+     { some-equation ";" }
    { elsewhen expression then
-     { equation ";" }
+     { some-equation ";" }
    }
    end when
 
@@ -336,7 +347,7 @@ when-statement :
    }
    end when
 
-connect-clause :
+connect-equation :
    connect "(" component-reference "," component-reference ")"
 \end{lstlisting}
 
@@ -380,7 +391,7 @@ mul-operator :
    "*" | "/" | ".*" | "./"
 
 factor :
-   primary [ ("^" | ".^") primary ]
+   primary [ ( "^" | ".^" ) primary ]
 
 primary :
    UNSIGNED-NUMBER
@@ -389,7 +400,7 @@ primary :
    | true
    | ( component-reference | der | initial | pure ) function-call-args
    | component-reference
-   | "(" output-expression-list ")"
+   | "(" output-expression-list ")" [ ( array-subscripts | "." IDENT ) ]
    | "[" expression-list { ";" expression-list } "]"
    | "{" array-arguments "}"
    | end
