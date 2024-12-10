@@ -8,6 +8,7 @@ The structure of the annotation content is the same as a class modification (\ls
 (For replaceable class declarations with a \lstinline[language=grammar]!constraining-clause! also refer to \cref{constraining-clause-annotations}.)
 The specification in this document defines the semantic meaning if a tool implements any of these annotations.
 
+
 \section{Notation for Annotation Definitions}\label{notation-for-annotation-definitions}
 
 Annotations are defined using the syntactic forms of Modelica component declarations and record definitions, with the following special semantics.
@@ -27,9 +28,72 @@ When an annotation is defined with a component variability prefix (\cref{compone
 If the annotation is declared as an \lstinline!/*evaluable*/ parameter! the corresponding modifier is further restricted to be evaluable.
 If the annotation is declared as a \lstinline!/*literal*/ constant! the corresponding modifier is further restricted to be a literal value.
 
+
+\section{Semantic Restrictions of Annotation Syntax}\label{semantic-restrictions-of-annotation-syntax}
+
+The syntactic form of annotations, \lstinline[language=grammar]!annotation-clause!, uses the generic \lstinline[language=grammar]!class-modification! in \cref{modification}.
+However, except where explicitly stated, the following constructs shall not be used in annotations:
+\begin{itemize}
+\item
+\lstinline!final!.
+For instance, neither \lstinline!final experiment(StopTime = 2.0)! nor \lstinline!experiment(final StopTime = 2.0)! may be used to prevent that an extending model overrides the \lstinline!StopTime! setting.
+\item
+\lstinline!each!.
+When an annotation is given for an array component declaration, it applies to the array as a whole.
+Thus, neither should values be given in arrays matching the size of the declared component, nor should \lstinline!each! be used express that a scalar value applies to each element of the array.
+\item
+\lstinline[language=grammar]!element-redeclaration! in the grammar.
+In particular, the keyword \lstinline!redeclare! cannot be used.
+\item
+\lstinline[language=grammar]!element-replaceable! in the grammar.
+In particular the keywords \lstinline!replaceable! and \lstinline!constrainedby! cannot be used.
+\end{itemize}
+
+
+\section{Expression Evaluation Inside Annotations}\label{expression-evaluation-inside-annotations}
+
+This section describes some differences to the evaluation of expressions inside of annotations compared to normal evaluation rules outside of annotations.
+
+
+\subsection{Enumerations for Use in Annotations}\label{enumerations-for-use-in-annotations}
+
+Several annotations make use of dedicated enumeration types.
+These enumeration types do not have the full status of being built-in types as, e.g., \lstinline!StateSelect! (\cref{stateselect}).
+Instead, they are only in scope where expressions inside annotations are evaluated, shadowing any user-defined definitions with the same names.
+
+\begin{example}
+The \lstinline!smooth! attribute of a \lstinline!Polygon! can be controlled through a model parameter, but the parameter cannot use the \lstinline!Smooth! type directly:
+\begin{lstlisting}[language=modelica]
+model BezierParameter
+  parameter Smooth smooth = Smooth.Bezier; // Error: Smooth is unknown here.
+  parameter Boolean bezier = true;         // Fine.
+  annotation(Icon(graphics = {
+    Polygon(
+      smooth = if bezier then Smooth.Bezier else Smooth.None,
+      points = {{-50, -20}, {0, 30}, {50, -20}}
+    )
+  }));
+end BezierParameter;
+\end{lstlisting}
+\end{example}
+
+\begin{nonnormative}
+When evaluating the expression $\mathit{expr}$ in the model \lstinline!M!, one can imagine it being done as in
+\begin{lstlisting}[language=modelica]
+model M_annotation
+  extends M;
+  import AnnotationEnumerations.*;
+  $\mathit{T}$ result = $\mathit{expr}$;
+end M_annotation;
+\end{lstlisting}
+where \lstinline!AnnotationEnumerations! is a hidden package containing all enumeration types used in annotations, and $\mathit{T}$ is the expected type of the expression.
+\end{nonnormative}
+
+
 \section{Vendor-Specific Annotations}\label{vendor-specific-annotations}
 
 A vendor may -- anywhere inside an annotation -- add specific, possibly undocumented, annotations which are not intended to be interpreted by other tools.
+The semantic restrictions in \cref{semantic-restrictions-of-annotation-syntax} are not enforced in vendor-specific annotations, giving vendors the full freedom of using the most general form of annotations.
 The only requirement is that any tool shall save files with all vendor-specific annotations (and all annotations from this chapter) intact.
 Two variants of vendor-specific annotations\index{vendor-specific annotation} exist; one simple and one hierarchical.
 Double underscore concatenated with a vendor name as initial characters of the identifier are used to identify vendor-specific annotations.
@@ -49,6 +113,7 @@ annotation(
 \end{lstlisting}
 This introduces a new attribute \lstinline!__NameOfVendor_shadow! for the \lstinline!Rectangle! primitive using the simple variant of vendor-specific annotations.
 \end{example}
+
 
 \section{Documentation}\label{annotations-for-documentation}\label{documentation}
 
@@ -412,6 +477,7 @@ In a similar way, vendor-specific markup can be used to prototype a link for fut
 This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
 \end{example}
 
+
 \section{Symbolic Processing}\label{annotations-for-symbolic-processing}\label{symbolic-processing}
 
 The annotation listed below, in addition to annotations described in \crefrange{derivatives-and-inverses-of-functions}{function-inlining-and-event-generation}, can influence the symbolic processing.
@@ -641,6 +707,7 @@ partial model MultiPort
 end MultiPort;
 \end{lstlisting}
 \end{example}
+
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
@@ -1294,6 +1361,7 @@ record OnMouseDownEditString
 end OnMouseDownEditString;
 \end{lstlisting}
 
+
 \section{Graphical User Interface}\label{annotations-for-the-graphical-user-interface}\label{graphical-user-interface}
 
 This section describes the annotations that are used to define properties of the graphical user interface.
@@ -1645,6 +1713,7 @@ equation
   connect($\ldots$, step1.inPorts[4]);  // new connect-equation
 \end{lstlisting}
 \end{nonnormative}
+
 
 \section{Versions}\label{annotations-for-version-handling}\label{versions}
 
@@ -2045,6 +2114,7 @@ The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also b
 \begin{nonnormative}
 It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
 \end{nonnormative}
+
 
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
 
