@@ -632,27 +632,42 @@ This annotation can both be used for models intended as test-cases for implement
 
 
 \section{Usage Restrictions}\label{usage-restrictions}
-\subsection{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
-For state machines it is useful to have single instances of local classes.
-To this end a class may use the annotation:
-\begin{lstlisting}[language=modelica]
+The annotations listed below are used to restrict the ways in which classes may be used.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!singleInstance!} & Allow at most one instane & \Cref{modelica:singleInstance}\\
+{\lstinline!mustBeConnected!} & Connector must be connected at least once & \Cref{modelica:mustBeConnected}\\
+{\lstinline!mayOnlyConnectOnce!} & Connector must be connected at most once & \Cref{modelica:mayOnlyConnectOnce}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[singleInstance]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean singleInstance;
-\end{lstlisting}%
-\annotationindex{singleInstance}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
 Only has effect when \lstinline!true!, meaning that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
+\begin{nonnormative}
+This is useful for the local classes of state machines.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\subsection{Connection Restrictions}\label{connection-restrictions}
-
-A connector component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[mustBeConnected]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String mustBeConnected;
-\end{lstlisting}%
-\annotationindex{mustBeConnected}
-
-If specified it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for connector component declarations.
+If specified, it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
 The string value must be non-empty and provide the reason why it must be connected.
 For an array of connectors it applies separately to each element.
 
@@ -674,14 +689,16 @@ end PartialWithSupport;
 \end{lstlisting}
 The protected components and connections needed to internally handle the support-connector is omitted.
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A connector component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
-/*literal*/ constant String mayOnlyConnectOnce ;
-\end{lstlisting}%
-\annotationindex{mayOnlyConnectOnce}
-
-If specified it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
+\begin{annotationdefinition}[mayOnlyConnectOnce]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String mayOnlyConnectOnce;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for connector component declarations.
+If specified, it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
 \begin{itemize}
 \item For non-stream connectors the connection set has more than two elements.
 \item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
@@ -707,6 +724,8 @@ partial model MultiPort
 end MultiPort;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
