@@ -418,7 +418,11 @@ A flattening of class \lstinline!C4! will give an object with the following vari
 
 \subsection{Single Modification}\label{single-modification}
 
-Two arguments of a modification shall not modify the same element, attribute, or description-string.  When using qualified names the different qualified names starting with the same identifier are merged into one modifier.  If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
+Two arguments of a modification shall not modify the same element, attribute, or description-string.
+When using qualified names the different qualified names starting with the same identifier are merged into one modifier.
+This merged modifier can be described as a purely syntactic rewriting to an equivalent modifier, except in the case of replaceable redeclarations without a constraining type, see \cref{redeclaration}.
+The latter is described in the example below.
+If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -434,6 +438,11 @@ class C3
   // Ok, different attributes designated (unit, displayUnit and value)
   // identical to:
   C4 b(x(final unit = "V", displayUnit = "mV") = 5.0));
+
+  C4 c(final x, final x.unit = "V", x.displayUnit = "mV");
+  // OK, different attributes and "final x" in itself is OK,
+  // identical to (the final on unit is redundant):
+  C4 d(final x(final unit = "V", displayUnit = "mV"));
 end C3;
 \end{lstlisting}
 
@@ -451,6 +460,44 @@ The following examples are correct:
 m1(r = 1.5, r(start = 2.0))
 m1(r = 1.6, r "x")
 m1(r = R(), r(y(min = 2)))
+\end{lstlisting}
+
+Modifiers can be merged for non-replaceable redeclarations, or replaceable redeclarations with a constraining type, see \cref{redeclaration}.
+\begin{lstlisting}[language=modelica]
+model Test
+  model A
+    replaceable Real x = 1;
+  end A;
+
+  A a(redeclare Real x, x.start = 2);
+  // Identical to A a(redeclare Real x(start=2));
+  A a(redeclare replaceable Real x constrainedby Real, x.start = 2);
+  // Identical to A a(redeclare Real x constrainedby Real(start=2));
+end Test;
+\end{lstlisting}
+
+For replaceable redeclarations without a constraining type the merging is not a local syntactic rewrite as it requires the constraining type, see \cref{redeclaration}.
+\begin{lstlisting}[language=modelica]
+model Test
+  partial model Base
+    parameter Real p;
+  end Base;
+
+  model Implementation
+    extends Base;
+    parameter Real q;
+  end Implementation;
+
+  model A
+    replaceable Base b constrainedby Base(p=1);
+  end A;
+
+  A a(redeclare replaceable Implementation b, b.q=1);
+  // This is treated the same as
+  // A a(redeclare replaceable Implementation b constrainedby Base(q=1));
+  // This is no longer a local syntactic rewrite as the constrainedby
+  // references the constraining class
+end Test;
 \end{lstlisting}
 \end{example}
 
@@ -879,7 +926,7 @@ If the \lstinline[language=grammar]!constraining-clause! is not present in the o
 \item
   The type of the declaration is also used as a constraining type.
 \item
-  The modifiers for subsequent redeclarations and constraining type are the modifiers on the component or \lstinline[language=grammar]!short-class-definition! if that is used in the original declaration, otherwise empty.
+  If modifiers are present in the original declaration, they also become modifiers on the constraining type.
 \end{itemize}
 
 The syntax of a \lstinline[language=grammar]!constraining-clause!\indexinline{constrainedby} is as follows:
@@ -1062,6 +1109,14 @@ prefixes are inherited, \cref{redeclaration}):
 \subsection{Annotations for Redeclaration and Modification}\label{annotation-choices-for-suggested-redeclarations-and-modifications}
 
 A declaration can have an annotation \fmtannotationindex{choices} containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comments on the \lstinline!choice! modifiers can be used as textual explanations of the choices.
+The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
+
+The string comments for the \lstinline!choice! modifiers shall not automatically be copied to the modifier.
+
+The semantic restrictions in \cref{semantic-restrictions-of-annotation-syntax} are not enforced for the \lstinline!choice! modifiers.
+For instance, several examples of using \lstinline!redeclare! inside \lstinline!choice($\ldots$)! will be given below.
+
 Lookup inside a \lstinline!choice! modifier is performed in the context of the annotation, meaning that references may need to be transformed to preserve the meaning when a \lstinline!choice! is applied in a different context.
 
 \begin{nonnormative}
@@ -1069,13 +1124,10 @@ It is recommended to avoid expressions with references to elements that are not 
 By starting names with a dot it can be ensured that no transformation of references will be needed when a \lstinline!choice! is applied, and that applicability of a \lstinline!choice! does not depend on context, see \cref{global-name-lookup}.
 \end{nonnormative}
 
-This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclaration, where the string comments on the choice declaration can be used as textual explanations of the choices.
-The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
-
 It is allowed to include choices that are invalid in some contexts, e.g., a value might violate a \lstinline!min!-attribute.
 (Options for tools encountering such choices include not showing them, marking them as invalid, or detecting the violations later.)
 
-For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the definition \lstinline!checkBox = true!, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
+For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the annotation \lstinline!checkBox = true!\annotationindex{checkBox}, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
 
 The annotation \lstinline!choicesAllMatching = true!\annotationindex{choicesAllMatching} on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
 \begin{itemize}
@@ -1147,8 +1199,9 @@ type KindOfController = Integer(min = 1, max = 3)
 model A
   parameter KindOfController x;
 end A;
-A a(x = 3 "PID");
+A a(x = 3);
 \end{lstlisting}
+Note that \lstinline!"PID"! was not copied here.
 
 The \lstinline!choices! annotation can also be applied to \lstinline!Boolean! variables to define a check box.
 \begin{lstlisting}[language=modelica]

@@ -28,7 +28,7 @@ but the rest of the development on a branch/pull-request before being accepted.
 |Active|0034|Ternary|[MCP/0034](https://github.com/modelica/ModelicaSpecification/tree/MCP/0034/RationaleMCP/0034)|https://github.com/modelica/ModelicaSpecification/pull/2477|
 |Added in [3.5](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.5)|0033|Annotations for Predefined Plots|[MCP/0033](https://github.com/modelica/ModelicaSpecification/tree/MCP/0033/RationaleMCP/0033)||
 |Accepted in [3.6](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.6)|0032|Selective Model Extension|[MCP/0032](https://github.com/modelica/ModelicaSpecification/tree/MCP/0032/RationaleMCP/0032)|https://github.com/modelica/ModelicaSpecification/pull/3166|
-|Active|0031|Flat Modelica and MLS modularization|[MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031)|
+|Active|0031|Base Modelica and MLS modularization|[MCP/0031](https://github.com/modelica/ModelicaSpecification/tree/MCP/0031/RationaleMCP/0031)|
 |On hold|0030|IsClocked Operator||[#2238](https://github.com/modelica/ModelicaSpecification/issues/2238)|
 |Active|0029|License Export|[MCP/0029](https://github.com/modelica/ModelicaSpecification/tree/MCP/0029/RationaleMCP/0029)|https://github.com/modelica/ModelicaSpecification/pull/2900|
 |Added in [3.4](https://github.com/modelica/ModelicaSpecification/releases/tag/v3.4)|0028|Record Derivatives mixing Real and non-Real||[#2137](https://github.com/modelica/ModelicaSpecification/issues/2137)|

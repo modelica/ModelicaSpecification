@@ -8,9 +8,92 @@ The structure of the annotation content is the same as a class modification (\ls
 (For replaceable class declarations with a \lstinline[language=grammar]!constraining-clause! also refer to \cref{constraining-clause-annotations}.)
 The specification in this document defines the semantic meaning if a tool implements any of these annotations.
 
+
+\section{Notation for Annotation Definitions}\label{notation-for-annotation-definitions}
+
+Annotations are defined using the syntactic forms of Modelica component declarations and record definitions, with the following special semantics.
+If the annotation is described by a component declaration, the annotation is used in the form of a value modifier for the same name.
+If the annotation is described by a \lstinline!record! \emph{class} the annotation is used in the form of a modifier for a \lstinline!record! \emph{component} with the same name.
+
+A declaration equation for a component or record member specifies a default to be used when no corresponding annotation is given.
+An array record member without declaration equation and with size specified by colon (\lstinline!:!) defaults to being empty.
+Default behavior can also be specified in the text as an alternative to a declaration equation, or implicitly by saying \emph{if specified}.
+If the description states that the annotation only has an effect for specific values it implies that the default is a value that has no effect.
+When there is no declaration equation and no other explanation of default behavior in the text for a record member, an annotation modifier for the record must contain a modifier for that member.
+
+As all annotations are optional, component declaration annotations will always have default behavior.
+The default behavior is either the implicit absence of any of the effects for defined values of the annotation, or explicitly defined as corresponding to one of the valid values.
+
+When an annotation is defined with a component variability prefix (\cref{component-variability-prefixes-discrete-parameter-constant}), this restricts the allowed variability of corresponding annotation modifiers analogously to the rules in \cref{variability-of-expressions}.
+If the annotation is declared as an \lstinline!/*evaluable*/ parameter! the corresponding modifier is further restricted to be evaluable.
+If the annotation is declared as a \lstinline!/*literal*/ constant! the corresponding modifier is further restricted to be a literal value.
+
+
+\section{Semantic Restrictions of Annotation Syntax}\label{semantic-restrictions-of-annotation-syntax}
+
+The syntactic form of annotations, \lstinline[language=grammar]!annotation-clause!, uses the generic \lstinline[language=grammar]!class-modification! in \cref{modification}.
+However, except where explicitly stated, the following constructs shall not be used in annotations:
+\begin{itemize}
+\item
+\lstinline!final!.
+For instance, neither \lstinline!final experiment(StopTime = 2.0)! nor \lstinline!experiment(final StopTime = 2.0)! may be used to prevent that an extending model overrides the \lstinline!StopTime! setting.
+\item
+\lstinline!each!.
+When an annotation is given for an array component declaration, it applies to the array as a whole.
+Thus, neither should values be given in arrays matching the size of the declared component, nor should \lstinline!each! be used express that a scalar value applies to each element of the array.
+\item
+\lstinline[language=grammar]!element-redeclaration! in the grammar.
+In particular, the keyword \lstinline!redeclare! cannot be used.
+\item
+\lstinline[language=grammar]!element-replaceable! in the grammar.
+In particular the keywords \lstinline!replaceable! and \lstinline!constrainedby! cannot be used.
+\end{itemize}
+
+
+\section{Expression Evaluation Inside Annotations}\label{expression-evaluation-inside-annotations}
+
+This section describes some differences to the evaluation of expressions inside of annotations compared to normal evaluation rules outside of annotations.
+
+
+\subsection{Enumerations for Use in Annotations}\label{enumerations-for-use-in-annotations}
+
+Several annotations make use of dedicated enumeration types.
+These enumeration types do not have the full status of being built-in types as, e.g., \lstinline!StateSelect! (\cref{stateselect}).
+Instead, they are only in scope where expressions inside annotations are evaluated, shadowing any user-defined definitions with the same names.
+
+\begin{example}
+The \lstinline!smooth! attribute of a \lstinline!Polygon! can be controlled through a model parameter, but the parameter cannot use the \lstinline!Smooth! type directly:
+\begin{lstlisting}[language=modelica]
+model BezierParameter
+  parameter Smooth smooth = Smooth.Bezier; // Error: Smooth is unknown here.
+  parameter Boolean bezier = true;         // Fine.
+  annotation(Icon(graphics = {
+    Polygon(
+      smooth = if bezier then Smooth.Bezier else Smooth.None,
+      points = {{-50, -20}, {0, 30}, {50, -20}}
+    )
+  }));
+end BezierParameter;
+\end{lstlisting}
+\end{example}
+
+\begin{nonnormative}
+When evaluating the expression $\mathit{expr}$ in the model \lstinline!M!, one can imagine it being done as in
+\begin{lstlisting}[language=modelica]
+model M_annotation
+  extends M;
+  import AnnotationEnumerations.*;
+  $\mathit{T}$ result = $\mathit{expr}$;
+end M_annotation;
+\end{lstlisting}
+where \lstinline!AnnotationEnumerations! is a hidden package containing all enumeration types used in annotations, and $\mathit{T}$ is the expected type of the expression.
+\end{nonnormative}
+
+
 \section{Vendor-Specific Annotations}\label{vendor-specific-annotations}
 
 A vendor may -- anywhere inside an annotation -- add specific, possibly undocumented, annotations which are not intended to be interpreted by other tools.
+The semantic restrictions in \cref{semantic-restrictions-of-annotation-syntax} are not enforced in vendor-specific annotations, giving vendors the full freedom of using the most general form of annotations.
 The only requirement is that any tool shall save files with all vendor-specific annotations (and all annotations from this chapter) intact.
 Two variants of vendor-specific annotations\index{vendor-specific annotation} exist; one simple and one hierarchical.
 Double underscore concatenated with a vendor name as initial characters of the identifier are used to identify vendor-specific annotations.
@@ -21,28 +104,26 @@ annotation(
   Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}),
        graphics = {__NameOfVendor(Circle(center = {0, 0}, radius = 10))}));
 \end{lstlisting}
-This introduces a new graphical primitive \lstinline!Circle! using the
-hierarchical variant of vendor-specific annotations.
+This introduces a new graphical primitive \lstinline!Circle! using the hierarchical variant of vendor-specific annotations.
 \begin{lstlisting}[language=modelica]
 annotation(
   Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}),
        graphics = {Rectangle(extent = {{-5, -5}, {7, 7}},
                              __NameOfVendor_shadow = 2)}));
 \end{lstlisting}
-This introduces a new attribute \lstinline!__NameOfVendor_shadow!
-for the \lstinline!Rectangle! primitive using the simple variant of
-vendor-specific annotations.
+This introduces a new attribute \lstinline!__NameOfVendor_shadow! for the \lstinline!Rectangle! primitive using the simple variant of vendor-specific annotations.
 \end{example}
+
 
 \section{Documentation}\label{annotations-for-documentation}\label{documentation}
 
 The \fmtannotationindex{Documentation} annotation has the following contents, where the \lstinline!info! and \lstinline!revisions! annotations are described in \cref{annotation-info-revisions}, and the \lstinline!figures! annotation is described in \cref{annotations-for-figures}:
 \begin{lstlisting}[language=modelica]
 record Documentation
-  String info = "" "Description of the class";
-  String revisions = "" "Revision history";
+  /*literal*/ constant String info = "" "Description of the class";
+  /*literal*/ constant String revisions = "" "Revision history";
   Figure[:] figures; "Simulation result figures";
-  String[:] styleSheets = fill("", 0) "Style sheets for documentation";
+  /*literal*/ constant String[:] styleSheets  "Style sheets for documentation";
 end Documentation;
 \end{lstlisting}
 
@@ -67,10 +148,8 @@ Links to Modelica classes may be defined with the HTML link command using scheme
 <a href="modelica:/MultiBody.Tutorial">MultiBody.Tutorial</a>
 \end{lstlisting}
 
-Together with scheme \lstinline!Modelica! the (URI) fragment specifiers
-\lstinline!#diagram!, \lstinline!#info!, \lstinline!#text!, \lstinline!#icon! may be used to reference different
-layers. User-defined fragment specifiers (anchors) may also be used, and they may be renamed
-when generating HTML (in particular to avoid collisions).
+Together with scheme \lstinline!Modelica! the (URI) fragment specifiers \lstinline!#diagram!, \lstinline!#info!, \lstinline!#text!, \lstinline!#icon! may be used to reference different layers.
+User-defined fragment specifiers (anchors) may also be used, and they may be renamed when generating HTML (in particular to avoid collisions).
 Example:
 \begin{lstlisting}[language=modelica]
 <a href="modelica:/MultiBody.Joints.Revolute#info">Revolute</a>
@@ -97,23 +176,23 @@ The prefix is used to avoid this happening by accident.
 Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
 \begin{lstlisting}[language=modelica]
 record Figure
-  String title = "" "Title meant for display";
-  String identifier = "" "Identifier meant for programmatic access";
-  String group = "" "Name of figure group";
-  Boolean preferred = false "Automatically display figure after simulation";
+  /*literal*/ constant String title = "" "Title meant for display";
+  /*literal*/ constant String identifier = "" "Identifier meant for programmatic access";
+  /*literal*/ constant String group = "" "Name of figure group";
+  /*literal*/ constant Boolean preferred = false "Automatically display figure after simulation";
   Plot[:] plots "Plots";
-  String caption = "" "Figure caption";
+  /*literal*/ constant String caption = "" "Figure caption";
 end Figure;
 \end{lstlisting}
 
 A \fmtannotationindex{Figure} is a graphical container that can contain several \lstinline!plots! described by \fmtannotationindex{Plot} annotations:
 \begin{lstlisting}[language=modelica]
 record Plot
-  String title "Title meant for display";
-  String identifier = "" "Identifier meant for programmatic access";
+  /*literal*/ constant String title "Title meant for display";
+  /*literal*/ constant String identifier = "" "Identifier meant for programmatic access";
   Curve[:] curves "Plot curves";
-  Axis x "X axis properties";
-  Axis y "Y axis properties";
+  /*literal*/ constant Axis x "X axis properties";
+  /*literal*/ constant Axis y "Y axis properties";
 end Plot;
 \end{lstlisting}
 
@@ -159,11 +238,11 @@ The \lstinline!caption! attribute of \lstinline!Figure! can use the restricted f
 Properties may be defined for each \lstinline!Plot! axis\annotationindex{Axis}:
 \begin{lstlisting}[language=modelica]
 record Axis
-  Real min "Axis lower bound, in 'unit'";
-  Real max "Axis upper bound, in 'unit'";
-  String unit = "" "Unit of axis tick labels";
-  String label "Axis label";
-  AxisScale scale = Linear() "Mapping between axis values and position on axis"
+  /*literal*/ constant Real min "Axis lower bound, in 'unit'";
+  /*literal*/ constant Real max "Axis upper bound, in 'unit'";
+  /*literal*/ constant String unit = "" "Unit of axis tick labels";
+  /*literal*/ constant String label "Axis label";
+  /*literal*/ constant AxisScale scale = Linear() "Mapping between axis values and position on axis"
 end Axis;
 \end{lstlisting}
 
@@ -176,7 +255,8 @@ The tool is responsible for conveying the information about choice of unit for t
 The Modelica tool is responsible for showing that values at the axis tick marks are expressed in \lstinline!unit!, so the axis \lstinline!label! shall not contain this information.
 
 \begin{nonnormative}
-When \lstinline!unit! is empty, and axis bounds are to be determined automatically, a natural choice of unit could be the variable's \lstinline!displayUnit!.  When axis bounds are specified by the user, on the other hand, a tool may choose a unit for the variable such that the range of the variable values (expressed in the chosen unit) fit nicely with the range of the unitless axis.
+When \lstinline!unit! is empty, and axis bounds are to be determined automatically, a natural choice of unit could be the variable's \lstinline!displayUnit!.
+When axis bounds are specified by the user, on the other hand, a tool may choose a unit for the variable such that the range of the variable values (expressed in the chosen unit) fit nicely with the range of the unitless axis.
 \end{nonnormative}
 
 If a tool does not recognize the \lstinline!unit!, it is recommended to issue a warning and treat the \lstinline!unit! as if it was empty, as well as ignore any setting for \lstinline!min! and \lstinline!max!.
@@ -207,7 +287,7 @@ Use \lstinline!Log! for a logarithmic mapping between axis values and position o
 \begin{lstlisting}[language=modelica]
 record Log
   extends AxisScale;
-  Integer base(min = 2) = 10;
+  /*literal*/ constant Integer base(min = 2) = 10;
 end Log;
 \end{lstlisting}%
 \index{Log@\robustinline{Log} (axis scale)}
@@ -236,8 +316,8 @@ The actual data to plot is specified in the \lstinline!curves!\annotationindex{C
 record Curve
   expression x = time "X coordinate values";
   expression y "Y coordinate values";
-  String legend "Legend";
-  Integer zOrder = 0 "Drawing order control";
+  /*literal*/ constant String legend "Legend";
+  /*literal*/ constant Integer zOrder = 0 "Drawing order control";
 end Curve;
 \end{lstlisting}
 
@@ -266,15 +346,16 @@ Ties are resolved using order of appearance in the \lstinline!curves! of a \lsti
 In an attribute inside a figure where the variable replacements of \cref{variable-replacements} or the text markup of \cref{text-markup-in-captions} can be used, the following use of \firstuse[text markup escape sequence]{text markup escape sequences}\index{escape sequence!text markup} applies.
 These escape sequences are applied after the application of other markup, and is not applied at all inside some of the other markup, see details for the respective markup.
 
-The percent character `\%' shall be encoded \lstinline!%%!.  The following are all the recognized escape sequences:
+The percent character `\%' shall be encoded \lstinline!%%!.
+The following are all the recognized escape sequences:
 \begin{center}
 \begin{tabular}{c c l}
 \hline
 \tablehead{Sequence} & \tablehead{Encoded character} & \tablehead{Comment}\\
 \hline
 \hline
-{\lstinline!%%!} & `\%' & Only way to encode character. \\
-{\lstinline!%]!} & `]'  & Prevents termination of markup delimited by {\lstinline![$\ldots$]!}. \\
+{\lstinline!%%!} & `\%' & Only way to encode character.\\
+{\lstinline!%]!} & `]'  & Prevents termination of markup delimited by {\lstinline![$\ldots$]!}.\\
 \hline
 \end{tabular}
 \end{center}
@@ -397,6 +478,7 @@ In a similar way, vendor-specific markup can be used to prototype a link for fut
 This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
 \end{example}
 
+
 \section{Symbolic Processing}\label{annotations-for-symbolic-processing}\label{symbolic-processing}
 
 The annotation listed below, in addition to annotations described in \crefrange{derivatives-and-inverses-of-functions}{function-inlining-and-event-generation}, can influence the symbolic processing.
@@ -412,8 +494,8 @@ The annotation listed below, in addition to annotations described in \crefrange{
 \end{center}
 
 \begin{annotationdefinition}[Evaluate]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"Evaluate" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean Evaluate;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 The annotation \lstinline!Evaluate! can occur in the component declaration, its type declaration, or a base class of the type-declaration.
@@ -429,6 +511,8 @@ A constant can never be changed after translation, and it is normal for its valu
 
 For a parameter, \lstinline!Evaluate = false! ensures that the parameter is a non-evaluable parameter according to \cref{component-variability} (meaning it is not allowed to be used where an evaluable expression (\cref{evaluable-expressions}) is expected).
 For both parameters and constants -- even when the value can be determined during translation -- the model developer further proposes to not utilize the value for symbolic processing.
+
+If the annotation is missing for a parameter or constant the evaluation of the component is tool-dependent.
 
 \begin{nonnormative}
 \lstinline!Evaluate = true! is for example used for axis of rotation parameters in the \lstinline!Modelica.Mechanics.MultiBody! library in order to improve the efficiency of the generated code.
@@ -486,10 +570,10 @@ The annotations listed below define how models can be checked, translated, and s
 \begin{synopsis}
 \begin{lstlisting}[language=modelica]
 record experiment
-  Real StartTime(unit = "s") = 0;
-  Real StopTime(unit = "s");
-  Real Interval(unit = "s");
-  Real Tolerance(unit = "1");
+  /*literal*/ constant Real StartTime(unit = "s") = 0;
+  /*literal*/ constant Real StopTime(unit = "s");
+  /*literal*/ constant Real Interval(unit = "s");
+  /*literal*/ constant Real Tolerance(unit = "1");
 end experiment;
 \end{lstlisting}
 \end{synopsis}
@@ -508,8 +592,8 @@ Tools can allow users to override these settings without modifying the model.
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[HideResult]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"HideResult" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean HideResult;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 \lstinline!HideResult = true! defines that the model developer proposes to not show the simulation results of the corresponding component.
@@ -517,7 +601,9 @@ Tools can allow users to override these settings without modifying the model.
 \lstinline!HideResult = false! defines that the developer proposes to show the corresponding component.
 
 \begin{nonnormative}
-For example, a tool is not expected to provide means to plot a variable with \lstinline!HideResult = true!.  If a variable is declared in a protected section, a tool might not include it in a simulation result. By setting \lstinline!HideResult = false!, the modeler would like to have the variable in the simulation result, even if in the protected section.
+For example, a tool is not expected to provide means to plot a variable with \lstinline!HideResult = true!.
+If a variable is declared in a protected section, a tool might not include it in a simulation result.
+By setting \lstinline!HideResult = false!, the modeler would like to have the variable in the simulation result, even if in the protected section.
 
 \lstinline!HideResult! is for example used in the connectors of the \lstinline!Modelica.StateGraph! library to not show variables to the modeler that are of no interest to him and would confuse him.
 \end{nonnormative}
@@ -525,14 +611,18 @@ For example, a tool is not expected to provide means to plot a variable with \ls
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[TestCase]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"TestCase" "(" "shouldPass" "=" ( false | true ) ")"
+\begin{synopsis}\begin{lstlisting}
+record TestCase
+  /*literal*/ constant Boolean shouldPass;
+end TestCase;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 If \lstinline!shouldPass! is \lstinline!false! it indicates that the translation or the simulation of the model should fail.
 If a tools checks a package where classes have \lstinline!shouldPass = false! they should not generate errors, and checking may even be skipped.
 On the other hand, models with \lstinline!shouldPass = false! may be useful for creation of negative tests in tool-specific ways.
-Similarly as a class with obsolete-annotation, a class with \lstinline!TestCase! annotation (regardless of the value of \lstinline!shouldPass!) shall not be used in other models, unless those models also have a \lstinline!TestCase! annotation.
+Similarly as a class with \lstinline!obsolete! annotation, a class with \lstinline!TestCase! annotation (regardless of the value of \lstinline!shouldPass!) shall not be used in other models, unless those models also have a \lstinline!TestCase! annotation.
+
+If the \lstinline!TestCase! annotation is missing it is a normal model -- there are thus no restrictions on the use of the model, and the model shall not contain errors.
 
 \begin{nonnormative}
 The intent of the test-case can be included in the documentation of the class.
@@ -546,23 +636,25 @@ This annotation can both be used for models intended as test-cases for implement
 \subsection{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
 For state machines it is useful to have single instances of local classes.
-This can be done using:
+To this end a class may use the annotation:
 \begin{lstlisting}[language=modelica]
-annotation(singleInstance = true)
-\end{lstlisting}
+/*literal*/ constant Boolean singleInstance;
+\end{lstlisting}%
+\annotationindex{singleInstance}
 
-The annotation \fmtannotationindex{singleInstance} in a class indicates that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
+Only has effect when \lstinline!true!, meaning that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
 
 \subsection{Connection Restrictions}\label{connection-restrictions}
 
 A connector component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(mustBeConnected = "message");
+/*literal*/ constant String mustBeConnected;
 \end{lstlisting}%
 \annotationindex{mustBeConnected}
 
-It makes it an error if the connector is not connected from the outside (for a conditional connector this check is only active if the connector is enabled).
+If specified it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+The string value must be non-empty and provide the reason why it must be connected.
 For an array of connectors it applies separately to each element.
 
 \begin{nonnormative}
@@ -586,16 +678,17 @@ The protected components and connections needed to internally handle the support
 
 A connector component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(mayOnlyConnectOnce = "message");
+/*literal*/ constant String mayOnlyConnectOnce ;
 \end{lstlisting}%
 \annotationindex{mayOnlyConnectOnce}
 
-It makes it an error if the connector is connected from the outside and:
+If specified it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
 \begin{itemize}
 \item For non-stream connectors the connection set has more than two elements.
 \item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
 \end{itemize}
 For an array of connectors it applies separately to each element.
+The string value must be non-empty and provide the reason why it may only be connected once.
 
 \begin{nonnormative}
 This annotation is intended for non-causal connectors, see \cref{restrictions-of-connections-and-connectors}.
@@ -616,17 +709,14 @@ end MultiPort;
 \end{lstlisting}
 \end{example}
 
+
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
-A graphical representation of a class consists of two abstraction
-layers, icon layer and diagram layer showing graphical objects,
-component icons, connectors and connection lines. The icon
-representation typically visualizes the component by hiding hierarchical
-details. The hierarchical decomposition is described in the diagram
-layer showing icons of subcomponents and connections between these.
+A graphical representation of a class consists of two abstraction layers, icon layer and diagram layer showing graphical objects, component icons, connectors and connection lines.
+The icon representation typically visualizes the component by hiding hierarchical details.
+The hierarchical decomposition is described in the diagram layer showing icons of subcomponents and connections between these.
 
-Graphical annotations described in this chapter ties into the Modelica
-grammar as follows.
+Graphical annotations described in this chapter ties into the Modelica grammar as follows.
 \begin{lstlisting}[language=grammar]
 graphical-annotations :
   annotation "(" [ layer-annotations ] ")"
@@ -658,8 +748,7 @@ The graphics is specified as an ordered sequence of graphical primitives describ
 Base class contents are drawn behind the graphical primitives of the current class, with base classes ordered from back to front according to the order of the \lstinline!extends!-clauses, and graphical primitives according to order of appearance in the annotation.
 
 \begin{nonnormative}
-Note that the ordered sequence is syntactically a valid Modelica annotation, although there
-is no mechanism for defining an array of heterogeneous objects in Modelica.
+Note that the ordered sequence is syntactically a valid Modelica annotation, although there is no mechanism for defining an array of heterogeneous objects in Modelica.
 \end{nonnormative}
 
 These \lstinline!Icon!, \lstinline!Diagram!, and \lstinline!Documentation! annotations are only allowed directly in classes (e.g., not on components or connections).
@@ -689,34 +778,28 @@ The \lstinline!origin! attribute specifies the origin of the graphical item in t
 The origin is used to define the geometric information of the item and for all transformations applied to the item.
 All geometric information is given relative the \lstinline!origin! attribute, which by default is \lstinline!{0, 0}!.
 
-The \lstinline!rotation! attribute specifies the rotation of the graphical item
-counter-clockwise around the point defined by the \lstinline!origin! attribute.
+The \lstinline!rotation! attribute specifies the rotation of the graphical item counter-clockwise around the point defined by the \lstinline!origin! attribute.
 
 \subsubsection{Coordinate Systems}\label{coordinate-systems}
 
 Each of the layers has its own coordinate system.\annotationindex{CoordinateSystem}
 A coordinate system is defined by the coordinates of two points, the left (x1) lower (y1) corner and the right (x2) upper (y2) corner, where the coordinates of the first point shall be less than the coordinates of the second point.
 
-The attribute \lstinline!preserveAspectRatio! specifies a hint for the shape of
-components of the class, but does not actually influence the rendering of the component.
-If \lstinline!preserveAspectRatio! is true, changing the
-extent of components should preserve the current aspect ratio of the coordinate
-system of the class.
+The attribute \lstinline!preserveAspectRatio! specifies a hint for the shape of components of the class, but does not actually influence the rendering of the component.
+If \lstinline!preserveAspectRatio! is true, changing the extent of components should preserve the current aspect ratio of the coordinate system of the class.
 
-The attribute \lstinline!initialScale! specifies the default component size as
-\lstinline!initialScale! times the size of the coordinate system of the class. An
-application may use a different default value of \lstinline!initialScale!.
+The attribute \lstinline!initialScale! specifies the default component size as \lstinline!initialScale! times the size of the coordinate system of the class.
+An application may use a different default value of \lstinline!initialScale!.
 
-The attribute \lstinline!grid! specifies the spacing between grid points which can
-be used by tools for alignment of points in the coordinate system, e.g., ``snap-to-grid''.
+The attribute \lstinline!grid! specifies the spacing between grid points which can be used by tools for alignment of points in the coordinate system, e.g., ``snap-to-grid''.
 Its use and default value is tool-dependent.
 
 \begin{lstlisting}[language=modelica]
 record CoordinateSystem
-  Extent extent;
-  Boolean preserveAspectRatio = true;
-  Real initialScale = 0.1;
-  DrawingUnit grid[2];
+  /*literal*/ constant Extent extent;
+  /*literal*/ constant Boolean preserveAspectRatio = true;
+  /*literal*/ constant Real initialScale = 0.1;
+  /*literal*/ constant DrawingUnit grid[2];
 end CoordinateSystem;
 \end{lstlisting}
 
@@ -771,9 +854,8 @@ The \lstinline!LinePattern! attribute \lstinline!Solid! indicates a normal line,
 
 The \lstinline!FillPattern! attributes \lstinline!Horizontal!, \lstinline!Vertical!, \lstinline!Cross!, \lstinline!Forward!, \lstinline!Backward! and \lstinline!CrossDiag! specify fill patterns drawn with the line color over the fill color.
 
-The attributes \lstinline!HorizontalCylinder!, \lstinline!VerticalCylinder! and \lstinline!Sphere! specify
-gradients that represent a horizontal cylinder, a vertical cylinder and
-a sphere, respectively. The gradient goes from line color to fill color.
+The attributes \lstinline!HorizontalCylinder!, \lstinline!VerticalCylinder! and \lstinline!Sphere! specify gradients that represent a horizontal cylinder, a vertical cylinder and a sphere, respectively.
+The gradient goes from line color to fill color.
 
 The border pattern attributes \lstinline!Raised!, \lstinline!Sunken! and \lstinline!Engraved! represent frames which are rendered in a tool-dependent way --- inside the extent of the filled shape.
 
@@ -781,21 +863,24 @@ The border pattern attributes \lstinline!Raised!, \lstinline!Sunken! and \lstinl
   \begin{center}
     \includegraphics{bezierpoints}
   \end{center}
-  \caption{Line with \lstinline!smooth = Bezier!.  The four line points $P_{1}$, \ldots{}, $P_{4}$ result in two quadratic splines and two straight line segments.}\label{fig:smooth-bezier}
+  \caption{%
+    Line with \lstinline!smooth = Bezier!.
+    The four line points $P_{1}$, \ldots{}, $P_{4}$ result in two quadratic splines and two straight line segments.
+  }\label{fig:smooth-bezier}
 \end{figure}
 
 The \lstinline!smooth! attribute specifies that a line can be drawn as straight line segments (\lstinline!None!) or using a spline (\lstinline!Bezier!), where the line's points specify control points of a quadratic Bezier curve, see \cref{fig:smooth-bezier}.
 
 For lines with only two points, the \lstinline!smooth! attribute has no effect.
 
-For lines with three or more points ($P_{1}$, $P_{2}$, \ldots{}, $P_{n}$), the middle point of each line segment ($P_{12}$, $P_{23}$, \ldots{}, $P_{(n-1)n}$) becomes the starting point and ending
-points of each quadratic Bezier curve.  For each quadratic Bezier curve, the common point of the two line segment becomes the control point. For instance, point $P_{2}$ becomes the control point for
-the Bezier curve starting at $P_{12}$ and ending at $P_{23}$.  A straight line is drawn between the starting point of the line and the starting point of the first quadratic Bezier curve, as well as
-between the ending point of the line and the ending point of the last quadratic Bezier curve.
+For lines with three or more points ($P_{1}$, $P_{2}$, \ldots{}, $P_{n}$), the middle point of each line segment ($P_{12}$, $P_{23}$, \ldots{}, $P_{(n-1)n}$) becomes the starting point and ending points of each quadratic Bezier curve.
+For each quadratic Bezier curve, the common point of the two line segment becomes the control point.
+For instance, point $P_{2}$ becomes the control point for the Bezier curve starting at $P_{12}$ and ending at $P_{23}$.
+A straight line is drawn between the starting point of the line and the starting point of the first quadratic Bezier curve, as well as between the ending point of the line and the ending point of the last quadratic Bezier curve.
 
-In the illustration above, the square points ($P_{1}$, $P_{2}$, $P_{3}$, and $P_{4}$) represent the points that define the line, and the circle points ($P_{12}$, $P_{23}$, and $P_{34}$) are the
-calculated middle points of each line segment.  Points $P_{12}$, $P_{2}$, and $P_{23}$ define the first quadratic Bezier curve, and the points $P_{23}$, $P_{3}$, and $P_{34}$ define the second
-quadratic Bezier curve.  Finally a straight line is drawn between points $P_{1}$ and $P_{12}$ as well as between $P_{34}$ and $P_{4}$.
+In the illustration above, the square points ($P_{1}$, $P_{2}$, $P_{3}$, and $P_{4}$) represent the points that define the line, and the circle points ($P_{12}$, $P_{23}$, and $P_{34}$) are the calculated middle points of each line segment.
+Points $P_{12}$, $P_{2}$, and $P_{23}$ define the first quadratic Bezier curve, and the points $P_{23}$, $P_{3}$, and $P_{34}$ define the second quadratic Bezier curve.
+Finally a straight line is drawn between points $P_{1}$ and $P_{12}$ as well as between $P_{34}$ and $P_{4}$.
 
 The values of the \lstinline!EllipseClosure! enumeration specify if and how the endpoints of an elliptical arc are to be joined (see \cref{ellipse}).
 
@@ -852,29 +937,24 @@ record Placement
 end Placement;
 \end{lstlisting}%
 \annotationindex{Placement}
+A component with \lstinline!visible = false! shall not be shown.
 If no \lstinline!iconTransformation! is given the \lstinline!transformation! is also used for placement in the icon layer.
 If no \lstinline!iconVisible! is given for a public connector the \lstinline!visible! is also used for visibility in the icon layer.
 
 \begin{nonnormative}
-A connector can be shown in both an icon layer and a diagram
-layer of a class. Since the coordinate systems typically are different,
-placement information needs to be given using two different coordinate
-systems. More flexibility than just using scaling and translation is
-needed since the abstraction views might need different visual placement
-of the connectors. The attribute \lstinline!transformation! gives the placement in
-the diagram layer and \lstinline!iconTransformation! gives the placement in the icon
-layer. When a connector is shown in a diagram layer, its diagram layer
-is shown to facilitate opening up a hierarchical connector to allow
-connections to its internal subconnectors.
+A connector can be shown in both an icon layer and a diagram layer of a class.
+Since the coordinate systems typically are different, placement information needs to be given using two different coordinate systems.
+More flexibility than just using scaling and translation is needed since the abstraction views might need different visual placement of the connectors.
+The attribute \lstinline!transformation! gives the placement in the diagram layer and \lstinline!iconTransformation! gives the placement in the icon layer.
+When a connector is shown in a diagram layer, its diagram layer is shown to facilitate opening up a hierarchical connector to allow connections to its internal subconnectors.
 \end{nonnormative}
 
-For connectors, the icon layer is used to represent a connector when it
-is shown in the icon layer of the enclosing model. The diagram layer of
-the connector is used to represent it when shown in the diagram layer of
-the enclosing model. Protected connectors are only shown in the diagram
-layer. Public connectors are shown in both the diagram layer and the
-icon layer. Non-connector components are only shown in the diagram
-layer.
+For connectors, the icon layer is used to represent a connector when it is shown in the icon layer of the enclosing model.
+The diagram layer of the connector is used to represent it when shown in the diagram layer of the enclosing model.
+Protected connectors are only shown in the diagram layer.
+Public connectors are shown in both the diagram layer and the icon layer.
+Sub-connectors in a hierarchical connector are only shown when they can be connected to.
+Non-connector components are only shown in the diagram layer.
 
 \subsection{Extends-Clause}\label{extends-clause}
 
@@ -882,13 +962,13 @@ Each \lstinline!extends!-clause (and short class definition, as stated in \cref{
 
 \begin{lstlisting}[language=modelica]
 record IconMap
-  Extent extent = {{0, 0}, {0, 0}};
-  Boolean primitivesVisible = true;
+  /*literal*/ constant Extent extent = {{0, 0}, {0, 0}};
+  /*literal*/ constant Boolean primitivesVisible = true;
 end IconMap;
 
 record DiagramMap
-  Extent extent = {{0, 0}, {0, 0}};
-  Boolean primitivesVisible = true;
+  /*literal*/ constant Extent extent = {{0, 0}, {0, 0}};
+  /*literal*/ constant Boolean primitivesVisible = true;
 end DiagramMap;
 \end{lstlisting}%
 \annotationindex{IconMap}\annotationindex{DiagramMap}
@@ -924,10 +1004,7 @@ model B
   $\ldots$
 end B;
 \end{lstlisting}
-In this example the diagram of \lstinline!A! contains the graphical primitives
-from \lstinline!A! and \lstinline!B! (but not from \lstinline!C! since they were hidden in \lstinline!B!) -- the ones
-from \lstinline!B! are rescaled, and the icon of \lstinline!A! contains the graphical primitives
-from \lstinline!A! (but neither from \lstinline!B! nor from \lstinline!C!).
+In this example the diagram of \lstinline!A! contains the graphical primitives from \lstinline!A! and \lstinline!B! (but not from \lstinline!C! since they were hidden in \lstinline!B!) -- the ones from \lstinline!B! are rescaled, and the icon of \lstinline!A! contains the graphical primitives from \lstinline!A! (but neither from \lstinline!B! nor from \lstinline!C!).
 \end{example}
 
 \subsection{Connections}\label{connections1}
@@ -963,7 +1040,10 @@ The \lstinline!string! may use the special symbols \lstinline!"%first"! and \lst
 
 The \lstinline!extent! and \lstinline!rotation! are relative to the \lstinline!origin! (default \lstinline!{0, 0}!) and the \lstinline!origin! is relative to the point on the \lstinline!Line!.
 
-The \lstinline!textColor! attribute defines the color of the text.  The text is drawn with transparent background and no border around the text (and without outline).  The contents inherited from \lstinline!FilledShape! is deprecated, but kept for compatibility reasons.  The default value for \lstinline!horizontalAlignment! is deprecated.  Having a zero size for the \lstinline!extent! is deprecated and is handled as if upper part is moved up an appropriate amount.
+The \lstinline!textColor! attribute defines the color of the text.
+The text is drawn with transparent background and no border around the text (and without outline).
+The default value for \lstinline!horizontalAlignment! is deprecated.
+Having a zero size for the \lstinline!extent! is deprecated and is handled as if upper part is moved up an appropriate amount.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -979,8 +1059,7 @@ Using a height of zero, such as \lstinline!extent = [-6, 3; -6, 3]! is deprecate
 
 \subsection{Graphical Primitives}\label{graphical-primitives}
 
-This section describes the graphical primitives that can be used to
-define the graphical objects in an annotation.
+This section describes the graphical primitives that can be used to define the graphical objects in an annotation.
 
 \subsubsection{Line}\label{line}
 
@@ -1005,11 +1084,11 @@ For arrows:
 \item
   The arrow is drawn with an aspect ratio of 1/3 for each arrow half, i.e., if the arrow-head is 3~mm long an arrow with \lstinline!Half! will extend 1~mm from the mid-line and with \lstinline!Open! or \lstinline!Filled! extend 1~mm to each side, in total making the base 2~mm wide.
 \item
-  The \lstinline!arrowSize! gives the width of the arrow (including the imagined other half for \lstinline!Half!) so that \lstinline!lineThickness = 10! and \lstinline!arrowSize = 10! will touch at the outer parts.
+  The \lstinline!arrowSize! gives the width of the arrow (including the imagined other half for \lstinline!Half!) so that \lstinline!thickness = 10! and \lstinline!arrowSize = 10! will touch at the outer parts.
 \item
   All arrow variants overlap for overlapping lines.
 \item
-  The lines for the \lstinline!Open! and \lstinline!Half! variants are drawn with \lstinline!lineThickness!.
+  The lines for the \lstinline!Open! and \lstinline!Half! variants are drawn with \lstinline!thickness!.
 \end{itemize}
 
 \subsubsection{Polygon}\label{polygon}
@@ -1062,16 +1141,18 @@ end Ellipse;
 \annotationindex{Ellipse}
 The \lstinline!extent! attribute specifies the bounding box of the ellipse.
 
-Partial ellipses can be drawn using the \lstinline!startAngle! and \lstinline!endAngle! attributes.  These specify the endpoints of the arc prior to the stretch and rotate operations.  The arc is drawn counter-clockwise from \lstinline!startAngle! to \lstinline!endAngle!, where \lstinline!startAngle! and \lstinline!endAngle! are defined counter-clockwise from 3 o'clock (the positive x-axis).
+Partial ellipses can be drawn using the \lstinline!startAngle! and \lstinline!endAngle! attributes.
+These specify the endpoints of the arc prior to the stretch and rotate operations.
+The arc is drawn counter-clockwise from \lstinline!startAngle! to \lstinline!endAngle!, where \lstinline!startAngle! and \lstinline!endAngle! are defined counter-clockwise from 3 o'clock (the positive x-axis).
 
-The closure attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).  In the latter case, the ellipse is treated as an open curve instead of a closed shape, and the \lstinline!fillPattern! and \lstinline!fillColor! are not applied (if present, they are ignored).
+The closure attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).
+In the latter case, the ellipse is treated as an open curve instead of a closed shape, and the \lstinline!fillPattern! and \lstinline!fillColor! are not applied (if present, they are ignored).
 
 The default closure is \lstinline!EllipseClosure.Chord! when \lstinline!startAngle! is 0 and \lstinline!endAngle! is 360, or \lstinline!EllipseClosure.Radial! otherwise.
 
 \begin{nonnormative}
-The default for a closed ellipse is not \lstinline!EllipseClosure.None!, since that would result in \lstinline!fillColor!
-and \lstinline!fillPattern! being ignored, making it impossible to draw a filled ellipse. \lstinline!EllipseClosure.Chord!
-is equivalent in this case, since the chord will be of zero length.
+The default for a closed ellipse is not \lstinline!EllipseClosure.None!, since that would result in \lstinline!fillColor! and \lstinline!fillPattern! being ignored, making it impossible to draw a filled ellipse.
+\lstinline!EllipseClosure.Chord! is equivalent in this case, since the chord will be of zero length.
 \end{nonnormative}
 
 \subsubsection{Text}\label{text}
@@ -1113,8 +1194,9 @@ parameter Real t(unit = "s", displayUnit = "ms") = 0.1
   \begin{example}
   If \lstinline!par = "Modelica.Blocks.Types.Enumeration.Periodic"!, then \%\emph{par} should be displayed as \emph{Periodic}.
   \end{example}
-  When quoted identifiers (e.g., \lstinline!rec.'}'.'quoted ident'!) are involved, the form \%\{\emph{par}\} must be used.
-  Here, \emph{par} is a general \lstinline[language=grammar]!component-reference!, and the macro can be directly followed by a letter.
+  When quoted identifiers (e.g., \lstinline'quoted ident'! or \lstinline!'}'!) or composite names (i.e., not simple identifiers) are involved, the form \%\{\emph{par}\} must be used.
+  Here, \emph{par} is a general \lstinline[language=grammar]!component-reference!, and \lstinline!%{a.p}! gives the value of the parameter \lstinline!p! in the component \lstinline!a!.
+  The macro can be directly followed by a letter.
   Thus \lstinline!%{w}x%{h}! gives the value of \lstinline!w! directly followed by \emph{x} and the value of \lstinline!h!, while \lstinline!%wxh! gives the value of the parameter \lstinline!wxh!.
   If the parameter does not exist it is an error.
 \end{itemize}
@@ -1155,19 +1237,15 @@ Given an extent \lstinline!{{$x_{1}$, $y_{1}$}, {$x_{2}$, $y_{2}$}}!, $x_{2} < x
 
 The graphical operations are applied in the order: scaling, flipping and rotation.
 
-When the attribute \lstinline!fileName! is specified, the string refers to an
-external file containing image data. The mapping from the string to the
-file is specified for some URIs in \cref{external-resources}. The supported file
-formats include \lstinline!PNG!, \lstinline!BMP!, \lstinline!JPEG!,
-and \lstinline!SVG!.
+When the attribute \lstinline!fileName! is specified, the string refers to an external file containing image data.
+The mapping from the string to the file is specified for some URIs in \cref{external-resources}.
+The supported file formats include \lstinline!PNG!, \lstinline!BMP!, \lstinline!JPEG!, and \lstinline!SVG!.
 
-When the attribute \lstinline!imageSource! is specified, the string contains the
-image data, and the image format is determined based on the contents.
-The image is represented as a Base64 encoding of the image file format
-(see RFC~4648, \url{http://tools.ietf.org/html/rfc4648}).
+When the attribute \lstinline!imageSource! is specified, the string contains the image data, and the image format is determined based on the contents.
+The image is represented as a Base64 encoding of the image file format (see RFC~4648, \url{http://tools.ietf.org/html/rfc4648}).
 
-The image is uniformly scaled (preserving the aspect ratio) so it exactly fits within the extent (touching the
-extent along one axis).  The center of the image is positioned at the center of the extent.
+The image is uniformly scaled (preserving the aspect ratio) so it exactly fits within the extent (touching the extent along one axis).
+The center of the image is positioned at the center of the extent.
 
 \subsection{Variable Graphics and Schematic Animation}\label{variable-graphics-and-schematic-animation}
 
@@ -1193,7 +1271,11 @@ annotation(Icon(graphics = {
 
 \subsection{User Input}\label{user-input}
 
-It is possible to interactively modify variables during a simulation.  The variables may either be parameters, discrete-time variables or states.  New numeric values can be given, a mouse click can change a \lstinline!Boolean! variable or a mouse movement can change a \lstinline!Real! variable.  Input fields may be associated with a \lstinline!GraphicItem! or a component as an array named \lstinline!interaction!.  The \lstinline!interaction! array may occur as an attribute of a graphic primitive, an attribute of a component annotation or as an attribute of the layer annotation of a class.
+It is possible to interactively modify variables during a simulation.
+The variables may either be parameters, discrete-time variables or states.
+New numeric values can be given, a mouse click can change a \lstinline!Boolean! variable or a mouse movement can change a \lstinline!Real! variable.
+Input fields may be associated with a \lstinline!GraphicItem! or a component as an array named \lstinline!interaction!.
+The \lstinline!interaction! array may occur as an attribute of a graphic primitive, an attribute of a component annotation or as an attribute of the layer annotation of a class.
 
 \subsubsection{Mouse Input}\label{mouse-input}
 
@@ -1280,42 +1362,45 @@ record OnMouseDownEditString
 end OnMouseDownEditString;
 \end{lstlisting}
 
+
 \section{Graphical User Interface}\label{annotations-for-the-graphical-user-interface}\label{graphical-user-interface}
 
 This section describes the annotations that are used to define properties of the graphical user interface.
 
 \begin{lstlisting}[language=modelica]
-annotation(preferredView = $\mathit{view}$)
+/*literal*/ constant String preferredView;
 \end{lstlisting}
 
 The \fmtannotationindex{preferredView} annotation defines the default view when selecting the class.
 The $\mathit{view}$ is a \lstinline!String! literal where \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
+If not specified the default view is tool-specific.
 
-\begin{lstlisting}[language=grammar]
-  documentation-class-annotation:
-     annotation "(" DocumentationClass "=" true ")"
+\begin{lstlisting}
+/*literal*/ constant Boolean DocumentationClass;
 \end{lstlisting}%
 \annotationindex{DocumentationClass}
 
-Only allowed as class annotation on any kind of class and implies that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
+Only allowed as class annotation on any kind of class and only having effect when \lstinline!true!, meaning that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
 If the annotation \lstinline!preferredView! is explicitly set for a class, it has precedence over a \lstinline!DocumentationClass! annotation.
 
 \begin{nonnormative}
-A tool may display such classes in special ways.  For example, the description texts of the classes might be displayed instead
-of the class names, and if no icon is defined, a special information default icon may be displayed in the package browser.
+A tool may display such classes in special ways.
+For example, the description texts of the classes might be displayed instead of the class names, and if no icon is defined, a special information default icon may be displayed in the package browser.
 \end{nonnormative}
 
 \begin{lstlisting}[language=modelica]
- annotation(defaultComponentName = "name")
+/*literal*/ constant String defaultComponentName;
 \end{lstlisting}%
 \annotationindex{defaultComponentName}
 
-When creating a component of the given class, the recommended component name is \emph{name}.
+When creating a component of the given class, and the annotation is specified it gives the recommended component name.
 If the default name cannot be used (e.g., since it is already in use), another name based on \lstinline!defaultComponentName! shall be derived automatically, except as described under \lstinline!defaultComponentPrefixes!.
+It is an error if the string is not a valid identifier.
 When automatically deriving a name, any trailing `\lstinline!1!' in the \lstinline!defaultComponentName! shall be disregarded.
+If not specified, the names of new components are tool-specific.
 
 \begin{lstlisting}[language=modelica]
-annotation(defaultComponentPrefixes = "prefixes")
+/*literal*/ constant String defaultComponentPrefixes;
 \end{lstlisting}%
 \annotationindex{defaultComponentPrefixes}
 
@@ -1326,21 +1411,21 @@ type-prefix type-specifier component-declaration
 
 The following prefixes may be included in the string \lstinline!prefixes!: \lstinline!inner!,
 \lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
+The default is an empty string.
 
 \begin{nonnormative}
-In combination with \lstinline!defaultComponentName! it can be used to make it easy for users to create \lstinline!inner! components
-matching the \lstinline!outer! declarations; see also example below.  If the prefixes contain \lstinline!inner! or \lstinline!outer!
-and the default name cannot be used (e.g., since it is already in use) it is recommended to give a diagnostic.
+In combination with \lstinline!defaultComponentName! it can be used to make it easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
+If the prefixes contain \lstinline!inner! or \lstinline!outer! and the default name cannot be used (e.g., since it is already in use) it is recommended to give a diagnostic.
 \end{nonnormative}
 
 \begin{lstlisting}[language=modelica]
-annotation(missingInnerMessage = "message")
+/*literal*/ constant String missingInnerMessage;
 \end{lstlisting}%
 \annotationindex{missingInnerMessage}
 
-When an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner!
-component, the literal string message may be used as part of a diagnostic message (together with appropriate context), see
-\cref{instance-hierarchy-name-lookup-of-inner-declarations}.
+Only has an effect if specified, and the string must then be non-empty.
+When specified and an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner! component, the string message may be used as part of a diagnostic message (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
+The default is a tool-specific diagnostic message.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1351,8 +1436,7 @@ model World
   missingInnerMessage = "The World object is missing");
 end World;
 \end{lstlisting}
-When an instance of model \lstinline!World! is dragged in to the diagram layer, the
-following declaration is generated:
+When an instance of model \lstinline!World! is dragged in to the diagram layer, the following declaration is generated:
 \begin{lstlisting}[language=modelica]
 inner replaceable World world;
 \end{lstlisting}
@@ -1360,7 +1444,7 @@ inner replaceable World world;
 
 A simple type or component of a simple type may have:
 \begin{lstlisting}[language=modelica]
-annotation(absoluteValue = false);
+/*literal*/ constant Boolean absoluteValue = true;
 \end{lstlisting}%
 \annotationindex{absoluteValue}
 
@@ -1369,44 +1453,51 @@ If \lstinline!false!, then the variable defines a relative quantity, and if \lst
 \begin{nonnormative}
 When converting between units (in the user-interface for plotting and entering parameters), the unit offset must be ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
 This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
+For most types there is no unit offset and the annotation is not needed for them.
 \end{nonnormative}
 
 A model or block definition may contain:
 \begin{lstlisting}[language=modelica]
-annotation(defaultConnectionStructurallyInconsistent = true)
+/*literal*/ constant Boolean defaultConnectionStructurallyInconsistent;
 \end{lstlisting}%
 \annotationindex{defaultConnectionStructurallyInconsistent}
 
-If \lstinline!true!, it is stated that a default connection will result in a structurally inconsistent model or block\footnote{%
+Only has an effect if \lstinline!true!, when it is stated that a \emph{default connection} will result in a structurally inconsistent model or block\footnote{%
   For the precise definition of \emph{structurally inconsistent}, see \textcite{Pantelides1988ConsistentInitialization}.}%
 .
-A "default connection" is constructed by instantiating the respective \lstinline!model! or \lstinline!block! and for every input \lstinline!u! providing an equation \lstinline!0 = f(u)!, and for every (potential, flow) pair of the form \lstinline!(v, i)!, providing an equation of the form \lstinline!0 = f(v, i)!.
+Here, the \emph{default connection} is constructed by instantiating the respective \lstinline!model! or \lstinline!block! and for every input \lstinline!u! providing an equation \lstinline!0 = f(u)!, and for every (potential, flow) pair of the form \lstinline!(v, i)!, providing an equation of the form \lstinline!0 = f(v, i)!.
 
 \begin{nonnormative}
-It is useful to check all models/blocks of a Modelica package in a simple way.  One check is to default connect every model/block and to check whether the resulting class is structurally consistent (which is a stronger requirement than being balanced).  It is rarely needed; but is for example used in \lstinline!Modelica.Blocks.Math.InverseBlockConstraints!, in order to prevent a wrong error message.  Additionally, when a user defined model is structurally inconsistent, a tool should try to pinpoint in which class the error is present.  This annotation avoids then to show a wrong error message.
+It is useful to check all models/blocks of a Modelica package in a simple way.
+One check is to default connect every model/block and to check whether the resulting class is structurally consistent (which is a stronger requirement than being balanced).
+It is rarely needed; but is for example used in \lstinline!Modelica.Blocks.Math.InverseBlockConstraints!, in order to prevent a wrong error message.
+Additionally, when a user defined model is structurally inconsistent, a tool should try to pinpoint in which class the error is present.
+This annotation avoids then to show a wrong error message.
 \end{nonnormative}
 
 A class may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(obsolete = "message");
+/*literal*/ constant String obsolete;
 \end{lstlisting}%
 \annotationindex{obsolete}
 
+Only has an effect if specified, and the string must then be non-empty.
 It indicates that the class ideally should not be used anymore and gives a message indicating the recommended action.
 This annotation is not inherited, the assumption is that if a class uses an obsolete class (as a base class or as the class of one of the components) that shall be updated -- ideally without impacting users of the class.
 If that is not possible the current class can have also have an \lstinline!obsolete! annotation.
 
 A component declaration may have the following annotation:
 \begin{lstlisting}[language=modelica]
-annotation(unassignedMessage = "message");
+/*literal*/ constant String unassignedMessage;
 \end{lstlisting}%
 \annotationindex{unassignedMessage}
 
-When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string \lstinline!"message"! can be used as a diagnostic message.
+Only has an effect if specified, and the string must then be non-empty.
+When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string can be used as a diagnostic message.
 
 \begin{nonnormative}
-When using BLT partitioning, this means if a variable \lstinline!a! or one of its aliases \lstinline!b = a! or \lstinline!b = -a!
-cannot be assigned, the message is displayed.  This annotation is used to provide library specific error messages.
+When using BLT partitioning, this means if a variable \lstinline!a! or one of its aliases \lstinline!b = a! or \lstinline!b = -a! cannot be assigned, the message is displayed.
+This annotation is used to provide library specific error messages.
 \end{nonnormative}
 
 \begin{example}
@@ -1427,21 +1518,21 @@ end Frame;
 A component declaration or a short replaceable class definition may have the following annotation:
 \begin{lstlisting}[language=modelica]
 record Dialog
-  String tab = "General";
-  String group = "";
-  Boolean enable = true;
-  Boolean showStartAttribute = false;
-  Boolean colorSelector = false;
-  Selector loadSelector;
-  Selector saveSelector;
-  Selector directorySelector;
-  String groupImage = "";
-  Boolean connectorSizing = false;
+  /*literal*/ constant String tab = "General";
+  /*literal*/ constant String group = "";
+  /*evaluable*/ parameter Boolean enable = true;
+  /*literal*/ constant Boolean showStartAttribute = false;
+  /*literal*/ constant Boolean colorSelector = false;
+  /*literal*/ constant Selector loadSelector;
+  /*literal*/ constant Selector saveSelector;
+  /*literal*/ constant Selector directorySelector;
+  /*literal*/ constant String groupImage = "";
+  /*literal*/ constant Boolean connectorSizing = false;
 end Dialog;
 
 record Selector
-  String filter = "";
-  String caption = "";
+  /*literal*/ constant String filter = "";
+  /*literal*/ constant String caption = "";
 end Selector;
 \end{lstlisting}%
 \annotationindex{Dialog}
@@ -1470,7 +1561,7 @@ If \lstinline!colorSelector = true!, it suggests the use of a color selector to 
 
 The presence of \lstinline!loadSelector! or \lstinline!saveSelector! specifying \fmtannotationindex{Selector} suggests the use of a file dialog to select a file.
 Setting \lstinline!filter! will in the dialog only show files that fulfill the given pattern.
-Setting \lstinline!text1 (*.ext1);;text2 (*.ext2)! will only show files with file extension \filename{ext1} or \filename{ext2} with the corresponding description texts \lstinline!text1! and \lstinline!text2!, respectively.
+Setting \lstinline!text1 (*.ext1);;text2 (*.ext2)! will only show files with file extensions \filename{ext1} or \filename{ext2} with the corresponding description texts \lstinline!text1! and \lstinline!text2!, respectively.
 \lstinline!caption! is a caption for display in the file dialog.
 \lstinline!loadSelector! is used to select an existing file for reading, whereas \lstinline!saveSelector! is used to define a file for writing.
 
@@ -1521,34 +1612,22 @@ If \lstinline!connectorSizing = true!, the corresponding variable must be declar
 The reason why \lstinline!connectorSizing! must be given a literal value is that if the value is an expression,
 the \lstinline!connectorSizing! functionality is conditional and this will then lead easily to wrong models.
 
-The default value of the variable must be zero since this annotation
-is designed for a parameter that is used as vector dimension, and the
-dimension of the vector should be zero when the component is dragged or
-redeclared.  Furthermore, when a tool does not support the
-\lstinline!connectorSizing! annotation, dragging will still result in a correct
-model.
+The default value of the variable must be zero since this annotation is designed for a parameter that is used as vector dimension, and the dimension of the vector should be zero when the component is dragged or redeclared.
+Furthermore, when a tool does not support the \lstinline!connectorSizing! annotation, dragging will still result in a correct model.
 \end{nonnormative}
 
 If \lstinline!connectorSizing = true!, a tool may set the parameter value in a modifier automatically, if used as dimension size of a vector of connectors.
 In that case the parameter should not be modified by the user, and a tool may choose to not display that parameter in the dialog or display it with disabled input field.
 
 \begin{nonnormative}
-The \lstinline!connectorSizing! annotation is used in cases
-where connections to a vector of connectors shall be made and a new
-connection requires to resize the vector and to connect to the new index
-(unary connections). The annotation allows a tool to perform these two
-actions in many cases automatically. This is, e.g., very useful for
-state machines and for certain components of fluid libraries.
+The \lstinline!connectorSizing! annotation is used in cases where connections to a vector of connectors shall be made and a new connection requires to resize the vector and to connect to the new index (unary connections).
+The annotation allows a tool to perform these two actions in many cases automatically.
+This is, e.g., very useful for state machines and for certain components of fluid libraries.
 \end{nonnormative}
 
 \begin{nonnormative}
-The following part is non-normative text and describes a useful
-way to handle the \lstinline!connectorSizing! annotation in a tool (still a tool may
-use another strategy and/or may handle other cases than described
-below).
-The recommended rules are clarified at hand of the following
-example which represents a connector and a model from the
-\lstinline!Modelica.StateGraph! library (note that they may be modified or renamed in future versions):
+The following part is non-normative text and describes a useful way to handle the \lstinline!connectorSizing! annotation in a tool (still a tool may use another strategy and/or may handle other cases than described below).
+The recommended rules are clarified at hand of the following example which represents a connector and a model from the \lstinline!Modelica.StateGraph! library (note that they may be modified or renamed in future versions):
 \begin{lstlisting}[language=modelica]
 connector Step_in // Only 1:1 connections are possible since input used
   output Boolean occupied;
@@ -1562,25 +1641,18 @@ block Step
   $\ldots$
 end Step;
 \end{lstlisting}
-If the parameter is used as dimension size of a vector of
-connectors, it is automatically updated according to the following
-rules:
+If the parameter is used as dimension size of a vector of connectors, it is automatically updated according to the following rules:
 \begin{enumerate}
 \item \label{connectorSizing:addVector}
-  If a new connection line is drawn between one outside and one
-  inside vector of connectors both dimensioned with (\lstinline!connectorSizing!)
-  parameters, a connection between the two vectors is performed and the
-  (\lstinline!connectorSizing!) parameter is propagated from connector to component.
-  Other types of outside connections do not lead to an automatic update
-  of a (\lstinline!connectorSizing!) parameter. \emph{Example:} Assume there is a
-  connector \lstinline!inPorts! and a component \lstinline!step1!:
+  If a new connection line is drawn between one outside and one inside vector of connectors both dimensioned with (\lstinline!connectorSizing!) parameters, a connection between the two vectors is performed and the (\lstinline!connectorSizing!) parameter is propagated from connector to component.
+  Other types of outside connections do not lead to an automatic update of a (\lstinline!connectorSizing!) parameter.
+  \emph{Example:} Assume there is a connector \lstinline!inPorts! and a component \lstinline!step1!:
 \begin{lstlisting}[language=modelica]
 parameter Integer nIn=0 annotation(Dialog(connectorSizing=true));
 Step_in inPorts[nIn];
 Step step1(nIn=0);
 \end{lstlisting}
-  Drawing a connection line between connectors \lstinline!inPorts! and
-  \lstinline!step1.inPorts! results in:
+  Drawing a connection line between connectors \lstinline!inPorts! and \lstinline!step1.inPorts! results in:
 \begin{lstlisting}[language=modelica]
   parameter Integer nIn=0 annotation(Dialog(connectorSizing=true));
   Step_in inPorts[nIn];
@@ -1598,28 +1670,20 @@ Step_in inPorts[nIn];
 Step step1; // modifier nIn=nIn is removed
 \end{lstlisting}
 \item \label{connectorSizing:addScalar}
-  If a new connection line is drawn to an inside connector with
-  \lstinline!connectorSizing! and case~\ref{connectorSizing:addVector} does not apply then, the parameter is
-  incremented by one and the connection is performed for the new highest
-  index. \emph{Example:} Assume that 3 connections are present and a new
-  connection is performed. The result is:
+  If a new connection line is drawn to an inside connector with \lstinline!connectorSizing! and case~\ref{connectorSizing:addVector} does not apply then, the parameter is incremented by one and the connection is performed for the new highest index.
+  \emph{Example:} Assume that 3 connections are present and a new connection is performed.
+  The result is:
 \begin{lstlisting}[language=modelica]
   Step step1(nIn=4); // index changed from nIn=3 to nIn=4
 equation
   connect($\ldots$, step1.inPorts[4]); // new connect-equation
 \end{lstlisting}
-  In some applications, like state machines, the vector index is
-  used as a priority, e.g., to define which transition is firing if
-  several transitions become active at the same time instant. It is then
-  not sufficient to only provide a mechanism to always connect to the
-  last index. Instead, some mechanism to select an index conveniently
-  should be provided.
+  In some applications, like state machines, the vector index is used as a priority, e.g., to define which transition is firing if several transitions become active at the same time instant.
+  It is then not sufficient to only provide a mechanism to always connect to the last index.
+  Instead, some mechanism to select an index conveniently should be provided.
 \item \label{connectorSizing:deleteScalar}
-  If a connection line is deleted to an inside connector with
-  \lstinline!connectorSizing! and case~\ref{connectorSizing:deleteVector} does not apply then, then the
-  (\lstinline!connectorSizing!) parameter is decremented by one and all connections
-  with index above the deleted connection index are also decremented by
-  one. \emph{Example:}Assume there are 4 connections:
+  If a connection line is deleted to an inside connector with \lstinline!connectorSizing! and case~\ref{connectorSizing:deleteVector} does not apply then, then the (\lstinline!connectorSizing!) parameter is decremented by one and all connections with index above the deleted connection index are also decremented by one.
+  \emph{Example:}Assume there are 4 connections:
 \begin{lstlisting}[language=modelica]
   Step step1(nIn=4);
 equation
@@ -1628,7 +1692,8 @@ equation
   connect(a3, step1.inPorts[3]);
   connect(a4, step1.inPorts[4]);
 \end{lstlisting}
-  and the connection from \lstinline!a2! to \lstinline!step1!. \lstinline!inPorts[2]! is deleted.
+  and the connection from \lstinline!a2! to \lstinline!step1!.
+  \lstinline!inPorts[2]! is deleted.
   This results in
 \begin{lstlisting}[language=modelica]
   Step step1(nIn=3);
@@ -1650,13 +1715,11 @@ equation
 \end{lstlisting}
 \end{nonnormative}
 
+
 \section{Versions}\label{annotations-for-version-handling}\label{versions}
 
-A top-level package or model can specify the version of top-level
-classes it uses, its own version number, and if possible how to convert
-from previous versions. This can be used by a tool to guarantee that
-consistent versions are used, and if possible to upgrade usage from an
-earlier version to a current one.
+A top-level package or model can specify the version of top-level classes it uses, its own version number, and if possible how to convert from previous versions.
+This can be used by a tool to guarantee that consistent versions are used, and if possible to upgrade usage from an earlier version to a current one.
 
 \subsection{Version Numbering}\label{version-numbering}
 
@@ -1673,10 +1736,8 @@ Version numbers are of the forms:
   Example: \lstinline!"Test 1"!
 \end{itemize}
 
-The main release versions are ordered using the hierarchical numerical
-names, and follow the corresponding pre-release versions. The
-pre-release versions of the same main release version are internally
-ordered alphabetically.
+The main release versions are ordered using the hierarchical numerical names, and follow the corresponding pre-release versions.
+The pre-release versions of the same main release version are internally ordered alphabetically.
 
 \subsection{Version Handling}\label{version-handling}
 
@@ -1702,7 +1763,7 @@ In a top-level class, the version number and the dependency to earlier versions 
   \end{nonnormative}
 \item
   \lstinline!uses(IDENT (version = VERSION-NUMBER [, versionBuild=INTEGER] [, dateModified=STRING] ) )!\annotationindex{uses}\\
-  Defines that classes within this top-level class uses version \lstinline!VERSION-NUMBER! of classes within the top-level class \lstinline!IDENT!.
+  Defines that classes within this top-level class use version \lstinline!VERSION-NUMBER! of classes within the top-level class \lstinline!IDENT!.
 \end{itemize}
 
 The annotations \lstinline!uses! and \lstinline!conversion! may contain several different sub-entries.
@@ -1741,17 +1802,12 @@ In this example the model \lstinline!A! uses an older version of the Modelica li
 \subsubsection{Conversion Rules}\label{conversion-rules}
 
 % Using mbox to avoid having line starting with ","
-There are a number of functions: \lstinline!convertClass!, \lstinline!convertClassIf!,
-\lstinline!convertElement!, \mbox{\lstinline!convertModifiers!,} \lstinline!convertMessage! defined as follows. The
-calls of these functions do not directly convert, instead they define
-conversion rules as below.
+There are a number of functions: \lstinline!convertClass!, \lstinline!convertClassIf!, \lstinline!convertElement!, \mbox{\lstinline!convertModifiers!,} \lstinline!convertMessage! defined as follows.
+The calls of these functions do not directly convert, instead they define conversion rules as below.
 It is recommended, but not required, to terminate each such function call with a semi-colon.
-The order between the function calls does not matter, instead the longer paths (in terms of number of hierarchical names)
-are used first as indicated below, and it is an error if there are any
-ambiguities.
+The order between the function calls does not matter, instead the longer paths (in terms of number of hierarchical names) are used first as indicated below, and it is an error if there are any ambiguities.
 
-The conversion should generate correct Modelica models using the new version of the library
-corresponding to the old version.
+The conversion should generate correct Modelica models using the new version of the library corresponding to the old version.
 
 \begin{nonnormative}
 Whenever possible tools should preserve the original style of the model, e.g., use of imports.
@@ -1765,9 +1821,8 @@ All of these convert-functions only use inheritance among user models, and not i
 The name of the class used as argument to \lstinline!convertElement! and \lstinline!convertModifiers! is similarly the old name of the class, i.e., the name before it is possibly converted by \lstinline!convertClass!.
 
 \begin{nonnormative}
-Specifying conversions using the old name of a class allows the conversion to be done without access to the old
-version of the library (by suitable modifications of the lookup).  Another alternative is to use the old version
-of the library during the conversion.
+Specifying conversions using the old name of a class allows the conversion to be done without access to the old version of the library (by suitable modifications of the lookup).
+Another alternative is to use the old version of the library during the conversion.
 
 The invalid but previously used form \lstinline!convertElement("OldClass", "OldName", "")! should be handled as \lstinline!convertModifiers("OldClass", {"OldName"}, fill("", 0))! without any conversion applied to equations.
 \end{nonnormative}
@@ -1776,7 +1831,8 @@ The invalid but previously used form \lstinline!convertElement("OldClass", "OldN
 
 Convert class \lstinline!OldClass! to \lstinline!NewClass!.
 
-Match longer path first, so if converting both \lstinline!A! to \lstinline!C! and \lstinline!A.B! to \lstinline!D! then \lstinline!A.F! is converted to \lstinline!C.F! and \lstinline!A.B.E! to \lstinline!D.E!. This is considered before \lstinline!convertMessage! for the same \lstinline!OldClass!.
+Match longer path first, so if converting both \lstinline!A! to \lstinline!C! and \lstinline!A.B! to \lstinline!D! then \lstinline!A.F! is converted to \lstinline!C.F! and \lstinline!A.B.E! to \lstinline!D.E!.
+This is considered before \lstinline!convertMessage! for the same \lstinline!OldClass!.
 
 \begin{example}
 Consider the following as part of a conversion script:
@@ -1790,26 +1846,20 @@ and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.Units
 
 \paragraph*{convertClassIf("OldClass", "oldElement", "whenValue", "NewClass")}\label{convertclassifoldclass-oldelement-whenvalue-newclass}\annotationindex{convertClassIf}
 
-Convert class \lstinline!OldClass! to \lstinline!NewClass! if the literal modifier for
-\lstinline!oldElement! has the value \lstinline!whenValue!, and also remove the modifier for
-\lstinline!oldElement!.
+Convert class \lstinline!OldClass! to \lstinline!NewClass! if the literal modifier for \lstinline!oldElement! has the value \lstinline!whenValue!, and also remove the modifier for \lstinline!oldElement!.
 
 These are considered before \lstinline!convertClass! and \lstinline!convertMessage! for the same \lstinline!OldClass!.
 
-The old element should be of a \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String!, or enumeration
-type and the match is based on the literal value of the modifier.
-For string elements the value argument to \lstinline!convertClassIf! shall be up-quoted, e.g., \lstinline!"\"My String\""!,
-and for enumeration literals only the enumeration literal part of the old value matters, e.g., \lstinline!red!
-for \lstinline!"Colors.red"!.
+The old element should be of a \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String!, or enumeration type and the match is based on the literal value of the modifier.
+For string elements the value argument to \lstinline!convertClassIf! shall be up-quoted, e.g., \lstinline!"\"My String\""!, and for enumeration literals only the enumeration literal part of the old value matters, e.g., \lstinline!red! for \lstinline!"Colors.red"!.
 
 \paragraph*{convertElement("OldClass", "OldName", "NewName")}\label{convertelementoldclassoldnamenewname}\annotationindex{convertElement}
 
-In \lstinline!OldClass!, convert element \lstinline!OldName! to \lstinline!NewName!.  Both \lstinline!OldName! and \lstinline!NewName! normally refer to components, but they may also refer to
-class-parameters, or hierarchical names.  For hierarchical names, the longest match is used first.
+In \lstinline!OldClass!, convert element \lstinline!OldName! to \lstinline!NewName!.
+Both \lstinline!OldName! and \lstinline!NewName! normally refer to components, but they may also refer to class-parameters, or hierarchical names.
+For hierarchical names, the longest match is used first.
 
-For replaceable classes in packages (and replaceable classes in other classes) \lstinline!convertElement! shall
-be used if the class is renamed within the package (or class), whereas \lstinline!convertClass! shall only be used if the class
-is placed outside of the package (or class).
+For replaceable classes in packages (and replaceable classes in other classes) \lstinline!convertElement! shall be used if the class is renamed within the package (or class), whereas \lstinline!convertClass! shall only be used if the class is placed outside of the package (or class).
 
 \begin{nonnormative}
 The latter case indicates a problem with overuse of replaceable classes in the previous design of the library.
@@ -1850,8 +1900,7 @@ The lists of old and new modifiers can have different lengths.
 The defaults (if present) are used if there are multiple \lstinline!OldModifier! and not all are set in the component instance.
 The defaults are optional if there is at most one \lstinline!OldModifier! element, and should otherwise be provided.
 
-If \lstinline!simplify! is specified and true then perform obvious simplifications
-to clean up the new modifier; otherwise leave as is.
+If \lstinline!simplify! is specified and true then perform obvious simplifications to clean up the new modifier; otherwise leave as is.
 
 \begin{nonnormative}
 Note: \lstinline!simplify! is primarily intended for converting enumerations and emulated enumerations that naturally lead to large nested \lstinline!if!-expressions.
@@ -1863,11 +1912,12 @@ If the modifiers contain literal string values they must be quoted.
 Behaviour in unusual cases:
 \begin{itemize}
 \item
-  if \lstinline!NewModifier! list is empty then the modifier is just removed
+  If \lstinline!NewModifier! list is empty then the modifier is just removed.
 \item
-  If \lstinline!OldModifer! list is empty it is added for all uses of the class
+  If \lstinline!OldModifer! list is empty it is added for all uses of the class.
 \item
-  If \lstinline!OldModifier$i$! is \lstinline!cardinality(a) = 0! the conversion will only be applied for a component comp if there are no inside connections to \lstinline!comp.a!. This can be combined with other modifiers that are handled in the usual way.
+  If \lstinline!OldModifier$i$! is \lstinline!cardinality(a) = 0! the conversion will only be applied for a component comp if there are no inside connections to \lstinline!comp.a!.
+  This can be combined with other modifiers that are handled in the usual way.
 \item
   If \lstinline!OldModifier$i$! is \lstinline!cardinality(a) = 1! the conversion will only be applied for a component comp if there are any inside connections to \lstinline!comp.a!.
 \end{itemize}
@@ -1882,12 +1932,9 @@ Converting modifiers with cardinality is used to remove the deprecated operator 
 The case where the old class is used as a base class, and there exist outside connections to \lstinline!a!, and there is \lstinline!convertModifiers! involving the cardinality of \lstinline!a! is not handled.
 
 \begin{nonnormative}
-Having a parameter for explicitly enabling the different cases means that instead of model \lstinline!A! internally testing if its
-connector \lstinline!B! is connected, there will be a parameter for enabling connector \lstinline!B!, and the conversion ensures that
-each component of model \lstinline!A! will have this parameter set accordingly.
+Having a parameter for explicitly enabling the different cases means that instead of model \lstinline!A! internally testing if its connector \lstinline!B! is connected, there will be a parameter for enabling connector \lstinline!B!, and the conversion ensures that each component of model \lstinline!A! will have this parameter set accordingly.
 
-In case a parameter is simply renamed it is preferable to use \lstinline!convertElement!, since that also handles, e.g., binding equations
-using the parameter.
+In case a parameter is simply renamed it is preferable to use \lstinline!convertElement!, since that also handles, e.g., binding equations using the parameter.
 \end{nonnormative}
 
 \begin{example}
@@ -1953,27 +2000,25 @@ Note that conversion works regardless of the import of \lstinline!My.Library!.
 
 \paragraph*{convertMessage("OldClass", "Failed Message")}\label{convertmessageoldclass-failed-message}\annotationindex{convertMessage}
 
-For any use of \lstinline!OldClass! (or element of \lstinline!OldClass!) report that conversion
-could not be applied with the given message.
+For any use of \lstinline!OldClass! report that conversion could not be applied with the given message.
 
 \begin{nonnormative}
-This may be useful if there is no possibility to convert a specific class. An alternative is to construct \lstinline!ObsoleteLibraryA! for problematic
-cases, which may be more work but allows users to directly run the models after the conversion and later convert them.
+This may be useful if there is no possibility to convert a specific class.
+An alternative is to construct \lstinline!ObsoleteLibraryA! for problematic cases, which may be more work but allows users to directly run the models after the conversion and later convert them.
 \end{nonnormative}
 
 \paragraph*{convertMessage("OldClass", "Failed Message", "oldElement")}\label{convertmessageoldclass-failed-message2}
 
-For any use of \lstinline!oldElement! in \lstinline!OldClass! report that conversion
-could not be applied with the given message.
+For any use of \lstinline!oldElement! in \lstinline!OldClass! report that conversion could not be applied with the given message.
 
 \begin{nonnormative}
-This is useful if there is no possibility to convert a specific parameter (or other element), especially if it rarely modified.  If the parameter had no impact on the model it can be removed using \lstinline!convertModifiers!, see \cref{convertmodifiers}.
+This is useful if there is no possibility to convert a specific parameter (or other element), especially if it rarely modified.
+If the parameter had no impact on the model it can be removed using \lstinline!convertModifiers!, see \cref{convertmodifiers}.
 \end{nonnormative}
 
 \subsection{Versions in the File System}\label{mapping-of-versions-to-file-system}\label{versions-in-the-File-System}
 
-A top-level class, \lstinline!IDENT!, with version \lstinline!VERSION-NUMBER! can be stored in
-one of the following ways in a directory given in the \lstinline!MODELICAPATH!:
+A top-level class, \lstinline!IDENT!, with version \lstinline!VERSION-NUMBER! can be stored in one of the following ways in a directory given in the \lstinline!MODELICAPATH!:
 \begin{itemize}
 \item
   The file \lstinline!IDENT ".mo"!\\
@@ -1995,14 +2040,18 @@ This allows a tool to access multiple versions of the same package.
 
 Besides version information, a top-level class can have additionally the following top-level annotations to specify associated information to the version number:%
 \begin{lstlisting}[language=modelica]
-String versionDate   "UTC date of first version build (in format: YYYY-MM-DD)";
-Integer versionBuild "Larger number is a more recent maintenance update";
-String dateModified  "UTC date and time of the latest change to the package
-                      in the following format (with one space between date
-                      and time): YYYY-MM-DD hh:mm:ssZ";
-String revisionId    "Revision identifier of the version management system used
-                      to manage this library. It marks the latest submitted
-                      change to any file belonging to the package";
+/*literal*/ constant String versionDate
+   "UTC date of first version build (in format: YYYY-MM-DD)";
+/*literal*/ constant Integer versionBuild
+   "Larger number is a more recent maintenance update";
+/*literal*/ constant String dateModified
+   "UTC date and time of the latest change to the package
+    in the following format (with one space between date
+    and time): YYYY-MM-DD hh:mm:ssZ";
+/*literal*/ constant String revisionId
+   "Revision identifier of the version management system used
+    to manage this library. It marks the latest submitted
+    change to any file belonging to the package";
 \end{lstlisting}%
 \annotationindex{versionDate}\annotationindex{versionBuild}\annotationindex{dateModified}\annotationindex{revisionId}
 
@@ -2036,71 +2085,52 @@ The meanings of these annotations are:
   \lstinline!version! is the version number of the released library,
   see \cref{version-handling}.
 \item
-  \lstinline!versionDate! is the date in UTC format (according to ISO
-  8601) when the library was released. This string is updated by the
-  library author to correspond with the version number.
+  \lstinline!versionDate! is the date in UTC format (according to ISO 8601) when the library was released.
+  This string is updated by the library author to correspond with the version number.
 \item
   \lstinline!versionBuild! is the optional build number of the library.
-  When a new version is released \lstinline!versionBuild! should be omitted or
-  \lstinline!versionBuild = 1!. There might be bug fixes to the library that do
-  not justify a new library version. Such maintenance changes are called
-  a \emph{build} release of the library. For every new maintenance change,
-  the \lstinline!versionBuild! number is increased. A \lstinline!versionBuild! number $A$
-  that is higher than \lstinline!versionBuild! number $B$, is a newer release of the
-  library. There are no conversions between the same versions with
-  different build numbers.
+  When a new version is released \lstinline!versionBuild! should be omitted or \lstinline!versionBuild = 1!.
+  There might be bug fixes to the library that do not justify a new library version.
+  Such maintenance changes are called a \emph{build} release of the library.
+  For every new maintenance change, the \lstinline!versionBuild! number is increased.
+  A \lstinline!versionBuild! number $A$ that is higher than \lstinline!versionBuild! number $B$, is a newer release of the library.
+  There are no conversions between the same versions with different build numbers.
 
   Two releases of a library with the same \lstinline!version! but different \lstinline!versionBuild! are in general assumed to be compatible.
   In special cases, the \lstinline!uses!-clause of a model may specify \lstinline!versionBuild! and/or \lstinline!dateModified!.
   In such a case the tool is expected to give a warning if there is a mismatch between library and model.
 \item
-  \lstinline!dateModified! is the UTC date and time (according to ISO
-  8601) of the last modification of the package.
+  \lstinline!dateModified! is the UTC date and time (according to ISO 8601) of the last modification of the package.
 
   \begin{nonnormative}
-  The intention is that a Modelica tool updates this annotation whenever the package or part of it was modified and is saved on
-  persistent storage (like file or database system).
+  The intention is that a Modelica tool updates this annotation whenever the package or part of it was modified and is saved on persistent storage (like file or database system).
   \end{nonnormative}
 \item
-  \lstinline!revisionId! is a tool specific revision identifier
-  possibly generated by a source code management system (e.g., Subversion
-  or CVS). This information exactly identifies the library
-  source code in the source code management system.
+  \lstinline!revisionId! is a tool specific revision identifier possibly generated by a source code management system (e.g., Subversion or CVS).
+  This information exactly identifies the library source code in the source code management system.
 \end{itemize}
 
-The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also be specified in
-the \lstinline!uses! annotation (together with the version number).
+The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also be specified in the \lstinline!uses! annotation (together with the version number).
 
 \begin{nonnormative}
 It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
 \end{nonnormative}
 
+
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
 
-This section presents annotations to define the protection and the
-licensing of packages. The goal is to unify basic mechanisms to control
-the access to a package in order to protect the intellectual property
-contained in it. This information is used to encrypt a package and bind
-it optionally to a particular target machine, and/or restrict the usage
-for a particular period of time.
+This section presents annotations to define the protection and the licensing of packages.
+The goal is to unify basic mechanisms to control the access to a package in order to protect the intellectual property contained in it.
+This information is used to encrypt a package and bind it optionally to a particular target machine, and/or restrict the usage for a particular period of time.
 
 \begin{nonnormative}
-Protecting the intellectual property of a Modelica package is
-considerably more difficult than protecting code from a programming
-language. The reason is that a Modelica tool needs the model equations
-in order that it can process the equations symbolically, as needed for
-acausal modeling. Furthermore, if a Modelica tool generates C-code of
-the processed equations, this code is then potentially available for
-inspection by the user. Finally, the Modelica tool vendors have to be
-trusted, that they do not have a backdoor in their tools to store the
-(internally) decrypted classes in human readable format. The only way to
-protect against such misuse is legally binding warranties of the tool
-vendors.
+Protecting the intellectual property of a Modelica package is considerably more difficult than protecting code from a programming language.
+The reason is that a Modelica tool needs the model equations in order that it can process the equations symbolically, as needed for acausal modeling.
+Furthermore, if a Modelica tool generates C-code of the processed equations, this code is then potentially available for inspection by the user.
+Finally, the Modelica tool vendors have to be trusted, that they do not have a backdoor in their tools to store the (internally) decrypted classes in human readable format.
+The only way to protect against such misuse is legally binding warranties of the tool vendors.
 
-The intent of this section is to enable a library vendor to
-maintain one source version of their Modelica library that can be
-encrypted and used with several different Modelica tools, using
-different encryption formats.
+The intent of this section is to enable a library vendor to maintain one source version of their Modelica library that can be encrypted and used with several different Modelica tools, using different encryption formats.
 \end{nonnormative}
 
 The following definitions relate to access control.
@@ -2114,15 +2144,16 @@ Changing a Modelica class or generated code so that it is difficult to inspect b
 \end{definition}
 
 \begin{definition}[Encryption]\index{encryption!access control}
-Encoding of a model or a package in a form so that the modeler cannot inspect any content of a class without an appropriate key.  An encrypted package that has the \lstinline!Protection! annotation
-is read-only; the way to modify it is to generate a new encrypted version.
+Encoding of a model or a package in a form so that the modeler cannot inspect any content of a class without an appropriate key.
+An encrypted package that has the \lstinline!Protection! annotation is read-only; the way to modify it is to generate a new encrypted version.
 \end{definition}
 
 \begin{definition}[Licensing]\index{licensing!access control}
 Restrict the use of an encrypted package for particular users for a specified period of time.
 \end{definition}
 
-In this section annotations are defined for protection and licensing.  Obfuscation and encryption are not standardized.
+In this section annotations are defined for protection and licensing.
+Obfuscation and encryption are not standardized.
 
 Protection and licensing are both defined inside the \fmtannotationindex{Protection} annotation:
 \begin{lstlisting}[language=modelica]
@@ -2133,19 +2164,21 @@ annotation(Protection($\ldots$));
 
 A class may have the following annotations to define what parts of a class are visible, and only the parts explicitly listed as visible below can be accessed (if a class is encrypted and no \lstinline!Protection! annotation is defined, the access annotation has the default value \lstinline!Access.documentation!):
 \begin{lstlisting}[language=modelica]
-type Access =
-  enumeration(hide, icon, documentation, diagram,
+record Protection
+  /*literal*/ constant Access access;
+  $\ldots$
+end Protection;
+type Access = enumeration(hide, icon, documentation, diagram,
               nonPackageText, nonPackageDuplicate,
               packageText, packageDuplicate);
-annotation(Protection(access = Access.documentation));
 \end{lstlisting}
+The other members of this record are given in \cref{licensing}.
 
 The items of the \fmtannotationindex{Access} enumeration have the following meanings:
 \begin{enumerate}
 \item
   \lstinline!Access.hide!\\
-  Do not show the class anywhere (it is not possible to inspect any part
-  of the class).
+  Do not show the class anywhere (it is not possible to inspect any part of the class).
 \item
   \lstinline!Access.icon!\\
   The class can be instantiated and public parameter, constant, input, output variables as well as public connectors can be accessed, as well as the \lstinline!Icon! annotation, as defined in \cref{annotations-for-graphical-objects} (the declared information of these elements can be shown).
@@ -2281,31 +2314,27 @@ end CommercialFluid;
 
 \subsection{Licensing}\label{licensing}
 
-In this section annotations within the \lstinline!Protection! annotation are
-defined to restrict the usage of the encrypted package:
+In this section annotations within the \lstinline!Protection! annotation are defined to restrict the usage of the encrypted package:
 \begin{lstlisting}[language=modelica]
 record Protection
-  $\ldots$
-  String features[:] = fill("", 0) "Required license features";
+  /*literal*/ constant Access access;
+  /*literal*/ constant String features[:] "Required license features";
+
   record License
-    String libraryKey;
-    String licenseFile = "" "Optional, default mapping if empty";
+    /*literal*/ constant String libraryKey;
+    /*literal*/ constant String licenseFile = "" "Optional, default mapping if empty";
   end License;
 end Protection;
 \end{lstlisting}
+See \cref{protection-of-classes} for a description of \lstinline!access!, and note that licensing information uses another record \lstinline!Protection! with different contents given below.
 The \fmtannotationindex{License} annotation has only an effect on the top of an encrypted class and is then valid for the whole class hierarchy.
 (Usually the licensed class is a package.)
 The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
 
-The \lstinline!features! annotation defines the required license options. If the
-features vector has more than one element, then at least a license
-feature according to one of the elements must be present. As with the
-other annotations, the \lstinline!features! annotation holds for the respective
-class and for all classes that are hierarchically on a lower level,
-unless further restricted by a corresponding annotation. If no license
-according to the \lstinline!features! annotation is provided in the
-authorization file, the corresponding classes are not visible and cannot
-be used, not even internally in the package.
+The \lstinline!features! annotation defines the required license options.
+If the features vector has more than one element, then at least a license feature according to one of the elements must be present.
+As with the other annotations, the \lstinline!features! annotation holds for the respective class and for all classes that are hierarchically on a lower level, unless further restricted by a corresponding annotation.
+If no license according to the \lstinline!features! annotation is provided in the authorization file, the corresponding classes are not visible and cannot be used, not even internally in the package.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -2324,48 +2353,42 @@ In order that the protected class can be used either a tool specific license man
 The license file is standardized.
 It is a Modelica package without classes that has a \lstinline!Protection! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
 \begin{lstlisting}[language=modelica]
-record Authorization
-  String licensor = "" "Optional string to show information about the licensor";
-  String libraryKey "Matching the key in the class. Must be encrypted and not visible";
-  License license[:] "Definition of the license options and of the access rights";
-end Authorization;
+record Protection
+  record Authorization
+    /*literal*/ constant String licensor = "" "Optional string to show information about the licensor";
+    /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
+    /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
+  end Authorization;
 
-record License
-  String licensee = "" "Optional string to show information about the licensee";
-  String id[:] "Unique machine identifications, e.g., MAC addresses";
-  String features[:] = fill("", 0) "Activated library license features";
-  String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
-  String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
-  String operations[:] = fill("", 0) "Library usage conditions";
-end License;
+  record License
+    /*literal*/ constant String licensee = "" "Optional string to show information about the licensee";
+    /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
+    /*literal*/ constant String features[:] "Activated library license features";
+    /*literal*/ constant String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
+    /*literal*/ constant String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
+    /*literal*/ constant String operations[:] "Library usage conditions";
+  end License;
+end Protection;
 \end{lstlisting}%
 \index{Authorization@\robustinline{Authorization}!license file}\index{License@\robustinline{License}!license file}
 
-The format of the strings used for \lstinline!libraryKey! and \lstinline!id! are not specified
-(they are vendor specific). The \lstinline!libraryKey! is a secret of the library
-developer. The \lstinline!operations! define the usage conditions and the following
-are default names:
+The format of the strings used for \lstinline!libraryKey! and \lstinline!id! are not specified (they are vendor specific).
+The \lstinline!libraryKey! is a secret of the library developer.
+The \lstinline!operations! define the usage conditions and the following are default names:
 \begin{itemize}
 \item
-  \lstinline!"ExportBinary"! Binary code generated from the Modelica code of the
-  library can be included in binaries produced by a simulation
-  tool.
+  \lstinline!"ExportBinary"! Binary code generated from the Modelica code of the library can be included in binaries produced by a simulation tool.
 \item
-  \lstinline!"ExportSource"! Source code generated from the Modelica code of the
-  library can be included in sources produced by a simulation tool.
+  \lstinline!"ExportSource"! Source code generated from the Modelica code of the library can be included in sources produced by a simulation tool.
 \end{itemize}
 
-Additional tool-specific names can also be used. To protect the
-\lstinline!libraryKey! and the target definitions, the authorization file must
-be encrypted and must never show the \lstinline!libraryKey!.
+Additional tool-specific names can also be used.
+To protect the \lstinline!libraryKey! and the target definitions, the authorization file must be encrypted and must never show the \lstinline!libraryKey!.
 
 \begin{nonnormative}
-All other information, especially licensor and license should be visible, in order
-that the user can get information about the license. It is useful to
-include the name of the tool in the authorization file name with which
-it was encrypted. Note, it is not useful to store this information in
-the annotation, because only the tool that encrypted the \lstinline!Authorization!
-package can also decrypt it.
+All other information, especially licensor and license should be visible, in order that the user can get information about the license.
+It is useful to include the name of the tool in the authorization file name with which it was encrypted.
+Note, it is not useful to store this information in the annotation, because only the tool that encrypted the \lstinline!Authorization! package can also decrypt it.
 \end{nonnormative}
 
 \begin{example}
@@ -2395,6 +2418,19 @@ package MyLibraryAuthorization_Tool
 end MyLibraryAuthorization_Tool;
 \end{lstlisting}
 \end{example}
+
+
+\section{License Texts}\label{license-texts}
+
+For a top-level class the {\lstinline!annotation(License="modelica:/ModelicaLibraryName/Resources/Licenses/MyLicense.txt")!}\annotationindex{License}, gives a license text file for the class.
+The annotation may give a scalar string or an array of strings, where each string is a URI referencing a license text file, see \cref{external-resources}.
+The license text files are human-readable files containing the license conditions.
+If the annotation specifies an array of license text files the conditions in all of them must be satisfied (i.e., it is not intended for dual-licensing).
+External functions may also contain this annotation (with similar content), see \cref{annotations-for-external-libraries-and-include-files}.
+
+When generating a distributable version for a translated model the license text files for used functions and top-level classes should be included.
+Exceptions could be that licenses will be distributed in another way, or that there is an agreement to include different licenses (e.g., for internal libraries).
+Note that the \lstinline!License! annotation only allows the library developer and tool to assist the user in doing what is legally required; in the end it is a user responsibility to ensure that required license text files accompany distributable versions of models.
 
 
 \section{Functions}\label{annotations-for-functions}

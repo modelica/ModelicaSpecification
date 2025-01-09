@@ -36,13 +36,13 @@ An equation section is comprised of the keyword \lstinline!equation!\index{equat
 The formal syntax is as follows:
 \begin{lstlisting}[language=grammar]
 equation-section :
-   [ initial ] equation { equation ";" }
+   [ initial ] equation { some-equation ";" }
 \end{lstlisting}
 
 The following kinds of equations may occur in equation sections.
 The syntax is defined as follows:
 \begin{lstlisting}[language=grammar]
-equation :
+some-equation :
    ( simple-expression "=" expression
      | if-equation
      | for-equation
@@ -82,7 +82,7 @@ Also compare with \cref{assignments-from-called-functions-with-multiple-results}
 The syntax of a \lstinline!for!-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation@\robustinline{for}-equation} is as follows:
 \begin{lstlisting}[language=grammar]
 for for-indices loop
-  { equation ";" }
+  { some-equation ";" }
 end for ";"
 \end{lstlisting}
 
@@ -153,7 +153,7 @@ A \lstinline!connect!-equation has the following syntax:
 connect "(" component-reference "," component-reference ")" ";"
 \end{lstlisting}
 
-These can be placed inside \lstinline!for!-equations and \lstinline!if!-equations; provided the indices of the \lstinline!for!-loop and conditions of the \lstinline!if!-equation are parameter expressions that do not depend on \lstinline!cardinality!, \lstinline!rooted!, \lstinline!Connections.rooted!, or \lstinline!Connections.isRoot!.
+These can be placed inside \lstinline!for!-equations and \lstinline!if!-equations; provided the indices of the \lstinline!for!-loop and conditions of the \lstinline!if!-equation are evaluable expressions that do not depend on \lstinline!cardinality!, \lstinline!rooted!, \lstinline!Connections.rooted!, or \lstinline!Connections.isRoot!.
 The \lstinline!for!-equations/\lstinline!if!-equations are expanded.
 \lstinline!connect!-equations are described in detail in \cref{connect-equations-and-connectors}.
 
@@ -164,12 +164,12 @@ The same restrictions apply to \lstinline!Connections.branch!, \lstinline!Connec
 The \lstinline!if!-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 if expression then
-  { equation ";" }
+  { some-equation ";" }
 { elseif expression then
-  { equation ";" }
+  { some-equation ";" }
 }
 [ else
-  { equation ";" }
+  { some-equation ";" }
 ]
 end if ";"
 \end{lstlisting}
@@ -192,9 +192,9 @@ If this condition is violated, the single assignment rule would not hold, becaus
 The \lstinline!when!-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation@\robustinline{when}-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation@\robustinline{when}-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 when expression then
-  { equation ";" }
+  { some-equation ";" }
 { elsewhen expression then
-  { equation ";" }
+  { some-equation ";" }
 }
 end when ";"
 \end{lstlisting}
@@ -325,6 +325,7 @@ equation
   end when;
 \end{lstlisting}
 Here, variable \lstinline!y! is held constant when the \lstinline!when!-equation is deactivated and \lstinline!x! is computed from the first equation using the value of \lstinline!y! from the previous event instant.
+Note that during event iterations \lstinline!y! will be solved from a system of two equations.
 \end{nonnormative}
 
 \begin{example}
@@ -777,10 +778,11 @@ In case of iterative solver failure, it is recommended to specially report those
 \end{nonnormative}
 
 If a parameter has a value for the \lstinline!start!-attribute, does not have \lstinline!fixed = false!, and neither has a binding equation nor is part of a record having a binding equation, the value for the \lstinline!start!-attribute can be used to add a parameter binding equation assigning the parameter to that \lstinline!start! value.
-In this case a diagnostic message is recommended in a simulation model.
+In this case a diagnostic message is recommended in a simulation model, unless the parameter has a \lstinline!Dialog.enable! annotation set to false.
 
 \begin{nonnormative}
 This is used in libraries to give rudimentary defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters that should be set properly.
+The \lstinline!enable=false! case can be used to provide default values for parameters that are not used in the current configuration, while ensuring that they are explicitly given a value when used.
 \end{nonnormative}
 
 All variables declared as \lstinline!parameter! having \lstinline!fixed = false! are treated as unknowns during the initialization phase, i.e., there must be additional equations for them -- and the \lstinline!start!-value can be used as a guess-value during initialization.
@@ -792,6 +794,12 @@ Continuous-time \lstinline!Real! variables \lstinline!vc! have exactly one initi
 
 Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!.
 If this is not the case for some variables \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
+In detail this means that during initialization initial equations and normal equations are solved with \lstinline!v! and \lstinline!pre(v)! as unknowns without any event iterations.
+Then only the normal equations are solved repeatedly (each time after \lstinline!v! is copied to \lstinline!pre(v)!) until \lstinline!v = pre(v)!.
+
+\begin{nonnormative}
+Tools may optimize initialization by not computing unnecessary \lstinline!pre(v)!, and only performing the event iteration if necessary.
+\end{nonnormative}
 
 A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.
 This may require to differentiate equations for index reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.
@@ -858,7 +866,7 @@ equation
 \end{example}
 
 \begin{example}
-Discrete time controller initialized in steady-state:
+Discrete-time controller initialized in steady-state:
 \begin{lstlisting}[language=modelica]
   discrete Real y;
 equation

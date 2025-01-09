@@ -45,7 +45,7 @@ The following table presents the precedence and associativity of all the express
 \caption{%
 Operators in order of precedence from highest to lowest.
 Operators with different precedence are separated by horizontal lines.
-All operators are binary except the postfix operators and those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
+All operators are binary except array index, member access, function call, those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
 % Beware that the array construction operator, normally expressed as \lstinline!{ }! needs escaped braces inside \caption.
 % This isn't handled correctly by LaTeXML, as reported here:
 % - https://github.com/brucemiller/LaTeXML/issues/1377 (fixed on master 2022-12-10)
@@ -63,11 +63,11 @@ $^{\dagger}$ The associativity of array construction and concatenation refers to
 \tablehead{Operator group} & \tablehead{Assoc.} & \tablehead{Operator syntax} & \tablehead{Examples}\\
 \hline
 \hline
-Postfix array index & left & {\lstinline![]!} & {\lstinline!arr[index]!}\\
+Array index & left & {\lstinline![]!} & {\lstinline!arr[index]!}\\
 \hline
-Postfix access & left & {\lstinline!.!} & {\lstinline!a.b!}\\
+Member access & left & {\lstinline!.!} & {\lstinline!a.b!}\\
 \hline
-Postfix function call & none & {\lstinline!$\mathit{funcName}$($\mathit{args}$)!} & {\lstinline!sin(4.36)!}\\
+Function call & none & {\lstinline!$\mathit{funcName}$($\mathit{args}$)!} & {\lstinline!sin(4.36)!}\\
 \hline
 Array construction & left$^{\dagger}$ & {\lstinline!{$\mathit{expr}$, $\mathit{expr}$, $\ldots$}!} & {\lstinline!{2, 3}!}\\
 Horizontal concatenation & left$^{\dagger}$ & {\lstinline![$\mathit{expr}$, $\mathit{expr}$, $\ldots$]!} & {\lstinline![5, 6]!}\\
@@ -103,13 +103,12 @@ Named argument & none & {\lstinline!$\mathit{ident}$ = $\mathit{expr}$!} & {\lst
 \end{center}
 \end{table}
 
-The postfix array index and postfix access operators are not merely expression operators in the normal sense that \lstinline!a.b[1]! can be treated as \lstinline!a.(b[1])!.
-Instead, these operators need to be considered jointly to identify an entire \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) which is the smallest unit that can be seen as an expression in itself.
-Postfix access can only be applied immediately to a \lstinline[language=grammar]!component-reference!; not even parentheses around the left operand are allowed.
-Postfix array index can additionally be applied if there are parentheses around the left operand, see \cref{indexing}.
+The array index and member access operators can both be part of a \lstinline[language=grammar]!component-reference! (one of the alternative productions for \lstinline[language=grammar]!primary! in the grammar) and be applied to general expressions when the left operand is parenthesized.
+Directly using both member access and array index in a \lstinline[language=grammar]!component-reference! has a special intuitive meaning.
+See \cref{indexing} and \cref{member-access-operator}.
 
 \begin{example}
-Relative precedence of postfix array index and postfix access.
+Relative precedence of array index and member access.
 Consider the following definition of the array variable \lstinline!a!:
 \begin{lstlisting}[language=modelica]
 record R
@@ -117,7 +116,7 @@ record R
 end R;
 R[3] a;
 \end{lstlisting}
-These are some valid as well as invalid ways to using postfix array index and postfix access:
+These are some valid as well as invalid ways to using array index and member access:
 \begin{lstlisting}[language=modelica]
 a[3].x[2]   // OK: Component reference of type Real
 a[3].x      // OK: Component reference of type Real[2]
@@ -127,9 +126,11 @@ a.x         // OK: Component reference of type Real[3, 2]
 (a.x)[2]    // OK: Component reference of type Real[2] - same as a[2].x[:]
 (a.x)[2, :] // OK: Component reference of type Real[2] - same as a[2].x[:]
 a[3]        // OK: Component reference of type R
-(a[3]).x    // Error: Invalid use of parentheses
+(a[3]).x    // OK: Like a[3].x, but not a component reference
+(a[3]).x[1] // Error.
+((a[3]).x)[1] // OK: Like a[3].x[1], but not a component reference
 \end{lstlisting}
-The relation between \lstinline!a.x!, \lstinline!a.x[2]!, and \lstinline!(a.x)[2]! illustrates the effect of giving higher precedence to array index than postfix access.
+The relation between \lstinline!a.x!, \lstinline!a.x[2]!, and \lstinline!(a.x)[2]! illustrates the effect of giving higher precedence to array index than member access.
 Had the precedence been equal, this would have changed the meaning of \lstinline!a.x[2]! to the same thing that \lstinline!(a.x)[2]! expresses, being a component reference of type \lstinline!Real[2]!.
 \end{example}
 
@@ -355,10 +356,19 @@ Integer sign_of_i2 = if i < 0 then -1 else if i == 0 then 0 else 1;
 \subsection{Member Access Operator}\label{member-access-operator}
 
 It is possible to access members of a class instance using dot notation, i.e., the \lstinline!.! operator.
+It is also possible to select a record member of a general expression by enclosing it in parentheses.
+Note that while the selection is applied to an \lstinline[language=grammar]!output-expression-list! in the grammar, it is only semantically valid when the \lstinline[language=grammar]!output-expression-list! represents an expression.
+
+In case the first operand is an array it is seen as a slicing operation, see \cref{slice-operation}.
 
 \begin{example}
-\lstinline!R1.R! for accessing the resistance component \lstinline!R! of resistor \lstinline!R1!.
-Another use of dot notation: local classes which are members of a class can of course also be accessed using dot notation on the name of the class, not on instances of the class.
+The component reference \lstinline!R1.R! accesses the resistance component \lstinline!R! of resistor \lstinline!R1!.
+
+The qualified class name \lstinline!A.B! is a reference to the local class \lstinline!B! which is a member of the class \lstinline!A!.
+Note that the left operand in this case is a class, not an instance of the class.
+
+\lstinline!(Complex(2, 3)).re! constructs the record \lstinline!Complex(2, 3)! and then selects the \lstinline!re! component in it.
+\lstinline!Complex(2, 3).re! is not valid syntax.
 \end{example}
 
 \subsection{Built-in Variable time}\label{built-in-variable-time}\indexinline{time}
@@ -383,29 +393,34 @@ end SineSource;
 \end{lstlisting}
 \end{example}
 
-\section{Built-in Intrinsic Operators with Function Syntax}\label{built-in-intrinsic-operators-with-function-syntax}
+\section{Built-in Operators and Functions}\label{built-in-intrinsic-operators-with-function-syntax}
 
-Certain built-in operators of Modelica have the same syntax as a function call.
+Certain built-in operators of Modelica are called using the same syntax as a function call.
 However, they do not behave as a mathematical function, because the result depends not only on the input arguments but also on the status of the simulation.
 
 There are also built-in functions that depend only on the input argument, but also may trigger events in addition to returning a value.
-Intrinsic means that they are defined at the Modelica language level, not in the Modelica library.
-The following built-in intrinsic operators/functions are available:
+The built-in functions may also be overloaded such that a single Modelica function cannot be compatible with all calls of the function.
+Here, \emph{built-in} means that they are defined at the Modelica language level, not through a Modelica \lstinline!function! definition.
+The following built-in operators/functions are available:
 \begin{itemize}
 \item
-  Mathematical functions and conversion functions, see \cref{numeric-functions-and-conversion-functions} below.
+  Mathematical functions and conversion operators, see \cref{numeric-functions-and-conversion-functions} below.
 \item
   Derivative and special purpose operators with function syntax, see \cref{derivative-and-special-purpose-operators-with-function-syntax} below.
 \item
-  Event-related operators with function syntax, see \cref{event-related-operators-with-function-syntax} below.
+  Event-related operators, see \cref{event-related-operators-with-function-syntax} below.
 \item
-  Array operators/functions, see \cref{array-dimension-lower-and-upper-index-bounds}.
+  Array operators/functions, see \cref{built-in-array-functions}.
+\item
+  Synchronous operators, see \cref{synchronous-language-elements}.
+\item
+  State machine operators, see \cref{transitions}.
 \end{itemize}
 
-Note that when the specification references a function having the name of a built-in function it references the built-in function, not a user-defined function having the same name, see also \cref{built-in-functions}.
-With exception of the built-in \lstinline!String! operator, all operators in this section can only be called with positional arguments.
+Except where shadowing problems are being discussed, references to built-in functions and operators within this document always assume that the built-in definitions are not shadowed by user-defined definitions, see also \cref{built-in-functions}.
+With the exception where inputs are named (e.g., \lstinline!String!), all operators and functions in this section can only be called with positional arguments.
 
-\subsection{Numeric Functions and Conversion Functions}\label{numeric-functions-and-conversion-functions}
+\subsection{Numeric Functions and Conversion Operators}\label{numeric-functions-and-conversion-functions}
 
 The mathematical functions and conversion operators listed below do not generate events.
 \begin{center}
@@ -417,6 +432,7 @@ The mathematical functions and conversion operators listed below do not generate
 {\lstinline!abs($v$)!} & Absolute value (event-free) & \Cref{modelica:abs} \\
 {\lstinline!sign($v$)!} & Sign of argument (event-free) & \Cref{modelica:sign} \\
 {\lstinline!sqrt($v$)!} & Square root & \Cref{modelica:sqrt} \\
+{\lstinline!nthRoot($v$, $n$)!} & $n$th root & \Cref{modelica:nthRoot} \\
 {\lstinline!Integer($e$)!} & Conversion from enumeration to {\lstinline!Integer!} & \Cref{modelica:integer-of-enumeration} \\
 {\lstinline!EnumTypeName($i$)!} & Conversion from {\lstinline!Integer!} to enumeration & \Cref{modelica:enumeration-of-integer} \\
 {\lstinline!String($\ldots$)!} & Conversion to {\lstinline!String!} & \Cref{modelica:to-String} \\
@@ -466,8 +482,19 @@ Argument $v$ needs to be an \lstinline!Integer! or \lstinline!Real! expression.
 sqrt($v$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-Square root of $v$ if $v \geq 0$, otherwise an error occurs.
-Argument $v$ needs to be an \lstinline!Integer! or \lstinline!Real! expression.
+Square root of $v$, equivalent to \lstinline!nthRoot(v, 2)!.
+\end{semantics}
+\end{functiondefinition}
+
+\begin{functiondefinition}[nthRoot]
+\begin{synopsis}\begin{lstlisting}
+nthRoot($v$, $n$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+$n$th root of $v$, where $v$ shall be a \lstinline!Real! expression, and $n > 0$ shall be an \lstinline!Integer! expression.
+The result $y$ is a real root of the equation $y^{n} = v$.
+If $n$ is even, $v$ must be non-negative and $y$ shall be the non-negative root.
+(If $n$ is odd, there is no constraint on $v$ and $y$ will have the same sign as $v$.)
 \end{semantics}
 \end{functiondefinition}
 
@@ -755,11 +782,47 @@ der($\mathit{expr}$)
 The time derivative of $\mathit{expr}$.
 If the expression $\mathit{expr}$ is a scalar it needs to be a subtype of \lstinline!Real!.
 The expression and all its time-varying subexpressions must be continuous and semi-differentiable.
+An exception is when the operator \lstinline!reinit! (\Cref{modelica:reinit}) is activated, as not even states are continuous.
 If $\mathit{expr}$ is an array, the operator is applied to all elements of the array.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 \begin{nonnormative}
 For \lstinline!Real! parameters and constants the result is a zero scalar or array of the same size as the variable.
 \end{nonnormative}
+
+\begin{example}
+For continuous expression we have several cases.
+\begin{lstlisting}[language=modelica]
+  Real when1, x1, x2, x3, w1, y1, y2, y3;
+equation
+  when sample(1, 1) then
+    when1 = $\ldots$;
+  end when;
+  x1 = if time>=0 then 0 else time; // Continuous
+  x2 = if time<1 then 0 else time;  // Not continuous
+  x3 = x1 * x2;    // The product is continuous, despite x2
+
+  w1 = der(when1); // Explicitly illegal
+  y1 = der(x1);    // Ok
+  y2 = der(x2);    // Not ok at time=1
+  y3 = der(x3);    // Ok
+\end{lstlisting}
+Since it is difficult to prove whether expressions are continuous, tools can dynamically check the continuity such that \lstinline!x2! only generates an error when the integration reaches the discontinuity.
+\end{example}
+
+\begin{example}
+Exception for reinit:
+\begin{lstlisting}[language=modelica]
+  Real x4, x5, x6;
+equation
+  when sample(1, 1) then
+    reinit(x4, 0);
+  end when;
+  der(x4) = time;
+  x5 = x4^2;
+  x6 = der(x5); // Allowed even if x5 is not continuous, since that is due to reinit
+\end{lstlisting}
+\end{example}
+
 \end{semantics}
 \end{operatordefinition}
 
@@ -1246,9 +1309,7 @@ If \lstinline!MyLib.Vehicle! is simulated, the call of \lstinline!getInstanceNam
 
 If this function is not called inside a model or block (e.g., the function is called in a function or in a constant of a package), the return value is not specified.
 
-\begin{nonnormative}
 The simulation result should not depend on the return value of this function.
-\end{nonnormative}
 
 \subsection{Event-Related Operators with Function Syntax}\label{event-related-operators-with-function-syntax}
 
@@ -1582,7 +1643,7 @@ Discrete-time expressions\index{discrete-time!expression}\index{expression varia
 \item
   Expressions in a clocked discrete-time partition, see \cref{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}.
 \item
-  Unless inside \lstinline!noEvent!: Ordered relations (\lstinline!>!, \lstinline!<!, \lstinline!>=!, \lstinline!<=!) and the event generating functions \lstinline!ceil!, \lstinline!floor!, \lstinline!div!, and \lstinline!integer!, if at least one argument is non-discrete time expression and subtype of \lstinline!Real!.
+  Unless inside \lstinline!noEvent!: Ordered relations (\lstinline!>!, \lstinline!<!, \lstinline!>=!, \lstinline!<=!) and the event generating functions \lstinline!ceil!, \lstinline!floor!, \lstinline!div!, and \lstinline!integer!, if at least one argument is non-discrete-time expression and subtype of \lstinline!Real!.
   \begin{nonnormative}
   These will generate events, see \cref{events-and-synchronization}.
   Note that \lstinline!rem! and \lstinline!mod! generate events but are not discrete-time expressions.
