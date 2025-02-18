@@ -79,7 +79,7 @@ This lookup in each \emph{instance} scope is performed as follows:
   It is an error if this step produces matches from several unqualified imports.
 \end{itemize}
 
-The \lstinline!import!-clauses defined in inherited classes are ignored for the lookup, i.e.\ \lstinline!import!-clauses are not inherited.
+The \lstinline!import!-clauses defined in inherited classes are ignored for the lookup, i.e., \lstinline!import!-clauses are not inherited.
 
 
 \subsection{Composite Name Lookup}\label{composite-name-lookup}
@@ -92,13 +92,18 @@ For a composite name of the form \lstinline!A.B! or \lstinline!A.B.C!, etc.\ loo
   If the first identifier denotes a component, the rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the declared named component elements of the component.
 \item
   If not found, and if the first identifier denotes a component and the composite name is used as a function call, the lookup is also performed among the declared elements of the component, and must find a non-operator function.
-  Each leading element, including the first one, must in this case be a scalar component, or \lstinline!component[j]! where \lstinline!component! is an array of components and the indices \lstinline!j! can be evaluated at translation time and \lstinline!component[j]! is a scalar.
+  Each leading element, including the first one, must in this case be a scalar component, or \lstinline!component[j]! where \lstinline!component! is an array of components and the indices \lstinline!j! are evaluable expressions and \lstinline!component[j]! is a scalar.
   All identifiers of the rest of the name (e.g., \lstinline!B! and \lstinline!B.C!) must be classes.
   That is, the composite name is comprised of one or more component names (optionally with indexing), followed by one or more class names.
 \item
-  If the identifier denotes a class, that class is temporarily flattened (as if instantiating a component without modifiers of this class, see \cref{modification-environment}) and using the enclosing classes of the denoted class.
+  If the identifier denotes a class, that class is temporarily flattened (as if instantiating a component without modifiers of this class, see \cref{modification-environment} and using the enclosing classes of the denoted class).
   The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the declared named elements of the temporary flattened class.
-  If the class does not satisfy the requirements for a package, the lookup is restricted to encapsulated\indexinline{encapsulated} elements only.
+  The lookup will only find the element (assuming it exists) in the following cases:
+  \begin{itemize}
+  \item If the class is declared as \lstinline!package! or \lstinline!operator! (but not \lstinline!operator record! or \lstinline!operator function!) all elements can be found.
+  \item An element can be found if it is declared as \lstinline!encapsulated!\indexinline{encapsulated}.
+  \item A deprecated case is that if the class satisfies the requirements for a \lstinline!package! (without being declared as such), it is still treated as a \lstinline!package!.
+  \end{itemize}
   The class we look inside shall not be partial in a simulation model.
 \end{itemize}
 
@@ -123,10 +128,16 @@ end A;
 \end{lstlisting}
 \end{example}
 
+\begin{nonnormative}
+Note that an \lstinline!operator! class may only contain declarations of functions and thus fulfills the requirements for a package (see \cref{specialized-classes}).
+In practice, the non-deprecated rules imply that we can call \lstinline!Complex.'-'.negate! and \lstinline!Complex.'+'! for the example in \cref{example-of-overloading-for-complex-numbers}.
+This requires that \lstinline!operator '-'! and \lstinline!operator function '+'! are declared as \lstinline!encapsulated! as in the example.
+\end{nonnormative}
+
 
 \subsection{Global Name Lookup}\label{global-name-lookup}
 
-For a name starting with dot, e.g.: \lstinline!.A! (or \lstinline!.A.B!, \lstinline!.A.B.C! etc.) lookup is performed as follows:
+For a name starting with dot, e.g., \lstinline!.A! (or \lstinline!.A.B!, \lstinline!.A.B.C! etc.) lookup is performed as follows:
 \begin{itemize}
 \item
   The first identifier (\lstinline!A!) is looked up in the global scope.
@@ -135,7 +146,7 @@ For a name starting with dot, e.g.: \lstinline!.A! (or \lstinline!.A.B!, \lstinl
 \item
   If the name is simple then the class \lstinline!A! is the result of lookup.
 \item
-  If the name is a composite name then the class \lstinline!A! is temporarily flattened with an empty environment (i.e.\ no modifiers, see \cref{modification-environment}) and using the enclosing classes of the denoted class.
+  If the name is a composite name then the class \lstinline!A! is temporarily flattened with an empty environment (i.e., no modifiers, see \cref{modification-environment} and using the enclosing classes of the denoted class).
   The rest of the name (e.g., \lstinline!B! or \lstinline!B.C!) is looked up among the declared named elements of the temporary flattened class.
   If the class does not satisfy the requirements for a package, the lookup is restricted to encapsulated elements only.
   The class we look inside shall not be partial.
@@ -168,7 +179,7 @@ An \lstinline!outer! element reference in a simulation model requires that one c
 \item
   If there is one (or more) \lstinline!outer! declarations of a partial class it is an error.
 \item
-  In other cases, i.e.\ if a unique non-partial class is used for all \lstinline!outer! declarations of the same name lacking a matching inner declaration, then an \lstinline!inner! declaration of that class is automatically added at the top of the model and a diagnostic is given.
+  In other cases, i.e., if a unique non-partial class is used for all \lstinline!outer! declarations of the same name lacking a matching inner declaration, then an \lstinline!inner! declaration of that class is automatically added at the top of the model and a diagnostic is given.
 \item
   The annotations defined in \cref{annotations-for-the-graphical-user-interface} does not affect this process, other than that:
   \begin{itemize}
@@ -207,7 +218,7 @@ class A
     class C
       Real TI;
       class D
-        outer Real TI; //
+        outer Real TI;
       end D;
       D d;
     end C;
@@ -367,10 +378,10 @@ However, errors that should only be reported in a simulation model must be omitt
 
 \subsubsection{The Class Tree}\label{the-class-tree}
 
-All necessary libraries including the model which is to be instantiated are loaded from e.g.\ file system and form a so called \firstuse{class tree}.
+All necessary libraries including the model which is to be instantiated are loaded (e.g., from a file system) and form a so called \firstuse{class tree}.
 This tree represents the syntactic information from the class definitions.
 It contains also all modifications at their original locations in syntactic form.
-The builtin classes are put into the unnamed root of the class tree.
+The built-in classes are put into the unnamed root of the class tree.
 
 \begin{nonnormative}
 The class tree is built up directly during parsing of the Modelica texts.
@@ -400,7 +411,7 @@ The instance tree has the following properties:
 
 The instance tree is used for lookup during instantiation.
 To be prepared for that, it has to be based on the structure of the class tree with respect to the class definitions.
-The builtin classes are instantiated and put in the unnamed root prior to the instantiation of the user classes, to be able to find them.
+The built-in classes are instantiated and put in the unnamed root prior to the instantiation of the user classes, to be able to find them.
 
 \begin{nonnormative}
 The existence of the two separate trees (instance tree and class tree) is conceptual.
@@ -440,7 +451,7 @@ References in modifications and equations are resolved later (during generation 
 
 \paragraph*{The element itself}\label{the-element-itself}
 
-A \firstuse{partially instantiated} class or component is an element that is ready to be instantiated; a partially instantiated element (i.e.\ class or component) is comprised of a reference to the original element (from the class tree) and the modifiers for that element (including a possible redeclaration).
+A \firstuse{partially instantiated} class or component is an element that is ready to be instantiated; a partially instantiated element (i.e., class or component) is comprised of a reference to the original element (from the class tree) and the modifiers for that element (including a possible redeclaration).
 
 The possible redeclaration of the element itself takes effect.
 
@@ -458,7 +469,7 @@ The partially instantiated elements are used later for lookup during the generat
 Equations, algorithms, and annotations of the class and the component declaration are copied to the instance without merging.
 
 \begin{nonnormative}
-The annotations can be relevant for simulations, e.g.\ annotations for symbolic processing (\cref{modelica:Evaluate}), simulation experiments (\cref{modelica:experiment}) or functions (\cref{derivatives-and-inverses-of-functions} and \cref{external-function-interface}).
+The annotations can be relevant for simulations, e.g., annotations for symbolic processing (\cref{modelica:Evaluate}), simulation experiments (\cref{modelica:experiment}) or functions (\cref{derivatives-and-inverses-of-functions} and \cref{external-function-interface}).
 \end{nonnormative}
 
 The \lstinline!extends!-clauses are not looked up, but empty \lstinline!extends!-clause nodes are created and inserted into the current instance (to be able to preserve the declaration order of components).
@@ -576,7 +587,7 @@ During this process, all references by name in conditional declarations, modific
 
 \begin{nonnormative}
 This identifier is normally constructed from the names of the instances along a path in the instance tree (and omitting the unnamed nodes of \lstinline!extends!-clauses), separated by dots.
-Either the referenced instance belongs to the model to be simulated the path starts at the model itself, or if not, it starts at the unnamed root of the instance tree, e.g.\ in case of a constant in a package.
+Either the referenced instance belongs to the model to be simulated the path starts at the model itself, or if not, it starts at the unnamed root of the instance tree, e.g., in case of a constant in a package.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -613,7 +624,7 @@ The instance tree is recursively walked through as follows for elements of the c
     If it is of simple type (\lstinline!Boolean!, \lstinline!Integer!, enumeration, \lstinline!Real!, \lstinline!String!, \lstinline!Clock!, \lstinline!ExternalObject!):
     \begin{itemize}
     \item
-      In the modifications of \emph{non-value} attributes, e.g.\ \lstinline!start!, \lstinline!fixed! etc.\ references are resolved using the instance scope of the modification.
+      In the modifications of \emph{non-value} attributes, e.g., \lstinline!start!, \lstinline!fixed! etc.\ references are resolved using the instance scope of the modification.
       An equation is formed from a reference to the name of the instance appended by a dot and the attribute name and the resolved modification value of the instance, and included into the equation system.
     \end{itemize}
   \item
@@ -634,11 +645,11 @@ The instance tree is recursively walked through as follows for elements of the c
 \item
   Conditional components with false condition are removed afterwards and they are not part of the simulation model.
   \begin{nonnormative}
-  Thus e.g.\ parameters don't need values in them.
+  Thus, e.g., parameters don't need values in them.
   However, type-error can be detected.
   \end{nonnormative}
 \item
-  Each reference is checked, whether it is a valid reference, e.g.\ the referenced object belongs to or is an instance, where all existing conditional declaration expressions evaluate to true or it is a constant in a package.
+  Each reference is checked, whether it is a valid reference, e.g., the referenced object belongs to or is an instance, where all existing conditional declaration expressions evaluate to true or it is a constant in a package.
   \begin{nonnormative}
   Conditional components can be used in \lstinline!connect!-equations, and if the component is conditionally disabled the \lstinline!connect!-equation is removed.
   \end{nonnormative}
@@ -646,8 +657,8 @@ The instance tree is recursively walked through as follows for elements of the c
 
 This leads to a flattened equation system, except for \lstinline!connect!- and \lstinline!transition!-equations.
 These have to be transformed as described in \cref{connectors-and-connections} and \cref{state-machines}.
-This may lead to further changes in the instance tree (e.g.\ from expandable connectors (\cref{expandable-connectors})) and additional equations in the flattened equation system (e.g.\ connection equations (\cref{generation-of-connection-equations}), generated equations for state machine semantics (\cref{semantics-summary})).
+This may lead to further changes in the instance tree (e.g., from expandable connectors (\cref{expandable-connectors})) and additional equations in the flattened equation system (e.g., connection equations (\cref{generation-of-connection-equations}), generated equations for state machine semantics (\cref{semantics-summary})).
 
 \begin{nonnormative}
-After flattening, the resulting equation system is self contained and covers all information needed to transform it to a simulatable model, but the class and instance trees are still needed: in the transformation process, there might be the need to instantiate further functions, e.g.\ from \lstinline!derivative! annotation or from \lstinline!inverse! annotation etc., on demand.
+After flattening, the resulting equation system is self contained and covers all information needed to transform it to a simulatable model, but the class and instance trees are still needed: in the transformation process, there might be the need to instantiate further functions, e.g., from \lstinline!derivative! annotation or from \lstinline!inverse! annotation etc., on demand.
 \end{nonnormative}
