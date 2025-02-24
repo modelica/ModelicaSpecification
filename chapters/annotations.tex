@@ -1,6 +1,7 @@
 \chapter{Annotations}\label{annotations}
 
 Annotations are intended for storing extra information about a model, such as graphics, documentation or versioning, etc.
+The standard annotations (that is, all annotations except the vendor-specific ones, see \cref{vendor-specific-annotations}) shall only be used where their semantics is defined.
 A Modelica tool is free to define and use other annotations, in addition to those defined here, according to \cref{vendor-specific-annotations}.
 
 Annotations are optional in the Modelica grammar, and when present, indicated using the \lstinline!annotation!\indexinline{annotation} keyword, see \lstinline[language=grammar]!annotation-clause! in the grammar (\cref{expressions1}).
@@ -477,7 +478,7 @@ Once this becomes possible, the URI form of $\mathit{link}$ may be changed into 
 \end{nonnormative}
 
 Vendor-specific markup can be added to a link in the form \lstinline!%[$\mathit{text}$]$\mathit{vendorSpecificMarkup}$($\mathit{link}$)!.
-The vendor-specific markup must not fundamentally alter the appearance of the link, in order to ensure that a tool can safefly ignore all vendor-specific markup and still obtain a result that fits the current context.
+The vendor-specific markup must not fundamentally alter the appearance of the link, in order to ensure that a tool can safely ignore all vendor-specific markup and still obtain a result that fits the current context.
 
 \begin{example}
 The HTML \lstinline!<a>! tag has several attributes with potential application to links, such as \lstinline!target!.
@@ -489,7 +490,7 @@ A sequence of one or more newlines (encoded either literally or using the \lstin
 (A line break within a paragraph is not supported, and any paragraph break before the first paragraph or after the last paragraph has no impact.)
 
 Vendor-specific markup for alternative content takes the form \lstinline!%$\mathit{vendorSpecificMarkup}$[$\mathit{text}$]!.
-The vendor-specific markup must not fundamentally alter the appearance of the $\mathit{text}$, in order to ensure that a tool can safefly ignore all vendor-specific markup and still obtain a result that fits the current context.
+The vendor-specific markup must not fundamentally alter the appearance of the $\mathit{text}$, in order to ensure that a tool can safely ignore all vendor-specific markup and still obtain a result that fits the current context.
 
 \begin{example}
 One application of vendor-specific alternative content is to prototype a feature that can later be turned into standardized markup.
@@ -657,27 +658,42 @@ This annotation can both be used for models intended as test-cases for implement
 
 
 \section{Usage Restrictions}\label{usage-restrictions}
-\subsection{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
-For state machines it is useful to have single instances of local classes.
-To this end a class may use the annotation:
-\begin{lstlisting}[language=modelica]
+The annotations listed below are used to restrict the ways in which classes and instances of classes may be used.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!singleInstance!} & Allow at most one instance & \Cref{modelica:singleInstance}\\
+{\lstinline!mustBeConnected!} & Connector must be connected at least once & \Cref{modelica:mustBeConnected}\\
+{\lstinline!mayOnlyConnectOnce!} & Connector may at most be connected once & \Cref{modelica:mayOnlyConnectOnce}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[singleInstance]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean singleInstance;
-\end{lstlisting}%
-\annotationindex{singleInstance}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
 Only has effect when \lstinline!true!, meaning that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
+\begin{nonnormative}
+This is useful for the local classes of state machines.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\subsection{Connection Restrictions}\label{connection-restrictions}
-
-A connector component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[mustBeConnected]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String mustBeConnected;
-\end{lstlisting}%
-\annotationindex{mustBeConnected}
-
-If specified it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for connector component declarations.
+If specified, it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
 The string value must be non-empty and provide the reason why it must be connected.
 For an array of connectors it applies separately to each element.
 
@@ -699,14 +715,16 @@ end PartialWithSupport;
 \end{lstlisting}
 The protected components and connections needed to internally handle the support-connector is omitted.
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A connector component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
-/*literal*/ constant String mayOnlyConnectOnce ;
-\end{lstlisting}%
-\annotationindex{mayOnlyConnectOnce}
-
-If specified it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
+\begin{annotationdefinition}[mayOnlyConnectOnce]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String mayOnlyConnectOnce;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for connector component declarations.
+If specified, it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
 \begin{itemize}
 \item For non-stream connectors the connection set has more than two elements.
 \item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
@@ -732,6 +750,8 @@ partial model MultiPort
 end MultiPort;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
@@ -1397,21 +1417,43 @@ end OnMouseDownEditString;
 
 \section{Graphical User Interface}\label{annotations-for-the-graphical-user-interface}\label{graphical-user-interface}
 
-This section describes the annotations that are used to define properties of the graphical user interface.
+The annotations listed below define properties for use in graphical user interfaces.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!preferredView!} & Default view when opening class & \Cref{modelica:preferredView}\\
+{\lstinline!DocumentationClass!} & Purpose of class is documentation & \Cref{modelica:DocumentationClass}\\
+{\lstinline!defaultComponentName!} & Default name for new components & \Cref{modelica:defaultComponentName}\\
+{\lstinline!defaultComponentPrefixes!} & Default type prefixes for new components & \Cref{modelica:defaultComponentPrefixes}\\
+{\lstinline!missingInnerMessage!} & Message for unresolved \lstinline!outer! & \Cref{modelica:missingInnerMessage}\\
+{\lstinline!absoluteValue!} & Quantity is absolute & \Cref{modelica:absoluteValue}\\
+{\lstinline!defaultConnectionStructurallyInconsistent!} & Suppress certain verification errors & \Cref{modelica:defaultConnectionStructurallyInconsistent}\\
+{\lstinline!obsolete!} & Message when using obsolete class & \Cref{modelica:obsolete}\\
+{\lstinline!unassignedMessage!} & Hint for unmatched variable & \Cref{modelica:unassignedMessage}\\
+{\lstinline!Dialog!} & Setup for modifications & \Cref{modelica:Dialog}\\
+\hline
+\end{tabular}
+\end{center}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[preferredView]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String preferredView;
-\end{lstlisting}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 The \fmtannotationindex{preferredView} annotation defines the default view when selecting the class.
-The $\mathit{view}$ is a \lstinline!String! literal where \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
+The value \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
 If not specified the default view is tool-specific.
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}
+\begin{annotationdefinition}[DocumentationClass]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean DocumentationClass;
-\end{lstlisting}%
-\annotationindex{DocumentationClass}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Only allowed as class annotation on any kind of class and only having effect when \lstinline!true!, meaning that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
 If the annotation \lstinline!preferredView! is explicitly set for a class, it has precedence over a \lstinline!DocumentationClass! annotation.
 
@@ -1419,42 +1461,47 @@ If the annotation \lstinline!preferredView! is explicitly set for a class, it ha
 A tool may display such classes in special ways.
 For example, the description texts of the classes might be displayed instead of the class names, and if no icon is defined, a special information default icon may be displayed in the package browser.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[defaultComponentName]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String defaultComponentName;
-\end{lstlisting}%
-\annotationindex{defaultComponentName}
-
-When creating a component of the given class, and the annotation is specified it gives the recommended component name.
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The class annotation \lstinline!defaultComponentName! gives the recommended component name to use when creating a component of the class.
 If the default name cannot be used (e.g., since it is already in use), another name based on \lstinline!defaultComponentName! shall be derived automatically, except as described under \lstinline!defaultComponentPrefixes!.
 It is an error if the string is not a valid identifier.
 When automatically deriving a name, any trailing `\lstinline!1!' in the \lstinline!defaultComponentName! shall be disregarded.
 If not specified, the names of new components are tool-specific.
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[defaultComponentPrefixes]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String defaultComponentPrefixes;
-\end{lstlisting}%
-\annotationindex{defaultComponentPrefixes}
-
-When creating a component, it is recommended to generate a declaration of the form
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The class annotation \lstinline!defaultComponentPrefixes! gives a whitespace separated list of recommended type prefixes to include in the \lstinline[language=grammar]!type-prefix! part of a \lstinline[language=grammar]!component-clause1! generated when creating a component of the class:
 \begin{lstlisting}[language=grammar]
 type-prefix type-specifier component-declaration
 \end{lstlisting}
 
-The following prefixes may be included in the string \lstinline!prefixes!: \lstinline!inner!,
-\lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
+The following prefixes may be included in the \lstinline!defaultComponentPrefixes! string: \lstinline!inner!, \lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
 The default is an empty string.
 
 \begin{nonnormative}
-In combination with \lstinline!defaultComponentName! it can be used to make it easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
-If the prefixes contain \lstinline!inner! or \lstinline!outer! and the default name cannot be used (e.g., since it is already in use) it is recommended to give a diagnostic.
+By using \lstinline!defaultComponentPrefixes! in combination with \lstinline!defaultComponentName!, it becomes easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
+If the type prefixes contain \lstinline!inner! or \lstinline!outer! and the default name cannot be used (e.g., since it is already in use) it is recommended to give a diagnostic.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[missingInnerMessage]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String missingInnerMessage;
-\end{lstlisting}%
-\annotationindex{missingInnerMessage}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Only has an effect if specified, and the string must then be non-empty.
 When specified and an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner! component, the string message may be used as part of a diagnostic message (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
 The default is a tool-specific diagnostic message.
@@ -1473,13 +1520,15 @@ When an instance of model \lstinline!World! is dragged in to the diagram layer, 
 inner replaceable World world;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A simple type or component of a simple type may have:
-\begin{lstlisting}[language=modelica]
-/*literal*/ constant Boolean absoluteValue = true;
-\end{lstlisting}%
-\annotationindex{absoluteValue}
-
+\begin{annotationdefinition}[absoluteValue]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean absoluteValue;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for simple types and components of a simple types.
 If \lstinline!false!, then the variable defines a relative quantity, and if \lstinline!true! an absolute quantity.
 
 \begin{nonnormative}
@@ -1487,13 +1536,15 @@ When converting between units (in the user-interface for plotting and entering p
 This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
 For most types there is no unit offset and the annotation is not needed for them.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-A model or block definition may contain:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[defaultConnectionStructurallyInconsistent]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean defaultConnectionStructurallyInconsistent;
-\end{lstlisting}%
-\annotationindex{defaultConnectionStructurallyInconsistent}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for model and block class definitions.
 Only has an effect if \lstinline!true!, when it is stated that a \emph{default connection} will result in a structurally inconsistent model or block\footnote{%
   For the precise definition of \emph{structurally inconsistent}, see \textcite{Pantelides1988ConsistentInitialization}.}%
 .
@@ -1506,24 +1557,28 @@ It is rarely needed; but is for example used in \lstinline!Modelica.Blocks.Math.
 Additionally, when a user defined model is structurally inconsistent, a tool should try to pinpoint in which class the error is present.
 This annotation avoids then to show a wrong error message.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-A class may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[obsolete]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String obsolete;
-\end{lstlisting}%
-\annotationindex{obsolete}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
 Only has an effect if specified, and the string must then be non-empty.
 It indicates that the class ideally should not be used anymore and gives a message indicating the recommended action.
 This annotation is not inherited, the assumption is that if a class uses an obsolete class (as a base class or as the class of one of the components) that shall be updated -- ideally without impacting users of the class.
 If that is not possible the current class can have also have an \lstinline!obsolete! annotation.
+\end{semantics}
+\end{annotationdefinition}
 
-A component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[unassignedMessage]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String unassignedMessage;
-\end{lstlisting}%
-\annotationindex{unassignedMessage}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for component declarations.
 Only has an effect if specified, and the string must then be non-empty.
 When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string can be used as a diagnostic message.
 
@@ -1546,9 +1601,11 @@ connector Frame "Frame of a mechanical system"
 end Frame;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A component declaration or a short replaceable class definition may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[Dialog]
+\begin{synopsis}\begin{lstlisting}
 record Dialog
   /*literal*/ constant String tab = "General";
   /*literal*/ constant String group = "";
@@ -1566,9 +1623,9 @@ record Selector
   /*literal*/ constant String filter = "";
   /*literal*/ constant String caption = "";
 end Selector;
-\end{lstlisting}%
-\annotationindex{Dialog}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for component declarations and short replaceable class definitions.
 For a short replaceable class definition only the fields \lstinline!tab!, \lstinline!group!, \lstinline!enable! and \lstinline!groupImage! are allowed.
 
 In the organization of a tool's user interface, the \lstinline!tab! shall correspond to a major divisioning of ``tabs'', and \lstinline!group! correspond to sub-divisioning of ``groups'' within each tab.
@@ -1632,6 +1689,8 @@ When clicking on an instance of model \lstinline!DialogDemo!, a dialog is shown 
 \includegraphics[scale=0.5]{tabparameter}\\
 \end{center}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
 \subsection{Connector Sizing}\label{connector-sizing}
 
