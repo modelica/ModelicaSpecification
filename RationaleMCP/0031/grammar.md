@@ -138,7 +138,7 @@ Note that there is no optional byte order mark, in agreement with the use of byt
 > &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
 > &emsp; )* \
 > &emsp; ( _decoration_? **external** _language-specification_?\
-> &emsp;&emsp; _external-function-call_? _annotation-comment_? **;**\
+> &emsp;&emsp; _external-function-call_~~?~~ _annotation-comment_? **;**\
 > &emsp; )?\
 > &emsp; _base-partition_* \
 > &emsp; ( _annotation-comment_ **;** )?
