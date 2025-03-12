@@ -1762,6 +1762,72 @@ In case a given inlining annotation proposes to inline at a stage when the tool 
 
 If the function is called in a context where events will not be generated (e.g., inside another function without {\lstinline!GenerateEvents = true!}) no special action is needed.
 \end{nonnormative}
+\begin{example}
+The annotation also impacts the variability, \cref{variability-of-expressions} consider a trivial case.
+\begin{lstlisting}[language=modelica]
+function greaterEqual
+  input Real x1;
+  input Real x2;
+  output Boolean b;
+algorithm
+  b :=  x1 >= x2;
+  annotation(GenerateEvents=true, LateInline=true);
+end greaterEqual;
+
+function greaterEqualWO
+  input Real x1;
+  input Real x2;
+  output Boolean b;
+algorithm
+  b :=  x1 >= x2;
+  annotation(LateInline=true);
+end greaterEqualWO;
+
+model M
+  Boolean b1 = greaterEqual(time, 1);
+  Boolean b2 = greaterEqualWO(time, 1) "Illegal";
+  Boolean b3 = noEvent(greaterEqual(time, 1)) "Illegal";
+  Boolean b4 = greaterEqualWO(if b1 then 2 else 0, 1);
+  Real z = if greaterEqualWO(time, 1) then 2 else 1;
+end M;
+
+function bad
+  input Real x1;
+  output Integer i;
+algorithm
+  i := greaterEqualWO(x1, 1) then 2 else 1;
+  annotation(GenerateEvents=true, LateInline=true);
+end bad;
+
+function saturatedSquare
+  input Real x2;
+  output Real y;
+algorithm
+  if x2 > 1 then
+    y := 1;
+  else
+    y := x2*x2;
+  end if;
+end saturatedSquare;
+
+function isBelowSat
+  input Real x1, x2;
+  output Boolean b;
+algorithm
+  b : = x1 < saturatedSquare(x2);
+  annotation (GenerateEvents=true, LateInline=true);
+end isBelowSat;
+\end{lstlisting}
+In \lstinline!M! there will be an event when \lstinline!time! becomes greater or equal to \lstinline!1!, and thus the discrete-time variable \lstinline!b1! can be bound to this function call even though it involves the non-discrete time variable \lstinline!time!.
+Both \lstinline!b2! and \lstinline!b3! are illegal, since the right hand sides have non-discrete-time variability. 
+The variable \lstinline!z! is legal, since a Real variable can have non-discrete time variability.
+The variable \lstinline!b4! is legal, since the function inputs have discrete-time variability.
+The function \lstinline!bad! demonstrates that similar restrictions (as for \lstinline!b2! and \lstinline!b3!) apply inside functions with {\lstinline!GenerateEvents = true!}.
+The function \lstinline!isBelowSat! demonstrates that it is possible to call functions that do not generate events (like \lstinline!saturatedSquare!) inside functions with {\lstinline!GenerateEvents = true!}.
+Combined the last two examples demonstrate that {\lstinline!GenerateEvents = true!} does not propagate to called functions.
+
+The annotation \lstinline!LateInline=true! is not needed, but makes the issue more obvious in tools that normally inline function before checking variability.
+\end{example}
 \end{semantics}
 \end{annotationdefinition}
 
