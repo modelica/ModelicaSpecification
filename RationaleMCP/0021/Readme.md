@@ -4,9 +4,9 @@
 
 ## Status: in development
 
-- [ ] **Rationale:**
-- [ ] **Design:**
-- [ ] **Examples:**
+- [x] **Rationale:**
+- [x] **Design:**
+- [x] **Examples:**
 - [ ] **Resolve issues:**
 - [x] **Prototype:** Implemented in _Dymola 2016_
 - [ ] **Specification-incorporation:**
@@ -17,15 +17,19 @@ It is proposed to generalize iterator expressions so that a class name can be us
 The loop iterates then over all instances of this class available in the simulation model.
 Applications are (a) to compute total properties (e.g. total center of mass), and (b) automatically check requirements on all instances of a particular class.
 
-## Revisions
-
-| Revision | Date | Short description |
-|-|-|-|
-|v3| Mar. 14, 2025|Hans Olsson: Converted to Markdown, listed issues|
-|v2| Dec. 8, 2015|Hilding Elmqvist, Hans Olsson, Martin Otter: For-loop only over instances on the same or a lower level. Added changes to the Modelica specification.|
-|v1|Dec. 2, 2015|Hilding Elmqvist, Hans Olsson, Martin Otter: Initial draft.The proposal also includes a slight changed syntax (“in class” instead of “in”) based on a discussion between Gerd Kurzbach and Hans Olsson|
-
 ## Rationale
+
+In many applications it is desirable to be able to compute total properties of the model, or automatically check requirements on all instances; such types of examples are discussed in the paper (Elmqvist et al., 2015).
+
+The goal is that this should be:
+* General
+* Easy to use for end-users
+* Clearly separated from other uses
+* Not require modifications of the underlying models
+* Be compatible with the object-oriented design of Modelica
+* There is no strong requirement to use the results inside the model
+
+## Basign Design
 This proposal uses text fragments from (Elmqvist et al., 2015) without further explicit citing.
 
 In section 10.4.1 of the Modelica Specification 3.3 array constructors with iterators are defined. For example, 
@@ -111,7 +115,7 @@ that inherit from the class.
 * [Implementation: If `... for c in class XYZ` is found during flattening, the evaluation of the for-expression 
 is delayed, until all elements not containing `in class` are flattened. It is an error, if one of the delayed objects 
 contains `XYZ`]
-* Conditionally disabled objects are ignored.
+* Conditionally disabled components and deselected components are ignored.
 
 Examples:
 ```
@@ -121,19 +125,13 @@ Examples:
   MyRecord rec2 = if expr then rec1 else rec2;
 ```
 
-Discussions:
-* Henrik: This proposal should be finalized when the flattening process is better defined (in MCP 0019) and 
-then the flattening process should be referenced.
-* Peter: This is a reflective language construct. In Java there is a powerful reflective API. The question is 
-whether this proposal could be treated as a special case of a more general reflective API.
-* Hans: From user point of view the above proposal is fairly easy to use. With a general reflective API it is 
-most likely much more complicated for the user.
-
+### Examples
 This new language feature can be used, for example, in the following application areas:
 * Compute total properties of a model (e.g. compute total center of mass from all parts of a satellite).
-* *Check that the requirements on a class are fulfilled by all instances of this class present in the model at hand.
-Such types of examples are discussed in the paper (Elmqvist et al., 2015). These examples are also available in the 
-attached test library “TestModels/MetaProperties.mo”
+* Check that the requirements on a class are fulfilled by all instances of this class present in the model at hand.
+Such types of examples are discussed in the paper (Elmqvist et al., 2015).
+
+These examples are also available in the attached test library [MetaProperties.mo](MetaProperties.mo).
 
 * MetaProperties.Section_2_1_ComponentIterators.Model
 * MetaProperties.Section_3_1_TotalMass.TotalMassOfRobot
@@ -194,16 +192,46 @@ Via the PumpObservation record the needed variables are extracted and passed to 
 Therefore, it is checked whether all instances of PrescribedPump fulfills the defined requirements.
 Again, this operation is carried out without modifying the underlying PrescribedPump model.
 
-### Open issues
+### Design choices
+
+- [x] Basic design:
+  - [x] Based on array constructors with iterators (fulfil ease-of-use in Rationale)
+  - [x] How to get component-name for diagnostics: `c.getInstanceName()`
+  - [x] Exact syntax: `in class SomeClass` (fulfil clearly separated in Rationale)
+- [x] Matching components: based on lexical class name (alternatives would be to extend to all sub-classes or specifically classes inheriting from)
+- [x] Modular systems (fulfil object-oriented design in Rationale)
+- [ ] Avoiding cycles
+
+#### Modular system
+
 In order to build modular systems it is necessary to restrict the iterator to only part of the overall model.
 Therefore the iteration is here restricted to instances in the model and submodels.
 This implies that TotalMass must be a base-class (a similar style exists in some other object-oriented languages).
 Another alternative would be to first go up one “level” – allowing TotalMass to be a normal component, which may seem as better structuring. 
 However, it would also allow multiple TotalMass-components at the same level which is not the intention.
 
+#### Avoiding cycles
+
+A particular concern with this construct is that if done incorrectly it could lead to cyclic dependencies in various forms.
+
+There are various forms of cycles, we group them into three kinds:
+* The result of the component iterators could be used to introduce new components of the classes that is iterated over. The proposal explicitly makes that illegal.
+* One (or more) of the parameters that iterated over could depend on parameters computed by the component iterators. Such cycles for parameter bindings are illegal in general.
+* The dynamic properties of the component being iterated over could depend on the result of the component iterators. The current proposal allows this, but it is not a strong requirement.
+
+As an example of the last case one could imagine a case where the system reduces the speed or opens a valve if it detecs cavitation in any of the pumps.
+
+#### Previous Discussions:
+* Henrik: This proposal should be finalized when the flattening process is better defined (in MCP 0019) and 
+then the flattening process should be referenced.
+* Peter: This is a reflective language construct. In Java there is a powerful reflective API. The question is 
+whether this proposal could be treated as a special case of a more general reflective API.
+* Hans: From user point of view the above proposal is fairly easy to use. With a general reflective API it is 
+most likely much more complicated for the user.
+
 # Proposed Changes in Specification
-The precise text of the proposed changes with respect to Modelica Specification 3.3 are in the accompanying 
-document (MCP-0021_ComponentIterators_SpecChanges.pdf).
+The precise text of the proposed changes with respect to Modelica Specification 3.3 are in the [accompanying 
+document](MCP-0021_ComponentIterators_SpecChanges.pdf).
 
 # Backwards Compatibility
 This proposal is backwards compatible.
@@ -217,6 +245,14 @@ The prototype does not implement exactly the above proposal but deviate in the f
 * The for-loop iterates over all instances in the complete simulation model, and not only over the instances on the same or a lower level.
 There are the following issues:
 * This proposal complicates flattening of a model because all the component iterations have to be performed before flattening of the model parts can be done in which the component iterator is present.
+
+# Revisions
+
+| Revision | Date | Short description |
+|-|-|-|
+|v3| Mar. 14, 2025|Hans Olsson: Converted to Markdown, listed issues and cleaned up|
+|v2| Dec. 8, 2015|Hilding Elmqvist, Hans Olsson, Martin Otter: For-loop only over instances on the same or a lower level. Added changes to the Modelica specification.|
+|v1|Dec. 2, 2015|Hilding Elmqvist, Hans Olsson, Martin Otter: Initial draft.The proposal also includes a slight changed syntax (“in class” instead of “in”) based on a discussion between Gerd Kurzbach and Hans Olsson|
 
 ## Required Patents
 According to our knowledge, no patents are needed to implement this proposal.
