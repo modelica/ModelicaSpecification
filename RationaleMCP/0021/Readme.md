@@ -149,8 +149,9 @@ When using the Modelica.Mechanics.MultiBody library, there are only two model cl
 body are defined:
 * MultiBody.Parts.Body
 * MultiBody.Parts.PointMass
-All other specialized parts, like Parts.BodyShape, use an instance of Parts.Body and need therefore not to be 
-handled specially. Model TotalMass computes the total mass of all bodies in a system.
+
+All other specialized parts, like Parts.BodyShape, use an instance of Parts.Body and need therefore not to be handled specially.
+Model TotalMass computes the total mass of all bodies in a system.
 ```
 model TotalMass "Compute total mass of a system"
   import Modelica.Mechanics.MultiBody.Parts;
