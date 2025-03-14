@@ -4,11 +4,11 @@
 
 ## Status: in development
 
-- [x] **Rationale:**
-- [x] **Design:**
-- [x] **Examples:**
-- [ ] **Resolve issues:**
-- [x] **Prototype:** Implemented in _Dymola 2016_
+- [x] **[Rationale](#rationale):**
+- [x] **[Design](#basign-design):**
+- [x] **[Examples](#examples):**
+- [ ] **[Resolve issues](#design-choices):**
+- [x] **[Prototype](#experience-with-prototype):** Implemented in _Dymola 2016_
 - [ ] **Specification-incorporation:**
 
 ## Summary
@@ -19,7 +19,7 @@ Applications are (a) to compute total properties (e.g. total center of mass), an
 
 ## Rationale
 
-In many applications it is desirable to be able to compute total properties of the model, or automatically check requirements on all instances; such types of examples are discussed in the paper (Elmqvist et al., 2015).
+In many applications it is desirable to be able to compute total properties of the model, or automatically check requirements on all instances; such types of examples are discussed in the paper [Elmqvist et al., 2015](#elmqvist-et-al-2015).
 
 The goal is that this should be:
 * General
@@ -30,7 +30,7 @@ The goal is that this should be:
 * There is no strong requirement to use the results inside the model
 
 ## Basign Design
-This proposal uses text fragments from (Elmqvist et al., 2015) without further explicit citing.
+This proposal uses text fragments from [Elmqvist et al., 2015](#elmqvist-et-al-2015) without further explicit citing.
 
 In section 10.4.1 of the Modelica Specification 3.3 array constructors with iterators are defined. For example, 
 ```
@@ -129,7 +129,7 @@ Examples:
 This new language feature can be used, for example, in the following application areas:
 * Compute total properties of a model (e.g. compute total center of mass from all parts of a satellite).
 * Check that the requirements on a class are fulfilled by all instances of this class present in the model at hand.
-Such types of examples are discussed in the paper (Elmqvist et al., 2015).
+Such types of examples are discussed in the paper [Elmqvist et al., 2015](#elmqvist-et-al-2015).
 
 These examples are also available in the attached test library [MetaProperties.mo](MetaProperties.mo).
 
@@ -198,6 +198,7 @@ Again, this operation is carried out without modifying the underlying Prescribed
   - [x] Based on array constructors with iterators (fulfil ease-of-use in Rationale)
   - [x] How to get component-name for diagnostics: `c.getInstanceName()`
   - [x] Exact syntax: `in class SomeClass` (fulfil clearly separated in Rationale)
+  - [ ] Exactly how to include in flattening
 - [x] Matching components: based on lexical class name (alternatives would be to extend to all sub-classes or specifically classes inheriting from)
 - [x] Modular systems (fulfil object-oriented design in Rationale)
 - [ ] Avoiding cycles
@@ -258,6 +259,9 @@ There are the following issues:
 According to our knowledge, no patents are needed to implement this proposal.
 
 # References
+
+## Elmqvist et al 2015
+
 Elmqvist H., Olsson H., Otter M. (2015): 
 Constructs for Meta Properties Modeling in Modelica. 11th International Modelica Conference, Versailles, Sept. 21-23. 
 http://www.ep.liu.se/ecp/118/026/ecp15118245.pdf
