@@ -189,7 +189,7 @@ The nature of such an external entity falls into one of the following two groups
   File in the file system.
 \end{itemize}
 
-Each Modelica file in the file-system is stored in UTF-8 format (defined by The Unicode Consortium; \url{https://unicode.org}).
+Each Modelica file in the file system is stored in UTF-8 format (defined by The Unicode Consortium; \url{https://unicode.org}).
 A deprecated feature is that the file may start with the UTF-8 encoded BOM (byte order mark; \lstinline!0xef 0xbb 0xbf!); this is treated as white-space in the grammar.
 Since the use of BOM is deprecated, tools can ignore any BOM when reading, and it is recommended to never write it.
 
@@ -227,12 +227,9 @@ Classes and constants that are stored in \filename{package.mo} are also present 
 
 \subsection{Single File Mapping}\label{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}\label{single-file-mapping}
 
-When mapping a package or class-hierarchy to a file (e.g., the file \filename{A.mo}), that file shall only define a single class \lstinline!A! with a name matching the name of the nonstructured entity.
-In a file hierarchy the files shall have the extension \filename{.mo}.
-
-A \filename{.mo} file defining more than one class cannot be part of the mapping
-to file-structure and it is an error if it is loaded from the
-\lstinline!MODELICAPATH!.
+When mapping a package or class hierarchy to a file (e.g., the file \filename{A.mo}), the file content shall match \lstinline[language=grammar]!stored-definition! in the grammar.
+In this case, the \lstinline[language=grammar]!stored-definition! shall only define a single class whose name (here, \lstinline!A!) matches the name of the nonstructured entity.
+The filename shall have the extension \filename{mo}.
 
 
 \subsection{The within Clause}\label{the-within-clause}
@@ -245,6 +242,7 @@ A \lstinline!within!-clause has the following syntax:
 A non-top-level entity shall begin with a \lstinline!within!-clause which for the class defined in the entity specifies the location in the Modelica class hierarchy.
 A top-level class may contain a \lstinline!within!-clause with no name.
 For a sub-entity of an enclosing structured entity, the \lstinline!within!-clause shall designate the class of the enclosing entity; and this class must exist and must not have been defined using a short class definition.
+See \cref{stored-definitions-containing-multiple-class-definitions} regarding the use of \lstinline!within!-clause when a \lstinline[language=grammar]!stored-definition! does not hold exactly one class definition.
 
 \begin{example}
 The subpackage \lstinline!Rotational! declared within \lstinline!Modelica.Mechanics! has the fully qualified name \lstinline!Modelica.Mechanics.Rotational!, which is formed by concatenating the \lstinline[language=grammar]!packageprefixname! with the short name of the package.
@@ -255,6 +253,12 @@ package Rotational // Modelica.Mechanics.Rotational
   $\ldots$
 \end{lstlisting}
 \end{example}
+
+
+\section{Stored Definitions Containing Multiple Class Definitions}\label{stored-definitions-containing-multiple-class-definitions}
+
+The \lstinline[language=grammar]!stored-definition! in the grammar allows for zero or more class definitions, but a \lstinline[language=grammar]!stored-definition! not containing exactly one class definition can only be used to define top-level classes, cannot be used for file system mapping of packages or class-hierarchies (\cref{file-system-mapping-of-package-class}), and shall be ignored when searching the \lstinline!MODELICAPATH! (\cref{the-modelica-library-path-modelicapath}).
+It follows that any \lstinline!within!-clause (\cref{the-within-clause}) in such a \lstinline[language=grammar]!stored-definition! shall not contain a \lstinline[language=grammar]!packageprefixname!.
 
 
 \section{External Resources}\label{external-resources}
@@ -279,17 +283,17 @@ Examples of deprecated URIs would be \filename{modelica://Modelica/Resources/C.j
 These should be rewritten as \filename{modelica:/Modelica/Resources/C.jpg} and \filename{modelica:/Modelica.Blocks}.
 \end{nonnormative}
 
-When Modelica packages are stored hierarchically in a file-system (i.e., package \lstinline!A! in a directory \filename{A} containing \filename{package.mo}) the resource
+When Modelica packages are stored hierarchically in a file system (i.e., package \lstinline!A! in a directory \filename{A} containing \filename{package.mo}) the resource
 \filename{modelica:/A/Resources/C.jpg} should be stored in the file \filename{A/Resources/C.jpg}, it is not recommend to use \filename{modelica:/A.B/C.jpg} for referencing resources; it could be stored in the file \filename{A/B/C.jpg} -- which is counter-intuitive if \lstinline!A.B! is stored together with \lstinline!A!.
 When Modelica packages are stored in other formats a similar mapping should be defined, such that a resource with a given path should be unique for any package name that precedes it.
 The second segment of the path shall not be the name of a class in the package given by the first segment.
 As above for \filename{Modelica 3.2.1/package.mo}, i.e., resources starting from \filename{Modelica 3.2.1}, and \filename{modelica:/Modelica.Mechanics/C.jpg} is \filename{Modelica 3.2.1/Mechanics/C.jpg} -- regardless of whether \lstinline!Modelica.Mechanics! is stored in \filename{Modelica 3.2.1/package.mo}, \filename{Modelica 3.2.1/Mechanics.mo}, or \filename{Modelica 3.2.1/Mechanics/package.mo}.
 
-When mapping a Modelica URI to a file-system path, the file-system path shall end in a directory separator if and only if the URI path ends in the segment separator `\lstinline!/!'.
+When mapping a Modelica URI to a file system path, the file system path shall end in a directory separator if and only if the URI path ends in the segment separator `\lstinline!/!'.
 For example, if \filename{modelica:/A/Resources} maps to \filename{A/Resources}, then \filename{modelica:/A/Resources/} maps to \filename{A/Resources/}, and vice versa.
 
 \begin{nonnormative}
-The use of a trailing segment separator is recommended when the resource is a directory and the file-system path will be prepended to relative file paths within the directory.
+The use of a trailing segment separator is recommended when the resource is a directory and the file system path will be prepended to relative file paths within the directory.
 If possible, use URIs for specific files or specific sub-directories instead of appending relative paths to a generic URI such as \filename{modelica:/A/Resources/} as the latter creates a dependency on the entire directory.
 \end{nonnormative}
 

@@ -284,6 +284,11 @@ It is an error if an impure function call is part of a systems of equations (inc
 The reason is that solving systems of equations generally requires expressions to be evaluated an unknown number of times.
 This includes the special handling of \lstinline!when initial()! during initialization.
 
+There are two ways in which an impure function could be called in a system of equations, namely in the deprecated case of external functions assumed to be impure, and when using \lstinline!pure($\ldots$)! to call an impure function from within a pure function.
+The side-effect semantics of the function call are then undefined.
+Specifically, the number of calls with external side-effects is unspecified.
+However, for impure functions where the outputs only depend on the inputs the system of equations should be solved correctly.
+
 \begin{nonnormative}
 A tool is not allowed to perform any optimizations on function
 calls to an impure function, e.g., reordering calls from different
@@ -293,11 +298,6 @@ allowed.
 
 By \cref{function-compatibility-or-function-subtyping-for-functions}, it follows that an impure function can only be passed as argument to a function formal parameter of impure type.
 A function having a formal function parameter that is \lstinline!impure! must be marked \lstinline!pure! or \lstinline!impure!.
-
-\begin{nonnormative}
-Comment: The semantics are undefined if the function call of an
-impure function is part of an algebraic loop.
-\end{nonnormative}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1670,6 +1670,7 @@ where the requirement $\text{{\lstinline!y!}} > 0$ can no longer be detected, re
 \section{Function Inlining and Event Generation}\label{function-inlining-and-event-generation}
 
 The annotations listed below affect inlining of functions and the related topic of event generation inside functions.
+See \cref{notation-for-annotation-definitions} regarding the notation used to describe the annotations.
 \begin{center}
 \begin{tabular}{l|l l}
 \hline
@@ -1689,8 +1690,8 @@ At the same time, another important consequence of inlining a function is that a
 Hence, one needs to find the right balance between inlining too early (loss of provided derivatives and inverses) and too late (earlier stages of symbolic processing cannot benefit from symbolic simplifications).
 
 \begin{annotationdefinition}[Inline]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"Inline" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean Inline;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Has only an effect within a function declaration.
@@ -1700,6 +1701,8 @@ This means, that the body of the function is included at all places where the fu
 
 If {\lstinline!Inline = false!}, the model developer proposes to not inline the function.
 
+The default for inlining is tool-specific.
+
 \begin{nonnormative}
 {\lstinline!Inline = true!} is for example used in {\lstinline!Modelica.Mechanics.MultiBody.Frames!} and in functions of {\lstinline!Modelica.Media!} to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
 \end{nonnormative}
@@ -1707,8 +1710,8 @@ If {\lstinline!Inline = false!}, the model developer proposes to not inline the 
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[LateInline]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"LateInline" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean LateInline;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Has only an effect within a function declaration.
@@ -1720,6 +1723,9 @@ Late inlining is especially useful for differentiation and inversion of function
 \end{nonnormative}
 
 If {\lstinline!LateInline = false!}, the model developer proposes to not inline the function after symbolic transformations have been performed.
+
+The default for late inlining is tool-specific.
+In particular, tools may automatically delay inlining in order to take advantage of function annotations for derivatives and inverses.
 
 {\lstinline!Inline = true, LateInline = false!} is identical to {\lstinline!Inline = true!}.
 
@@ -1735,20 +1741,22 @@ Furthermore, it is used in order that a tool is able to propagate specific entha
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[InlineAfterIndexReduction]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"InlineAfterIndexReduction" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean InlineAfterIndexReduction;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Has only an effect within a function declaration.
 
 If {\lstinline!true!}, the model developer proposes to inline the function after the function is differentiated for index reduction, and before any other symbolic transformations are performed.
+The default is to not perform this specific inlining.
+
 This annotation cannot be combined with annotations {\lstinline!Inline!} and {\lstinline!LateInline!}.
 \end{semantics}
 \end{annotationdefinition}
 
 \begin{annotationdefinition}[GenerateEvents]
-\begin{synopsis}[grammar]\begin{lstlisting}
-"GenerateEvents" "=" ( false | true )
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean GenerateEvents;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Has only an effect within a function declaration.
@@ -2539,9 +2547,9 @@ The \emph{Error}-functions never return to the calling function, but handle the 
 \begin{functiondefinition*}[ModelicaMessage, ModelicaWarning, ModelicaError]\label{modelica:ModelicaMessage-et-al}%
 \indexinline{ModelicaMessage}\indexinline{ModelicaWarning}\indexinline{ModelicaError}
 \begin{synopsis}[C]\begin{lstlisting}
-void ModelicaMessage(const char* $\mathit{string}$)
-void ModelicaWarning(const char* $\mathit{string}$)
-void ModelicaError(const char* $\mathit{string}$)
+void ModelicaMessage(const char* $\mathit{string}$);
+void ModelicaWarning(const char* $\mathit{string}$);
+void ModelicaError(const char* $\mathit{string}$);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Output the fixed message string (no format control).
@@ -2553,9 +2561,9 @@ Output the fixed message string (no format control).
 \begin{synopsis}[C]
 % Note that the "..." below are actual C code, and shouldn't be typeset as \ldots.
 \begin{lstlisting}
-void ModelicaFormatMessage(const char* $\mathit{format}$, ...)
-void ModelicaFormatWarning(const char* $\mathit{format}$, ...)
-void ModelicaFormatError(const char* $\mathit{format}$, ...)
+void ModelicaFormatMessage(const char* $\mathit{format}$, ...);
+void ModelicaFormatWarning(const char* $\mathit{format}$, ...);
+void ModelicaFormatError(const char* $\mathit{format}$, ...);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Output the message under the same format control as the C function {\lstinline[language=C]!printf!}.
@@ -2565,9 +2573,9 @@ Output the message under the same format control as the C function {\lstinline[l
 \begin{functiondefinition*}[ModelicaVFormatMessage, ModelicaVFormatWarning, ModelicaVFormatError]\label{modelica:ModelicaVFormatMessage-et-al}%
 \indexinline{ModelicaVFormatMessage}\indexinline{ModelicaVFormatWarning}\indexinline{ModelicaVFormatError}
 \begin{synopsis}[C]\begin{lstlisting}
-void ModelicaVFormatMessage(const char* $\mathit{format}$, va_list $\mathit{ap}$)
-void ModelicaVFormatWarning(const char* $\mathit{format}$, va_list $\mathit{ap}$)
-void ModelicaVFormatError(const char* $\mathit{format}$, va_list $\mathit{ap}$)
+void ModelicaVFormatMessage(const char* $\mathit{format}$, va_list $\mathit{ap}$);
+void ModelicaVFormatWarning(const char* $\mathit{format}$, va_list $\mathit{ap}$);
+void ModelicaVFormatError(const char* $\mathit{format}$, va_list $\mathit{ap}$);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Output the message under the same format control as the C function {\lstinline[language=C]!vprintf!}.
@@ -2602,7 +2610,7 @@ Memory that is not passed to the Modelica simulation environment, such as memory
 
 \begin{functiondefinition}[ModelicaAllocateString]
 \begin{synopsis}[C]\begin{lstlisting}
-char* ModelicaAllocateString(size_t $\mathit{len}$)
+char* ModelicaAllocateString(size_t $\mathit{len}$);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Allocates $\mathit{len}+1$ characters, and sets the last one to \textsc{nul}.
@@ -2612,7 +2620,7 @@ If an error occurs, this function does not return, but calls {\lstinline[languag
 
 \begin{functiondefinition}[ModelicaAllocateStringWithErrorReturn]
 \begin{synopsis}[C]\begin{lstlisting}
-char* ModelicaAllocateStringWithErrorReturn(size_t $\mathit{len}$)
+char* ModelicaAllocateStringWithErrorReturn(size_t $\mathit{len}$);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Same as {\lstinline[language=C]!ModelicaAllocateString!}, except that in case of error, the function returns 0.
@@ -2623,7 +2631,7 @@ After cleaning up resources, use {\lstinline[language=C]!ModelicaError!} or {\ls
 
 \begin{functiondefinition}[ModelicaDuplicateString]
 \begin{synopsis}[C]\begin{lstlisting}
-char* ModelicaDuplicateString(const char* $\mathit{str}$)
+char* ModelicaDuplicateString(const char* $\mathit{str}$);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Returns a writeable duplicate of the \textsc{nul}-terminated string $\mathit{str}$.
@@ -2633,7 +2641,7 @@ If an error occurs, this function does not return, but calls {\lstinline[languag
 
 \begin{functiondefinition}[ModelicaDuplicateStringWithErrorReturn]
 \begin{synopsis}[C]\begin{lstlisting}
-char* ModelicaDuplicateStringWithErrorReturn(const char* $\mathit{str}$)
+char* ModelicaDuplicateStringWithErrorReturn(const char* $\mathit{str}$);
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Same as {\lstinline[language=C]!ModelicaDuplicateString!}, except that in case of error, the function returns 0.

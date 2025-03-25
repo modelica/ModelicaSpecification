@@ -1109,6 +1109,14 @@ prefixes are inherited, \cref{redeclaration}):
 \subsection{Annotations for Redeclaration and Modification}\label{annotation-choices-for-suggested-redeclarations-and-modifications}
 
 A declaration can have an annotation \fmtannotationindex{choices} containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comments on the \lstinline!choice! modifiers can be used as textual explanations of the choices.
+The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
+
+The string comments for the \lstinline!choice! modifiers shall not automatically be copied to the modifier.
+
+The semantic restrictions in \cref{semantic-restrictions-of-annotation-syntax} are not enforced for the \lstinline!choice! modifiers.
+For instance, several examples of using \lstinline!redeclare! inside \lstinline!choice($\ldots$)! will be given below.
+
 Lookup inside a \lstinline!choice! modifier is performed in the context of the annotation, meaning that references may need to be transformed to preserve the meaning when a \lstinline!choice! is applied in a different context.
 
 \begin{nonnormative}
@@ -1116,13 +1124,10 @@ It is recommended to avoid expressions with references to elements that are not 
 By starting names with a dot it can be ensured that no transformation of references will be needed when a \lstinline!choice! is applied, and that applicability of a \lstinline!choice! does not depend on context, see \cref{global-name-lookup}.
 \end{nonnormative}
 
-This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclaration, where the string comments on the choice declaration can be used as textual explanations of the choices.
-The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
-
 It is allowed to include choices that are invalid in some contexts, e.g., a value might violate a \lstinline!min!-attribute.
 (Options for tools encountering such choices include not showing them, marking them as invalid, or detecting the violations later.)
 
-For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the definition \lstinline!checkBox = true!, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
+For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the annotation \lstinline!checkBox = true!\annotationindex{checkBox}, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
 
 The annotation \lstinline!choicesAllMatching = true!\annotationindex{choicesAllMatching} on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
 \begin{itemize}
@@ -1194,8 +1199,9 @@ type KindOfController = Integer(min = 1, max = 3)
 model A
   parameter KindOfController x;
 end A;
-A a(x = 3 "PID");
+A a(x = 3);
 \end{lstlisting}
+Note that \lstinline!"PID"! was not copied here.
 
 The \lstinline!choices! annotation can also be applied to \lstinline!Boolean! variables to define a check box.
 \begin{lstlisting}[language=modelica]
@@ -1234,6 +1240,7 @@ A connection \lstinline!connect(c, d)!, with \lstinline!c! and \lstinline!d! arb
 Two code fragments \lstinline!a! and \lstinline!c! are syntactically equivalent, if, and only if, the context-free derivations of \lstinline!a! and \lstinline!c! according to the grammar given in \cref{expressions1} are the same.
 \end{itemize}
 \item Conditionally declared components of \lstinline!B! are assumed to be declared for all purposes of matching.
+\item The deselected component may be of a partial class even in a simulation model.
 \item The deselection \lstinline!break $D$! must match at least one element of \lstinline!B!.
 \item The component deselection are applied before the connection deselections of the same \lstinline!extends!-clause.
 \end{enumerate}
@@ -1303,6 +1310,7 @@ An instance tree is not required.
 \item Conditional components can be deselected without evaluating whether they are disabled or not.
 In particular deselecting a disabled conditional component is not an error.
 Connections involving the deselected conditional component are by the deselection removed as for a disabled component.
+\item No need to check whether the class of the deselected component was partial.
 \item Assuming the deselections are semantically valid they can be handled in any order.
 Handling component deselections before connection deselections is only necessary to semantically check that a connection deselection does not involve a deselected component.
 \end{itemize}

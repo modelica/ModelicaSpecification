@@ -1,12 +1,14 @@
 \chapter{Annotations}\label{annotations}
 
 Annotations are intended for storing extra information about a model, such as graphics, documentation or versioning, etc.
+The standard annotations (that is, all annotations except the vendor-specific ones, see \cref{vendor-specific-annotations}) shall only be used where their semantics is defined.
 A Modelica tool is free to define and use other annotations, in addition to those defined here, according to \cref{vendor-specific-annotations}.
 
 Annotations are optional in the Modelica grammar, and when present, indicated using the \lstinline!annotation!\indexinline{annotation} keyword, see \lstinline[language=grammar]!annotation-clause! in the grammar (\cref{expressions1}).
 The structure of the annotation content is the same as a class modification (\lstinline[language=grammar]!class-modification! in the grammar).
 (For replaceable class declarations with a \lstinline[language=grammar]!constraining-clause! also refer to \cref{constraining-clause-annotations}.)
 The specification in this document defines the semantic meaning if a tool implements any of these annotations.
+
 
 \section{Notation for Annotation Definitions}\label{notation-for-annotation-definitions}
 
@@ -27,9 +29,95 @@ When an annotation is defined with a component variability prefix (\cref{compone
 If the annotation is declared as an \lstinline!/*evaluable*/ parameter! the corresponding modifier is further restricted to be evaluable.
 If the annotation is declared as a \lstinline!/*literal*/ constant! the corresponding modifier is further restricted to be a literal value.
 
+\begin{example}
+Since the semantics of an annotation comes from the interpretation as a modification, empty annotations have no impact at all.
+For example, the following is allowed, but meaningless:
+\begin{lstlisting}[language=modelica]
+annotation(Dialog());
+\end{lstlisting}
+An annotation such as \lstinline!annotation(Dialog)! is also meaningless, but deprecated according to \cref{semantic-restrictions-of-annotation-syntax}.
+\end{example}
+
+
+\section{Semantic Restrictions of Annotation Syntax}\label{semantic-restrictions-of-annotation-syntax}
+
+The syntactic form of annotations, \lstinline[language=grammar]!annotation-clause!, uses the generic \lstinline[language=grammar]!class-modification! in \cref{modification}.
+However, except where explicitly stated, the following constructs shall not be used in annotations:
+\begin{itemize}
+\item
+\lstinline!final!.
+For instance, neither \lstinline!final experiment(StopTime = 2.0)! nor \lstinline!experiment(final StopTime = 2.0)! may be used to prevent that an extending model overrides the \lstinline!StopTime! setting.
+\item
+\lstinline!each!.
+When an annotation is given for an array component declaration, it applies to the array as a whole.
+Thus, neither should values be given in arrays matching the size of the declared component, nor should \lstinline!each! be used express that a scalar value applies to each element of the array.
+\item
+\lstinline[language=grammar]!element-redeclaration! in the grammar.
+In particular, the keyword \lstinline!redeclare! cannot be used.
+\item
+\lstinline[language=grammar]!element-replaceable! in the grammar.
+In particular the keywords \lstinline!replaceable! and \lstinline!constrainedby! cannot be used.
+\item
+A \lstinline[language=grammar]!element-modification! without \lstinline[language=grammar]!modification! is deprecated without exceptions.
+The meaning of such annotations has never been defined.
+\end{itemize}
+
+\begin{example}
+The following annotations are not merely meaningless, but deprecated:
+\begin{lstlisting}[language=modelica]
+annotation(
+  Dialog,
+  Dialog(colorSelector)
+);
+\end{lstlisting}
+In particular, the effect of \lstinline!colorSelector! is not the same as \lstinline!colorSelector = true!, even though the latter is the only meaningful use of \lstinline!colorSelector!.
+\end{example}
+
+
+\section{Expression Evaluation Inside Annotations}\label{expression-evaluation-inside-annotations}
+
+This section describes some differences to the evaluation of expressions inside of annotations compared to normal evaluation rules outside of annotations.
+
+
+\subsection{Enumerations for Use in Annotations}\label{enumerations-for-use-in-annotations}
+
+Several annotations make use of dedicated enumeration types.
+These enumeration types do not have the full status of being built-in types as, e.g., \lstinline!StateSelect! (\cref{stateselect}).
+Instead, they are only in scope where expressions inside annotations are evaluated, shadowing any user-defined definitions with the same names.
+
+\begin{example}
+The \lstinline!smooth! attribute of a \lstinline!Polygon! can be controlled through a model parameter, but the parameter cannot use the \lstinline!Smooth! type directly:
+\begin{lstlisting}[language=modelica]
+model BezierParameter
+  parameter Smooth smooth = Smooth.Bezier; // Error: Smooth is unknown here.
+  parameter Boolean bezier = true;         // Fine.
+  annotation(Icon(graphics = {
+    Polygon(
+      smooth = if bezier then Smooth.Bezier else Smooth.None,
+      points = {{-50, -20}, {0, 30}, {50, -20}}
+    )
+  }));
+end BezierParameter;
+\end{lstlisting}
+\end{example}
+
+\begin{nonnormative}
+When evaluating the expression $\mathit{expr}$ in the model \lstinline!M!, one can imagine it being done as in
+\begin{lstlisting}[language=modelica]
+model M_annotation
+  extends M;
+  import AnnotationEnumerations.*;
+  $\mathit{T}$ result = $\mathit{expr}$;
+end M_annotation;
+\end{lstlisting}
+where \lstinline!AnnotationEnumerations! is a hidden package containing all enumeration types used in annotations, and $\mathit{T}$ is the expected type of the expression.
+\end{nonnormative}
+
+
 \section{Vendor-Specific Annotations}\label{vendor-specific-annotations}
 
 A vendor may -- anywhere inside an annotation -- add specific, possibly undocumented, annotations which are not intended to be interpreted by other tools.
+The semantic restrictions in \cref{semantic-restrictions-of-annotation-syntax} are not enforced in vendor-specific annotations, giving vendors the full freedom of using the most general form of annotations.
 The only requirement is that any tool shall save files with all vendor-specific annotations (and all annotations from this chapter) intact.
 Two variants of vendor-specific annotations\index{vendor-specific annotation} exist; one simple and one hierarchical.
 Double underscore concatenated with a vendor name as initial characters of the identifier are used to identify vendor-specific annotations.
@@ -50,6 +138,7 @@ annotation(
 This introduces a new attribute \lstinline!__NameOfVendor_shadow! for the \lstinline!Rectangle! primitive using the simple variant of vendor-specific annotations.
 \end{example}
 
+
 \section{Documentation}\label{annotations-for-documentation}\label{documentation}
 
 The \fmtannotationindex{Documentation} annotation has the following contents, where the \lstinline!info! and \lstinline!revisions! annotations are described in \cref{annotation-info-revisions}, and the \lstinline!figures! annotation is described in \cref{annotations-for-figures}:
@@ -57,8 +146,8 @@ The \fmtannotationindex{Documentation} annotation has the following contents, wh
 record Documentation
   /*literal*/ constant String info = "" "Description of the class";
   /*literal*/ constant String revisions = "" "Revision history";
-  Figure[:] figures = {}; "Simulation result figures";
-  /*literal*/ constant String[:] styleSheets = {} "Style sheets for documentation";
+  Figure[:] figures; "Simulation result figures";
+  /*literal*/ constant String[:] styleSheets "Style sheets for documentation";
 end Documentation;
 \end{lstlisting}
 
@@ -278,7 +367,7 @@ Ties are resolved using order of appearance in the \lstinline!curves! of a \lsti
 \subsubsection{Escape Sequences}\label{text-markup-escape-sequences}
 
 In an attribute inside a figure where the variable replacements of \cref{variable-replacements} or the text markup of \cref{text-markup-in-captions} can be used, the following use of \firstuse[text markup escape sequence]{text markup escape sequences}\index{escape sequence!text markup} applies.
-These escape sequences are applied after the application of other markup, and is not applied at all inside some of the other markup, see details for the respective markup.
+These escape sequences are applied after the application of other markup, and are not applied at all inside some of the other markup, see details for the respective markup.
 
 The percent character `\%' shall be encoded \lstinline!%%!.
 The following are all the recognized escape sequences:
@@ -297,6 +386,14 @@ The following are all the recognized escape sequences:
 \begin{nonnormative}
 With the percent character being encoded as \lstinline!%%!, the behavior of \lstinline!%! appearing in any other way than the escape sequences above, for variable replacement (\cref{variable-replacements}), or for the text markup (\cref{text-markup-in-captions}) is undefined, and thus possible to define in the future without breaking backward compatibility.
 \end{nonnormative}
+
+\subsubsection{Vendor-Specific Markup}\label{vendor-specific markup}
+
+\firstuse{Vendor-specific markup} takes the form \lstinline!__$\mathit{nameOfVendor}_{1}$($\mathit{data}_{1}$)$\ldots$__$\mathit{nameOfVendor}_{n}$($\mathit{data}_{n}$)!, where $n \geq 1$.
+It is only allowed as part of constructs described in \cref{variable-replacements} and \cref{text-markup-in-captions}, where it will be denoted by $\mathit{vendorSpecificMarkup}$.
+The $\mathit{nameOfVendor}$ consists of only digits and letters, and shall only convey the name of the vendor defining the meaning of the associated $\mathit{data}$.
+Text markup escape sequences don't apply inside the $\mathit{data}$, implying that it cannot contain the closing parenthesis, `)'.
+A tool which does not understand any of the vendor-specific meanings will always be able to safely ignore all vendor-specific markup.
 
 \subsubsection{Variable Replacements}\label{variable-replacements}
 
@@ -338,6 +435,16 @@ Note that expansion to the final value means that expansion is not restricted to
 By design, neither \lstinline!%class! nor \lstinline!%name! is supported in this context, as this information is expected to already be easily accessible (when applicable) in tool-specific ways.
 (Titles making use of \lstinline!%class! or \lstinline!%name! would then only lead to ugly duplication of this information.)
 \end{nonnormative}
+
+Vendor-specific markup can be added to a variable replacement in the form \lstinline!%$\mathit{vendorSpecificMarkup}${$\mathit{variable}$}!.
+The vendor-specific markup must not fundamentally alter the meaning of the variable replacement, in order to ensure that a tool can safely ignore all vendor-specific markup and still obtain a result that fits the current context.
+
+\begin{example}
+One application of vendor-specific markup for variable replacement is to prototype a feature that can later be turned into standardized format control.
+For example, the replaced variable may have an automatically inferred unit, but no \lstinline!displayUnit!-attribute.
+The tool vendor AVendor could then describe a selection of display unit with \lstinline!%__AVendor(?displayUnit=mm){integrator1.y}!.
+Later, if this would become supported by standard variable replacement, it might take the form of something like \lstinline!%{integrator1.y?displayUnit=mm}! instead.
+\end{example}
 
 \subsubsection{Text Markup in Captions}\label{text-markup-in-captions}
 
@@ -393,24 +500,32 @@ This is due to to the current inability to define a base URI referencing the cur
 Once this becomes possible, the URI form of $\mathit{link}$ may be changed into a URI reference.
 \end{nonnormative}
 
+Vendor-specific markup can be added to a link in the form \lstinline!%[$\mathit{text}$]$\mathit{vendorSpecificMarkup}$($\mathit{link}$)!.
+The vendor-specific markup must not fundamentally alter the appearance of the link, in order to ensure that a tool can safely ignore all vendor-specific markup and still obtain a result that fits the current context.
+
+\begin{example}
+The HTML \lstinline!<a>! tag has several attributes with potential application to links, such as \lstinline!target!.
+This attribute serves a natural purpose if the display of figures is integrated with the display of documentation.
+The tool vendor AVendor could map the HTML feature to Modelica in the form \lstinline!%__AVendor(?target=_blank)(modelica:/Modelica#info)!.
+\end{example}
+
 A sequence of one or more newlines (encoded either literally or using the \lstinline!\n! escape sequence) means a paragraph break.
 (A line break within a paragraph is not supported, and any paragraph break before the first paragraph or after the last paragraph has no impact.)
 
-\firstuse[vendor-specific markup]{Vendor-specific markup} takes the form \lstinline!%__$\mathit{nameOfVendor}_{1}$($\mathit{data}_{1}$)$\ldots$__$\mathit{nameOfVendor}_{n}$($\mathit{data}_{n}$)[$\mathit{text}$]!, where $n \geq 1$.
-The $\mathit{nameOfVendor}$ consists of only digits and letters, and shall only convey the name of the vendor defining the meaning of the associated $\mathit{data}$.
-Text markup escape sequences don't apply inside the $\mathit{data}$, implying that it cannot contain the closing parenthesis, `)'.
-A tool which does not understand any of the vendor-specific meanings shall only display the mandatory $\mathit{text}$, but the $\mathit{text}$ may also be used together with the vendor-specific $\mathit{data}$.
+Vendor-specific markup for alternative content takes the form \lstinline!%$\mathit{vendorSpecificMarkup}$[$\mathit{text}$]!.
+The vendor-specific markup must not fundamentally alter the appearance of the $\mathit{text}$, in order to ensure that a tool can safely ignore all vendor-specific markup and still obtain a result that fits the current context.
 
 \begin{example}
-One application of vendor-specific markup is to prototype a feature that can later be turned into standardized markup.
+One application of vendor-specific alternative content is to prototype a feature that can later be turned into standardized markup.
 For example, say that the tool AVendor wants to generalize the variable replacements such that the duration of a simulation can be substituted into a caption.
 During the development, this could be represented as the vendor-specific markup \lstinline!%__AVendor(?duration)[10 s]!, if the simulation has a duration of 10~seconds at the time of writing the caption.
 When AVendor renders this, it ignores the text \lstinline!10 s! and just displays the actual duration instead.
 Later, if this would become supported by standard markup, it might take the form of something like \lstinline!%{experiment:duration}! instead (note that \lstinline!experiment:duration! is not in the form of a component reference, avoiding conflict with current use of variable replacements).
 
-In a similar way, vendor-specific markup can be used to prototype a link for future inclusion in the link markup (either by extending the meaning of Modelica URIs, or by introducing another pseudo-scheme similar to \lstinline!variable:!).
+In a similar way, vendor-specific alternative content can be used to prototype a link for future inclusion in the link markup (either by extending the meaning of Modelica URIs, or by introducing another pseudo-scheme similar to \lstinline!variable:!).
 This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
 \end{example}
+
 
 \section{Symbolic Processing}\label{annotations-for-symbolic-processing}\label{symbolic-processing}
 
@@ -566,27 +681,42 @@ This annotation can both be used for models intended as test-cases for implement
 
 
 \section{Usage Restrictions}\label{usage-restrictions}
-\subsection{Single Use of Class}\label{annotation-for-single-use-of-class}\label{single-use-of-class}
 
-For state machines it is useful to have single instances of local classes.
-To this end a class may use the annotation:
-\begin{lstlisting}[language=modelica]
+The annotations listed below are used to restrict the ways in which classes and instances of classes may be used.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!singleInstance!} & Allow at most one instance & \Cref{modelica:singleInstance}\\
+{\lstinline!mustBeConnected!} & Connector must be connected at least once & \Cref{modelica:mustBeConnected}\\
+{\lstinline!mayOnlyConnectOnce!} & Connector may at most be connected once & \Cref{modelica:mayOnlyConnectOnce}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[singleInstance]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean singleInstance;
-\end{lstlisting}%
-\annotationindex{singleInstance}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
 Only has effect when \lstinline!true!, meaning that there should only be one component instance of the class, and it should be in the same scope as the class is defined.
 The intent is to remove the class when the component is removed and to prevent duplication of the component.
+\begin{nonnormative}
+This is useful for the local classes of state machines.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\subsection{Connection Restrictions}\label{connection-restrictions}
-
-A connector component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[mustBeConnected]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String mustBeConnected;
-\end{lstlisting}%
-\annotationindex{mustBeConnected}
-
-If specified it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for connector component declarations.
+If specified, it makes it an error if the connector does not appear as an inside connector in any connect-equation (for a conditional connector this check is only active if the connector is enabled).
 The string value must be non-empty and provide the reason why it must be connected.
 For an array of connectors it applies separately to each element.
 
@@ -608,14 +738,16 @@ end PartialWithSupport;
 \end{lstlisting}
 The protected components and connections needed to internally handle the support-connector is omitted.
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A connector component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
-/*literal*/ constant String mayOnlyConnectOnce ;
-\end{lstlisting}%
-\annotationindex{mayOnlyConnectOnce}
-
-If specified it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
+\begin{annotationdefinition}[mayOnlyConnectOnce]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String mayOnlyConnectOnce;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for connector component declarations.
+If specified, it makes it an error if the connector is connected as an inside connector in a connect-equation and thus appears in a connection set if:
 \begin{itemize}
 \item For non-stream connectors the connection set has more than two elements.
 \item For stream connectors (see \cref{stream-connectors}), the connection set has more than two elements whose flow variable may be negative (based on evaluation of the \lstinline!min!-attribute).
@@ -641,6 +773,9 @@ partial model MultiPort
 end MultiPort;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
+
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
@@ -869,6 +1004,7 @@ record Placement
 end Placement;
 \end{lstlisting}%
 \annotationindex{Placement}
+A component with \lstinline!visible = false! shall not be shown.
 If no \lstinline!iconTransformation! is given the \lstinline!transformation! is also used for placement in the icon layer.
 If no \lstinline!iconVisible! is given for a public connector the \lstinline!visible! is also used for visibility in the icon layer.
 
@@ -884,7 +1020,16 @@ For connectors, the icon layer is used to represent a connector when it is shown
 The diagram layer of the connector is used to represent it when shown in the diagram layer of the enclosing model.
 Protected connectors are only shown in the diagram layer.
 Public connectors are shown in both the diagram layer and the icon layer.
+Sub-connectors in a hierarchical connector are only shown when they can be connected to.
 Non-connector components are only shown in the diagram layer.
+
+\subsubsection{Default Outline for Missing Graphics}\label{default-outline-for-missing-graphics}
+If the icon of a component placed in a diagram layer does not contain any graphical primitives (including inherited ones, and regardless of \lstinline!visible!-attributes; but excluding connectors), tools shall show a tool-dependent rudimentary outline of the component's transformed \lstinline!extent!.
+
+\begin{nonnormative}
+The reason for making the tool-dependent outline rudimentary is to encourage the model developer to provide a proper icon.
+That \lstinline!visible!-attributes are not regarded makes it possible to obtain an icon which only shows connectors by adding a dummy primitive with \lstinline!visible = false!.
+\end{nonnormative}
 
 \subsection{Extends-Clause}\label{extends-clause}
 
@@ -1124,7 +1269,7 @@ parameter Real t(unit = "s", displayUnit = "ms") = 0.1
   \begin{example}
   If \lstinline!par = "Modelica.Blocks.Types.Enumeration.Periodic"!, then \%\emph{par} should be displayed as \emph{Periodic}.
   \end{example}
-  When quoted identifiers (e.g., \lstinline!rec.'}'.'quoted ident'!) or composite names (i.e., not simple identifiers) are involved, the form \%\{\emph{par}\} must be used.
+  When quoted identifiers (e.g., \lstinline'quoted ident'! or \lstinline!'}'!) or composite names (i.e., not simple identifiers) are involved, the form \%\{\emph{par}\} must be used.
   Here, \emph{par} is a general \lstinline[language=grammar]!component-reference!, and \lstinline!%{a.p}! gives the value of the parameter \lstinline!p! in the component \lstinline!a!.
   The macro can be directly followed by a letter.
   Thus \lstinline!%{w}x%{h}! gives the value of \lstinline!w! directly followed by \emph{x} and the value of \lstinline!h!, while \lstinline!%wxh! gives the value of the parameter \lstinline!wxh!.
@@ -1292,23 +1437,46 @@ record OnMouseDownEditString
 end OnMouseDownEditString;
 \end{lstlisting}
 
+
 \section{Graphical User Interface}\label{annotations-for-the-graphical-user-interface}\label{graphical-user-interface}
 
-This section describes the annotations that are used to define properties of the graphical user interface.
+The annotations listed below define properties for use in graphical user interfaces.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!preferredView!} & Default view when opening class & \Cref{modelica:preferredView}\\
+{\lstinline!DocumentationClass!} & Purpose of class is documentation & \Cref{modelica:DocumentationClass}\\
+{\lstinline!defaultComponentName!} & Default name for new components & \Cref{modelica:defaultComponentName}\\
+{\lstinline!defaultComponentPrefixes!} & Default type prefixes for new components & \Cref{modelica:defaultComponentPrefixes}\\
+{\lstinline!missingInnerMessage!} & Message for unresolved \lstinline!outer! & \Cref{modelica:missingInnerMessage}\\
+{\lstinline!absoluteValue!} & Quantity is absolute & \Cref{modelica:absoluteValue}\\
+{\lstinline!defaultConnectionStructurallyInconsistent!} & Suppress certain verification errors & \Cref{modelica:defaultConnectionStructurallyInconsistent}\\
+{\lstinline!obsolete!} & Message when using obsolete class & \Cref{modelica:obsolete}\\
+{\lstinline!unassignedMessage!} & Hint for unmatched variable & \Cref{modelica:unassignedMessage}\\
+{\lstinline!Dialog!} & Setup for modifications & \Cref{modelica:Dialog}\\
+\hline
+\end{tabular}
+\end{center}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[preferredView]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String preferredView;
-\end{lstlisting}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 The \fmtannotationindex{preferredView} annotation defines the default view when selecting the class.
-The $\mathit{view}$ is a \lstinline!String! literal where \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
+The value \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
 If not specified the default view is tool-specific.
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}
+\begin{annotationdefinition}[DocumentationClass]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean DocumentationClass;
-\end{lstlisting}%
-\annotationindex{DocumentationClass}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Only allowed as class annotation on any kind of class and only having effect when \lstinline!true!, meaning that this class and all classes within it are treated as having the annotation \lstinline!preferredView = "info"!.
 If the annotation \lstinline!preferredView! is explicitly set for a class, it has precedence over a \lstinline!DocumentationClass! annotation.
 
@@ -1316,42 +1484,47 @@ If the annotation \lstinline!preferredView! is explicitly set for a class, it ha
 A tool may display such classes in special ways.
 For example, the description texts of the classes might be displayed instead of the class names, and if no icon is defined, a special information default icon may be displayed in the package browser.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[defaultComponentName]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String defaultComponentName;
-\end{lstlisting}%
-\annotationindex{defaultComponentName}
-
-When creating a component of the given class, and the annotation is specified it gives the recommended component name.
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The class annotation \lstinline!defaultComponentName! gives the recommended component name to use when creating a component of the class.
 If the default name cannot be used (e.g., since it is already in use), another name based on \lstinline!defaultComponentName! shall be derived automatically, except as described under \lstinline!defaultComponentPrefixes!.
 It is an error if the string is not a valid identifier.
 When automatically deriving a name, any trailing `\lstinline!1!' in the \lstinline!defaultComponentName! shall be disregarded.
 If not specified, the names of new components are tool-specific.
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[defaultComponentPrefixes]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String defaultComponentPrefixes;
-\end{lstlisting}%
-\annotationindex{defaultComponentPrefixes}
-
-When creating a component, it is recommended to generate a declaration of the form
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The class annotation \lstinline!defaultComponentPrefixes! gives a whitespace separated list of recommended type prefixes to include in the \lstinline[language=grammar]!type-prefix! part of a \lstinline[language=grammar]!component-clause1! generated when creating a component of the class:
 \begin{lstlisting}[language=grammar]
 type-prefix type-specifier component-declaration
 \end{lstlisting}
 
-The following prefixes may be included in the string \lstinline!prefixes!: \lstinline!inner!,
-\lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
+The following prefixes may be included in the \lstinline!defaultComponentPrefixes! string: \lstinline!inner!, \lstinline!outer!, \lstinline!replaceable!, \lstinline!constant!, \lstinline!parameter!, \lstinline!discrete!.
 The default is an empty string.
 
 \begin{nonnormative}
-In combination with \lstinline!defaultComponentName! it can be used to make it easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
-If the prefixes contain \lstinline!inner! or \lstinline!outer! and the default name cannot be used (e.g., since it is already in use) it is recommended to give a diagnostic.
+By using \lstinline!defaultComponentPrefixes! in combination with \lstinline!defaultComponentName!, it becomes easy for users to create \lstinline!inner! components matching the \lstinline!outer! declarations; see also example below.
+If the type prefixes contain \lstinline!inner! or \lstinline!outer! and the default name cannot be used (e.g., since it is already in use) it is recommended to give a diagnostic.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[missingInnerMessage]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String missingInnerMessage;
-\end{lstlisting}%
-\annotationindex{missingInnerMessage}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 Only has an effect if specified, and the string must then be non-empty.
 When specified and an \lstinline!outer! component of the class does not have a corresponding \lstinline!inner! component, the string message may be used as part of a diagnostic message (together with appropriate context), see \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
 The default is a tool-specific diagnostic message.
@@ -1370,27 +1543,37 @@ When an instance of model \lstinline!World! is dragged in to the diagram layer, 
 inner replaceable World world;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A simple type or component of a simple type may have:
-\begin{lstlisting}[language=modelica]
-/*literal*/ constant Boolean absoluteValue = true;
-\end{lstlisting}%
-\annotationindex{absoluteValue}
+\begin{annotationdefinition}[absoluteValue]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean absoluteValue;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for simple types and components of a simple types.
+If \lstinline!false!, then the component defines a relative quantity, and if \lstinline!true! an absolute quantity.
+When converting between units (e.g., in plots and where parameters are edited), the unit offset must be ignored for relative quantities.
+The annotation is inherited in the sense that when \lstinline!absoluteValue! is defined for a simple type, it also applies derived classes.
+When \lstinline!absoluteValue! is defined for a simple type, it also applies to components declared with the type.
 
-If \lstinline!false!, then the variable defines a relative quantity, and if \lstinline!true! an absolute quantity.
+When \lstinline!absoluteValue! of a component is not determined by an annotation (possibly through inheritance), the \lstinline!absoluteValue! status may be inferred by the tool.
+If the \lstinline!absoluteValue! of a component is neither determined by annotation nor inference, unit conversions that would differ depending on \lstinline!absoluteValue! cannot be performed.
 
 \begin{nonnormative}
-When converting between units (in the user-interface for plotting and entering parameters), the unit offset must be ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
-This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
-For most types there is no unit offset and the annotation is not needed for them.
+For most quantities there are no units with offset, and the annotation is not needed.
+For a component where unit conversions involving offsets could be of interest (mainly temperatures), ensuring that \lstinline!absoluteValue! is determined by an annotation (typically by means of using a type where it has been specified) may reduce impact of quality-of-implementation in tool ability to infer \lstinline!absoluteValue!.
+Example applications of this annotation can be found among the type definitions in the \lstinline!Modelica.Units! package of the Modelica Standard Library, such as \lstinline!TemperatureDifference!.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-A model or block definition may contain:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[defaultConnectionStructurallyInconsistent]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Boolean defaultConnectionStructurallyInconsistent;
-\end{lstlisting}%
-\annotationindex{defaultConnectionStructurallyInconsistent}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for model and block class definitions.
 Only has an effect if \lstinline!true!, when it is stated that a \emph{default connection} will result in a structurally inconsistent model or block\footnote{%
   For the precise definition of \emph{structurally inconsistent}, see \textcite{Pantelides1988ConsistentInitialization}.}%
 .
@@ -1403,24 +1586,28 @@ It is rarely needed; but is for example used in \lstinline!Modelica.Blocks.Math.
 Additionally, when a user defined model is structurally inconsistent, a tool should try to pinpoint in which class the error is present.
 This annotation avoids then to show a wrong error message.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-A class may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[obsolete]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String obsolete;
-\end{lstlisting}%
-\annotationindex{obsolete}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
 Only has an effect if specified, and the string must then be non-empty.
 It indicates that the class ideally should not be used anymore and gives a message indicating the recommended action.
 This annotation is not inherited, the assumption is that if a class uses an obsolete class (as a base class or as the class of one of the components) that shall be updated -- ideally without impacting users of the class.
 If that is not possible the current class can have also have an \lstinline!obsolete! annotation.
+\end{semantics}
+\end{annotationdefinition}
 
-A component declaration may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[unassignedMessage]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String unassignedMessage;
-\end{lstlisting}%
-\annotationindex{unassignedMessage}
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for component declarations.
 Only has an effect if specified, and the string must then be non-empty.
 When the variable to which this annotation is attached in the declaration cannot be computed due to the structure of the equations, the string can be used as a diagnostic message.
 
@@ -1443,9 +1630,11 @@ connector Frame "Frame of a mechanical system"
 end Frame;
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
-A component declaration or a short replaceable class definition may have the following annotation:
-\begin{lstlisting}[language=modelica]
+\begin{annotationdefinition}[Dialog]
+\begin{synopsis}\begin{lstlisting}
 record Dialog
   /*literal*/ constant String tab = "General";
   /*literal*/ constant String group = "";
@@ -1463,10 +1652,9 @@ record Selector
   /*literal*/ constant String filter = "";
   /*literal*/ constant String caption = "";
 end Selector;
-\end{lstlisting}%
-\annotationindex{Dialog}
-Modifiable parameters (except for \lstinline!connectorSizing = true!), non-connector inputs, and short replaceable class definitions should normally be shown in the dialog even without this annotation.
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for component declarations and short replaceable class definitions.
 For a short replaceable class definition only the fields \lstinline!tab!, \lstinline!group!, \lstinline!enable! and \lstinline!groupImage! are allowed.
 
 In the organization of a tool's user interface, the \lstinline!tab! shall correspond to a major divisioning of ``tabs'', and \lstinline!group! correspond to sub-divisioning of ``groups'' within each tab.
@@ -1474,6 +1662,8 @@ An empty \lstinline!group! (the default) means tool-specific choice of group.
 The order of components (and class definitions) within each group and the order of the groups and tabs are according to the declaration order, where inherited elements are added at the place of the extends.
 
 A component shall have at most one of \lstinline!showStartAttribute=true!, \lstinline!colorSelector=true!, \lstinline!loadSelector!, \lstinline!saveSelector!, \lstinline!directorySelector!, or \lstinline!connectorSizing=true!.
+
+Modifiable parameters (except for \lstinline!connectorSizing = true!), non-connector inputs, and short replaceable class definitions should normally be shown in the dialog even without this annotation.
 
 \begin{example}
 When \lstinline!group! is empty, a tool may place parameters in the group ``Parameters'', and place variables with \lstinline!showStartAttribute = true! in the group ``Start Attributes''.
@@ -1493,7 +1683,7 @@ If \lstinline!colorSelector = true!, it suggests the use of a color selector to 
 
 The presence of \lstinline!loadSelector! or \lstinline!saveSelector! specifying \fmtannotationindex{Selector} suggests the use of a file dialog to select a file.
 Setting \lstinline!filter! will in the dialog only show files that fulfill the given pattern.
-Setting \lstinline!text1 (*.ext1);;text2 (*.ext2)! will only show files with file extensions \filename{.ext1} or \filename{.ext2} with the corresponding description texts \lstinline!text1! and \lstinline!text2!, respectively.
+Setting \lstinline!text1 (*.ext1);;text2 (*.ext2)! will only show files with file extensions \filename{ext1} or \filename{ext2} with the corresponding description texts \lstinline!text1! and \lstinline!text2!, respectively.
 \lstinline!caption! is a caption for display in the file dialog.
 \lstinline!loadSelector! is used to select an existing file for reading, whereas \lstinline!saveSelector! is used to define a file for writing.
 
@@ -1533,6 +1723,8 @@ When clicking on an instance of model \lstinline!DialogDemo!, a dialog is shown 
 \includegraphics[scale=0.5]{tabparameter}\\
 \end{center}
 \end{example}
+\end{semantics}
+\end{annotationdefinition}
 
 \subsection{Connector Sizing}\label{connector-sizing}
 
@@ -1647,6 +1839,7 @@ equation
   connect($\ldots$, step1.inPorts[4]);  // new connect-equation
 \end{lstlisting}
 \end{nonnormative}
+
 
 \section{Versions}\label{annotations-for-version-handling}\label{versions}
 
@@ -2048,6 +2241,7 @@ The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also b
 It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
 \end{nonnormative}
 
+
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
 
 This section presents annotations to define the protection and the licensing of packages.
@@ -2292,12 +2486,12 @@ record Protection
   end Authorization;
 
   record License
-    /*literal*/ String licensee = "" "Optional string to show information about the licensee";
-    /*literal*/ String id[:] "Unique machine identifications, e.g., MAC addresses";
-    /*literal*/ String features[:] "Activated library license features";
-    /*literal*/ String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
-    /*literal*/ String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
-    /*literal*/ String operations[:] "Library usage conditions";
+    /*literal*/ constant String licensee = "" "Optional string to show information about the licensee";
+    /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
+    /*literal*/ constant String features[:] "Activated library license features";
+    /*literal*/ constant String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
+    /*literal*/ constant String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
+    /*literal*/ constant String operations[:] "Library usage conditions";
   end License;
 end Protection;
 \end{lstlisting}%

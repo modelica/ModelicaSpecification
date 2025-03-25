@@ -1,13 +1,11 @@
 \chapter{Derivation of Stream Equations}\label{derivation-of-stream-equations}
 
-This appendix contains a derivation of the equation for stream
-connectors from \cref{stream-connectors}.
+This appendix contains a derivation of the equation for stream connectors from \cref{stream-connectors}.
 
 \section{Mixing Enthalpy}\label{reasons-for-avoiding-the-actual-mixing-enthalpy-in-connector-definitions}\label{mixing-enthalpy}
 
 Consider a connection set with $n$ connectors, and denote the mass flow rates \lstinline!m_flow! by $\tilde{m}$.
-The mixing enthalpy is defined by the mass balance (the general mass-balance for a component has
-$\dot{m}=\sum\tilde{m}$ which simplifies for the mixing enthalpy where $m=0$ and thus $\dot{m}=0$)
+The mixing enthalpy is defined by the mass balance (the general mass-balance for a component has $\dot{m}=\sum\tilde{m}$ which simplifies for the mixing enthalpy where $m=0$ and thus $\dot{m}=0$)
 \begin{equation*}
 0=\sum_{j=1}^n\tilde{m}_j
 \end{equation*}
@@ -20,12 +18,11 @@ with
 \tilde{H}_j=\tilde{m}_j
 \begin{cases}
 h_{\mathrm{mix}}&\text{if $\tilde{m}_j>0$}\\
-h_{\mathrm{outflow},j}&\text{if $\tilde{m}_j<=0$}
+h_{\mathrm{outflow},j}&\text{if $\tilde{m}_j \leq 0$}
 \end{cases}
 \end{equation*}
-Herein, mass flow rates are positive when entering models (exiting the
-connection set). The specific enthalpy represents the specific enthalpy
-inside the component, close to the connector, for the case of outflow.
+Herein, mass flow rates are positive when entering models (exiting the connection set).
+The specific enthalpy represents the specific enthalpy inside the component, close to the connector, for the case of outflow.
 Expressed with variables used in the balance equations we arrive at:
 \begin{equation*}
 h_{\mathrm{outflow},j}=
@@ -34,12 +31,9 @@ h_{\mathrm{outflow},j}=
 \textrm{arbitrary}&\text{if $\tilde{m}_j \geq 0$}
 \end{cases}
 \end{equation*}
-While these equations are suitable for device-oriented modeling, the
-straightforward usage of this definition leads to models with
-discontinuous residual equations, which violates the prerequisites of
-several solvers for nonlinear equation systems. This is the reason why
-the actual mixing enthalpy is not modelled directly in the model
-equations. The stream connectors provide a suitable alternative.
+While these equations are suitable for device-oriented modeling, the straightforward usage of this definition leads to models with discontinuous residual equations, which violates the prerequisites of several solvers for nonlinear equation systems.
+This is the reason why the actual mixing enthalpy is not modelled directly in the model equations.
+The stream connectors provide a suitable alternative.
 
 \begin{figure}[H]
   \begin{center}
@@ -53,8 +47,7 @@ equations. The stream connectors provide a suitable alternative.
 For simplicity, the derivation of \lstinline!inStream! is shown at hand of 3 model components that are connected together.
 The case for $N$ connections follows correspondingly.
 
-The energy and mass balance equations for the connection set for 3
-components are (see above):
+The energy and mass balance equations for the connection set for 3 components are (see above):
 \begin{subequations}
 \label{eq:D1}
 \begin{equation}
@@ -72,7 +65,7 @@ h_{\mathrm{outflow},2}&\text{if $\tilde{m}_2 \leq 0$}
 +&\tilde{m}_3\cdot
 \begin{cases}
 h_{\mathrm{mix}}&\text{if $\tilde{m}_3>0$}\\
-h_{\mathrm{outflow},3}&\text{if $\tilde{m}_3 \leq $}
+h_{\mathrm{outflow},3}&\text{if $\tilde{m}_3 \leq 0$}
 \end{cases}
 \end{split}
 \label{eq:D1a}
@@ -83,8 +76,7 @@ h_{\mathrm{outflow},3}&\text{if $\tilde{m}_3 \leq $}
 \end{equation}
 \end{subequations}
 
-The balance equations are implemented using a $\operatorname{max}$ operator in place of
-the piecewise expressions, taking care of the different flow directions:
+The balance equations are implemented using a $\operatorname{max}$ operator in place of the piecewise expressions, taking care of the different flow directions:
 \begin{subequations}
 \label{eq:D2}
 \begin{equation}
@@ -116,22 +108,17 @@ Using \eqref{eq:D2b}, the denominator can be changed to:
 h_{\mathrm{mix}}=\frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}
 {\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_2,0)+\operatorname{max}(-\tilde{m}_3,0)}
 \end{equation*}
-Above it was shown that an equation of this type does not yield properly
-formulated model equations. In the streams concept we therefore decide
-to split the energy balance, which consists of different branches
-depending on the mass flow direction. Consequently, separate energy
-balances are the result; each valid for specific flow directions.
+Above it was shown that an equation of this type does not yield properly formulated model equations.
+In the streams concept we therefore decide to split the energy balance, which consists of different branches depending on the mass flow direction.
+Consequently, separate energy balances are the result; each valid for specific flow directions.
 
-In a model governing equations have to establish the specific enthalpy
-of fluid leaving the model based on the specific enthalpy of fluid
-flowing into it. Whenever the mixing enthalpy is \emph{used} in a model
-it is therefore the mixing enthalpy under the assumption of fluid
-flowing into said model.
+In a model governing equations have to establish the specific enthalpy of fluid leaving the model based on the specific enthalpy of fluid flowing into it.
+Whenever the mixing enthalpy is \emph{used} in a model it is therefore the mixing enthalpy under the assumption of fluid flowing into said model.
 
-We establish this quantity using a dedicated operator $\text{\lstinline!inStream!}(h_{\mathrm{outflow},i})=h_{\mathrm{mix}}$ assuming that $\tilde{m}_{i} \geq 0$. This leads to
-three different incarnations of ($n$ in the general case). This is
-illustrated in the figure below. For the present example of three
-components in a connection set, this means the following.
+We establish this quantity using a dedicated operator $\text{\lstinline!inStream!}(h_{\mathrm{outflow},i})=h_{\mathrm{mix}}$ assuming that $\tilde{m}_{i} \geq 0$.
+This leads to different incarnations of $h_{\mathrm{mix}}$, three in this case and $n$ in the general case.
+This is illustrated in the figure below.
+For the present example of three components in a connection set, this means the following.
 \begin{align*}
 \text{\lstinline!inStream!}(h_{\mathrm{outflow},1}) &= \frac{\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_2,0)+\operatorname{max}(-\tilde{m}_3,0)}\\
 \text{\lstinline!inStream!}(h_{\mathrm{outflow},2}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_1,0)+\operatorname{max}(-\tilde{m}_3,0)}\\
@@ -144,8 +131,7 @@ components in a connection set, this means the following.
   \caption{Exemplary connection set with three connected components.}
 \end{figure}
 
-In the general case of a connection set with \emph{n} components,
-similar considerations lead to the following.
+In the general case of a connection set with \emph{n} components, similar considerations lead to the following.
 \begin{equation*}
 \text{\lstinline!inStream!}(h_{\mathrm{outflow},i})=\frac{\sum_{j=1,\dotsc,n;j\neq i}\operatorname{max}(-\tilde{m}_j,0)h_{\mathrm{outflow},j}}{\sum_{j=1,\dotsc,n;j\neq i}\operatorname{max}(-\tilde{m}_j,0)}
 \end{equation*}
@@ -164,16 +150,13 @@ Therefore, it is set to the outflow value.
 \text{\lstinline!inStream!}(h_{\mathrm{outflow},2}) &= \frac{\operatorname{max}(-\tilde{m}_1,0)h_{\mathrm{outflow},1}}{\operatorname{max}(-\tilde{m}_1,0)}=h_{\mathrm{outflow},1}
 \end{align*}
 
-In this case, \lstinline!inStream! is continuous (contrary to $h_{\mathrm{mix}}$) and does not
-depend on flow rates. The latter result means that this transformation
-may remove nonlinear systems of equations, which requires that either
-simplifications of the form $a * b / a = b$ must be provided, or that this
-case is treated directly.
+In this case, \lstinline!inStream! is continuous (contrary to $h_{\mathrm{mix}}$) and does not depend on flow rates.
+The latter result means that this transformation may remove nonlinear systems of equations, which requires that either simplifications of the form $a * b / a = b$ must be provided, or that this case is treated directly.
 
 \subsection{Zero Mass Flow Rate -- Connection of 3 Stream Connectors}\label{connection-of-3-stream-connectors-where-one-mass-flow-rate-is-identical-to-zero-n-3-and}\label{zero-mass-flow-rate-connection-of-3-stream-connectors}
 
-The case where $N=3$ and $\tilde{m}_3=0$ occurs when a one-port sensor (like a temperature sensor) is connected to two connected components.
-For the sensor, the \lstinline!min! attribute of the mass flow rate should be set to zero (no fluid exiting the component via this connector).
+The case where $N=3$ and $\tilde{m}_3=0$ occurs when a one-port sensor (like a temperature sensor) is connected to two other components.
+For the sensor, the \lstinline!min!-attribute of the mass flow rate should be set to zero (no fluid exiting the component via this connector).
 This simplification (and similar ones) can also be used if a tool determines that a mass flow rate is zero or non-negative.
 It is also possible to generalize this to the case where more than one sensor is connected.
 The suggested implementation results in the following equations, and as indicated the last formula can be simplified further by using $\tilde{m}_3=0$:
@@ -194,24 +177,16 @@ h_{\mathrm{outflow},1}&\text{if $\tilde{m}_1 < 0$ and $\tilde{m}_3 = 0$}
   \caption{Example series connection of multiple models with stream connectors.}
 \end{figure}
 
-For the two components with finite mass flow rates (not the sensor), the
-properties discussed for two connected components still hold. The
-connection set equations reflect that the sensor does not any influence
-by discarding the flow rate of the latter. In several cases a non-linear
-equation system is removed by this transformation. However, \lstinline!inStream!
-results in a discontinuous equation for the sensor, which is consistent
-with modeling the convective phenomena only. The discontinuous equation
-is uncritical, if the sensor variable is not used in a feedback loop
-with direct feedthrough, since the discontinuous equation is then not
-part of an algebraic loop. Otherwise, it is advisable to regularize or
-filter the sensor signal.
+For the two components with finite mass flow rates (not the sensor), the properties discussed for two connected components still hold.
+The connection set equations reflect that the sensor does not any influence by discarding the flow rate of the latter.
+In several cases a non-linear equation system is removed by this transformation.
+However, \lstinline!inStream! results in a discontinuous equation for the sensor, which is consistent with modeling the convective phenomena only.
+The discontinuous equation is uncritical, if the sensor variable is not used in a feedback loop with direct feedthrough, since the discontinuous equation is then not part of an algebraic loop.
+Otherwise, it is advisable to regularize or filter the sensor signal.
 
 \subsection{Ideal Splitting Junction for Uni-Directional Flow - Connection of 3 Stream Connectors where Two Mass Flow Rates are Positive}\label{connection-of-3-stream-connectors-where-two-mass-flow-rates-are-positive-ideal-splitting-junction-for-uni-directional-flow}\label{ideal-splitting-junction-for-uni-directional-flow-connection-of-3-stream-connectors-where-two-mass-flow-rates-are-positive}
 
-If uni-directional flow is present and an ideal splitter is modelled,
-the required flow direction should be defined in the connector instance
-with the \lstinline!min! attribute (the \lstinline!max! attribute could be also defined,
-however it does not lead to simplifications):
+If uni-directional flow is present and an ideal splitter is modelled, the required flow direction should be defined in the connector instance with the \lstinline!min!-attribute (the \lstinline!max!-attribute could be also defined, however it does not lead to simplifications):
 \begin{lstlisting}[language=modelica]
 model m2
   Fluidport c(m_flow(min=0));
@@ -219,9 +194,8 @@ model m2
 end m2;
 \end{lstlisting}
 
-Consider the case of and all other mass flow rates positive (with the
-min attribute set accordingly). Connecting \lstinline!m1.c! with \lstinline!m2.c! and \lstinline!m3.c!, such
-that
+Consider the case of $\tilde{m}_{1} < 0$ and all other mass flow rates positive (with the \lstinline!min!-attribute set accordingly).
+Connecting \lstinline!m1.c! with \lstinline!m2.c! and \lstinline!m3.c!, such that
 \begin{lstlisting}[language=modelica]
 m2.c.m_flow.min = 0; // max(-m2.c.m_flow,0) = 0
 m3.c.m_flow.min = 0; // max(-m3.c.m_flow,0) = 0
@@ -231,9 +205,8 @@ results in the following equation:
 \text{\lstinline!inStream!}(h_{\mathrm{outflow},1})=\frac{\operatorname{max}(-\tilde{m}_2,0)h_{\mathrm{outflow},2}+\operatorname{max}(-\tilde{m}_3,0)h_{\mathrm{outflow},3}}{\operatorname{max}(-\tilde{m}_2,0)+\operatorname{max}(-\tilde{m}_3,0)}=\frac{0}{0}
 \end{equation*}
 
-\lstinline!inStream! cannot be evaluated for a connector, on which
-the mass flow rate has to be negative by definition. The reason is that
-the value is arbitrary, which is why it is defined as follows.
+\lstinline!inStream! cannot be evaluated for a connector, on which the mass flow rate has to be negative by definition.
+This is not a problem since there is no requirement on the result of \lstinline!inStream! in this case, and the following result is selected instead of the illegal division:
 \begin{equation*}
 \text{\lstinline!inStream!}(h_{\mathrm{outflow},1}):=h_{\mathrm{outflow},1}
 \end{equation*}
@@ -245,20 +218,11 @@ For the remaining connectors, \lstinline!inStream! reduces to a simple result.
   = h_{\mathrm{outflow},1}
 \end{align*}
 Again, the previous non-linear algebraic system of equations is removed.
-This means that utilizing the information about uni-directional flow is
-very important.
+This means that utilizing the information about uni-directional flow is very important.
 
-To summarize, if all mass flow rates are zero, the balance equations for
-stream variables \eqref{eq:D1} and for flows \eqref{eq:D2} are identically fulfilled. In
-such a case, any value of $h_{\mathrm{mix}}$ fulfills \eqref{eq:D1}, i.e., a unique
-mathematical solution does not exist. This specification only requires
-that a solution fulfills the balance equations. Additionally, a
-recommendation is given to compute all unknowns in a unique way, by
-providing an explicit formula for \lstinline!inStream!. Due to the
-definition, that only flows where the corresponding \lstinline!min! attribute is
-neither zero nor positive enter this formula, a meaningful physcial
-result is always obtained, even in case of zero mass flow rate. As a
-side effect, non-linear equation systems are automatically removed in
-special cases, like sensors or uni-directional flow, without any
-symbolic transformations (no equation must be analyzed; only the
-\lstinline!min! attributes of the corresponding flow variables).
+To summarize, if all mass flow rates are zero, the balance equations for stream variables \eqref{eq:D1} and for flows \eqref{eq:D2} are identically fulfilled.
+In such a case, any value of $h_{\mathrm{mix}}$ fulfills \eqref{eq:D1}, i.e., a unique mathematical solution does not exist.
+This specification only requires that a solution fulfills the balance equations.
+Additionally, a recommendation is given to compute all unknowns in a unique way, by providing an explicit formula for \lstinline!inStream!.
+Due to the definition, that only flows where the corresponding \lstinline!min!-attribute is neither zero nor positive enter this formula, a meaningful physcial result is always obtained, even in case of zero mass flow rate.
+As a side effect, non-linear equation systems are automatically removed in special cases, like sensors or uni-directional flow, without any symbolic transformations (no need to analyze any equation; only the \lstinline!min!-attributes of the corresponding flow variables).

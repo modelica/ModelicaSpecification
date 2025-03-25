@@ -393,29 +393,34 @@ end SineSource;
 \end{lstlisting}
 \end{example}
 
-\section{Built-in Intrinsic Operators with Function Syntax}\label{built-in-intrinsic-operators-with-function-syntax}
+\section{Built-in Operators and Functions}\label{built-in-intrinsic-operators-with-function-syntax}
 
-Certain built-in operators of Modelica have the same syntax as a function call.
+Certain built-in operators of Modelica are called using the same syntax as a function call.
 However, they do not behave as a mathematical function, because the result depends not only on the input arguments but also on the status of the simulation.
 
 There are also built-in functions that depend only on the input argument, but also may trigger events in addition to returning a value.
-Intrinsic means that they are defined at the Modelica language level, not in the Modelica library.
-The following built-in intrinsic operators/functions are available:
+The built-in functions may also be overloaded such that a single Modelica function cannot be compatible with all calls of the function.
+Here, \emph{built-in} means that they are defined at the Modelica language level, not through a Modelica \lstinline!function! definition.
+The following built-in operators/functions are available:
 \begin{itemize}
 \item
-  Mathematical functions and conversion functions, see \cref{numeric-functions-and-conversion-functions} below.
+  Mathematical functions and conversion operators, see \cref{numeric-functions-and-conversion-functions} below.
 \item
   Derivative and special purpose operators with function syntax, see \cref{derivative-and-special-purpose-operators-with-function-syntax} below.
 \item
-  Event-related operators with function syntax, see \cref{event-related-operators-with-function-syntax} below.
+  Event-related operators, see \cref{event-related-operators-with-function-syntax} below.
 \item
-  Array operators/functions, see \cref{array-dimension-lower-and-upper-index-bounds}.
+  Array operators/functions, see \cref{built-in-array-functions}.
+\item
+  Synchronous operators, see \cref{synchronous-language-elements}.
+\item
+  State machine operators, see \cref{transitions}.
 \end{itemize}
 
-Note that when the specification references a function having the name of a built-in function it references the built-in function, not a user-defined function having the same name, see also \cref{built-in-functions}.
-With exception of the built-in \lstinline!String! operator, all operators in this section can only be called with positional arguments.
+Except where shadowing problems are being discussed, references to built-in functions and operators within this document always assume that the built-in definitions are not shadowed by user-defined definitions, see also \cref{built-in-functions}.
+With the exception where inputs are named (e.g., \lstinline!String!), all operators and functions in this section can only be called with positional arguments.
 
-\subsection{Numeric Functions and Conversion Functions}\label{numeric-functions-and-conversion-functions}
+\subsection{Numeric Functions and Conversion Operators}\label{numeric-functions-and-conversion-functions}
 
 The mathematical functions and conversion operators listed below do not generate events.
 \begin{center}
@@ -426,6 +431,8 @@ The mathematical functions and conversion operators listed below do not generate
 \hline
 {\lstinline!abs($v$)!} & Absolute value (event-free) & \Cref{modelica:abs} \\
 {\lstinline!sign($v$)!} & Sign of argument (event-free) & \Cref{modelica:sign} \\
+{\lstinline!min($x$, $y$)!} & Least of two scalars (event-free) & \Cref{modelica:min-binary} \\
+{\lstinline!max($x$, $y$)!} & Greatest of two scalars (event-free) & \Cref{modelica:max-binary} \\
 {\lstinline!sqrt($v$)!} & Square root & \Cref{modelica:sqrt} \\
 {\lstinline!nthRoot($v$, $n$)!} & $n$th root & \Cref{modelica:nthRoot} \\
 {\lstinline!Integer($e$)!} & Conversion from enumeration to {\lstinline!Integer!} & \Cref{modelica:integer-of-enumeration} \\
@@ -435,7 +442,8 @@ The mathematical functions and conversion operators listed below do not generate
 \end{tabular}
 \end{center}
 
-All of these except for the \lstinline!String! conversion operator are vectorizable according to \cref{scalar-functions-applied-to-array-arguments}.
+Except for the \lstinline!min!, \lstinline!max! and the \lstinline!String! conversion operator they are vectorizable according to \cref{scalar-functions-applied-to-array-arguments}.
+The \lstinline!min! and \lstinline!max! functions have array-specific variants which perform array reduction operations described in \cref{reduction-functions-and-operators}.
 
 Additional non-event generating mathematical functions are described in \cref{built-in-mathematical-functions-and-external-built-in-functions}, whereas the event-triggering mathematical functions are described in \cref{event-triggering-mathematical-functions}.
 
@@ -777,6 +785,7 @@ der($\mathit{expr}$)
 The time derivative of $\mathit{expr}$.
 If the expression $\mathit{expr}$ is a scalar it needs to be a subtype of \lstinline!Real!.
 The expression and all its time-varying subexpressions must be continuous and semi-differentiable.
+An exception is when the operator \lstinline!reinit! (\Cref{modelica:reinit}) is activated, as not even states are continuous.
 If $\mathit{expr}$ is an array, the operator is applied to all elements of the array.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 \begin{nonnormative}
@@ -801,6 +810,20 @@ equation
   y3 = der(x3);    // Ok
 \end{lstlisting}
 Since it is difficult to prove whether expressions are continuous, tools can dynamically check the continuity such that \lstinline!x2! only generates an error when the integration reaches the discontinuity.
+\end{example}
+
+\begin{example}
+Exception for reinit:
+\begin{lstlisting}[language=modelica]
+  Real x4, x5, x6;
+equation
+  when sample(1, 1) then
+    reinit(x4, 0);
+  end when;
+  der(x4) = time;
+  x5 = x4^2;
+  x6 = der(x5); // Allowed even if x5 is not continuous, since that is due to reinit
+\end{lstlisting}
 \end{example}
 
 \end{semantics}
@@ -939,32 +962,35 @@ Furthermore, the maximum step size of the integrator is limited by this minimum 
 \begin{nonnormative}
 Many applications involve the modelling of variable-speed transport of properties.
 One option to model this infinite-dimensional system is to approximate it by an ODE, but this requires a large number of state variables and might introduce either numerical diffusion or numerical oscillations.
-Another option is to use a built-in operator that keeps track of the spatial distribution of $z(x, t)$, by suitable sampling, interpolation, and shifting of the stored distribution.
+Another option is to use a built-in operator that keeps track of the spatial distribution of $z(\xi, t)$, by suitable sampling, interpolation, and shifting of the stored distribution.
 In this case, the internal state of the operator is hidden from the ODE solver.
 \end{nonnormative}
 
 \lstinline!spatialDistribution! allows the infinite-dimensional problem below to be solved efficiently with good accuracy
 \begin{align*}
-\frac{\partial z(x,t)}{\partial t}+v(t)\frac{\partial z(x,t)}{\partial x} &= 0.0\\
-z(0.0, t) &= \mathrm{in}_0(t) \text{ if $v\geq 0$}\\
-z(1.0, t) &= \mathrm{in}_1(t) \text{ if $v<0$}
+\frac{\partial z(\xi, t)}{\partial t} + v(t) \frac{\partial z(\xi, t)}{\partial \xi} &= 0\\
+z(0, t) &= \mathrm{in}_{0}(t) \quad \text{if $v(t) \geq 0$}\\
+z(1, t) &= \mathrm{in}_{1}(t) \quad \text{if $v(t) < 0$}
 \end{align*}
-where $z(x, t)$ is the transported quantity, $x$ is the normalized spatial coordinate ($0.0 \le x \le 1.0$), $t$ is the time, $v(t)=\mathrm{der}(x)$ is the normalized transport velocity and the boundary conditions are set at either $x=0.0$ or $x=1.0$, depending on the sign of the velocity.
+where $z(\xi, t)$ is the transported quantity, $\xi$ is the normalized spatial coordinate ($0 \le \xi \le 1$), $t$ is the time, $v(t)$ is the normalized transport velocity and the boundary conditions are set at either $\xi = 0$ or $\xi = 1$, depending on the sign of the velocity.
+
 The calling syntax is:
 \begin{lstlisting}[language=modelica]
 (out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
                                    initialPoints = {0.0, 1.0},
                                    initialValues = {0.0, 0.0});
 \end{lstlisting}
-where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real! of equal size, containing the x coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(x, \mathit{t0})$.
-The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
-Elements in the \lstinline!initialPoints! array must be sorted in non-descending order.
+where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, and \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real!.
+The position \lstinline!x! is the integral of the transport velocity $v$, where the constant of integration does not matter.
+The arrays \lstinline!initialPoints! and \lstinline!initialValues! shall be parameter expressions of equal size, containing the $\xi$ coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(\xi, t_{0})$.
+The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0, t)$ and $z(1, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0, t)$ and $z(1, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
+The \lstinline!initialPoints! array shall span the entire range from 0 to 1, and must be sorted in non-descending order.
 The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.
 The operator can be vectorized only with respect to the arguments \lstinline!in0! and \lstinline!in1! (which must have the same size), returning vectorized outputs \lstinline!out0! and \lstinline!out1! of the same size; the arguments \lstinline!initialPoints! and \lstinline!initialValues! are vectorized accordingly.
 
 The solution, $z$, can be described in terms of characteristics:
 \begin{equation*}
-z(x+\int_{t}^{t+\beta} v(\alpha) \mathrm{d}\alpha, t+\beta) = z(x, t),\quad\text{for all $\beta$ as long as staying inside the domain}
+z(\xi+\int_{t}^{t+\beta}\! v(\alpha) \mathrm{d}\alpha,\, t+\beta) = z(\xi, t), \quad\text{for all $\beta$ as long as staying inside the domain}
 \end{equation*}
 
 This allows the direct computation of the solution based on interpolating the boundary conditions.

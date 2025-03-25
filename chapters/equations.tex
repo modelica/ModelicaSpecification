@@ -36,13 +36,13 @@ An equation section is comprised of the keyword \lstinline!equation!\index{equat
 The formal syntax is as follows:
 \begin{lstlisting}[language=grammar]
 equation-section :
-   [ initial ] equation { equation ";" }
+   [ initial ] equation { some-equation ";" }
 \end{lstlisting}
 
 The following kinds of equations may occur in equation sections.
 The syntax is defined as follows:
 \begin{lstlisting}[language=grammar]
-equation :
+some-equation :
    ( simple-expression "=" expression
      | if-equation
      | for-equation
@@ -82,7 +82,7 @@ Also compare with \cref{assignments-from-called-functions-with-multiple-results}
 The syntax of a \lstinline!for!-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation@\robustinline{for}-equation} is as follows:
 \begin{lstlisting}[language=grammar]
 for for-indices loop
-  { equation ";" }
+  { some-equation ";" }
 end for ";"
 \end{lstlisting}
 
@@ -164,12 +164,12 @@ The same restrictions apply to \lstinline!Connections.branch!, \lstinline!Connec
 The \lstinline!if!-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 if expression then
-  { equation ";" }
+  { some-equation ";" }
 { elseif expression then
-  { equation ";" }
+  { some-equation ";" }
 }
 [ else
-  { equation ";" }
+  { some-equation ";" }
 ]
 end if ";"
 \end{lstlisting}
@@ -192,9 +192,9 @@ If this condition is violated, the single assignment rule would not hold, becaus
 The \lstinline!when!-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation@\robustinline{when}-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation@\robustinline{when}-equation} have the following syntax:
 \begin{lstlisting}[language=grammar]
 when expression then
-  { equation ";" }
+  { some-equation ";" }
 { elsewhen expression then
-  { equation ";" }
+  { some-equation ";" }
 }
 end when ";"
 \end{lstlisting}
@@ -506,6 +506,7 @@ If the \lstinline!condition! evaluates to false, different actions are taken dep
   \lstinline!condition! needs to be implicitly treated with \lstinline!noEvent! since otherwise events might be triggered that can lead to slightly changed simulation results.
   \end{nonnormative}
 \end{itemize}
+Tools are recommended to provide more information than just the given message of a failed assertion, in particular the condition and the values of variables used in it.
 
 \begin{nonnormative}
 The \lstinline!AssertionLevel.error! case can be used to avoid evaluating a model outside its limits of validity; for instance, a function to compute the saturated liquid temperature cannot be called with a pressure lower than the triple point value.
@@ -518,6 +519,9 @@ assert(T > 250 and T < 400, "Medium model outside full accuracy range",
        AssertionLevel.warning);
 assert(T > 200 and T < 500, "Medium model outside feasible region");
 \end{lstlisting}
+
+It is recommended that asserts have a simple message as above, formulated with the recommended tool behavior in mind.
+Writing \lstinline!assert(T<500, "Temperature = "+String(T)+" was above 500")! is thus not recommended, and is likely to lead to duplicated information.
 \end{nonnormative}
 
 \subsection{terminate}\label{terminate}
