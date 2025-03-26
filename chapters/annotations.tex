@@ -914,7 +914,7 @@ type FillPattern = enumeration(None, Solid, Horizontal, Vertical,
                                HorizontalCylinder, VerticalCylinder, Sphere);
 type BorderPattern = enumeration(None, Raised, Sunken, Engraved);
 type Smooth = enumeration(None, Bezier);
-type EllipseClosure = enumeration(None, Chord, Radial);
+type EllipseClosure = enumeration(None, Chord, Radial, Automatic);
 \end{lstlisting}%
 \annotationindex{Color}\annotationindex{LinePattern}\annotationindex{FillPattern}\annotationindex{BorderPattern}\annotationindex{Smooth}\annotationindex{EllipseClosure}
 The \lstinline!LinePattern! attribute \lstinline!Solid! indicates a normal line, \lstinline!None! an invisible line, and the other attributes various forms of dashed/dotted lines.
@@ -1206,11 +1206,7 @@ record Ellipse
   Extent extent;
   Real startAngle(quantity = "angle", unit = "deg") = 0;
   Real endAngle(quantity = "angle", unit = "deg") = 360;
-  EllipseClosure closure =
-    if startAngle == 0 and endAngle == 360 then
-      EllipseClosure.Chord
-    else
-      EllipseClosure.Radial;
+  EllipseClosure closure = EllipseClosure.Automatic;
 end Ellipse;
 \end{lstlisting}%
 \annotationindex{Ellipse}
@@ -1220,10 +1216,10 @@ Partial ellipses can be drawn using the \lstinline!startAngle! and \lstinline!en
 These specify the endpoints of the arc prior to the stretch and rotate operations.
 The arc is drawn counter-clockwise from \lstinline!startAngle! to \lstinline!endAngle!, where \lstinline!startAngle! and \lstinline!endAngle! are defined counter-clockwise from 3 o'clock (the positive x-axis).
 
-The closure attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).
+The \lstinline!closure! attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).
 In the latter case, the ellipse is treated as an open curve instead of a closed shape, and the \lstinline!fillPattern! and \lstinline!fillColor! are not applied (if present, they are ignored).
 
-The default closure is \lstinline!EllipseClosure.Chord! when \lstinline!startAngle! is 0 and \lstinline!endAngle! is 360, or \lstinline!EllipseClosure.Radial! otherwise.
+The effect of \lstinline!EllipseClosure.Automatic! is that of \lstinline!EllipseClosure.Chord! when both \lstinline!startAngle! is 0 and \lstinline!endAngle! is 360, and that of \lstinline!EllipseClosure.Radial! otherwise.
 
 \begin{nonnormative}
 The default for a closed ellipse is not \lstinline!EllipseClosure.None!, since that would result in \lstinline!fillColor! and \lstinline!fillPattern! being ignored, making it impossible to draw a filled ellipse.
