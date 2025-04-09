@@ -47,7 +47,7 @@ These are the different ways of referencing a class, where the _host_, _fullclas
   * Example: _modelica:Examples_
   * Example: _modelica:_ (empty _relclass_)
   * Example: _modelica:?figure=Disturbances&plot=Wind_ (empty _relclass_)
-- _modelica:./relclass_ — Same as _modelica:./relclass_, possibly useful to add clarity.
+- _modelica:./relclass_ — Same as _modelica:relclass_, possibly useful to add clarity.
   * Example: _modelica:./Examples_
   * Example: _modelica:._ (empty _relclass_)
   * Wrong: _modelica:///._ (malformed absolute reference with _fullclass_ `/.`)
