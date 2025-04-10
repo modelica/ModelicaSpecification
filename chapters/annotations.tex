@@ -2440,14 +2440,15 @@ In this section annotations within the \lstinline!Protection! annotation are def
 record Protection
   /*literal*/ constant Access access;
   /*literal*/ constant String features[:] "Required license features";
-
-  record License
-    /*literal*/ constant String libraryKey;
-    /*literal*/ constant String licenseFile = "" "Optional, default mapping if empty";
-  end License;
+  /*literal*/ constant UserLicense License;
 end Protection;
+
+record UserLicense "Internal class name, do not use"
+  /*literal*/ constant String libraryKey;
+  /*literal*/ constant String licenseFile = "" "Default mapping if empty";
+end UserLicense;
 \end{lstlisting}
-See \cref{protection-of-classes} for a description of \lstinline!access!, and note that licensing information uses another record \lstinline!Protection! with different contents given below.
+See \cref{protection-of-classes} for a description of \lstinline!access!.
 The \fmtannotationindex{License} annotation has only an effect on the top of an encrypted class and is then valid for the whole class hierarchy.
 (Usually the licensed class is a package.)
 The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
@@ -2472,26 +2473,28 @@ annotation(Protection(features={"LicenseOption1 LicenseOption2", "LicenseOption3
 
 In order that the protected class can be used either a tool specific license manager, or a license file (called \lstinline!licenseFile!) must be present.
 The license file is standardized.
-It is a Modelica package without classes that has a \lstinline!Protection! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
+It is a Modelica package without classes that has an \lstinline!Authorization! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
 \begin{lstlisting}[language=modelica]
-record Protection
-  record Authorization
-    /*literal*/ constant String licensor = "" "Optional string to show information about the licensor";
-    /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
-    /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
-  end Authorization;
-
-  record License
-    /*literal*/ constant String licensee = "" "Optional string to show information about the licensee";
-    /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
-    /*literal*/ constant String features[:] "Activated library license features";
-    /*literal*/ constant String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
-    /*literal*/ constant String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
-    /*literal*/ constant String operations[:] "Library usage conditions";
-  end License;
-end Protection;
+record Authorization
+  /*literal*/ constant String licensor = "" "Information about the licensor";
+  /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
+  /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
+end Authorization;
 \end{lstlisting}%
 \index{Authorization@\robustinline{Authorization}!license file}\index{License@\robustinline{License}!license file}
+using the following definition:
+\begin{lstlisting}[language=modelica]
+record License
+  /*literal*/ constant String licensee = "" "Information about the licensee";
+  /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
+  /*literal*/ constant String features[:] "Activated library license features";
+  /*literal*/ constant String startDate = "" "Start date in UTCformat YYYY-MM-DD";
+  /*literal*/ constant String expirationDate = "" "Expiration date in UTCformat YYYY-MM-DD";
+  /*literal*/ constant String operations[:] "Library usage conditions";
+end License;
+\end{lstlisting}
+
+If \lstinline!startDate! and \lstinline!expirationDate! are empty (the default) it is a perpetual license.
 
 The format of the strings used for \lstinline!libraryKey! and \lstinline!id! are not specified (they are vendor specific).
 The \lstinline!libraryKey! is a secret of the library developer.
