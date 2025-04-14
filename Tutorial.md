@@ -2203,195 +2203,37 @@ when design meetings take place).
 
 ## References
 
-Abadi M., and L. Cardelli: A Theory of Objects. Springer Verlag, ISBN 0-387-94775-2, 1996.
+The following are the references for the original design of the Modelica Language.
+
+- Abadi M., and L. Cardelli: A Theory of Objects. Springer Verlag, ISBN 0-387-94775-2, 1996.
 Broenink J.F.: "Bond-Graph Modeling in Modelica". ESS’97 - European Simulation
 Symposium, Oct., 1997.
-Cardarelli F.: Scientific Unit Conversion. Springer Verlag, 1997.
-Cardelli L.: "Types for Data-Oriented Languages (Overview)", in J. W. Schmidt, S. Ceri and M.
+- Cardarelli F.: Scientific Unit Conversion. Springer Verlag, 1997.
+- Cardelli L.: "Types for Data-Oriented Languages (Overview)", in J. W. Schmidt, S. Ceri and M.
 Missikof (Eds.): Advances in Database Technology - EDBT’88, Lecture Notes in Computer
 Science n. 303, Springer-Verlag, 1988.
-Cardelli L.: "Typeful Programming", in E. J. Neuhold and M. Paul (Eds.): Formal description of
+- Cardelli L.: "Typeful Programming", in E. J. Neuhold and M. Paul (Eds.): Formal description of
 Programming Concepts, Springer-Verlag, 1991. Also published as SRC Research Report 45,
 Digital Equipment Corporation.
-Elmqvist H., F.E. Cellier, and M. Otter: ‘‘Object-oriented modeling of hybrid systems.’’ In
+- Elmqvist H., F.E. Cellier, and M. Otter: ‘‘Object-oriented modeling of hybrid systems.’’ In
 Proceedings of European Simulation Symposium, ESS’93. The Society of Computer Simulation,
 October 1993.
-Franke R.: “Modeling and Optimal Design of a Central Solar Heating Plant with Heat Storage
+- Franke R.: “Modeling and Optimal Design of a Central Solar Heating Plant with Heat Storage
 in the Ground Using Modelica”, Eurosim '98 Simulation Congress, Helsinki, Finland, April 14-
 15, 1998.
-Kågedal D.: "A Natural Semantics specification for the equation-based modeling language
+- Kågedal D.: "A Natural Semantics specification for the equation-based modeling language
 Modelica," LiTH-IDA-Ex-98/48, Linköping University, Sweden, 1998.
-Mattsson S.E.: "On Modelling of Heat Exchangers in Modelica". ESS’97 - European Simulation
+- Mattsson S.E.: "On Modelling of Heat Exchangers in Modelica". ESS’97 - European Simulation
 Symposium, Oct., 1997.
-Mosterman P. J., M. Otter, H. Elmqvist: "Modeling Petri Nets as Local Constraint Equations
+- Mosterman P. J., M. Otter, H. Elmqvist: "Modeling Petri Nets as Local Constraint Equations
 for Hybrid Systems Using Modelica", Summer Computer Simulation Conference -98 , Reno,
 Nevada, USA, July 19-22, 1998.
-Otter M., C. Schlegel, and H. Elmqvist: "Modeling and Realtime Simulation of an Automatic
+- Otter M., C. Schlegel, and H. Elmqvist: "Modeling and Realtime Simulation of an Automatic
 Gearbox using Modelica". ESS’97 - European Simulation Symposium, Oct., 1997.
-Tummescheit H., T. Ernst and M. Klose: "Modelica and Smile - A Case Study Applying
+- Tummescheit H., T. Ernst and M. Klose: "Modelica and Smile - A Case Study Applying
 Object-Oriented Concepts to Multi-facet Modeling". ESS’97 - European Simulation Symposium,
 Oct., 1997.
-Tummescheit H., and R. Pitz-Paal: "Simulation of a solar thermal central receiver power
+- Tummescheit H., and R. Pitz-Paal: "Simulation of a solar thermal central receiver power
 plant". Proc. 15th IMACS World Congress on Scientific Computation, Modelling and Applied
 Mathematics, Vol. 6, Berlin, Germany, pp. 671-676, 1997.
 
-## Revision history
-
-This section describes the history of the Modelica Language Design, and its contributors. The
-current version of this document is available from http://www.modelica.org/.
-This document was written together with the Modelica Language Specification 1 as one
-document, and in version 1.1 they were revised and separated into two documents.
-For Modelica 1.4, the tutorial has been updated with the most important language elements
-introduced since version 1.1 and therefore reflects the current status of the Modelica language.
-This document was edited by M. Otter and H. Olsson.
-Modelica 1.4 was released December 15, 2000. The Modelica Association was formed in Feb. 5,
-2000 and is now responsible for the design of the Modelica language.
-Contributors to the Modelica Language, version 1.4
-Bernhard Bachmann, University of Applied Sciences, Bielefeld, Germany
-Peter Bunus, Linköping University, Linköping, Sweden
-Dag Brück, Dynasim, Lund, Sweden
-Hilding Elmqvist, Dynasim, Lund, Sweden
-Vadim Engelson, Linköping University, Sweden
-Jorge Ferreira, University of Aveiro, Portugal
-Peter Fritzson, Linköping University, Linköping, Sweden
-Pavel Grozman, Equa, Stockholm, Sweden
-Johan Gunnarsson, MathCore, Linköping, Sweden
-Mats Jirstrand, MathCore, Linköping, Sweden
-Clemens Klein-Robbenhaar, Germany
-Pontus Lidman, MathCore, Linköping, Sweden
-Sven Erik Mattsson, Dynasim, Lund, Sweden
-Hans Olsson, Dynasim, Lund, Sweden
-Martin Otter, German Aerospace Center, Oberpfaffenhofen, Germany
-Tommy Persson, Linköping University, Sweden
-Levon Saldamli, Linköping University, Sweden
-André Schneider, Fraunhofer Institute for Integrated Circuits, Dresden, Germany
-Michael Tiller, Ford Motor Company, Detroit, U.S.A.
-Hubertus Tummescheit, Lund Institute of Technology, Sweden
-Hans-Jürg Wiesmann, ABB Corporate Research Ltd., Baden, Switzerland
-Contributors to the Modelica Standard Library
-Peter Beater, University of Paderborn, Germany
-Christoph Clauß, Fraunhofer Institute for Integrated Circuits, Dresden, Germany
-Martin Otter, German Aerospace Center, Oberpfaffenhofen, Germany
-André Schneider, Fraunhofer Institute for Integrated Circuits, Dresden, Germany
-Michael Tiller, Ford Motor Company, Detroit, U.S.A
-Hubertus Tummescheit, Lund Institute of Technology, Sweden
-Main Changes in Modelica 1.4
-* Removed declare-before-use rule. This simplifies graphical user environments, because
-there exists no order of declarations when components are graphically composed
-together.
-* Refined package concept by introducing encapsulated classes and import mechanism.
-Encapsulated classes can be seen as "self-contained units": When copying or moving an
-encapsulated class, at most the import statements in this class have to be changed and
-nothing else.
-* Refined when-clause: The nondiscrete keyword is removed, equations in when-clauses
-must have a unique variable name on the left hand side variable and the exact mapping of
-when-clauses to equations is defined. As a result, when-clauses are now precisely defined
-without referring to a sorting algorithm and it is possible to handle algebraic loops
-between when-clauses with different conditions and between when-clauses and the
-continuous-time part of a model. The discrete keyword is now optional, simplifying the
-library development because only one type of connector is needed and not several types
-which do contain or do not contain the discrete prefix on variables. Additionally, when-clauses in algorithm sections may have elsewhen clauses which simplifies the definition
-of priorities between when-clauses
-* For replaceable declarations: allowed constraining clauses, and annotations listing
-suitable redeclarations. This allows a graphical user environment to automatically builtup meaningful choice menus.
-* Functions can specify their derivative. This allows, e.g., the application of the Pantelides
-algorithm to reduce the index of a DAE also for external functions.
-* New built-in operator "rem" (remainder) and the built-in operators div, mod, ceil, floor,
-integer, previously only allowed to be used in when-clauses can now be used
-everywhere, because state events are automatically generated when the result value of
-one of these operator changes discontinuously ().
-* Quantity attribute also for base types Boolean, Integer, String (and not only for Real), in
-order to allow abstracted variables to refer to physical quantities (e.g. Boolean
-i(quantity="Current") is true if current is flowing and is false if no current is flowing).
-* Several minor enhancements, such as usage of dot-notation in modifications
-(e.g.: "A x(B.C=1,B.D=2)" is the same as "A x(B(C=1,D=2));").
-* final keyword also allowed in declaration, to prevent modification. Example
-```Modelica
- model A
- Real x[:];
- final Integer n=size(x,1);
- end A;
-```
-* Internally restructured specification.
-  
-Modelica 1.4 is backwards compatible with Modelica 1.3, with the exception of 
-1. some exotic cases where different results are achieved with the removed "declare-before-use-rule" and the
-previous declaration order,
-2. when-clauses in equations sections, which use the general form "expr1 = expr2" (now only "v=expr" is allowed + some special cases for functions),
-3. some exotic cases where a when-clause may be no longer evaluated at the initial time, because the
-initialization of the when-condition is now defined in a more meaningful way (before Modelica
-1.4, every condition in a when-clause has a "previous" value of false), and
-4. models containing the nondiscrete keyword which was removed.
-
-Modelica 1.3 and older versions.
-Modelica 1.3 was released December 15, 1999.
-Contributors up to Modelica 1.3
-The following list contributors and their affiliations at the time when Modelica 1.3 was released.
-H. Elmqvist1
-,
-B. Bachmann2
-, F. Boudaud3
-, J. Broenink4
-, D. Brück1
-, T. Ernst5
-, R. Franke6
-, P. Fritzson7
-, A.
-Jeandel3
-, P. Grozman12, K. Juslin8
-, D. Kågedal7
-, M. Klose9
-, N. Loubere3
-, S. E. Mattsson1
-, P. J.
-Mostermann11, H. Nilsson7
-, H. Olsson1
-, M. Otter11, P. Sahlin12, A. Schneider13, M. Tiller15, H.
-Tummescheit10, H. Vangheluwe16
-1 Dynasim AB, Lund, Sweden
-2 ABB Corporate Research Center Heidelberg
-3 Gaz de France, Paris, France
-4 University of Twente, Enschede, Netherlands
-5
- GMD FIRST, Berlin, Germany
-6 ABB Network Partner Ltd. Baden, Switzerland
-7
- Linköping University, Sweden
-8 VTT, Espoo, Finland
-9 Technical University of Berlin, Germany
-10 Lund University, Sweden
-11 DLR Oberpfaffenhofen, Germany
-12 Bris Data AB, Stockholm, Sweden
-13 Fraunhofer Institute for Integrated Circuits, Dresden, Germany
-14 DLR, Cologne, Germany
-15 Ford Motor Company, Detroit, U.S.A.
-16 University of Gent, Belgium
-Main changes in Modelica 1.3
-Modelica 1.3 was released December 15, 1999.
- Defined connection semantics for inner/outer connectors.
- Defined semantics for protected element.
- Defined that least variable variability prefix wins.
- Improved semantic definition of array expressions.
- Defined scope of for-loop variables.
-Main changes in Modelica 1.2
-Modelica 1.2 was released June 15, 1999.
- Changed the external function interface to give greater flexibility.
- Introduced inner/outer for dynamic types.
- Redefined final keyword to only restrict further modification.
- Restricted redeclaration to replaceable elements.
- Defined semantics for if-clauses.
- Defined allowed code optimizations.
- Refined the semantics of event-handling.
- Introduced fixed and nominal attributes.
- Introduced terminate and analysisType.
-Main Changes in Modelica 1.1
-Modelica 1.1 was released in December 1998.
-Major changes:
- Specification as a separate document from the rationale.
- Introduced prefixes discrete and nondiscrete.
- Introduced pre and when.
- Defined semantics for array expressions.
- Introduced built-in functions and operators (only connect was present in Modelica 1.0).
-Modelica 1.0
-Modelica 1, the first version of Modelica, was released in September 1997, and had the language
-specification as a short appendix to the rationale.
