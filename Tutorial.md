@@ -1866,66 +1866,9 @@ environment can locate a desired class uniquely in the file system without any a
 information, it is precisely defined how Modelica classes have to be stored. Therefore, when a
 referenced class, such as Modelica.Mechanics.Rotational.Inertia, is not yet available in the
 "workspace" of the simulation environment, the tool can locate this class in the file system and
-can load it automatically. In order that this is possible, Modelica classes have to be stored in one
-of the following ways:
-* The complete class is stored in one file, where the file name is the class name with extension
-".mo". Examples:
- file : Modelica.mo
- content: encapsulated package Modelica
- encapsulated package Blocks
- ...
- end Blocks;
- ...
- end Modelica;
- file : robot.mo
- content: model robot
- ...
- end robot;
-* The class is stored in directories and files, such that
-(1) a directory name corresponds to the name of the class stored in this directory,
-(2) every directory has a file package.mo in which at least the exact class declaration is
-present, such as "package Modelica end Modelica;",
-(3) file names correspond to the class name stored in the file together with the extension
-".mo" and
-(4) the first statement in a file or in package.mo is a "within name" statement which defines
-the full name of the class in the outer hierarchy. Examples:
-directory: .../library
- /Modelica
- package.mo
- /Blocks
- package.mo
- Continuous.mo
- Interfaces.mo
- /Examples
- package.mo
- Example1.mo
- /Mechanics
- package.mo
- Rotational.mo
-file : .../library/Modelica/Blocks/Examples/package.mo:
-content: within Modelica.Blocks;
- package Examples "examples of package Modelica.Blocks";
- end Examples;
-file : .../library/Modelica/Mechanics/Rotational.mo
-content: within Modelica.Mechanics;
- encapsulated package Rotational //Modelica.Mechanics.Rotational
- package Interfaces
- connector Flange_a;
- ...
- end Flange_a;
- ...
- end Interfaces;
- model Inertia
- ...
- end Inertia;
- end Rotational;
-The top-level classes, such as "Modelica", are located in all directories defined in the
-environment variable MODELICAPATH, which contains a semicolon-separated list of directory
-names. For example, the first part of the class name A.B.C (i.e., A) is located by searching the
-ordered list of directories in MODELICAPATH. If no directory contains A the lookup fails. If A
-has been found in one of the directories, the rest of the name is located in A; if that fails, the
-entire lookup fails without searching for A in any of the remaining directories in
-MODELICAPATH.
+can load it automatically, this is described in https://specification.modelica.org/master/packages.html#file-system-mapping-of-package-class
+
+The top-level classes, such as "Modelica", are located in all directories defined in the MODELICAPATH, see https://specification.modelica.org/master/packages.html#the-modelica-library-path-modelicapath
 
 ### Units and Quantities
 
