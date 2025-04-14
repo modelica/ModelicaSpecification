@@ -190,8 +190,8 @@ equation
 end VsourceAC;
 ```
 In order to provide not too much information at this stage, the constant PI is explicitly declared,
-although it is usually imported from the Modelica standard library (see appendix of the Language
-Specification). Finally, we must not forget the ground point.
+although it is usually imported from the [Modelica standard library](https://github.com/modelica/ModelicaStandardLibrary). 
+Finally, we must not forget the ground point.
 ```Modelica
 model Ground "Ground" 
  Pin p;
@@ -364,7 +364,7 @@ end ModifiedFiltersInSeries2;
 ```
 The modification F12=TwoFilterData1 is possible since all the components of
 TwoFilterData1 (F1, F2, T) are present in FiltersInSeries. More about type
-compatibility can be found in section 4.4.
+compatibility can be found in section [partial models and inheritance](#partial-models-and-inheritance).
 
 #### Packages
 
@@ -1365,7 +1365,7 @@ y = if noEvent(u > HighLimit) then HighLimit
 The noEvent() operator can only be applied in Real equations, but not in Boolean, Integer or
 String equations, in order that Boolean, Integer and String variables can change their value only
 at event instants, i.e., they are always discrete-time variables. (for the exact formulation of this
-restriction, see section 3.4.8 in the Modelica Language Specification).
+restriction, see section [variability of expressions](https://specification.modelica.org/master/operators-and-expressions.html#variability-of-expressions) in the Modelica Language Specification).
 
 #### Synchronization and event propagation
 
