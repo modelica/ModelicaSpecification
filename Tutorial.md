@@ -1484,42 +1484,46 @@ pendulum, by reformulating the problem into a form where no causality change tak
 conditional block models:
 ```Modelica
  record PendulumData
- parameter Real m, g, L;
+   parameter Real m, g, L;
  end PendulumData;
+
  partial model BasePendulum
- PendulumData p;
- input Real u;
- output Real pos[2], vel[2];
+   PendulumData p;
+   input Real u;
+   output Real pos[2], vel[2];
  end BasePendulum;
+
  block Pendulum
- extends BasePendulum;
- constant Real PI=3.141592653589793;
- output Real phi(start=PI/4), phid;
+   extends BasePendulum;
+   constant Real PI=3.141592653589793;
+   output Real phi(start=PI/4), phid;
  equation
- phid = der(phi);
- p.m*p.L*p.L*der(phid) + p.m*p.g*p.L*sin(phi) = u;
- pos = {p.L*sin(phi), -p.L*cos(phi)};
- vel = der(pos);
+   phid = der(phi);
+   p.m*p.L*p.L*der(phid) + p.m*p.g*p.L*sin(phi) = u;
+   pos = {p.L*sin(phi), -p.L*cos(phi)};
+   vel = der(pos);
  end Pendulum;
+
  block BrokenPendulum
- extends BasePendulum;
+   extends BasePendulum;
  equation
- vel = der(pos);
- p.m*der(vel) = p.m*{0, -p.g}; 
+   vel = der(pos);
+   p.m*der(vel) = p.m*{0, -p.g}; 
  end BrokenPendulum;
+
  model BreakingPendulum2
- extends BasePendulum(p(m=1, g=9.81, L=0.5)); 
- input Boolean Broken;
+   extends BasePendulum(p(m=1, g=9.81, L=0.5)); 
+   input Boolean Broken;
  protected
- Pendulum pend (p=p, u=u, enable=not Broken);
- BrokenPendulum bpend(p=p, u=u, enable=Broken);
+   Pendulum pend (p=p, u=u, enable=not Broken);
+   BrokenPendulum bpend(p=p, u=u, enable=Broken);
  equation
- when Broken then
- reinit(bpend.pos, pend.pos);
- reinit(bpend.vel, pend.vel);
- end when;
- pos = if not Broken then pend.pos else bpend.pos;
- vel = if not Broken then pend.vel else bpend.vel;
+   when Broken then
+     reinit(bpend.pos, pend.pos);
+     reinit(bpend.vel, pend.vel);
+   end when;
+   pos = if not Broken then pend.pos else bpend.pos;
+   vel = if not Broken then pend.vel else bpend.vel;
  end BreakingPendulum2;
 ```
 This rewriting scheme is always possible and results in a larger model. It has the drawback that
@@ -1540,12 +1544,12 @@ equation
  phid = der(phi);
  Ldot = der(L);
  zeros(2) = if not Broken then {
- // Equations of pendulum
- m*der(phid) + m*g*L*sin(phi) – u,
- der(Ldot)}
+   // Equations of pendulum
+   m*der(phid) + m*g*L*sin(phi) – u,
+   der(Ldot)}
  else
- // Equations of free flying mass
- m*der(vel) - m*{0, -g}; 
+   // Equations of free flying mass
+   m*der(vel) - m*{0, -g}; 
 end BreakingPendulum3;
 ```
 The trick was to use complete polar coordinates including the length, L and to give a differential
@@ -1569,6 +1573,7 @@ model Component
 equation
  T = T0;
 end Component;
+
 model Environment
  inner Real T0; // actual environment temperature T0
  Component c1, c2; // c1.T0=c2.T0=T0
@@ -1576,6 +1581,7 @@ model Environment
 equation
  T0 = Modelica.Math.sin(a*time);
 end Environment;
+
 model SeveralEnvironments
  Environment e1(a=1), e2(a=2)
 end SeveralEnvironments
@@ -1615,12 +1621,13 @@ environment defined outside of this component and that the heat connector of thi
 connected to the environment connector.
 ```Modelica
 model TwoComponents
- Component Comp[2];
+  Component Comp[2];
 end TwoComponents;
+
 model CircuitBoard
- inner HeatCut environment;
- Component comp1;
- TwoComponents comp2;
+  inner HeatCut environment;
+  Component comp1;
+  TwoComponents comp2;
 end CircuitBoard;
 ```
 The components can be used in several levels until the environment of the circuit board is
@@ -1643,47 +1650,50 @@ where only the interface of the function is defined. Since it is a partial funct
 cannot be called and can only be used as superclass for other functions, such as:
 ```Modelica
 function uniformGravity
- extends gravityInterface;
+  extends gravityInterface;
 algorithm
- g := {0, -9.81, 0};
+  g := {0, -9.81, 0};
 end uniformGravity;
+
 function pointGravity
- extends gravityInterface;
- parameter Real k=1;
+  extends gravityInterface;
+  parameter Real k=1;
 protected
- Real n[3]
+  Real n[3]
 algorithm
- n := -r/sqrt(r*r);
- g := k/(r*r) * n;
+  n := -r/sqrt(r*r);
+  g := k/(r*r) * n;
 end pointGravity;
 ```
 The idea is to utilize the partial function "gravityInterface" when defining the particle model
 which shall move in a gravity field
 ```Modelica
 model Particle
- parameter Real m = 1;
- outer function gravity = gravityInterface;
- Real r[3](start = {1,1,0}) "position";
- Real v[3](start = {0,1,0}) "velocity";
+  parameter Real m = 1;
+  outer function gravity = gravityInterface;
+  Real r[3](start = {1,1,0}) "position";
+  Real v[3](start = {0,1,0}) "velocity";
 equation
- der(r) = v;
- m*der(v) = m*gravity(r);
+  der(r) = v;
+  m*der(v) = m*gravity(r);
 end Particle;
 ```
 and to define the function which is actually used to compute the gravity acceleration at an outer
 level using an inner function definition:
 ```Modelica
 model Composite1
- inner function gravity = pointGravity(k=1);
- Particle p1, p2(r(start={1,0,0}));
+  inner function gravity = pointGravity(k=1);
+  Particle p1, p2(r(start={1,0,0}));
 end Composite1;
+
 model Composite2
- inner function gravity = uniformGravity;
- Particle p1, p2(v(start={0,0.9,0}));
+  inner function gravity = uniformGravity;
+  Particle p1, p2(v(start={0,0.9,0}));
 end Composite2;
+
 model system
- Composite1 c1;
- Composite2 c2;
+  Composite1 c1;
+  Composite2 c2;
 end system;
 ```
 As can be seen by this example, different fields of this nature can be handled at the same time.
@@ -1699,6 +1709,7 @@ way. Basically, component models are stored in hierarchically structured package
        model Inertia // Modelica.Mechanics.Rotational.Inertia
          ...
        end Inertia;
+
        model Torque
        ...
        end Torque;
@@ -1723,6 +1734,7 @@ package Modelica
      end InPort;
    end Interfaces;
  end Blocks;
+
  package Mechanics
    package Rotational
      package Interfaces
@@ -1730,10 +1742,12 @@ package Modelica
          ...
        end Flange_a;
      end Interfaces
+
      model Inertia
        Interfaces.Flange_a a1; // Modelica.Blocks.Interfaces.Flange_a
        Modelica.Mechanics.Rotational.Interfaces.Flange_a a2;
      end Inertia;
+
      model Torque
        Interfaces.Flange_a a;
        Blocks.Interfaces.InPort inPort; // Modelica.Blocks...
@@ -2003,6 +2017,7 @@ model SineSignal
 equation
  y = Amplitude*sin(2*pi*freq*time + phi);
 end SineSignal;
+
 model Circuit
  import SI=Modelica.SIunits;
  SineSignal sig(redeclare SineType = SI.Voltage);
@@ -2162,6 +2177,7 @@ type controllerType=Integer(min=1,max=3)
  choice=1 "P",
  choice=2 "PI",
  choice=3 "PID"));
+
 model test
  parameter controllerType c;
  ...
