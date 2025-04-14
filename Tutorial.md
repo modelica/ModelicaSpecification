@@ -1152,42 +1152,31 @@ cases systems of simultaneous equations will be obtained which might not be pres
 ordering of the equations in one branch of the if-construct is changed. In any case, the model
 remains valid. Only the efficiency might be unnecessarily reduced.
 
-#### Conditional Models
+#### Conditional Components
 
 It is useful to be able to have models of different complexities. For complex models, conditional
 components are needed as shown in the next example where the two controllers are modeled
 itself as subcomponents:
 ```Modelica
  block Controller 
- input Boolean simple=true;
- input Real e;
- output Real y;
+   parameter simple=true;
+   RealInput e;
+   RealOutput y;
  protected
- Controller1 c1(u=e, enable=simple);
- Controller2 c2(u=e, enable=not simple);
+   Controller1 c1(u=e) if simple;
+   Controller2 c2(u=e) if not simple;
  equation
- y = if simple then c1.y else c2.y;
+   connect(e, c1.u);
+   connect(e, c2.u);
+   connect(c1.y, y);
+   connect(c2.y, y);
  end Controller;
 ```
-Attribute enable is built-in Boolean input of every block with default equation "enable=true". It
-allows enabling or disabling a component. The enable-condition may be time and state
-dependent. If enable=false for an instance, its equations are not evaluated, all declared variables
-are held constant and all subcomponents are disabled. Special consideration is needed when
-enabling a subcomponent. The reset attribute makes it possible to reset all variables to their Startvalues before enabling. The reset attribute is propagated to all subcomponents. The previous
-controller example could then be generalized as follows, taking into account that the Boolean
-variable simple could vary during a simulation.
-```Modelica
- block Controller
- input Boolean simple=true;
- input Real e
- output Real y
- protected
- Controller1 c1(u=e, enable=simple, reset=true);
- Controller2 c2(u=e, enable=not simple, reset=true);
- equation
- y = if simple then c1.y else c2.y;
- end Controller;
-```
+The if-attribute allows statically enabling or disabling a component.
+The connects to the disabled components are automatically removed, ensuring that there is only one connection to the output y.
+
+Dynamically enabling and disabling components is currently only possible in clocked state-machines, and also allow reseting the states of the component when it is enabled, see 
+https://specification.modelica.org/master/state-machines.html
 
 #### Discrete Event and Discrete Time Models
 
