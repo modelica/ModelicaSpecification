@@ -18,13 +18,14 @@ and have the state-updating as part of the model (and not as some tool-specific 
 | 2022-02-14 | Hans Olsson. More test-cases. |
 | 2022-05-03 | Hans Olsson. Update specification text, clarified that ready |
 | 2023-08-30 | Hans Olsson. Review comments |
+| 2025-04-14 | Hans Olsson. Fix reference |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
 
 # Rationale
 See previous discussion https://github.com/modelica/ModelicaSpecification/issues/2285
-and paper https://2017.international.conference.modelica.org/proceedings/html/submissions/ecp17132517_OlssonMattssonOtterPfeifferBurgerHenriksson.pdf
+and paper ttps://doi.org/10.3384/ecp17132517
 
 A specific syntax is proposed.
 
@@ -145,4 +146,4 @@ The package [TestSettingStates](TestSettingStates.mo) contain a trivial example 
 At best of my knowledge no patents would be required for implementation of this proposal.
 
 # References
-https://modelica.org/events/modelica2017/proceedings/html/submissions/ecp17132517_OlssonMattssonOtterPfeifferBurgerHenriksson.pdf
+https://doi.org/10.3384/ecp17132517
