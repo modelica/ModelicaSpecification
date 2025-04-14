@@ -2004,20 +2004,19 @@ diagram, and common properties such as the local coordinate system.
 * Annotations associated with connections, i.e., route, color of connection line, etc.
 The example below shows the use of such graphical attributes to define a resistor.
 ```Modelica
-model Resistor 
- Pin p annotation (extent=[-110, -10; -90, 10]);
- Pin n annotation (extent=[ 110, -10; 90, 10]);
- parameter R "Resistance in [Ohm]";
-equation 
- R*p.i = p.v - n.v;
- n.i = p.i; 
-public
- annotation (Icon( 
- Rectangle(extent=[-70, -30; 70, 30], style(fillPattern=1)),
- Text(extent=[-100, 55; 100, 110], string="%name=%R"),
- Line(points=[-90, 0; -70, 0]),
- Line(points=[70, 0; 90, 0])
- ));
+model Resistor
+  Pin p annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+  Pin n annotation (Placement(transformation(extent={{110,-10},{90,10}})));
+  parameter SI.Resistance R "Resistance";
+equation
+  R*p.i = p.v - n.v;
+  n.i = p.i;
+ annotation (Icon(
+      graphics={
+        Rectangle(extent={{-70,-30},{70,30}}, lineColor={28,108,200}),
+        Text(extent={{-100,55},{100,110}}, textString="%name=%R"),
+        Line(points={{-90,0},{-70,0}}),
+        Line(points={{70,0},{90,0}})}));
 end Resistor;
 ```
 The resistor has two pins, and we specify two opposite corners of the extent of their graphical
@@ -2031,61 +2030,36 @@ the coordinate system is mapped to the region defined in the component declarati
 The attribute set to represent component positions, connections and various graphical primitives
 for building icons is shown below. The attribute structures are described through Modelica
 classes. Points and extents (two opposite points) are described in matrix notation.
+The specification contains the details, https://specification.modelica.org/master/annotations.html#annotations-for-graphical-objects this is just a short introduction.
 ```Modelica
- type Point = Real[2]; // {x, y}
+ type DrawingUnit = Real(final unit="mm");
+ type Point = DrawingUnit[2]; // {x, y}
 
- type Extent = Real[2,2]; // [x1, y1; x2, y2]
+ type Extent = DrawingUnit[2,2]; // [x1, y1; x2, y2]
 
  record CoordinateSystem // Attribute to class
    Extent extent;
+   Boolean preserveAspectRatio = true;
+   Real initialScale = 0.1;
    Point grid;
-   Point size;
  end CoordinateSystem;
 
  record Placement // Attribute for component
-   Extent extent;
-   Real rotation;
+   Boolean visible = true;
+   Transformation transformation "Placement in the diagram layer";
+   Boolean iconVisible "Visible in icon layer; for public connector";
+   Transformation iconTransformation
+    "Placement in the icon layer; for public connector";
  end Placement;
 
- record Style 
-   Integer color[3], fillColor[3]; // RGB
-   Integer pattern, fillPattern, thickness, gradient, smooth, arrow, textStyle;
-   String font;
- end Style;
-
- record Route // Attribute for connect
-   Point points[:];
-   Style style;
-   String label;
- end Route;
-
- // Definitions for graphical elements
- record Line = Route;
-
- record Polygon = Route;
-
  record GraphicItem 
-   Extent extent;
-   Style style;
+   Boolean visible = true;
+   Point origin = {0, 0};
+   Real rotation(quantity="angle", unit="deg")=0;
  end GraphicItem;
-
- record Rectangle = GraphicItem;
-
- record Ellipse = GraphicItem;
-
- record Text 
-   extends GraphicItem;
-   String string;
- end Text;
-
- record BitMap 
-   extends GraphicItem;
-   String URL; // Name of bitmap file
- end BitMap;
 ```
 The graphical unit of the master coordinate system used when drawing lines, rectangles, text etc.
-is the baseline spacing of the default font used by the graphical tool, typically 12 points for a 10
-point font (note: baseline spacing = space between text lines).
+is defined as mm.
 
 #### Definition of menu lists
 
