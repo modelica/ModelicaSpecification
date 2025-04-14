@@ -16,6 +16,26 @@ http://www.Modelica.org/
 
 Modelica™ is a trademark of the "Modelica Association".
 
+## Contents
+
+- [Modelica at a Glance](#modelica-at-a-glance)
+- [Modelica Language Overview](#modelica-language-overview)
+  - [Basic Language Elements](#basic-language-elements)
+  - [Classes for Reuse of Modeling Knowledge](#classes-for-reuse-of-modeling-knowledge)
+  - [Connections](#connections)
+  - [Partial Models and Inheritance](#partial-models-and-inheritance)
+  - [Class Parameterization](#class-parameterization)
+  - [Matrices and Arrays](#matrices-and-arrays)
+  - [Repetition, Algorithms and Functions](#repetition-algorithms-and-functions)
+  - [Hybrid Models](#hybrid-models)
+  - [Physical Fields](#physical-fields)
+  - [Library Construction](#library-construction)
+  - [Units and Quantities](#units-and-quantities)
+  - [Annotations for Graphics and Documentation](#annotations-for-graphics-and-documentation)
+- [Examples](#examples)
+- [Conclusions](#conclusions)
+- [References](#references)
+
 ## Modelica at a Glance
 To give an introduction to Modelica we will consider modeling of a simple electrical circuit as
 shown below.
