@@ -552,9 +552,9 @@ dependency of the resistance:
 model TempResistor "Temperature dependent electrical resistor" 
  extends OnePort;
  parameter Real R(unit="Ohm") "Resistance for ref. Temp.";
- parameter Real RT(unit="Ohm/degC")=0 "Temp. dep. Resistance.";
- parameter Real Tref(unit="degC")=20 "Reference temperature.";
- Real Temp=20 "Actual temperature";
+ parameter Real RT(unit="Ohm/K")=0 "Temp. dep. Resistance.";
+ parameter Real Tref(unit="K")=300.15 "Reference temperature.";
+ Real Temp(unit="K")=300.15 "Actual temperature";
 equation 
  v = p.i*(R + RT*(Temp-Tref));
 end TempResistor;
@@ -741,14 +741,10 @@ It is now possible to introduce the variables that are interacting between rigid
 in a free-body diagram.
 ```Modelica
 connector MbsCut
- Transformation S "Rotation matrix describing frame A"
- " with respect to the inertial frame";
- Position3 r0 "Vector from the origin of the inertial" 
- " frame to the origin of frame A";
- flow Force3 f "Resultant cut-force acting at the origin" 
- " of frame A";
- flow Torque3 t "Resultant cut-torque with respect to the"
- " origin of frame A";
+ Transformation S "Rotation matrix describing frame A with respect to the inertial frame";
+ Position3 r0 "Vector from the origin of the inertial frame to the origin of frame A";
+ flow Force3 f "Resultant cut-force acting at the origin of frame A";
+ flow Torque3 t "Resultant cut-torque with respect to the origin of frame A";
 end MbsCut;
 ```
 Such a definition can be used to model a rigid bar as follows.
@@ -1073,7 +1069,7 @@ work arrays. These features are demonstrated by the following quite complicated 
 interface:
 ```Modelica
 function BilinearSampling
- ”Slicot function for Discrete-time <--> continuous-time
+ "Slicot function for Discrete-time <--> continuous-time
  systems conversion by a bilinear transformation."
  input Real alpha=1, beta=1;
  input Real A[:, size(A, 1)], B[size(A, 1), :],
@@ -1100,7 +1096,7 @@ void ab04md(const char *, size_t, size_t, size_t, double, double,
  double *, size_t, double *, size_t, double *, size_t,
  double *, size_t, int *, double *, size_t, int *);
 ```
-and the Modelica translator maps a function call of BilinearSampling to a function call of the Cfunction ab04md. Within Modelica, this function is called as:
+and the Modelica translator maps a function call of BilinearSampling to a function call of the C-function ab04md. Within Modelica, this function is called as:
 ```Modelica
 parameter Real alpha=1, beta=1;
 parameter Real A[:,:] = [0, 1; 2, 4], B[:,:]=...;
@@ -1695,19 +1691,25 @@ way. Basically, component models are stored in hierarchically structured package
  package Modelica
    package Mechanics
      package Rotational
-       model Inertia // Modelica.Mechanics.Rotational.Inertia
+       package Components
+         model Inertia // Modelica.Mechanics.Rotational.Components.Inertia
+           ...
+         end Inertia;
          ...
-       end Inertia;
+       end Components;
 
-       model Torque
-       ...
-       end Torque;
+       package Sources
+         model Torque
+         ...
+         end Torque;
+         ...
+       end Sources;
      end Rotational;
    end Mechanics;
  end Modelica;
 ```
 From the outside of package Modelica, components can be accessed via dot-notation, e.g., model
-Inertia is uniquely identified as Modelica.Mechanics.Rotational.Inertia.
+Inertia is uniquely identified as Modelica.Mechanics.Rotational.Components.Inertia.
 
 #### Name look-up in hierarchically structured classes
 
@@ -1718,9 +1720,9 @@ the name is located in the hierarchy below this name. For example:
 package Modelica
  package Blocks
    package Interfaces
-     connector InPort
+     connector RealInput
        ...
-     end InPort;
+     end RealInput;
    end Interfaces;
  end Blocks;
 
@@ -1732,16 +1734,20 @@ package Modelica
        end Flange_a;
      end Interfaces
 
-     model Inertia
-       Interfaces.Flange_a a1; // Modelica.Blocks.Interfaces.Flange_a
-       Modelica.Mechanics.Rotational.Interfaces.Flange_a a2;
-     end Inertia;
+     package Components
+       model Inertia
+         Interfaces.Flange_a a1; // Modelica.Blocks.Interfaces.Flange_a
+         Modelica.Mechanics.Rotational.Interfaces.Flange_a a2;
+       end Inertia;
+     end Components;
 
-     model Torque
-       Interfaces.Flange_a a;
-       Blocks.Interfaces.InPort inPort; // Modelica.Blocks...
-        ...
-    end Torque;
+     package Sources
+       model Torque
+         Interfaces.Flange_a a;
+         Blocks.Interfaces.InPort inPort; // Modelica.Blocks...
+          ...
+       end Torque;
+     end Sources;
     ...
    end Rotational;
   end Mechanics;
@@ -1755,20 +1761,19 @@ found.
 #### Encapsulated classes and import statement
 
 Copying or moving package Modelica.Mechanics.Rotational from the example above to another
-location may not work as expected, because elements of this package may access packages
-outside of package Rotational, such as "Blocks.Interfaces.InPort inPort": In the new location a
-package "Blocks" is most likely not available and therefore references to this package cannot be
-resolved, leading to an error. To improve this situation, in Modelica 1.4 "self-contained classes"
-have been introduced which are defined with the class-prefix encapsulated. The recommended
+location requires tool support and not simple file copying, because elements of this package may access packages
+outside of package Rotational, such as "Blocks.Interfaces.RealInput u": 
+One way of minimizing that tool dependency "self-contained classes"
+have been introduced in Modelica 1.4 which are defined with the class-prefix `encapsulated`. A possible
 way to structure libraries is shown in the following example, taken from the Modelica Standard
 Library:
 ```Modelica
-encapsulated package Modelica
-  encapsulated package Blocks
+package Modelica
+  package Blocks
    package Interfaces
-     connector InPort
+     connector RealInput
        ...
-     end InPort;
+     end RealInput;
    end Interfaces;
 
    package Continuous
@@ -1784,57 +1789,35 @@ encapsulated package Modelica
        import Modelica.Blocks;
        Blocks.Integrator int1; // Modelica.Blocks.Integrator
        Modelica.Blocks.Integrator int2; // error, Modelica unknown
+       .Modelica.Blocks.Integrator int2; // Modelica.Blocks.Integrator
        ...
      end Example1;
      ...
    end Examples;
  end Blocks;
-
- encapsulated package Mechanics
-   encapsulated package Rotational
-     import Modelica.Blocks.Interfaces;
-     model Torque
-       Interfaces.InPort inPort; // Modelica.Blocks.Interfaces.InPort
-       ...
-     end Torque;
-     ...
-   end Rotational;
- end Mechanics;
 end Modelica;
 ```
-The encapsulated prefix stops name look-up from lower to upper hierarchies. As a result, within
+The encapsulated prefix stops name look-up from lower to upper hierarchies, except for [global name lookup](https://specification.modelica.org/master/scoping-name-lookup-and-flattening.html#global-name-lookup) that always start from the top. As a result, within
 such a "self-contained unit" it is no longer possible to access classes outside of this unit in an
 uncontrolled way. Instead, such classes have to be made explicitly available with the import
 statement. Consequently, when moving or copying an encapsulated class, at most the import
-statements in this class have to be changed, and nothing else. If an encapsulated class does not
-contain another encapsulated class, not even import statements have to be changed in such a
-situation.
+statements and global name references in this class have to be changed, and nothing else. 
 
-In the example above, the typical usage of the encapsulated prefix is demonstrated. Package
-Modelica.Blocks is constructed as a "self-contained unit". Since this unit is already quite large, it
-is further hierarchically structured with subpackages, such as "Interfaces", "Continuous",
-"Examples". These subpackages are not defined as encapsulated, because (1) there are many
-dependencies between these subpackages and it is more convenient to access the different parts
-of package Blocks directly and because (2) it is not very useful to cut-off parts of this package
-and use it somewhere else, i.e., the library developer does not see, e.g.,
-"Modelica.Blocks.Continuous" as a self-contained unit. On the other hand, the models within the
-Modelica:Blocks.Examples subpackage are declared as encapsulated, because a modeller may
-wish to copy such an example model out of the library and use or modify it.
-
-The import statement can be used in three different variants:
+The import statement can be used in four different variants:
 ```Modelica
-import Modelica.Mechanics.Rotational; // access by Rotational.Torque
-import R = Modelica.Mechanics.Rotational;// access by R.Torque
-import Modelica.Mechanics.Rotational.*; // access by Torque
+import Modelica.Mechanics.Rotational.Sources; // access by Sources.Torque
+import R = Modelica.Mechanics.Rotational;// access by R.Sources.Torque
+import Modelica.Mechanics.Rotational.Sources.*; // access by Torque
+import Modelica.Mechanics.Rotational.Sources.{Torque,Speed}; // access by Torque
 ```
 In all cases, the first part of the name defined in the import statement is located within the top-level classes and no hierarchical search in upper hierarchical levels is performed. Note, that
 import statements are not inherited in order to not introduce hidden dependencies. The third,
 "unqualified", form for import statements should be avoided, because, e.g., the later addition of a
-model "Gearbox" to package Modelica.Mechanics.Rotational may give rise to a name conflict, if
+model "Gearbox" to package Modelica.Mechanics.Rotational.Components may give rise to a name conflict, if
 the same name is already used in the user model where this import statement is present.
 Therefore, by just getting a new version of the Modelica Standard Library, existing user models
-may no longer work. This cannot happen with the first two variants. The "unqualified" variant is
-useful, to arrive at the standard notation for some basic mathematical constants and functions,
+may no longer work. This cannot happen with the first two. The fourth variant is a safer alternative to the third one.
+The "unqualified" variant is useful, to arrive at the standard notation for some basic mathematical constants and functions,
 such as:
 ```Modelica
 model SineVoltageSource
@@ -1853,7 +1836,7 @@ end SineVoltageSource;
 Classes are usually stored in the file system (or in databases etc.). In order that a Modelica
 environment can locate a desired class uniquely in the file system without any additional
 information, it is precisely defined how Modelica classes have to be stored. Therefore, when a
-referenced class, such as Modelica.Mechanics.Rotational.Inertia, is not yet available in the
+referenced class, such as Modelica.Mechanics.Rotational.Components.Inertia, is not yet available in the
 "workspace" of the simulation environment, the tool can locate this class in the file system and
 can load it automatically, this is described in https://specification.modelica.org/master/packages.html#file-system-mapping-of-package-class
 
