@@ -39,6 +39,9 @@ Modelica™ is a trademark of the "Modelica Association".
 ## Modelica at a Glance
 To give an introduction to Modelica we will consider modeling of a simple electrical circuit as
 shown below.
+
+![Simple electrical circuit!](/tutorialExtra/Fig1.png)
+
 The system can be broken up into a set of connected electrical standard components. We have a
 voltage source, two resistors, an inductor, a capacitor and a ground point. Models of these
 components are typically available in model libraries and by using a graphical model editor we
@@ -211,6 +214,8 @@ retained as shown below. The block diagram is equivalent to a set of assignment 
 calculating the state derivatives. In fact, Ohm’s law is used in two different ways in this circuit,
 once solving for i and once solving for u.
 
+![Block diagram variant!](/tutorialExtra/Fig2.png)
+
 This example clearly shows the benefits of physically oriented, non-causal modeling compared
 to block oriented, causal modeling.
 
@@ -239,6 +244,7 @@ clutch.
 
 A screenshot of several examples built by available Modelica libraries is given
 below:
+![Several examples!](/tutorialExtra/Fig5.png "Collection of examples")
 
 ## Modelica Language Overview
 
@@ -1418,9 +1424,12 @@ might require evaluation of both continuous equations and conditional equations.
 
 Consider the rectifier circuit of Figure 3. We will show an appropriate way of modeling an ideal
 diode.
-Figure 3. Rectifier circuit
+![Rectifier circuit!](/tutorialExtra/Fig3.png "Figure 3 Rectifier circuit")
+
 The characteristics of the ideal diode is shown in Figure 4.
-Figure 4. Characteristics of ideal diode
+
+![Characteristics of ideal diode!](/tutorialExtra/Fig4.png "Figure 4 Characteristics of ideal diode")
+
 It is not possible to write i as a function of v or vice versa because the ideal characteristics.
 However, for such planar curves a parametric form can be used
 ```Modelica
