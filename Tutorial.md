@@ -2,8 +2,10 @@
 
 ## Abstract:
 
-This document is a tutorial for the Modelica language, version 1.4, which is developed by the Modelica
-Association, a non-profit organization with seat in Linköping, Sweden. Modelica is a freely available,
+This document is a tutorial for the Modelica language, which is developed by the Modelica
+Association, a non-profit organization with seat in Linköping, Sweden. 
+This tutorial was originally for version 1.4 of the Modelica Language, but has been updated.
+Modelica is a freely available,
 object-oriented language for modeling of large, complex, and heterogeneous physical systems. It is suited
 for multi-domain modeling, for example, mechatronic models in robotics, automotive and aerospace
 applications involving mechanical, electrical, hydraulic and control subsystems, process oriented
