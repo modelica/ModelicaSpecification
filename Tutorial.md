@@ -1143,8 +1143,21 @@ else
  { expression_C1l - expression_C1r,
  expression_C2l - expression_C2r };
 ```
+Alternatively using if-equations:
+```Modelica
+if cond_A then 
+  expression_A1l = expression_A1r;
+  expression_A2l = expression_A2r;
+elseif cond_B then 
+  expression_B1l = expression_B1r;
+  expression_B2l = expression_B2r;
+else
+  expression_C1l = expression_C1r;
+  expression_C2l = expression_C2r;
+end if;
+```
 The size of the vectors must be the same in all branches, i.e., there must be equal number of
-expressions (equations) for all conditions.
+expressions (or equations) for all conditions.
 
 It should be noted that the order of the equations in the different branches is important. In certain
 cases systems of simultaneous equations will be obtained which might not be present if the
