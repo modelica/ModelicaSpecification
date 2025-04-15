@@ -104,7 +104,7 @@ several different concepts, but just one: the class concept. All properties of a
 syntax and semantic of definition, instantiation, inheritance, genericity are identical to all kinds
 of restricted classes. Furthermore, the construction of Modelica translators is simplified
 considerably because only the syntax and semantic of a class has to be implemented along with
-some additional checks on restricted classes. The basic types, such as Real or Integer are builtin type classes, i.e., they have all the properties of a class and the attributes of these basic types
+some additional checks on restricted classes. The basic types, such as Real or Integer are built-in type classes, i.e., they have all the properties of a class and the attributes of these basic types
 are just parameters of the class.
 
 There are two possibilities to define a class: The standard way is shown above for the definition
@@ -291,7 +291,7 @@ Equations are composed of expressions both on the left hand side and the right h
 the following filter equation.
 ```Modelica
 equation
-T*der(y) + y = u;
+  T*der(y) + y = u;
 ```
 Time derivative is denoted by der( ).
 
@@ -427,8 +427,8 @@ equation
  // when current flows from p to n.
 end Resistor;
 ```
-A descriptive text string enclosed in " " can be associated with a component like R. A comment
-which is completely ignored can be entered after //. Everything until the end of the line is then
+A descriptive text string enclosed in `" "` can be associated with a component like R. A comment
+which is completely ignored can be entered after `//`. Everything until the end of the line is then
 ignored. Larger comments can be enclosed in `/* ... */`.
 
 A simple circuit with series connections of two resistors would then be described as:
@@ -467,10 +467,12 @@ a corresponding Pin can thus be made as follows:
 ```Modelica
 type Voltage = Real(unit="V");
 type Current = Real(unit="A");
+
 connector Pin 
  Voltage v;
  flow Current i;
 end Pin;
+
 model Resistor 
  Pin p, n; // "Positive" and "negative" pins.
  parameter Real R(unit="Ohm") "Resistance";
@@ -584,8 +586,8 @@ discussed above. This can be accomplished by redeclaring R1 and R2 as follows.
  model RefinedSimpleCircuit
  Real Temp;
  extends SimpleCircuit(
- redeclare TempResistor R1(RT=0.1, Temp=Temp),
- redeclare TempResistor R2);
+   redeclare TempResistor R1(RT=0.1, Temp=Temp),
+   redeclare TempResistor R2);
  end RefinedSimpleCircuit;
 ```
 Since TempResistor is a subtype of Resistor, it is possible to replace the ideal resistor model.
@@ -659,6 +661,7 @@ connector Stream
  Real pressure;
  flow Real volumeFlowRate;
 end Stream;
+
 model Tank 
  parameter Real Area=1;
  replaceable connector TankStream = Stream;
@@ -677,6 +680,7 @@ connector HeatStream
  extends Stream; 
  Real temp;
 end HeatStream;
+
 model HeatTank 
  extends Tank(redeclare connector TankStream = HeatStream);
  Real temp;
@@ -693,9 +697,9 @@ automatically produced by a Modelica translator).
 model HeatTankT 
  parameter Real Area=1;
  connector TankStream 
- Real pressure;
- flow Real volumeFlowRate;
- Real temp;
+   Real pressure;
+   flow Real volumeFlowRate;
+   Real temp;
  end TankStream;
  TankStream Inlet, Outlet;
  Real level;
@@ -703,7 +707,7 @@ model HeatTankT
 equation 
  Area*der(level) = Inlet.volumeFlowRate + Outlet.volumeFlowRate;
  Outlet.pressure = Inlet.pressure;
-Area*level*der(temp) = Inlet.volumeFlowRate*Inlet.temp + 
+ Area*level*der(temp) = Inlet.volumeFlowRate*Inlet.temp + 
  Outlet.volumeFlowRate*Outlet.temp;
 Outlet.temp = temp;
 end HeatTankT;
@@ -752,8 +756,7 @@ Such a definition can be used to model a rigid bar as follows.
 model Bar "Massless bar with two mechanical cuts." 
  MbsCut a b;
  parameter Position3 r = {0, 0, 0} 
- "Position vector from the origin of cut-frame A"
- " to the origin of cut-frame B";
+ "Position vector from the origin of cut-frame A to the origin of cut-frame B";
 equation
  // Kinematic relationships of cut-frame A and B
  b.S = a.S;
@@ -937,8 +940,8 @@ algorithm
  y := 0;
  xpower := 1; 
  for i in 1:n+1 loop
- y := y + a[i]*xpower;
- xpower := xpower*x;
+   y := y + a[i]*xpower;
+   xpower := xpower*x;
  end for;
 ```
 A Modelica algorithm is a function in the mathematical sense, i.e. without internal memory and
@@ -1000,8 +1003,8 @@ algorithm
  y := 0;
  xpower := 1; 
  for i in 1:size(a, 1) loop
- y := y + a[i]*xpower;
- xpower := xpower*x;
+   y := y + a[i]*xpower;
+   xpower := xpower*x;
  end for;
 end PolynomialEvaluator2;
 ```
@@ -1098,10 +1101,10 @@ void ab04md(const char *, size_t, size_t, size_t, double, double,
 ```
 and the Modelica translator maps a function call of BilinearSampling to a function call of the C-function ab04md. Within Modelica, this function is called as:
 ```Modelica
-parameter Real alpha=1, beta=1;
-parameter Real A[:,:] = [0, 1; 2, 4], B[:,:]=...;
- Real Ares[size(A, 1), size(A, 2)], Bres ...;
- equation
+  parameter Real alpha=1, beta=1;
+  parameter Real A[:,:] = [0, 1; 2, 4], B[:,:]=...;
+  Real Ares[size(A, 1), size(A, 2)], Bres ...;
+equation
  (Ares,Bres,Cres,Dres,info) = BilinearSampling(alpha,beta,A,B,C,D,true);
 ```
 More details, especially the exact mapping of the Modelica types to C and Fortran 77 types, are
@@ -1206,8 +1209,8 @@ protected
  discrete Real x; 
 equation
  when sample(0, Period) then
- x = a*pre(x) + b*u;
- y = c*pre(x) + d*u;
+   x = a*pre(x) + b*u;
+   y = c*pre(x) + d*u;
  end when;
 end DiscreteStateSpace;
 ```
@@ -1235,9 +1238,9 @@ protected
  discrete Real x, NextSampling(start=0); 
 equation
  when time >= pre(NextSampling) then 
- x = a*pre(x) + b*u;
- y = c*pre(x) + d*u;
- NextSampling = time + Period;
+   x = a*pre(x) + b*u;
+   y = c*pre(x) + d*u;
+   NextSampling = time + Period;
  end when;
 end DiscreteStateSpace2;
 ```
@@ -1273,7 +1276,7 @@ example:
 equation
  x + y = 5;
  when condition then
- 2*x + y = 7; // error: not valid Modelica
+   2*x + y = 7; // error: not valid Modelica
  end when;
 ```
 When the equations of the when-clause are not activated it is not clear which variable to hold
@@ -1283,7 +1286,7 @@ constant, either x or y. A corrected version of this example is:
 equation
  x + y = 5;
  when condition then
- y = 7 - 2*x; // fine
+   y = 7 - 2*x; // fine
  end when;
 ```
 Here, variable y is held constant when the when-clause is de-activated and x is computed from
@@ -1296,9 +1299,9 @@ actions, such as:
  Boolean open;
 algorithm
  when h1 < hmax then
- open := true;
+   open := true;
  elsewhen pushbutton then
- open := false;
+   open := false;
  end when;
 ```
 Here, the condition `h1 < hmax` has higher priority as the condition "pushbutton", if both
@@ -1313,9 +1316,9 @@ algorithm
  b1 := h1 < hmax;
  b2 := pusbutton;
  if edge(b1) then
- open := true;
+   open := true;
  elseif edge(b2) then
- open := false;
+   open := false;
  end when;
 ```
 Note, that this is a conceptual mapping and a Modelica translator may perform it more
@@ -1335,10 +1338,10 @@ equation
  u1 = A*Modelica.Math.sin(w*time);
  u2 = A*Modelica.Math.cos(w*time);
  when u1 > 0 or u2 > 0 then
- b1 = not pre(b1);
+   b1 = not pre(b1);
  end when;
  when {u1 > 0, u2 > 0} then // vector condition
- b2 = not pre(b2);
+   b2 = not pre(b2);
  end when;
 end vectorwhen;
 ```
@@ -1444,13 +1447,13 @@ model BreakingPendulum
 equation
  vel = der(pos);
  if not Broken then
- // Equations of pendulum
- pos = {L*sin(phi), -L*cos(phi)};
- phid = der(phi);
- m*L*L*der(phid) + m*g*L*sin(phi) = u;
+   // Equations of pendulum
+   pos = {L*sin(phi), -L*cos(phi)};
+   phid = der(phi);
+   m*L*L*der(phid) + m*g*L*sin(phi) = u;
  else;
- // Equations of free flying mass
- m*der(vel) = m*{0, -g}; 
+   // Equations of free flying mass
+   m*der(vel) = m*{0, -g}; 
  end if;
 end BreakingPendulum;
 ```
