@@ -87,15 +87,19 @@ involved as explained below.
 The next step in introducing Modelica is to explain how library model classes are defined.
 
 A connector must contain all quantities needed to describe the interaction. For electrical
-components we need the quantities voltage and current to define interaction via a wire. The types
+components we need the quantities electric potential and current to define interaction via a wire. The types
 to represent them are declared as
 ```Modelica
-type Voltage = Real(unit="V");
+type ElectricPotential = Real(unit="V");
 type Current = Real(unit="A");
 ```
 where Real is the name of a predefined variable type. A real variable has a set of attributes such
 as unit of measure, initial value, minimum and maximum value. Here, the units of measure are
 set to be the SI units.
+Inside models we will normally use voltage as the difference between the electric potentials as the different pins, they have the same unit.
+```Modelica
+type Voltage = Real(unit="V");
+```
 
 In Modelica, the basic structuring element is a class. There are seven restricted classes with
 specific names, such as model, type (a class which is an extension of built-in classes, such as
@@ -115,17 +119,17 @@ are just parameters of the class.
 There are two possibilities to define a class: The standard way is shown above for the definition
 of the electric circuit (model circuit). A short hand notation is possible, if a new class is identical
 to an existing one and only the default values of attributes are changed. The types above, such as
-Voltage, are declared in this way.
+ElectricPotential, are declared in this way.
 A connector class is defined as
 ```Modelica
 connector Pin 
- Voltage v;
+ ElectricPotential v;
  flow Current i;
 end Pin;
 ```
 A connection connect (Pin1, Pin2), with Pin1 and Pin2 of connector class Pin, connects the
 two pins such that they form one node. This implies two equations, namely Pin1.v = Pin2.v
-and Pin1.i + Pin2.i = 0. The first equation indicates that the voltages on both branches
+and Pin1.i + Pin2.i = 0. The first equation indicates that the electric potentials on both branches
 connected together are the same, and the second corresponds to Kirchhoff’s current law saying
 that the currents sum to zero at a node (assuming positive value while flowing into the
 component). The sum-to-zero equations are generated when the prefix flow is used. Similar laws
@@ -150,7 +154,7 @@ equation
  i = p.i;
 end OnePort;
 ```
-that has two pins, p and n, a quantity, v, that defines the voltage drop across the component and a
+that has two pins, p and n, a quantity, v, that defines the voltage across the component and a
 quantity, i, that defines the current into the pin p, through the component and out from the pin n.
 
 The equations define generic relations between quantities of a simple electrical component. In
@@ -204,8 +208,8 @@ equation
  p.v = 0;
 end Ground;
 ```
-The purpose of the ground model is twofold. First, it defines a reference value for the voltage
-levels. Secondly, the connections will generate one Kirchhoff’s current law too many. The
+The purpose of the ground model is twofold. First, it defines a reference value for the eletric potential. 
+Secondly, the connections will generate one Kirchhoff’s current law too many. The
 ground model handles this by introducing an extra current quantity p.i, which implicitly by the
 equations will be calculated to zero.
 
@@ -417,7 +421,7 @@ We have seen how classes can be used to build-up hierarchical models. It will no
 how to define physical connections by means of a restricted class called connector.
 
 We will study modeling of a simple electrical circuit. The first issue is then how to represent pins
-and connections. Each pin is characterized by two variables, voltage and current. A first attempt
+and connections. Each pin is characterized by two variables, electric potential and current. A first attempt
 would be to use a connector as follows.
 ```Modelica
 connector Pin 
@@ -473,11 +477,11 @@ The keyword type is used to define a new class, which is derived from the built-
 defined records. Defining Voltage and Current as modifications of Real with other attributes and
 a corresponding Pin can thus be made as follows:
 ```Modelica
-type Voltage = Real(unit="V");
+type ElectricPotential = Real(unit="V");
 type Current = Real(unit="A");
 
 connector Pin 
- Voltage v;
+ ElectricPotential v;
  flow Current i;
 end Pin;
 
