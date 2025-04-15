@@ -1546,13 +1546,14 @@ equation
  vel = der(pos);
  phid = der(phi);
  Ldot = der(L);
- zeros(2) = if not Broken then {
+ if not Broken then
    // Equations of pendulum
-   m*der(phid) + m*g*L*sin(phi) – u,
-   der(Ldot)}
+   m*der(phid) + m*g*L*sin(phi) = u;
+   der(Ldot) = 0;
  else
    // Equations of free flying mass
-   m*der(vel) - m*{0, -g}; 
+   m*der(vel) = m*{0, -g};
+ end if;
 end BreakingPendulum3;
 ```
 The trick was to use complete polar coordinates including the length, L and to give a differential
