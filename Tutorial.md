@@ -1143,7 +1143,7 @@ else
  { expression_C1l - expression_C1r,
  expression_C2l - expression_C2r };
 ```
-Alternatively using if-equations:
+Or preferably using if-equations:
 ```Modelica
 if cond_A then 
   expression_A1l = expression_A1r;
@@ -1159,10 +1159,12 @@ end if;
 The size of the vectors must be the same in all branches, i.e., there must be equal number of
 expressions (or equations) for all conditions.
 
-It should be noted that the order of the equations in the different branches is important. In certain
+It should be noted that the order of the expressions in the different branches may matter for vector expressions. In certain
 cases systems of simultaneous equations will be obtained which might not be present if the
-ordering of the equations in one branch of the if-construct is changed. In any case, the model
-remains valid. Only the efficiency might be unnecessarily reduced.
+ordering of the equations in one branch of the if-construct is changed.
+
+For if-equations tools may avoid this by automatically matching the equations in different branches in better ways.
+In any case, the model remains valid. Only the efficiency might be unnecessarily reduced.
 
 #### Conditional Components
 
