@@ -1621,8 +1621,8 @@ board to the fixed-temperature environment shall be modeled. This requires to fi
 connector for 1-dimensional heat flow:
 ```Modelica
 connector HeatCut
-  Modelica.SIunits.Temp_K T "temperature in [K]";
-  flow Modelica.SIunits.HeatFlowRate q "heat flux";
+  Modelica.Units.SI.Temperature T "temperature in [K]";
+  flow Modelica.Units.SI.HeatFlowRate q "heat flux";
 end HeatCut;
 ```
 All components which generate heat need a reference to the environment heat connector:
@@ -1924,7 +1924,7 @@ the possible displayUnits for torque types, unit "J" should not be in such a lis
 name is given and no quantity name, it is not possible to get a list of displayUnits in a simulation
 environment.
 
-Together with Modelica the standard package Modelica.SIunits of predefined quantity and
+Together with Modelica the standard package Modelica.Units.SI of predefined quantity and
 connector types is provided in the form as shown in the example above. This package is based on
 the corresponding ISO norm. This will give some help in standardization of the interfaces of
 models. The grammar for unit expressions, such as "N.m/s2" is defined in the Modelica
@@ -1958,9 +1958,9 @@ type Voltage = Real(final quantity="Voltage", final unit="V");
 model SineSignal
   import Modelica.Constants.*;
   import Modelica.Math.*;
-  import SI=Modelica.SIunits;
-  parameter Real freq (unit="Hz");
-  parameter SI.Angle phi; 
+  import SI=Modelica.Units.SI;
+  parameter SI.Frequency freq ;
+  parameter SI.Angle phi;
   replaceable type SineType = Real;
   parameter SineType Amplitude;
   output SineType y;
@@ -1969,7 +1969,7 @@ equation
 end SineSignal;
 
 model Circuit
-  import SI=Modelica.SIunits;
+  import SI=Modelica.Units.SI;
   SineSignal sig(redeclare SineType = SI.Voltage);
   VoltageSource Vsource;
   ...
