@@ -53,21 +53,20 @@ connections.
 A Modelica description of the complete circuit looks like
 ```Modelica
 model circuit 
- Resistor R1(R=10);
- Capacitor C(C=0.01);
- Resistor R2(R=100);
- Inductor L(L=0.1);
- VsourceAC AC;
- Ground G;
- 
+  Resistor R1(R=10);
+  Capacitor C(C=0.01);
+  Resistor R2(R=100);
+  Inductor L(L=0.1);
+  VsourceAC AC;
+  Ground G;
 equation
- connect (AC.p, R1.p); // Capacitor circuit
- connect (R1.n, C.p);
- connect (C.n, AC.n);
- connect (R1.p, R2.p); // Inductor circuit
- connect (R2.n, L.p);
- connect (L.n, C.n);
- connect (AC.n, G.p); // Ground
+  connect (AC.p, R1.p); // Capacitor circuit
+  connect (R1.n, C.p);
+  connect (C.n, AC.n);
+  connect (R1.p, R2.p); // Inductor circuit
+  connect (R2.n, L.p);
+  connect (L.n, C.n);
+  connect (AC.n, G.p); // Ground
 end circuit;
 ```
 For clarity, the definition of the graphical layout of the composition diagram (here: electric
@@ -76,7 +75,7 @@ annotations (which are not processed by a Modelica translator and only used by t
 composite model of this type specifies the topology of the system to be modeled. It specifies the
 components and the connections between the components. The statement
 ```Modelica
-Resistor R1(R=10);
+  Resistor R1(R=10);
 ```
 declares a component R1 to be of class Resistor and sets the default value of the resistance, R,
 to 10. The connections specify the interactions between the components. In other modeling
@@ -123,8 +122,8 @@ ElectricPotential, are declared in this way.
 A connector class is defined as
 ```Modelica
 connector Pin 
- ElectricPotential v;
- flow Current i;
+  ElectricPotential v;
+  flow Current i;
 end Pin;
 ```
 A connection connect (Pin1, Pin2), with Pin1 and Pin2 of connector class Pin, connects the
@@ -145,13 +144,13 @@ A common property of many electrical components is that they have two pins. This
 is useful to define an "interface" model class,
 ```Modelica
 partial model OnePort "Superclass of elements with two electrical pins" 
- Pin p, n;
- Voltage v;
- Current i;
+  Pin p, n;
+  Voltage v;
+  Current i;
 equation
- v = p.v - n.v;
- 0 = p.i + n.i; 
- i = p.i;
+  v = p.v - n.v;
+  0 = p.i + n.i; 
+  i = p.i;
 end OnePort;
 ```
 that has two pins, p and n, a quantity, v, that defines the voltage across the component and a
@@ -168,10 +167,10 @@ To define a model for a resistor we exploit OnePort and add a definition of para
 resistance and Ohm’s law to define the behavior:
 ```Modelica
 model Resistor "Ideal electrical resistor" 
- extends OnePort;
- parameter Real R(unit="Ohm") "Resistance";
+  extends OnePort;
+  parameter Real R(unit="Ohm") "Resistance";
 equation 
- R*i = v;
+  R*i = v;
 end Resistor;
 ```
 The keyword parameter specifies that the quantity is constant during a simulation run, but can
@@ -181,21 +180,21 @@ modify the behavior of a model.
 A model for an electrical capacitor can also reuse the TwoPin as follows:
 ```Modelica
 model Capacitor "Ideal electrical capacitor" 
- extends OnePort;
- parameter Real C(unit="F") "Capacitance";
+  extends OnePort;
+  parameter Real C(unit="F") "Capacitance";
 equation 
- C*der(v) = i;
+  C*der(v) = i;
 end Capacitor;
 ```
 where der(v) means the time derivative of v. A model for the voltage source can be defined as
 ```Modelica
 model VsourceAC "Sin-wave voltage source" 
- extends OnePort;
- parameter Voltage VA = 220 "Amplitude";
- parameter Real f(unit="Hz") = 50 "Frequency";
- constant Real PI=3.141592653589793; 
+  extends OnePort;
+  parameter Voltage VA = 220 "Amplitude";
+  parameter Real f(unit="Hz") = 50 "Frequency";
+  constant Real PI=3.141592653589793; 
 equation 
- v = VA*sin(2*PI*f*time);
+  v = VA*sin(2*PI*f*time);
 end VsourceAC;
 ```
 In order to provide not too much information at this stage, the constant PI is explicitly declared,
@@ -203,9 +202,9 @@ although it is usually imported from the [Modelica standard library](https://git
 Finally, we must not forget the ground point.
 ```Modelica
 model Ground "Ground" 
- Pin p;
+  Pin p;
 equation 
- p.v = 0;
+  p.v = 0;
 end Ground;
 ```
 The purpose of the ground model is twofold. First, it defines a reference value for the eletric potential. 
@@ -289,8 +288,8 @@ conditions.
 
 Basic declarations of variables can be made as follows:
 ```Modelica
-Real u, y(start=1);
-parameter Real T=1;
+  Real u, y(start=1);
+  parameter Real T=1;
 ```
 Real is the name of a predefined class or type. A Real variable has an attribute called start to
 give its initial value. A component declaration can be preceded by a specifier like constant or
@@ -316,20 +315,20 @@ equations preceded by the keyword equation. An example of a low pass filter clas
 below.
 ```Modelica
 class LowPassFilter 
- parameter Real T=1;
- Real u, y(start=1);
+  parameter Real T=1;
+  Real u, y(start=1);
 equation
- T*der(y) + y = u;
+  T*der(y) + y = u;
 end LowPassFilter;
 ```
 The model class can be used to create two instances of the filter with different time constants and
 "connecting" them together as follows
 ```Modelica
 class FiltersInSeries 
- LowPassFilter F1(T=2), F2(T=3);
+  LowPassFilter F1(T=2), F2(T=3);
 equation
- F1.u = sin(time);
- F2.u = F1.y;
+  F1.u = sin(time);
+  F2.u = F1.y;
 end FiltersInSeries;
 ```
 In this case we have used a modification to modify the time constant of the filters to T=2 and
@@ -343,8 +342,8 @@ If the FiltersInSeries model is used to declare components at a higher hierarchi
 possible to modify the time constants by using a hierarchical modification:
 ```Modelica
 model ModifiedFiltersInSeries 
- FiltersInSeries F12(F1(T=6), F2(T=11, k=2)); // alternative 1
- FiltersInSeries F34(F1.T=6, F2.T=11, F2.k=2); // alternative 2
+  FiltersInSeries F12(F1(T=6), F2(T=11, k=2)); // alternative 1
+  FiltersInSeries F34(F1.T=6, F2.T=11, F2.k=2); // alternative 2
 end ModifiedFiltersInSeries;
 ```
 The class concept is similar as in programming languages. It is used for many purposes in
@@ -365,13 +364,15 @@ not have any equations:
 record FilterData 
  Real T;
 end FilterData;
+
 record TwoFilterData 
- FilterData F1, F2;
+  FilterData F1, F2;
 end TwoFilterData;
+
 model ModifiedFiltersInSeries2 
- TwoFilterData TwoFilterData1(F1(T=6), F2(T=11));
+  TwoFilterData TwoFilterData1(F1(T=6), F2(T=11));
  
- FiltersInSeries F12=TwoFilterData1;
+  FiltersInSeries F12=TwoFilterData1;
 end ModifiedFiltersInSeries2;
 ```
 The modification F12=TwoFilterData1 is possible since all the components of
@@ -398,16 +399,16 @@ for the time constants, T1 and T2, the input, u and the output y as accessible f
 The realization of the model, using two instances of model LowPassFilter, is a protected detail.
 Modelica allows such information hiding by using the heading protected.
 ```Modelica
- model FiltersInSeries2
- parameter Real T1=2, T2=3;
- input Real u;
- output Real y;
+model FiltersInSeries2
+  parameter Real T1=2, T2=3;
+  input Real u;
+  output Real y;
 protected
- LowPassFilter F1(T=T1), F2(T=T2);
+  LowPassFilter F1(T=T1), F2(T=T2);
 equation
- F1.u = u;
- F2.u = F1.y;
- y = F2.y;
+  F1.u = u;
+  F2.u = F1.y;
+  y = F2.y;
 end FiltersInSeries2;
 ```
 Information hiding does not control interactive environments though. It is possible to inspect and
@@ -425,18 +426,18 @@ and connections. Each pin is characterized by two variables, electric potential 
 would be to use a connector as follows.
 ```Modelica
 connector Pin 
- Real v, i;
+  Real v, i;
 end Pin;
 ```
 and build a resistor with two pins p and n like
 ```Modelica
 model Resistor 
- Pin p, n; // "Positive" and "negative" pins.
- parameter Real R "Resistance";
+  Pin p, n; // "Positive" and "negative" pins.
+  parameter Real R "Resistance";
 equation
- R*p.i = p.v - n.v;
- n.i = p.i; // Assume both n.i and p.i to be positive
- // when current flows from p to n.
+  R*p.i = p.v - n.v;
+  n.i = p.i; // Assume both n.i and p.i to be positive
+  // when current flows from p to n.
 end Resistor;
 ```
 A descriptive text string enclosed in `" "` can be associated with a component like R. A comment
@@ -446,9 +447,9 @@ ignored. Larger comments can be enclosed in `/* ... */`.
 A simple circuit with series connections of two resistors would then be described as:
 ```Modelica
 model FirstCircuit 
- Resistor R1(R=100), R2(R=200);
+  Resistor R1(R=100), R2(R=200);
 equation
- R1.n = R2.p;
+  R1.n = R2.p;
 end FirstCircuit;
 ```
 The equation R1.n = R2.p represents the connection of pin n of R1 to pin p of R2. The semantics
@@ -467,8 +468,8 @@ assume that such variables are positive when the flow (or corresponding vector) 
 component.
 ```Modelica
 connector Pin 
- Real v;
- flow Real i;
+  Real v;
+  flow Real i;
 end Pin;
 ```
 It is useful to introduce units in order to enhance the possibility to generate diagnostics based on
@@ -481,25 +482,25 @@ type ElectricPotential = Real(unit="V");
 type Current = Real(unit="A");
 
 connector Pin 
- ElectricPotential v;
- flow Current i;
+  ElectricPotential v;
+  flow Current i;
 end Pin;
 
 model Resistor 
- Pin p, n; // "Positive" and "negative" pins.
- parameter Real R(unit="Ohm") "Resistance";
+  Pin p, n; // "Positive" and "negative" pins.
+  parameter Real R(unit="Ohm") "Resistance";
 equation
- R*p.i = p.v - n.v;
- p.i + n.i = 0; // Positive currents into component.
+  R*p.i = p.v - n.v;
+  p.i + n.i = 0; // Positive currents into component.
 end Resistor;
 ```
 We are now able to correctly connect three components at one node.
 ```Modelica
 model SimpleCircuit 
- Resistor R1(R=100), R2(R=200), R3(R=300);
+  Resistor R1(R=100), R2(R=200), R3(R=300);
 equation
- connect(R1.p, R2.p);
- connect(R1.p, R3.p);
+  connect(R1.p, R2.p);
+  connect(R1.p, R3.p);
 end SimpleCircuit;
 ```
 connect is a special operator that generates equations taking into account what kind of variables
@@ -524,20 +525,20 @@ can define a generic component with one electrical port[^1], model OnePort, havi
 base for all of these models.
 ```Modelica
 partial model OnePort 
- Pin p, n;
- Voltage v "Voltage drop"; 
+  Pin p, n;
+  Voltage v "Voltage drop"; 
 equation
- v = p.v - n.v;
- p.i + n.i = 0; 
+  v = p.v - n.v;
+  p.i + n.i = 0; 
 end TwoPin;
 ```
 Such a partial model can be extended or reused to build a complete model like an inductor.
 ```Modelica
 model Inductor "Ideal electrical inductance" 
- extends OnePort;
- parameter Real L(unit="H") "Inductance";
+  extends OnePort;
+  parameter Real L(unit="H") "Inductance";
 equation 
- L*der(i) = v;
+  L*der(i) = v;
 end Inductor;
 ```
 [^1]: In the Modelica Standard Library model OnePort is a component where the current flowing into the first pin is the
@@ -564,13 +565,13 @@ Assume, for example, that a more detailed resistor model is needed, describing t
 dependency of the resistance:
 ```Modelica
 model TempResistor "Temperature dependent electrical resistor" 
- extends OnePort;
- parameter Real R(unit="Ohm") "Resistance for ref. Temp.";
- parameter Real RT(unit="Ohm/K")=0 "Temp. dep. Resistance.";
- parameter Real Tref(unit="K")=300.15 "Reference temperature.";
- Real Temp(unit="K")=300.15 "Actual temperature";
+  extends OnePort;
+  parameter Real R(unit="Ohm") "Resistance for ref. Temp.";
+  parameter Real RT(unit="Ohm/K")=0 "Temp. dep. Resistance.";
+  parameter Real Tref(unit="K")=300.15 "Reference temperature.";
+  Real Temp(unit="K")=300.15 "Actual temperature";
 equation 
- v = p.i*(R + RT*(Temp-Tref));
+  v = p.i*(R + RT*(Temp-Tref));
 end TempResistor;
 ```
 It is not possible to extend this model from the ideal resistor model Resistor discussed in
@@ -585,59 +586,59 @@ constants and matrices but also classes. (This section might be skipped during t
 Assume that we have the description (of an incomplete circuit) as above.
 ```Modelica
 model SimpleCircuit 
- replaceable Resistor R1(R=100), R2(R=200), R3(R=300);
+  replaceable Resistor R1(R=100), R2(R=200), R3(R=300);
 equation
- connect(R1.p, R2.p);
- connect(R1.p, R3.p);
+  connect(R1.p, R2.p);
+  connect(R1.p, R3.p);
 end SimpleCircuit;
 ```
 Assume we would like to utilize the parameter values given for R1.R and R2.R and the circuit
 topology, but exchange Resistor with the temperature dependent resistor model, TempResistor,
 discussed above. This can be accomplished by redeclaring R1 and R2 as follows.
 ```Modelica
- model RefinedSimpleCircuit
- Real Temp;
- extends SimpleCircuit(
-   redeclare TempResistor R1(RT=0.1, Temp=Temp),
-   redeclare TempResistor R2);
+model RefinedSimpleCircuit
+  Real Temp;
+  extends SimpleCircuit(
+    redeclare TempResistor R1(RT=0.1, Temp=Temp),
+    redeclare TempResistor R2);
  end RefinedSimpleCircuit;
 ```
 Since TempResistor is a subtype of Resistor, it is possible to replace the ideal resistor model.
 Values of the additional parameters of TempResistor and definition of the actual temperature can
 be added in the redeclaration:
 ```Modelica
-redeclare TempResistor R1(RT=0.1, Temp=Temp);
+  redeclare TempResistor R1(RT=0.1, Temp=Temp);
 ```
 This is a very strong modification of the circuit model and there is the issue of possible
 invalidation of the model. For this reason, such modifications have to be marked by the keyword
 redeclare. Furthermore, the model developer has to explicitly allow such type of modification
 by declaring a component as replaceable: -
 ```Modelica
-replaceable Resistor R3(R=300);
+  replaceable Resistor R3(R=300);
 ```
 It is also possible to state that a parameter is frozen to a certain value, i.e., is not a parameter
 anymore:
 ```Modelica
-Resistor R3(final R=300);
+  Resistor R3(final R=300);
 ```
 and can therefore no longer be changed by a modification (including a redeclaration). In some
 situations it may be necessary that the basic constraining type is different from the default type,
 for example,
 ```Modelica
 model SimpleCircuit 
- replaceable Resistor R1(R=100) extends OnePort;
- replaceable Resistor R2(R=200) extends OnePort;
- Resistor R3(R=300);
+  replaceable Resistor R1(R=100) extends OnePort;
+  replaceable Resistor R2(R=200) extends OnePort;
+  Resistor R3(R=300);
 equation
- connect(R1.p, R2.p);
- connect(R1.p, R3.p);
+  connect(R1.p, R2.p);
+  connect(R1.p, R3.p);
 end SimpleCircuit;
 ```
 Here, the resistors R1 and R2 can be replaced by any electrical component which is a subtype of
 model OnePort, as in the following redeclaration:
 ```Modelica
 model RefinedSimpleCircuit2
- extends SimpleCircuit(redeclare Capacitor R1(C=0.001));
+  extends SimpleCircuit(redeclare Capacitor R1(C=0.001));
 end RefinedSimpleCircuit2;
 ```
 To use another resistor model in the model SimpleCircuit, we needed to know that there were
@@ -651,93 +652,95 @@ Default for ResistorModel, i.e., when no actual redeclaration is made, is in thi
 Note, that R1 and R2 are in this case of class ResistorModel.
 ```Modelica
 model SimpleCircuit2 
- replaceable model ResistorModel = Resistor; 
+  replaceable model ResistorModel = Resistor; 
 protected
- ResistorModel R1(R=100), R2(R=200);
- Resistor R3(final R=300);
+  ResistorModel R1(R=100), R2(R=200);
+  Resistor R3(final R=300);
 equation
- connect(R1.p, R2.p);
- connect(R1.p, R3.p);
+  connect(R1.p, R2.p);
+  connect(R1.p, R3.p);
 end SimpleCircuit2;
 ```
 Binding an actual model TempResistor to the replaceable model ResistorModel is done as
 follows.
 ```Modelica
 model RefinedSimpleCircuit2 = 
- SimpleCircuit2(redeclare model ResistorModel = TempResistor);
+  SimpleCircuit2(redeclare model ResistorModel = TempResistor);
 ```
 Another case where redeclarations are needed is extensions of interfaces. Assume we have a
 definition for a Tank in a model library:
 ```Modelica
 connector Stream 
- Real pressure;
- flow Real volumeFlowRate;
+  Real pressure;
+  flow Real volumeFlowRate;
 end Stream;
 
 model Tank 
- parameter Real Area=1;
- replaceable connector TankStream = Stream;
- TankStream Inlet, Outlet;
- Real level;
+  parameter Real Area=1;
+  replaceable connector TankStream = Stream;
+  TankStream Inlet, Outlet;
+  Real level;
 equation
- // Mass balance.
- Area*der(level) = Inlet.volumeFlowRate + Outlet.volumeFlowRate; 
- Outlet.pressure = Inlet.pressure;
+  // Mass balance.
+  Area*der(level) = Inlet.volumeFlowRate + Outlet.volumeFlowRate; 
+  Outlet.pressure = Inlet.pressure;
 end Tank;
 ```
 We would like to extend the Tank to model the temperature of the stream. This involves both
 extension to interfaces and to model equations.
 ```Modelica
 connector HeatStream 
- extends Stream; 
- Real temp;
+  extends Stream; 
+  Real temp;
 end HeatStream;
 
 model HeatTank 
- extends Tank(redeclare connector TankStream = HeatStream);
- Real temp;
+  extends Tank(redeclare connector TankStream = HeatStream);
+  Real temp;
 equation
- // Energy balance.
- Area*Level*der(temp) = Inlet.volumeFlowRate*Inlet.temp + 
- Outlet.volumeFlowRate*Outlet.temp; 
- Outlet.temp = temp; // Perfect mixing assumed.
+  // Energy balance.
+  Area*Level*der(temp) = Inlet.volumeFlowRate*Inlet.temp + 
+  Outlet.volumeFlowRate*Outlet.temp; 
+  Outlet.temp = temp; // Perfect mixing assumed.
 end HeatTank;
 ```
 The definition of HeatTank above is equivalent to the following definition (which has been
 automatically produced by a Modelica translator).
 ```Modelica
 model HeatTankT 
- parameter Real Area=1;
- connector TankStream 
-   Real pressure;
-   flow Real volumeFlowRate;
-   Real temp;
- end TankStream;
- TankStream Inlet, Outlet;
- Real level;
- Real temp;
+  parameter Real Area=1;
+  connector TankStream 
+    Real pressure;
+    flow Real volumeFlowRate;
+    Real temp;
+  end TankStream;
+  TankStream Inlet, Outlet;
+  Real level;
+  Real temp;
 equation 
- Area*der(level) = Inlet.volumeFlowRate + Outlet.volumeFlowRate;
- Outlet.pressure = Inlet.pressure;
- Area*level*der(temp) = Inlet.volumeFlowRate*Inlet.temp + 
- Outlet.volumeFlowRate*Outlet.temp;
-Outlet.temp = temp;
+  Area*der(level) = Inlet.volumeFlowRate + Outlet.volumeFlowRate;
+  Outlet.pressure = Inlet.pressure;
+  Area*level*der(temp) = Inlet.volumeFlowRate*Inlet.temp + 
+  Outlet.volumeFlowRate*Outlet.temp;
+  Outlet.temp = temp;
 end HeatTankT;
 ```
 Replaceable classes are also very convenient to separate fluid properties from the actual device
 where the fluid is flowing, such as a pump.
+
 ### Matrices and Arrays
+
 An array variable can be declared by appending dimensions after the class name or after a
 component name.
 ```Modelica
-Real[3] position, velocity, acceleration;
-Real[3,3] transformation;
-Real[3,2,10] table;
+  Real[3] position, velocity, acceleration;
+  Real[3,3] transformation;
+  Real[3,2,10] table;
 ```
 or
 ```Modelica
-Real position[3], velocity[3], acceleration[3], transformation[3, 3];
-Real table[3,2,10];
+  Real position[3], velocity[3], acceleration[3], transformation[3, 3];
+  Real table[3,2,10];
 ```
 It is also possible to make a matrix type
 ```Modelica
@@ -757,28 +760,28 @@ It is now possible to introduce the variables that are interacting between rigid
 in a free-body diagram.
 ```Modelica
 connector MbsCut
- Transformation S "Rotation matrix describing frame A with respect to the inertial frame";
- Position3 r0 "Vector from the origin of the inertial frame to the origin of frame A";
- flow Force3 f "Resultant cut-force acting at the origin of frame A";
- flow Torque3 t "Resultant cut-torque with respect to the origin of frame A";
+  Transformation S "Rotation matrix describing frame A with respect to the inertial frame";
+  Position3 r0 "Vector from the origin of the inertial frame to the origin of frame A";
+  flow Force3 f "Resultant cut-force acting at the origin of frame A";
+  flow Torque3 t "Resultant cut-torque with respect to the origin of frame A";
 end MbsCut;
 ```
 Such a definition can be used to model a rigid bar as follows.
 ```Modelica
 model Bar "Massless bar with two mechanical cuts." 
- MbsCut a b;
- parameter Position3 r = {0, 0, 0} 
- "Position vector from the origin of cut-frame A to the origin of cut-frame B";
+  MbsCut a b;
+  parameter Position3 r = {0, 0, 0} 
+    "Position vector from the origin of cut-frame A to the origin of cut-frame B";
 equation
- // Kinematic relationships of cut-frame A and B
- b.S = a.S;
- b.r0 = a.r0 + a.S*r;
- // Relations between the forces and torques acting at 
- // cut-frame A and B
- zeros(3) = a.f + b.f;
- zeros(3) = a.t + b.t - cross(r, a.f); 
- // The function cross defines the cross product 
- // of two vectors
+  // Kinematic relationships of cut-frame A and B
+  b.S = a.S;
+  b.r0 = a.r0 + a.S*r;
+  // Relations between the forces and torques acting at 
+  // cut-frame A and B
+  zeros(3) = a.f + b.f;
+  zeros(3) = a.t + b.t - cross(r, a.f); 
+  // The function cross defines the cross product 
+  // of two vectors
 end Bar;
 ```
 Vector and matrix expressions are formed in a similar way as in Mathematica and Matlab. The
@@ -817,18 +820,18 @@ space model is an input-output block (restricted class, only inputs and outputs)
 described as
 ```Modelica
 block StateSpace 
- parameter Real A[:, :],
- B[size(A, 1), :],
- C[:, size(A, 2)],
- D[size(C, 1), size(B, 2)]=zeros(size(C, 1), size(B, 2));
- input Real u[size(B, 2)];
- output Real y[size(C, 1)];
+  parameter Real A[:, :],
+    B[size(A, 1), :],
+    C[:, size(A, 2)],
+    D[size(C, 1), size(B, 2)]=zeros(size(C, 1), size(B, 2));
+  input Real u[size(B, 2)];
+  output Real y[size(C, 1)];
 protected
- Real x[size(A, 2)]; 
+  Real x[size(A, 2)]; 
 equation
- assert(size(A, 1) == size(A, 2), "Matrix A must be square.");
- der(x) = A*x + B*u;
- y = C*x + D*u;
+  assert(size(A, 1) == size(A, 2), "Matrix A must be square.");
+  der(x) = A*x + B*u;
+  y = C*x + D*u;
 end StateSpace;
 ```
 Assert is a predefined function for giving error messages taking a Boolean condition and a string
@@ -836,9 +839,9 @@ as arguments. The actual dimensions of A, B and C are implicitly given by the ac
 parameters. D defaults to a zero matrix:
 ```Modelica
 block TestStateSpace 
- StateSpace S(A = [0.12, 2; 3, 1.5], B = [2, 7; 3, 1], C = [0.1, 2]);
+  StateSpace S(A = [0.12, 2; 3, 1.5], B = [2, 7; 3, 1], C = [0.1, 2]);
 equation
- S.u = {time, sin(time)};
+  S.u = {time, sin(time)};
 end TestStateSpace;
 ```
 The block class is introduced to allow better diagnostics for pure input/output model
@@ -889,32 +892,31 @@ This for-loop is equivalent to n equations. It is also possible to use a block f
 evaluation:
 ```Modelica
 block PolynomialEvaluator 
- parameter Real a[:];
- input Real x;
- output Real y;
- 
+  parameter Real a[:];
+  input Real x;
+  output Real y;
 protected
- parameter Integer n = size(a, 1)-1;
- Real xpowers[n+1];
+  parameter Integer n = size(a, 1)-1;
+  Real xpowers[n+1];
 equation
- xpowers[1] = 1;
- for i in 1:n loop
- xpowers[i+1] = xpowers[i]*x;
- end for;
- y = a * xpowers;
+  xpowers[1] = 1;
+  for i in 1:n loop
+    xpowers[i+1] = xpowers[i]*x;
+  end for;
+  y = a * xpowers;
 end PolynomialEvaluator;
 ```
 The block can be used as follows:
 ```Modelica
- PolynomialEvaluator polyeval(a={1, 2, 3, 4});
- Real p;
+  PolynomialEvaluator polyeval(a={1, 2, 3, 4});
+  Real p;
 equation
- polyeval.x = time;
- p = polyeval.y;
+  polyeval.x = time;
+  p = polyeval.y;
 ```
 It is also possible to bind the inputs and outputs in the parameter list of the invocation.
 ```Modelica
-PolynomialEvaluator polyeval(a={1, 2, 3, 4}, x=time, y=p);
+  PolynomialEvaluator polyeval(a={1, 2, 3, 4}, x=time, y=p);
 ```
 
 #### Regular Model Structures
@@ -922,11 +924,11 @@ PolynomialEvaluator polyeval(a={1, 2, 3, 4}, x=time, y=p);
 The for construct is also essential in order to make regular connection structures for component
 arrays, for example:
 ```Modelica
-Component components[n];
+  Component components[n];
 equation
- for i in 1:n-1 loop
- connect(components[i].Outlet, components[i+1].Inlet);
- end for;
+  for i in 1:n-1 loop
+    connect(components[i].Outlet, components[i+1].Inlet);
+  end for;
 ```
 #### Algorithms
 
@@ -949,12 +951,12 @@ of unknowns are the same as the number of equations. Such a recursive calculatio
 often more convenient to express as an algorithm, i.e., a sequence of assignment statements, if-statements and loops, which allows multiple assignments:
 ```Modelica
 algorithm
- y := 0;
- xpower := 1; 
- for i in 1:n+1 loop
-   y := y + a[i]*xpower;
-   xpower := xpower*x;
- end for;
+  y := 0;
+  xpower := 1; 
+  for i in 1:n+1 loop
+    y := y + a[i]*xpower;
+    xpower := xpower*x;
+  end for;
 ```
 A Modelica algorithm is a function in the mathematical sense, i.e. without internal memory and
 side-effects. That is, whenever such an algorithm is used with the same inputs, the result will be
@@ -990,7 +992,7 @@ implicit equations of the function form one algebraic loop.
 In addition to the for loop, there is a while loop which can be used within algorithms:
 ```Modelica
 while condition loop
- { algorithm }
+  { algorithm }
 end while;
 ```
 
@@ -1005,19 +1007,18 @@ inputs and outputs, one algorithm and no equations.
 The polynomial evaluation can thus be described as:
 ```Modelica
 function PolynomialEvaluator2 
- input Real a[:];
- input Real x;
- output Real y;
+  input Real a[:];
+  input Real x;
+  output Real y;
 protected
- Real xpower;
- 
+  Real xpower;
 algorithm
- y := 0;
- xpower := 1; 
- for i in 1:size(a, 1) loop
-   y := y + a[i]*xpower;
-   xpower := xpower*x;
- end for;
+  y := 0;
+  xpower := 1; 
+  for i in 1:size(a, 1) loop
+    y := y + a[i]*xpower;
+    xpower := xpower*x;
+  end for;
 end PolynomialEvaluator2;
 ```
 A function declaration is similar to a class declaration but starts with the function keyword. The
@@ -1030,26 +1031,26 @@ argument are the outputs of a function.
 
 Instead of creating a polyeval object as was needed for the block PolynomialEvaluator:
 ```Modelica
-PolynomialEvaluator polyeval(a={1, 2, 3, 4}, x=time, y=p);
+  PolynomialEvaluator polyeval(a={1, 2, 3, 4}, x=time, y=p);
 ```
 it is possible to invoke the function as usual in an expression.
 ```Modelica
-p = PolynomialEvaluator2(a={1, 2, 3, 4}, x=time);
+  p = PolynomialEvaluator2(a={1, 2, 3, 4}, x=time);
 ```
 It is also possible to invoke the function with positional association of the actual arguments:
 ```Modelica
-p = PolynomialEvaluator2({1, 2, 3, 4}, time);
+  p = PolynomialEvaluator2({1, 2, 3, 4}, time);
 ```
 A function can have several output arguments:
 ```Modelica
 function Circle
- input Real angle;
- input Real radius;
- output Real x;
- output Real y;
+  input Real angle;
+  input Real radius;
+  output Real x;
+  output Real y;
 algorithm
- x = radius*Modelica.Math.cos(phi);
- y = radius*Modelica.Math.sin(phi);
+  x = radius*Modelica.Math.cos(phi);
+  y = radius*Modelica.Math.sin(phi);
 end Circle;
 ```
 Such a function is called in the following way:
@@ -1066,8 +1067,8 @@ It is possible to call functions defined outside of the Modelica language. The b
 function is marked with the keyword external:
 ```Modelica
 function log
- input Real x;
- output Real y;
+  input Real x;
+  output Real y;
 external 
 end log;
 ```
@@ -1086,30 +1087,30 @@ interface:
 function BilinearSampling
  "Slicot function for Discrete-time <--> continuous-time
  systems conversion by a bilinear transformation."
- input Real alpha=1, beta=1;
- input Real A[:, size(A, 1)], B[size(A, 1), :],
- C[:, size(A, 1)], D[size(C, 1), size(B, 2)];
- input Boolean isContinuous = true;
- output Real Ares[size(A, 1), size(A, 2)]=A, // Ares is in-out
- Bres[size(B, 1), size(B, 2)]=B,
- Cres[size(C, 1), size(C, 2)]=C,
- Dres[size(D, 1), size(D, 2)]=D;
- output Integer info;
+  input Real alpha=1, beta=1;
+  input Real A[:, size(A, 1)], B[size(A, 1), :],
+    C[:, size(A, 1)], D[size(C, 1), size(B, 2)];
+  input Boolean isContinuous = true;
+  output Real Ares[size(A, 1), size(A, 2)]=A, // Ares is in-out
+    Bres[size(B, 1), size(B, 2)]=B,
+    Cres[size(C, 1), size(C, 2)]=C,
+    Dres[size(D, 1), size(D, 2)]=D;
+  output Integer info;
 protected
- Integer iwork[size(A, 1)]; // Work arrays
- Real dwork[size(A, 1)];
- String c2dstring=if isContinuous then "C" else "D";
-external ”C" ab04md(c2dstring,size(A,1),size(B,2),size(C,1),
- alpha,beta,Ares,size(Ares,1),Bres,size(Bres,1),
- Cres,size(Cres,1),Dres,size(Dres,1),
- iwork,dwork,size(dwork,1),info);
+  Integer iwork[size(A, 1)]; // Work arrays
+  Real dwork[size(A, 1)];
+  String c2dstring=if isContinuous then "C" else "D";
+external "C" ab04md(c2dstring,size(A,1),size(B,2),size(C,1),
+  alpha,beta,Ares,size(Ares,1),Bres,size(Bres,1),
+  Cres,size(Cres,1),Dres,size(Dres,1),
+  iwork,dwork,size(dwork,1),info);
 end BilinearSampling;
 ```
 It is expected that an external C-function is available which has the following prototype:
 ```C
 void ab04md(const char *, size_t, size_t, size_t, double, double,
- double *, size_t, double *, size_t, double *, size_t,
- double *, size_t, int *, double *, size_t, int *);
+  double *, size_t, double *, size_t, double *, size_t,
+  double *, size_t, int *, double *, size_t, int *);
 ```
 and the Modelica translator maps a function call of BilinearSampling to a function call of the C-function ab04md. Within Modelica, this function is called as:
 ```Modelica
@@ -1117,7 +1118,7 @@ and the Modelica translator maps a function call of BilinearSampling to a functi
   parameter Real A[:,:] = [0, 1; 2, 4], B[:,:]=...;
   Real Ares[size(A, 1), size(A, 2)], Bres ...;
 equation
- (Ares,Bres,Cres,Dres,info) = BilinearSampling(alpha,beta,A,B,C,D,true);
+  (Ares,Bres,Cres,Dres,info) = BilinearSampling(alpha,beta,A,B,C,D,true);
 ```
 More details, especially the exact mapping of the Modelica types to C and Fortran 77 types, are
 discussed in the appendix of the Modelica Language Specification.
@@ -1135,8 +1136,8 @@ has been obtained from the languages Signal (Gautier, et.al., 1994) and Lustre (
 If-then-else expressions allow modeling of a phenomena with different expressions in different
 operating regions. A limiter can thus be written as
 ```Modelica
-y = if u > HighLimit then HighLimit 
- else if u < LowLimit then LowLimit else u;
+  y = if u > HighLimit then HighLimit 
+    else if u < LowLimit then LowLimit else u;
 ```
 This construct might introduce discontinuities. If this is the case, appropriate information about
 the crossing points should be provided to the integrator. The use of crossing functions is
@@ -1184,19 +1185,19 @@ It is useful to be able to have models of different complexities. For complex mo
 components are needed as shown in the next example where the two controllers are modeled
 itself as subcomponents:
 ```Modelica
- block Controller 
+block Controller 
    parameter simple=true;
    RealInput e;
    RealOutput y;
- protected
+protected
    Controller1 c1(u=e) if simple;
    Controller2 c2(u=e) if not simple;
- equation
+equation
    connect(e, c1.u);
    connect(e, c2.u);
    connect(c1.y, y);
    connect(c2.y, y);
- end Controller;
+end Controller;
 ```
 The if-attribute allows statically enabling or disabling a component.
 The connects to the disabled components are automatically removed, ensuring that there is only one connection to the output y.
@@ -1208,9 +1209,9 @@ https://specification.modelica.org/master/state-machines.html
 
 The actions to be performed at events are specified by a when-statement.
 ```Modelica
-when condition then
- equations
-end when;
+  when condition then
+    equations
+  end when;
 ```
 The equations are active instantaneously when the condition becomes true. It is possible to use a
 vector of conditions. In such a case the equations are active whenever any of the conditions
@@ -1228,17 +1229,17 @@ There is a built-in function `sample(Start, Interval)` that is true when `time=S
 n>=0. A discrete first order state space model can then be written as
 ```Modelica
 block DiscreteStateSpace 
- parameter Real a, b, c, d;
- parameter Real Period=1;
- input Real u;
- discrete output Real y;
+  parameter Real a, b, c, d;
+  parameter Real Period=1;
+  input Real u;
+  discrete output Real y;
 protected
- discrete Real x; 
+  discrete Real x; 
 equation
- when sample(0, Period) then
-   x = a*pre(x) + b*u;
-   y = c*pre(x) + d*u;
- end when;
+  when sample(0, Period) then
+    x = a*pre(x) + b*u;
+    y = c*pre(x) + d*u;
+  end when;
 end DiscreteStateSpace;
 ```
 The special notation pre(x) is used to denote the left limit of the discrete state variable x at an
@@ -1257,18 +1258,18 @@ when the condition time>= NextSampling becomes true. An alternative formulation 
 discrete system is thus.
 ```Modelica
 block DiscreteStateSpace2 
- parameter Real a, b, c, d;
- parameter Real Period=1;
- input Real u;
- discrete output Real y;
+  parameter Real a, b, c, d;
+  parameter Real Period=1;
+  input Real u;
+  discrete output Real y;
 protected
- discrete Real x, NextSampling(start=0); 
+  discrete Real x, NextSampling(start=0); 
 equation
- when time >= pre(NextSampling) then 
-   x = a*pre(x) + b*u;
-   y = c*pre(x) + d*u;
-   NextSampling = time + Period;
- end when;
+  when time >= pre(NextSampling) then 
+    x = a*pre(x) + b*u;
+    y = c*pre(x) + d*u;
+    NextSampling = time + Period;
+  end when;
 end DiscreteStateSpace2;
 ```
 The built-in operator edge(v), for discrete-time variable v, is defined as "v and not pre(v)", i.e.,
@@ -1276,17 +1277,17 @@ it is true at the time instant when v changes its value and otherwise it is fals
 the precise meaning of a when clause
 ```Modelica
 when condition then
- v2 = f1(..);
- v3 = f2(..);
+  v2 = f1(..);
+  v3 = f2(..);
 end when
 ```
 can be defined as:
 ```Modelica
- Boolean b(start = <condition using start values>);
+  Boolean b(start = <condition using start values>);
 equation
- b = condition;
- v2 = if edge(b) then f1(..) else pre(v2);
- v3 = if edge(b) then f2(..) else pre(v3);
+  b = condition;
+  v2 = if edge(b) then f1(..) else pre(v2);
+  v3 = if edge(b) then f2(..) else pre(v3);
 ```
 In other words, at the time instant when b changes its value from false to true, the two equations
 are activated. At all other time instants, v2 and v3 hold their previous value. The pre-value of b
@@ -1299,22 +1300,22 @@ possible, there is the restriction that equations in when-clauses do not have th
 hand side of the equality sign. The reason for this restriction becomes apparent in the following
 example:
 ```Modelica
- Real x, y;
+  Real x, y;
 equation
- x + y = 5;
- when condition then
-   2*x + y = 7; // error: not valid Modelica
- end when;
+  x + y = 5;
+  when condition then
+    2*x + y = 7; // error: not valid Modelica
+  end when;
 ```
 When the equations of the when-clause are not activated it is not clear which variable to hold
 constant, either x or y. A corrected version of this example is:
 ```Modelica
- Real x,y;
+  Real x,y;
 equation
- x + y = 5;
- when condition then
-   y = 7 - 2*x; // fine
- end when;
+  x + y = 5;
+  when condition then
+    y = 7 - 2*x; // fine
+  end when;
 ```
 Here, variable y is held constant when the when-clause is de-activated and x is computed from
 the first equation using the value of y from the previous event instant.
@@ -1323,30 +1324,30 @@ When-clauses in equation sections can have only one branch. However, in algorith
 elsewhen branches are possible. This is useful, in order to define priorities between discrete
 actions, such as:
 ```Modelica
- Boolean open;
+  Boolean open;
 algorithm
- when h1 < hmax then
-   open := true;
+  when h1 < hmax then
+    open := true;
  elsewhen pushbutton then
-   open := false;
+    open := false;
  end when;
 ```
 Here, the condition `h1 < hmax` has higher priority as the condition "pushbutton", if both
 conditions become true at the same event instant. Similarly as for when-clauses in equation
 sections, the precise meaning of this when-clause in an algorithm can be expressed as:
 ```Modelica
- Boolean open(start = false);
- Boolean b1 (start = h1.start < hmax);
- Boolean b2 (start = pushbutton.start);
+  Boolean open(start = false);
+  Boolean b1 (start = h1.start < hmax);
+  Boolean b2 (start = pushbutton.start);
 algorithm
- open := pre(open);
- b1 := h1 < hmax;
- b2 := pusbutton;
- if edge(b1) then
-   open := true;
- elseif edge(b2) then
-   open := false;
- end when;
+  open := pre(open);
+  b1 := h1 < hmax;
+  b2 := pusbutton;
+  if edge(b1) then
+    open := true;
+  elseif edge(b2) then
+    open := false;
+  end if;
 ```
 Note, that this is a conceptual mapping and a Modelica translator may perform it more
 efficiently. In general, all discrete-time variables which are potentially assigned in an algorithm
@@ -1358,25 +1359,25 @@ The condition of a when-clause may be a vector expression. In this case the when
 activated whenever one of the elements of the vector condition becomes true. Example:
 ```Modelica
 model vectorwhen
- parameter Real A=1.5, w=6;
- Real u1, u2;
- Boolean b1, b2;
+  parameter Real A=1.5, w=6;
+  Real u1, u2;
+  Boolean b1, b2;
 equation
- u1 = A*Modelica.Math.sin(w*time);
- u2 = A*Modelica.Math.cos(w*time);
- when u1 > 0 or u2 > 0 then
-   b1 = not pre(b1);
- end when;
- when {u1 > 0, u2 > 0} then // vector condition
-   b2 = not pre(b2);
- end when;
+  u1 = A*Modelica.Math.sin(w*time);
+  u2 = A*Modelica.Math.cos(w*time);
+  when u1 > 0 or u2 > 0 then
+    b1 = not pre(b1);
+  end when;
+  when {u1 > 0, u2 > 0} then // vector condition
+    b2 = not pre(b2);
+  end when;
 end vectorwhen;
 ```
 The two when clauses are not equivalent as can be seen when applying the discussed mapping
 rule:
 ```Modelica
- b1 = if edge(u1 > 0 or u2 > 0) then not pre(b1) else pre(b1);
- b2 = if edge(u1 > 0) or edge(u2 > 0) then not pre(b2) else pre(b2);
+  b1 = if edge(u1 > 0 or u2 > 0) then not pre(b1) else pre(b1);
+  b2 = if edge(u1 > 0) or edge(u2 > 0) then not pre(b2) else pre(b2);
 ```
 If the conditions used in if-the-else expressions contain relations with dynamic variables, the
 corresponding derivative function f might not be continuous and have as many continuous partial
@@ -1389,8 +1390,8 @@ If the resulting if-then-else expression is smooth, the modeller has the possibi
 extra information to the integrator in order to avoid event handling and thus enhance efficiency.
 This can be done by embedding the corresponding relation in a function noEvent as follows.
 ```Modelica
-y = if noEvent(u > HighLimit) then HighLimit 
- else if noEvent(u < LowLimit) then LowLimit else u;
+  y = if noEvent(u > HighLimit) then HighLimit 
+    else if noEvent(u < LowLimit) then LowLimit else u;
 ```
 The noEvent() operator can only be applied in Real equations, but not in Boolean, Integer or
 String equations, in order that Boolean, Integer and String variables can change their value only
@@ -1450,12 +1451,12 @@ v = if s < 0 then 0 else s;
 The complete model of the ideal diode is then
 ```Modelica
 model IdealDiode "Ideal electrical diode" 
- extends OnePort;
+  extends OnePort;
 protected
- Real s;
+  Real s;
 equation 
-i = if s < 0 then s else 0;
-v = if s < 0 then 0 else s;
+  i = if s < 0 then s else 0;
+  v = if s < 0 then 0 else s;
 end IdealDiode;
 ```
 This technique is also appropriate to model ideal thyristors, hysteresis and ideal friction.
@@ -1468,23 +1469,23 @@ example shows the needs to transfer information from one set of state variables 
 another (pos, vel) at an event. Consider the following description with a parameter Broken.
 ```Modelica
 model BreakingPendulum 
- parameter Real m=1, g=9.81, L=0.5;
- parameter Boolean Broken;
- input Real u;
- Real pos[2], vel[2];
- constant Real PI=3.141592653589793;
- Real phi(start=PI/4), phid;
+  parameter Real m=1, g=9.81, L=0.5;
+  parameter Boolean Broken;
+  input Real u;
+  Real pos[2], vel[2];
+  constant Real PI=3.141592653589793;
+  Real phi(start=PI/4), phid;
 equation
- vel = der(pos);
- if not Broken then
-   // Equations of pendulum
-   pos = {L*sin(phi), -L*cos(phi)};
-   phid = der(phi);
-   m*L*L*der(phid) + m*g*L*sin(phi) = u;
+  vel = der(pos);
+  if not Broken then
+    // Equations of pendulum
+    pos = {L*sin(phi), -L*cos(phi)};
+    phid = der(phi);
+    m*L*L*der(phid) + m*g*L*sin(phi) = u;
  else;
-   // Equations of free flying mass
-   m*der(vel) = m*{0, -g}; 
- end if;
+    // Equations of free flying mass
+    m*der(vel) = m*{0, -g}; 
+  end if;
 end BreakingPendulum;
 ```
 This problem is non-trivial to simulate if Broken would be a dynamic variable because the
@@ -1502,13 +1503,13 @@ pendulum, by reformulating the problem into a form where no causality change tak
 conditional block models:
 ```Modelica
  record PendulumData
-   parameter Real m, g, L;
+    parameter Real m, g, L;
  end PendulumData;
 
  partial model BasePendulum
-   PendulumData p;
-   input Real u;
-   output Real pos[2], vel[2];
+    PendulumData p;
+    input Real u;
+    output Real pos[2], vel[2];
  end BasePendulum;
 
  block Pendulum
@@ -1549,26 +1550,26 @@ the same physical variable is represented by several model variables. In some ca
 the breaking pendulum, it is possible to avoid this drawback:
 ```Modelica
 model BreakingPendulum3 
- parameter Real m=1, g=9.81;
- input Boolean Broken;
- input Real u;
- Real pos[2], vel[2];
- constant Real PI=3.141592653589793;
- Real phi(start=PI/4), phid;
- Real L(start=0.5), Ldot;
+  parameter Real m=1, g=9.81;
+  input Boolean Broken;
+  input Real u;
+  Real pos[2], vel[2];
+  constant Real PI=3.141592653589793;
+  Real phi(start=PI/4), phid;
+  Real L(start=0.5), Ldot;
 equation
- pos = {L*sin(phi), -L*cos(phi)};
- vel = der(pos);
- phid = der(phi);
- Ldot = der(L);
- if not Broken then
-   // Equations of pendulum
-   m*der(phid) + m*g*L*sin(phi) = u;
-   der(Ldot) = 0;
- else
-   // Equations of free flying mass
-   m*der(vel) = m*{0, -g};
- end if;
+  pos = {L*sin(phi), -L*cos(phi)};
+  vel = der(pos);
+  phid = der(phi);
+  Ldot = der(L);
+  if not Broken then
+    // Equations of pendulum
+    m*der(phid) + m*g*L*sin(phi) = u;
+    der(Ldot) = 0;
+  else
+    // Equations of free flying mass
+    m*der(vel) = m*{0, -g};
+  end if;
 end BreakingPendulum3;
 ```
 The trick was to use complete polar coordinates including the length, L and to give a differential
@@ -1587,22 +1588,22 @@ to n connections, Modelica offers a convenient modeling mechanism with the inner
 language elements. Basically, these two elements are used in the following way:
 ```Modelica
 model Component
- outer Real T0; // temperature T0 defined outside of Component
- Real T;
+  outer Real T0; // temperature T0 defined outside of Component
+  Real T;
 equation
- T = T0;
+  T = T0;
 end Component;
 
 model Environment
- inner Real T0; // actual environment temperature T0
- Component c1, c2; // c1.T0=c2.T0=T0
- parameter Real a=1;
+  inner Real T0; // actual environment temperature T0
+  Component c1, c2; // c1.T0=c2.T0=T0
+  parameter Real a=1;
 equation
- T0 = Modelica.Math.sin(a*time);
+  T0 = Modelica.Math.sin(a*time);
 end Environment;
 
 model SeveralEnvironments
- Environment e1(a=1), e2(a=2)
+  Environment e1(a=1), e2(a=2)
 end SeveralEnvironments
 ```
 If a variable or a component is declared as outer, as in model Component, the actual instance is
@@ -1620,19 +1621,19 @@ board to the fixed-temperature environment shall be modeled. This requires to fi
 connector for 1-dimensional heat flow:
 ```Modelica
 connector HeatCut
- Modelica.SIunits.Temp_K T "temperature in [K]";
- flow Modelica.SIunits.HeatFlowRate q "heat flux";
+  Modelica.SIunits.Temp_K T "temperature in [K]";
+  flow Modelica.SIunits.HeatFlowRate q "heat flux";
 end HeatCut;
 ```
 All components which generate heat need a reference to the environment heat connector:
 ```Modelica
 model Component
- outer HeatCut environment; // reference to environment
- HeatCut heat; // heat connector of component
- ...
+  outer HeatCut environment; // reference to environment
+  HeatCut heat; // heat connector of component
+  ...
 equation
- connect(heat, environment);
- ...
+  connect(heat, environment);
+  ...
 end Component;
 ```
 Note, that `outer HeatCut environment` is a reference to the declaration of connector
@@ -1661,8 +1662,8 @@ moving in an a-priori unknown gravity field:
 A generic gravity field shall be defined by the partial function gravityInterface
 ```Modelica
 partial function gravityInterface
- input Real r[3] "position";
- output Real g[3] ”gravity acceleration";
+  input Real r[3] "position";
+  output Real g[3] ”gravity acceleration";
 end gravityInterface;
 ```
 where only the interface of the function is defined. Since it is a partial function, this function
@@ -1855,13 +1856,13 @@ The "unqualified" variant is useful, to arrive at the standard notation for some
 such as:
 ```Modelica
 model SineVoltageSource
- import Modelica.Constants.*; // to access Modelica.Constants.pi
- import Modelica.Math.*; // to access Modelica.Math.sin
- extends Modelica.Electrical.Analog.Interfaces.OnePort;
- parameter Real A=220 "amplitude";
- parameter Real f=50 "frequency";
+  import Modelica.Constants.*; // to access Modelica.Constants.pi
+  import Modelica.Math.*; // to access Modelica.Math.sin
+  extends Modelica.Electrical.Analog.Interfaces.OnePort;
+  parameter Real A=220 "amplitude";
+  parameter Real f=50 "frequency";
 equation
- v = A*sin(2*pi*f*time);
+  v = A*sin(2*pi*f*time);
 end SineVoltageSource;
 ```
 
@@ -1882,10 +1883,10 @@ The built-in "Real" type of Modelica has additional attributes to define unit pr
 variables:
 ```Modelica
 type Real 
- parameter StringType quantity = "";
- parameter StringType unit = "" "unit in equations"; 
- parameter StringType displayUnit = "" "default display unit";
- ...
+  parameter StringType quantity = "";
+  parameter StringType unit = "" "unit in equations"; 
+  parameter StringType displayUnit = "" "default display unit";
+  ...
 end Real;
 ```
 // define quantity types
@@ -1955,25 +1956,25 @@ different unit by redefinition of the quantity type. Example:
 ```Modelica
 type Voltage = Real(final quantity="Voltage", final unit="V");
 model SineSignal
- import Modelica.Constants.*;
- import Modelica.Math.*;
- import SI=Modelica.SIunits;
- parameter Real freq (unit="Hz");
- parameter SI.Angle phi; 
- replaceable type SineType = Real;
- parameter SineType Amplitude;
- output SineType y;
+  import Modelica.Constants.*;
+  import Modelica.Math.*;
+  import SI=Modelica.SIunits;
+  parameter Real freq (unit="Hz");
+  parameter SI.Angle phi; 
+  replaceable type SineType = Real;
+  parameter SineType Amplitude;
+  output SineType y;
 equation
- y = Amplitude*sin(2*pi*freq*time + phi);
+  y = Amplitude*sin(2*pi*freq*time + phi);
 end SineSignal;
 
 model Circuit
- import SI=Modelica.SIunits;
- SineSignal sig(redeclare SineType = SI.Voltage);
- VoltageSource Vsource;
- ...
+  import SI=Modelica.SIunits;
+  SineSignal sig(redeclare SineType = SI.Voltage);
+  VoltageSource Vsource;
+  ...
 equation
- connect(sig.y, Vsource.in);
+  connect(sig.y, Vsource.in);
 end Circuit;
 ```
 In a block diagram library there is a general sine signal generator. When it is used to generate a
@@ -2017,7 +2018,7 @@ model Resistor
 equation
   R*p.i = p.v - n.v;
   n.i = p.i;
- annotation (Icon(
+  annotation (Icon(
       graphics={
         Rectangle(extent={{-70,-30},{70,30}}, lineColor={28,108,200}),
         Text(extent={{-100,55},{100,110}}, textString="%name=%R"),
@@ -2074,18 +2075,18 @@ user a list of alternative models which can be used for redeclaration. This can 
 with the predefined annotation "choices":
 ```Modelica
 replaceable model MyResistor=Resistor
- annotation(choices(
- choice(redeclare MyResistor=lib2.Resistor(a={2}) "Resistor 1"),
- choice(redeclare MyResistor=lib2.Resistor2 "Resistor 2")));
+  annotation(choices(
+    choice(redeclare MyResistor=lib2.Resistor(a={2}) "Resistor 1"),
+    choice(redeclare MyResistor=lib2.Resistor2 "Resistor 2")));
 replaceable Resistor Load(R=2) extends OnePort
- annotation(choices(
- choice(redeclare lib2.Resistor Load(a={2}) "Resistor"),
- choice(redeclare Capacitor Load(L=3) "Capacitor")));
+  annotation(choices(
+    choice(redeclare lib2.Resistor Load(a={2}) "Resistor"),
+    choice(redeclare Capacitor Load(L=3) "Capacitor")));
 replaceable FrictionFunction a(func=exp) extends Friction
- annotation(choices(
- choice(redeclare ConstantFriction a(c=1) "Constant Friction"),
- choice(redeclare TableFriction a(table="...")"Table-Friction"),
- choice(redeclare FunctionFriction a(func=exp) "Exp-Friction"))));
+  annotation(choices(
+    choice(redeclare ConstantFriction a(c=1) "Constant Friction"),
+    choice(redeclare TableFriction a(table="...")"Table-Friction"),
+    choice(redeclare FunctionFriction a(func=exp) "Exp-Friction"))));
 ```
 The "choices" annotation contains modifiers on choice, where each of them indicates a suitable
 redeclaration or modifications of the element. The string comments on the choice declaration can
@@ -2096,14 +2097,14 @@ statement of the corresponding choice is executed.
 This annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumerated types, and simple variables. Example:
 ```Modelica
 type controllerType=Integer(min=1,max=3)
- annotation(choices(
- choice=1 "P",
- choice=2 "PI",
- choice=3 "PID"));
+  annotation(choices(
+    choice=1 "P",
+    choice=2 "PI",
+    choice=3 "PID"));
 
 model test
- parameter controllerType c;
- ...
+  parameter controllerType c;
+  ...
 end test;
 test t;
 ```
@@ -2149,8 +2150,8 @@ Basic documentation functionality is available in Modelica. This consists of an 
 attribute Documentation which is further structured into key/text pairs.
 ```Modelica
 annotation (Documentation(
- key1 = "Text string",
- key2 = "Text string"
+  key1 = "Text string",
+  key2 = "Text string"
  ));
 ```
 Currently, no further detail on structuring information is given. The information is given as plain
