@@ -308,7 +308,7 @@ is more convenient to make a definition of a filter once and create two instance
 declaring a class. A class declaration contains a list of component declarations and a list of
 equations preceded by the keyword equation. An example of a low pass filter class is shown
 below.
-```
+```Modelica
 class LowPassFilter 
  parameter Real T=1;
  Real u, y(start=1);
@@ -318,7 +318,7 @@ end LowPassFilter;
 ```
 The model class can be used to create two instances of the filter with different time constants and
 "connecting" them together as follows
-```
+```Modelica
 class FiltersInSeries 
  LowPassFilter F1(T=2), F2(T=3);
 equation
