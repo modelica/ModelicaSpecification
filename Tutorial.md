@@ -2222,11 +2222,11 @@ Science n. 303, Springer-Verlag, 1988.
 - Cardelli L.: "Typeful Programming", in E. J. Neuhold and M. Paul (Eds.): Formal description of
 Programming Concepts, Springer-Verlag, 1991. Also published as SRC Research Report 45,
 Digital Equipment Corporation.
-- Elmqvist H., F.E. Cellier, and M. Otter: ‘‘Object-oriented modeling of hybrid systems.’’ In
+- Elmqvist H., F.E. Cellier, and M. Otter: "Object-oriented modeling of hybrid systems." In
 Proceedings of European Simulation Symposium, ESS’93. The Society of Computer Simulation,
 October 1993.
-- Franke R.: “Modeling and Optimal Design of a Central Solar Heating Plant with Heat Storage
-in the Ground Using Modelica”, Eurosim '98 Simulation Congress, Helsinki, Finland, April 14-
+- Franke R.: "Modeling and Optimal Design of a Central Solar Heating Plant with Heat Storage
+in the Ground Using Modelica", Eurosim '98 Simulation Congress, Helsinki, Finland, April 14-
 15, 1998.
 - Kågedal D.: "A Natural Semantics specification for the equation-based modeling language
 Modelica," LiTH-IDA-Ex-98/48, Linköping University, Sweden, 1998.
