@@ -2127,8 +2127,7 @@ aspects. The following aspects should typically be recognized:
 
 History information
 : Major milestones, like creation, important changes, release into public accessibility should be
-recorded. Information to store are the author, date and a brief description. This functionality
-is comparable with version control of software, using tools such as SCCS or RCS. If a
+recorded. Information to store are the author, date and a brief description. If a
 specific modeling procedure is used, the mile stones of such a procedure can be recorded in
 this part.
 
