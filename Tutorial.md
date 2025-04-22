@@ -571,7 +571,7 @@ equation
 end TempResistor;
 ```
 It is not possible to extend this model from the ideal resistor model `Resistor` discussed in
-Chapter 2, because the equation of the `Resistor` class needs to be replaced by a new equation.
+[Chapter 2](#partial-models-and-inheritance), because the equation of the `Resistor` class needs to be replaced by a new equation.
 Still, the `TempResistor` is a subtype of `Resistor` because it contains all the public components
 of `Resistor`.
 
