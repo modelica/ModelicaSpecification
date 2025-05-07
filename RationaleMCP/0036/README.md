@@ -25,7 +25,7 @@ All authors of this MCP or their organizations have signed the "Modelica Contrib
 
 # Rationale
 See previous discussion https://github.com/modelica/ModelicaSpecification/issues/2285
-and paper ttps://doi.org/10.3384/ecp17132517
+and paper https://doi.org/10.3384/ecp17132517
 
 A specific syntax is proposed.
 
