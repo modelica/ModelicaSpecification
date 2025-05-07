@@ -19,6 +19,7 @@ and have the state-updating as part of the model (and not as some tool-specific 
 | 2022-05-03 | Hans Olsson. Update specification text, clarified that ready |
 | 2023-08-30 | Hans Olsson. Review comments |
 | 2025-04-14 | Hans Olsson. Fix reference |
+| 2025-05-07 | Hans Olsson. Minor update |
 
 # Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement". 
@@ -118,6 +119,18 @@ This makes it clear that the variable is an actual state, just integrated differ
 Note that even if the proposed syntax reuses the `reinit` keyword, it avoids the problems with the alternative `reinit(x, xs)` proposal.
 
 Step (3) requires that it is a state (guaranteed by (1)), and that it is a continuous variable in a "Clocked Discretized Continuous-Time Partition", as stated at the start.
+
+## Possibly extension to continuous-time
+
+It may be possible to generalize this to non-clocked partitions.
+This is not proposed at the moment, but included to show that a possible generalization.
+
+The meaning of Real x=reinit(xs); in a non-clocked partition is then:
+1. StateSelect.always is set for the variable x.
+2. Therefore it is a state and thus participate in the usual index reduction and state selection.
+3. During the simulation the state is equal to the new value xs during each model evaluation, instead of the solver integrating its derivative.
+(The "derivative" may still exist, but the relation between state and derivative no longer holds.)
+5. This declaration equation is ignored for the equation count.
 
 # Backwards Compatibility
 Will depend on exact syntax. 
