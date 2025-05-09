@@ -6,6 +6,7 @@ In this process, the data and behavior of the original class in the form of vari
 In fact, the inherited contents is copied from the superclass into the derived class, but before copying certain operations, such as type expansion, checking, and modification, are performed on the inherited contents when appropriate.
 This chapter describes the inheritance concept in Modelica, together with the related concepts modification and redeclaration.
 
+
 \section{Inheritance -- Extends Clause}\label{inheritance-extends-clause}
 
 The class \lstinline!A! is called a \firstuse{base class} of \lstinline!B!, if \lstinline!B! extends \lstinline!A!.
@@ -18,19 +19,21 @@ It is an unnamed element of a class definition that uses a name and an optional 
 The syntax of the \lstinline!extends!-clause is as follows:
 \begin{lstlisting}[language=grammar]
 extends-clause :
-   extends name [ class-modification ] [annotation]
+   extends name [ class-or-inheritance-modification ] [ annotation-clause ]
 \end{lstlisting}%
 \indexinline{extends}
 The name of the base class is looked up in the partially flattened enclosing class (\cref{enclosing-classes}) of the \lstinline!extends!-clause.
-The found base class is flattened with a new environment and the partially flattened enclosing class of the \lstinline!extends!-clause.
+If the optional \lstinline[language=grammar]!class-or-inheritance-modification! contains any \lstinline[language=grammar]!inheritance-modification! the base class is then modified as described in \cref{selective-model-extension}.
+The possibly modified found base class is flattened with a new environment and the partially flattened enclosing class of the \lstinline!extends!-clause.
 The new environment is the result of merging
 \begin{itemize}
 \item
   arguments of all enclosing class environments that match names in the flattened base class
 \item
-  the optional \lstinline!class-modification! of the \lstinline!extends!-clause
+  a \lstinline[language=grammar]!class-modification! constructed from all \lstinline!argument! of the \lstinline[language=grammar]!inheritance-modification!
 \end{itemize}
 in that order.
+
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -71,19 +74,14 @@ yields an instance with \lstinline!bcomp.b = 3!, which overrides \lstinline!b = 
 The declaration elements of the flattened base class shall either:
 \begin{itemize}
 \item
-  Not already exist in the partially flattened enclosing class
-  (i.e., have different names).
+  Not already exist in the partially flattened enclosing class (i.e., have different names).
 \item
   The new element is a long form of redeclare or uses the \lstinline!class extends A! syntax, see \cref{redeclaration}.
 \item
-  Be exactly identical to any element of the flattened enclosing class
-  with the same name and the same level of protection (public or
-  protected) and same contents. In this case, the first element in order
-  (can be either inherited or local) is kept. It is recommended to give
-  a warning for this case; unless it can be guaranteed that the
-  identical contents will behave in the same way.
+  Be exactly identical to any element of the flattened enclosing class with the same name and the same level of protection (public or protected) and same contents.
+  In this case, the first element in order (can be either inherited or local) is kept.
+  It is recommended to give a warning for this case; unless it can be guaranteed that the identical contents will behave in the same way.
 \end{itemize}
-
 Otherwise the model is incorrect.
 
 \begin{nonnormative}
@@ -98,19 +96,17 @@ function B
   extends A;
   input Real a;
 end B;
-// The inputs of B are {a, b} in that order; the "input Real a;" is ignored.
 \end{lstlisting}
+The inputs of \lstinline!B! are $\{\text{\lstinline!a!}, \text{\lstinline!b!}\}$ in that order; the \lstinline!input Real a;! is ignored.
 \end{nonnormative}
 
-Equations of the flattened base class that are syntactically equivalent
-to equations in the flattened enclosing class are discarded. This
-feature is deprecated, and it is recommended to give a warning when
-discarding them and for the future give a warning about all forms of
-equivalent equations due to inheritance.
+Equations of the flattened base class that are syntactically equivalent to equations in the flattened enclosing class are discarded.
+This feature is deprecated, and it is recommended to give a warning when discarding them and for the future give a warning about all forms of equivalent equations due to inheritance.
 
 \begin{nonnormative}
 Equations that are mathematically equivalent but not syntactically equivalent are not discarded, hence yield an overdetermined system of equations.
 \end{nonnormative}
+
 
 \subsection{Multiple Inheritance}\label{multiple-inheritance}
 
@@ -120,11 +116,13 @@ Multiple inheritance is possible since multiple \lstinline!extends!-clauses can 
 As stated in \cref{the-inherited-contents-of-the-element}, it is illegal for an \lstinline!extends!-clause to influence the lookup of the class name of any \lstinline!extends!-clause in the same class definition.
 \end{nonnormative}
 
+
 \subsection{Inheritance of Protected and Public Elements}\label{inheritance-of-protected-and-public-elements}
 
 If an \lstinline!extends!-clause is used under the \lstinline!protected! heading, all elements of the base class become protected elements of the current class.
 If an \lstinline!extends!-clause is a public element, all elements of the base class are inherited with their own protection.
 The eventual headings \lstinline!protected! and \lstinline!public! from the base class do not affect the consequent elements of the current class (i.e., headings \lstinline!protected! and \lstinline!public! are not inherited).
+
 
 \subsection{Restrictions on the Kind of Base Class}\label{restrictions-on-the-kind-of-base-class}
 
@@ -139,44 +137,43 @@ The following table shows which kind of specialized class can be used in an \lst
     \hline
                       & \multicolumn{12}{c|}{\tablehead{Base Class}}                                                                                                                                                                                                                                                                                                                          \\
     \hline
-     \tablehead{Derived} & \multirow{2}{*}{\lstinline!package!} & \multirow{2}{*}{\lstinline!operator!} & \multirow{2}{*}{\lstinline!function!}                  & \lstinline!operator!             & \multirow{2}{*}{\lstinline!type!}    & \multirow{2}{*}{\lstinline!record!}  & \lstinline!operator!                 & \lstinline!expandable!               & \multirow{2}{*}{\lstinline!connector!} & \multirow{2}{*}{\lstinline!block!}   & \multirow{2}{*}{\lstinline!model!} & \multirow{2}{*}{\lstinline!class!}                     \\
-     \tablehead{Class}   &                          &                           &                                            & \lstinline!function!             &                          &                          & \lstinline!record!                   & \lstinline!connector!                &                            &                          &                        &                                            \\
+     \tablehead{Derived} & \multirow{2}{*}{\lstinline!package!} & \multirow{2}{*}{\lstinline!operator!} & \multirow{2}{*}{\lstinline!function!}                  & {\lstinline!operator!}             & \multirow{2}{*}{\lstinline!type!}    & \multirow{2}{*}{\lstinline!record!}  & {\lstinline!operator!}                 & {\lstinline!expandable!}               & \multirow{2}{*}{\lstinline!connector!} & \multirow{2}{*}{\lstinline!block!}   & \multirow{2}{*}{\lstinline!model!} & \multirow{2}{*}{\lstinline!class!}                     \\
+     \tablehead{Class}   &                          &                           &                                            & {\lstinline!function!}             &                          &                          & {\lstinline!record!}                   & {\lstinline!connector!}                &                            &                          &                        &                                            \\
     \hline
     \hline
-    \lstinline!package!           & yes                      &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!package!}           & yes                      &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!operator!          &                          & yes                       &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!operator!}          &                          & yes                       &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!function!          &                          &                           & yes                                        &                      &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!function!}          &                          &                           & yes                                        &                      &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!operator!          &                          &                           & \cellcolor{lightgray}                      & \multirow{2}{*}{yes} &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}                      \\
-    \lstinline!function!          &                          &                           & \multirow{-2}{*}{\cellcolor{lightgray}yes} &                      &                          &                          &                          &                          &                            &                          &                        & \multirow{-2}{*}{\cellcolor{lightgray}yes}  \\
+    {\lstinline!operator!}          &                          &                           & \cellcolor{lightgray}                      & \multirow{2}{*}{yes} &                          &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}                      \\
+    {\lstinline!function!}          &                          &                           & \multirow{-2}{*}{\cellcolor{lightgray}yes} &                      &                          &                          &                          &                          &                            &                          &                        & \multirow{-2}{*}{\cellcolor{lightgray}yes}  \\
     \hline
-    \lstinline!type!              &                          &                           &                                            &                      & yes                      &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!type!}              &                          &                           &                                            &                      & yes                      &                          &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!record!            &                          &                           &                                            &                      &                          & yes                      &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!record!}            &                          &                           &                                            &                      &                          & yes                      &                          &                          &                            &                          &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!operator!          &                          &                           &                                            &                      &                          &                          & \multirow{2}{*}{yes}     &                          &                            &                          &                        & \cellcolor{lightgray}                      \\
-    \lstinline!record!            &                          &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \multirow{-2}{*}{\cellcolor{lightgray}yes} \\
+    {\lstinline!operator!}          &                          &                           &                                            &                      &                          &                          & \multirow{2}{*}{yes}     &                          &                            &                          &                        & \cellcolor{lightgray}                      \\
+    {\lstinline!record!}            &                          &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \multirow{-2}{*}{\cellcolor{lightgray}yes} \\
     \hline
-    \lstinline!expandable!        &                          &                           &                                            &                      &                          &                          &                          & \multirow{2}{*}{yes}     &                            &                          &                        & \cellcolor{lightgray}                      \\
-    \lstinline!connector!         &                          &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \multirow{-2}{*}{\cellcolor{lightgray}yes} \\
+    {\lstinline!expandable!}        &                          &                           &                                            &                      &                          &                          &                          & \multirow{2}{*}{yes}     &                            &                          &                        & \cellcolor{lightgray}                      \\
+    {\lstinline!connector!}         &                          &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & \multirow{-2}{*}{\cellcolor{lightgray}yes} \\
     \hline
-    \lstinline!connector!         &                          &                           &                                            &                      & \cellcolor{lightgray}yes & \cellcolor{lightgray}yes & \cellcolor{lightgray}yes &                          & yes                        &                          &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!connector!}         &                          &                           &                                            &                      & \cellcolor{lightgray}yes & \cellcolor{lightgray}yes & \cellcolor{lightgray}yes &                          & yes                        &                          &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!block!             &                          &                           &                                            &                      &                          & \cellcolor{lightgray}yes &                          &                          &                            & yes                      &                        & \cellcolor{lightgray}yes                   \\
+    {\lstinline!block!}             &                          &                           &                                            &                      &                          & \cellcolor{lightgray}yes &                          &                          &                            & yes                      &                        & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!model!             &                          &                           &                                            &                      &                          & \cellcolor{lightgray}yes &                          &                          &                            & \cellcolor{lightgray}yes & yes                    & \cellcolor{lightgray}yes                   \\
+    {\lstinline!model!}             &                          &                           &                                            &                      &                          & \cellcolor{lightgray}yes &                          &                          &                            & \cellcolor{lightgray}yes & yes                    & \cellcolor{lightgray}yes                   \\
     \hline
-    \lstinline!class!             &                          &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & yes                                        \\
+    {\lstinline!class!}             &                          &                           &                                            &                      &                          &                          &                          &                          &                            &                          &                        & yes                                        \\
     \hline
 \end{tabular}
 % Close resizebox.
 \ifpdf}\else\fi%
 \end{center}
 
-If a derived class is inherited from another type of specialized class,
-then the result is a specialized class of the derived class type.
+If a derived class is inherited from another type of specialized class, then the result is a specialized class of the derived class type.
 
 \begin{nonnormative}
 For example, if a \lstinline!block! inherits from a \lstinline!record!, then the result is a \lstinline!block!.
@@ -189,13 +186,10 @@ A \lstinline!class! may only contain class definitions, annotations, and \lstinl
 It is recommended to use the most specific specialized class.
 \end{nonnormative}
 
-The specialized classes \lstinline!package!, \lstinline!operator!, \lstinline!function!,
-\lstinline!type,! \lstinline!record!,
-\lstinline!operator record!, and \lstinline!expandable connector! can only be derived from their
-own kind and from \lstinline!class!.
+The specialized classes \lstinline!package!, \lstinline!operator!, \lstinline!function!, \lstinline!type,! \lstinline!record!, \lstinline!operator record!, and \lstinline!expandable connector! can only be derived from their own kind and from \lstinline!class!.
 
 \begin{nonnormative}
-E.g.\ a package can only be base class for packages.
+E.g., a package can only be base class for packages.
 All other kinds of classes can use the \lstinline!import!-clause to use the contents of a package.
 \end{nonnormative}
 
@@ -223,19 +217,20 @@ end ModelB;
 \end{lstlisting}
 \end{example}
 
+
 \subsection{Require Transitively Non-Replaceable}\label{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}\label{require-transitively-non-replaceable}
 
 The class name used after \lstinline!extends! for base classes and for constraining classes must use a class reference considered transitively non-replaceable, see definition in \cref{transitively-non-replaceable}.
 For a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! the class must use a class reference considered transitively non-replaceable.
 
 \begin{nonnormative}
-The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e.\ \lstinline!redeclare model extends M $\ldots$! where \lstinline!M! must be an inherited replaceable class.
+The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e., \lstinline!redeclare model extends M $\ldots$! where \lstinline!M! must be an inherited replaceable class.
 \end{nonnormative}
 
 \begin{nonnormative}
-The rule for a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! implies that constraining classes are always transitively non-replaceable -- both
-if explicitly given or implicitly by the declaration.
+The rule for a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! implies that constraining classes are always transitively non-replaceable -- both if explicitly given or implicitly by the declaration.
 \end{nonnormative}
+
 
 \section{Modifications}\label{modifications}
 
@@ -248,12 +243,12 @@ There are three kinds of constructs in the Modelica language in which modificati
 \item
   variable declarations
 \item
-  short class declarations
+  short class definitions
 \item
   \lstinline!extends!-clauses
 \end{itemize}
 
-A modifier modifies one or more declarations from a class by changing some aspect(s) of the declarations.
+A modifier modifies one or more declarations (definitions) from a class by changing some aspect(s) of the declarations (definitions).
 The most common kind of modifier just changes the \emph{default value} or the \lstinline!start!-attribute in a binding equation; the value and/or \lstinline!start!-attribute should be compatible with the variable according to \cref{type-compatible-expressions}.
 
 An \firstuse{element modification} overrides the declaration equation in the class used by the instance generated by the modified element.
@@ -268,9 +263,8 @@ Real altitude(start = 59404);
 A modification (e.g., \lstinline!C1 c1(x = 5)!) is called a \firstuse{modification equation}, if the modified variable (here: \lstinline!c1.x!) is a non-parameter variable.
 
 \begin{nonnormative}
-The modification equation is created, if the modified component (here: \lstinline!c1!) is also created (see \cref{class-declarations}). In most cases
-a modification equation for a non-parameter variable requires that the variable was declared with a declaration equation, see \cref{balanced-models};
-in those cases the declaration equation is replaced by the modification equation.
+The modification equation is created, if the modified component (here: \lstinline!c1!) is also created (see \cref{class-declarations}).
+In most cases a modification equation for a non-parameter variable requires that the variable was declared with a declaration equation, see \cref{balanced-models}; in those cases the declaration equation is replaced by the modification equation.
 \end{nonnormative}
 
 A more dramatic change is to modify the \emph{type} and/or the \emph{prefixes} and possibly the \emph{dimension sizes} of a declared element.
@@ -306,9 +300,11 @@ end D;
 
 When present, the description-string of a modifier overrides the existing description.
 
+
 \subsection{Syntax of Modifications and Redeclarations}\label{syntax-of-modifications-and-redeclarations}
 
 The syntax is defined in the grammar, \cref{modification}.
+
 
 \subsection{Modification Environment}\label{modification-environment}
 
@@ -319,9 +315,12 @@ The modification environment is built by merging class modifications, where oute
 This should not be confused with \lstinline!inner outer! prefixes described in \cref{instance-hierarchy-name-lookup-of-inner-declarations}.
 \end{nonnormative}
 
+
 \subsection{Merging of Modifications}\label{merging-of-modifications}
 
-Merging of modifiers means that outer modifiers override inner modifiers.  The merging is hierarchical, and a value for an entire non-simple component overrides value modifiers for all components, and it is an error if this overrides a \lstinline!final! prefix for a component, or if value for a simple component would override part of the value of a non-simple component. When merging modifiers each modification keeps its own \lstinline!each! prefix.
+Merging of modifiers means that outer modifiers override inner modifiers.
+The merging is hierarchical, and a value for an entire non-simple component overrides value modifiers for all components, and it is an error if this overrides a \lstinline!final! prefix for a component, or if value for a simple component would override part of the value of a non-simple component.
+When merging modifiers each modification keeps its own \lstinline!each! prefix.
 
 \begin{example}
 The following larger example demonstrates several aspects:
@@ -345,6 +344,9 @@ class C3
   extends C2;
 end C3;
 \end{lstlisting}
+The modification environment of the declaration of \lstinline!t! is
+(\lstinline!x = 3!).
+
 The following example demonstrates overriding part of non-simple component:
 \begin{lstlisting}[language=modelica]
 record A
@@ -357,12 +359,11 @@ model B
 end B;
 
 model C
-  B b1(a(x = 4)); // Error since attempting to override value for a.x when a has a value.
+  B b1(a(x = 4)); // Error: Cannot override value for a.x when a has a value.
 end C;
 \end{lstlisting}
 
-The modification environment of the declaration of \lstinline!t! is
-(\lstinline!x = 3!). The modification environment is built by merging class modifications, as shown by:
+The modification environment is built by merging class modifications, as shown by:
 \begin{lstlisting}[language=modelica]
 class C1
   parameter Real a;
@@ -388,10 +389,8 @@ class C4
 end C4;
 \end{lstlisting}
 
-Outer modifications override inner modifications, e.g., \lstinline!b = 66!
-overrides the nested class modification of extends \lstinline!C2(b = 6)!.
-This is known as merging of modifications: merge\lstinline!((b = 66), (b = 6))!
-becomes \lstinline!(b = 66)!.
+Outer modifications override inner modifications, e.g., \lstinline!b = 66! overrides the nested class modification of extends \lstinline!C2(b = 6)!.
+This is known as merging of modifications: merge\lstinline!((b = 66), (b = 6))! becomes \lstinline!(b = 66)!.
 
 A flattening of class \lstinline!C4! will give an object with the following variables:
 \begin{center}
@@ -400,23 +399,28 @@ A flattening of class \lstinline!C4! will give an object with the following vari
 \tablehead{Variable} & \tablehead{Default value}\\
 \hline
 \hline
-\lstinline!x1! & \textit{none}\\ % Look of \emph won't be as expected inside example.
-\lstinline!x2! & 22\\
-\lstinline!x3.a! & 33\\
-\lstinline!x4.b! & 4\\
-\lstinline!x4.c! & 44\\
-\lstinline!x5.a! & \lstinline!x3.a!\\
-\lstinline!a! & 55\\
-\lstinline!b! & 66\\
-\lstinline!c! & 77\\
+{\lstinline!x1!} & \textit{none}\\ % Look of \emph won't be as expected inside example.
+{\lstinline!x2!} & 22\\
+{\lstinline!x3.a!} & 33\\
+{\lstinline!x4.b!} & 4\\
+{\lstinline!x4.c!} & 44\\
+{\lstinline!x5.a!} & {\lstinline!x3.a!}\\
+{\lstinline!a!} & 55\\
+{\lstinline!b!} & 66\\
+{\lstinline!c!} & 77\\
 \hline
 \end{tabular}
 \end{center}
 \end{example}
 
+
 \subsection{Single Modification}\label{single-modification}
 
-Two arguments of a modification shall not modify the same element, attribute, or description-string.  When using qualified names the different qualified names starting with the same identifier are merged into one modifier.  If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
+Two arguments of a modification shall not modify the same element, attribute, or description-string.
+When using qualified names the different qualified names starting with the same identifier are merged into one modifier.
+This merged modifier can be described as a purely syntactic rewriting to an equivalent modifier, except in the case of replaceable redeclarations without a constraining type, see \cref{redeclaration}.
+The latter is described in the example below.
+If a modifier with a qualified name has the \lstinline!each! or \lstinline!final! prefix, that prefix is only seen as applied to the final part of the name.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -432,6 +436,11 @@ class C3
   // Ok, different attributes designated (unit, displayUnit and value)
   // identical to:
   C4 b(x(final unit = "V", displayUnit = "mV") = 5.0));
+
+  C4 c(final x, final x.unit = "V", x.displayUnit = "mV");
+  // OK, different attributes and "final x" in itself is OK,
+  // identical to (the final on unit is redundant):
+  C4 d(final x(final unit = "V", displayUnit = "mV"));
 end C3;
 \end{lstlisting}
 
@@ -450,7 +459,46 @@ m1(r = 1.5, r(start = 2.0))
 m1(r = 1.6, r "x")
 m1(r = R(), r(y(min = 2)))
 \end{lstlisting}
+
+Modifiers can be merged for non-replaceable redeclarations, or replaceable redeclarations with a constraining type, see \cref{redeclaration}.
+\begin{lstlisting}[language=modelica]
+model Test
+  model A
+    replaceable Real x = 1;
+  end A;
+
+  A a(redeclare Real x, x.start = 2);
+  // Identical to A a(redeclare Real x(start=2));
+  A a(redeclare replaceable Real x constrainedby Real, x.start = 2);
+  // Identical to A a(redeclare Real x constrainedby Real(start=2));
+end Test;
+\end{lstlisting}
+
+For replaceable redeclarations without a constraining type the merging is not a local syntactic rewrite as it requires the constraining type, see \cref{redeclaration}.
+\begin{lstlisting}[language=modelica]
+model Test
+  partial model Base
+    parameter Real p;
+  end Base;
+
+  model Implementation
+    extends Base;
+    parameter Real q;
+  end Implementation;
+
+  model A
+    replaceable Base b constrainedby Base(p=1);
+  end A;
+
+  A a(redeclare replaceable Implementation b, b.q=1);
+  // This is treated the same as
+  // A a(redeclare replaceable Implementation b constrainedby Base(q=1));
+  // This is no longer a local syntactic rewrite as the constrainedby
+  // references the constraining class
+end Test;
+\end{lstlisting}
 \end{example}
+
 
 \subsection{Modifiers for Array Elements}\label{modifiers-for-array-elements}
 
@@ -495,7 +543,8 @@ model E
   B b2[2](c(each a = {1, 2, 3}, d = fill({1, 2, 3, 4, 5}, 2)), p = {1, 2});
 end E;
 \end{lstlisting}
-This implies \lstinline!b[k].c[i].a[j] = j!, \lstinline!b[k].c[i].d = i!, and \lstinline!b[k].p = k!.  For \lstinline!c.a! the additional (outer) \lstinline!each! has no effect, but it is necessary for \lstinline!c.d!.
+This implies \lstinline!b[k].c[i].a[j] = j!, \lstinline!b[k].c[i].d = i!, and \lstinline!b[k].p = k!.
+For \lstinline!c.a! the additional (outer) \lstinline!each! has no effect, but it is necessary for \lstinline!c.d!.
 
 Specifying array dimensions after the type works the same as specifying them after the variable name.
 \begin{lstlisting}[language=modelica]
@@ -508,13 +557,15 @@ end F;
 \end{lstlisting}
 \end{example}
 
+
 \subsection{Final Element Modification Prevention}\label{final-element-modification-prevention}
 
-An element defined as final by the \lstinline!final!\indexinline{final} prefix in an element modification or declaration cannot be modified by a modification or by a redeclaration.  All elements of a final element are also final.
+An element defined as final by the \lstinline!final!\indexinline{final} prefix in an element modification or declaration cannot be modified by a modification or by a redeclaration.
+All elements of a final element are also final.
 
 \begin{nonnormative}
-Setting the value of a parameter in an experiment environment is conceptually treated as a modification.  This implies that a final modification equation
-of a parameter cannot be changed in a simulation environment.
+Setting the value of a parameter in an experiment environment is conceptually treated as a modification.
+This implies that a final modification equation of a parameter cannot be changed in a simulation environment.
 \end{nonnormative}
 
 \begin{example}
@@ -557,12 +608,87 @@ model Test2
     extends MyTF;                  // fine
     Real foo = 1.0;
   end TFX;
-  TFX tfx(foo = 2.0);              // fine, foo is not from MyRF
+  TFX tfx(foo = 2.0);              // fine, foo is not from MyTF
   TFX tfx2(a = {1, 3});            // error, all elements from MyTF are final
   model TFX3 = TFX(a = {1, 4});    // error, all elements from MyTF are final
 end Test2;
 \end{lstlisting}
 \end{example}
+
+
+\subsection{Removing Modifiers -- break}\label{removing-modifiers-break}
+
+Modifications may contain the special keyword \lstinline!break!\index{break@\robustinline{break}!removing modifier} instead of an expression.
+The intention of \lstinline!break! is to remove the value.
+
+The modifiers using \lstinline!break! are merged using the same rule as other modifications, and follow the same restrictions so they cannot override a final modifier.
+During flattening of an instantiated model, remaining \lstinline!break! modifications (i.e., the ones that are not further overriden) are treated as if the expression was missing.
+The \lstinline!break! modifier for a variable of a simple type can be applied to the value and/or to specific attributes.
+Unless \lstinline!final! was specified, it is possible to override even if no value is present, either because there was no expression originally or because \lstinline!break! overrides another \lstinline!break!.
+
+\begin{nonnormative}
+In a dialog, a tool may hide the keyword \lstinline!break! and show an empty input field, without the overriden modification.
+It should also be possible to remove this modifier to restore the overriden modification.
+
+There are also other uses of the keyword \lstinline!break!, but importantly it is not an expression and thus it cannot be used as a sub-expression.
+\end{nonnormative}
+
+\begin{example}
+Remove unwanted defaults for parameters:
+\begin{lstlisting}
+partial model PartialStraightPipe
+  parameter Real roughness = 2.5e-5 "Average height of surface asperities";
+  parameter Real height_ab (unit = "m" ) = 0 "Height between a and b";
+  $\ldots$
+end PartialStraightPipe;
+
+model StaticPipe
+  extends PartialStraightPipe;
+  parameter Real p_a_start = system.p_start;
+  $\ldots$
+end StaticPipe;
+
+model MyPipe "Without defaults"
+  extends StaticPipe(
+    p_a_start = break,
+    roughness = break,
+    height_ab = break);
+end MyPipe;
+\end{lstlisting}
+Replace a given parameter value by an initial computation:
+\begin{lstlisting}
+model A
+  parameter Real diameter  = 1;
+  final parameter Real radius = diameter / 2;
+end A;
+
+model B "Initial equation for diameter"
+  extends A( final diameter(fixed = false) = break );
+  parameter Real square=2;
+initial equation
+  //  solving equation below for diameter
+  square = f(diameter);
+end B;
+\end{lstlisting}
+Replace the value for an inherited variable with a value computed from an algorithm:
+\begin{lstlisting}
+model A
+  Real x = 1;
+end A;
+
+model B "Computing x instead"
+  extends A(final x=break);
+algorithm
+  x := 0;
+  while $\ldots$
+    x := x + $\ldots$;
+  end while;
+end B;
+\end{lstlisting}
+Note that this is only legal because the modifier is modifying an inherited declaration.
+Due to \cref{balanced-models} it is not legal to construct the corresponding component declaration, \lstinline!A a(x=break);!.
+\end{example}
+
 
 \section{Redeclaration}\label{redeclaration}
 
@@ -574,16 +700,11 @@ For modifiers, the redeclare of classes uses the \lstinline[language=grammar]!sh
 
 A modifier with the keyword \lstinline!replaceable!\indexinline{replaceable} is automatically seen as being a \lstinline!redeclare!.
 
-In redeclarations some parts of the original declaration is
-automatically inherited by the new declaration. This is intended to make
-it easier to write declarations by not having to repeat common parts of
-the declarations, and does in particular apply to prefixes that must be
-identical. The inheritance only applies to the declaration itself and
-not to elements of the declaration.
+In redeclarations some parts of the original declaration is automatically inherited by the new declaration.
+This is intended to make it easier to write declarations by not having to repeat common parts of the declarations, and does in particular apply to prefixes that must be identical.
+The inheritance only applies to the declaration itself and not to elements of the declaration.
 
-The general rule is that if no prefix within one of the following groups
-is present in the new declaration the old prefixes of that kind are
-preserved.
+The general rule is that if no prefix within one of the following groups is present in the new declaration the old prefixes of that kind are preserved.
 
 The groups that are valid for both classes and components:
 \begin{itemize}
@@ -592,7 +713,7 @@ The groups that are valid for both classes and components:
 \item
   \lstinline!inner!, \lstinline!outer!
 \item
-  constraining type according to rules in \cref{constraining-type}.
+  constraining type according to rules in \cref{constraining-type}
 \end{itemize}
 
 The groups that are only valid for components:
@@ -607,20 +728,16 @@ The groups that are only valid for components:
   array dimensions
 \end{itemize}
 
-Note that if the old declaration was a short class definition with array
-dimensions the array dimensions are not automatically preserved, and
-thus have to be repeated in the few cases they are used.
+Note that if the old declaration was a short class definition with array dimensions the array dimensions are not automatically preserved, and thus have to be repeated in the few cases they are used.
 
-Replaceable component array declarations with array sizes on the left of
-the component are seen as syntactic sugar for having all arrays sizes on
-the right of the component; and thus can be redeclared in a consistent
-way.
+Replaceable component array declarations with array sizes on the left of the component are seen as syntactic sugar for having all arrays sizes on the right of the component; and thus can be redeclared in a consistent way.
+
+The presence of annotations on the \lstinline!redeclare! construct in a modifier is deprecated, but since none of the annotations in the specification ever had a meaning in this context it only impacts vendor-specific annotations.
 
 \begin{nonnormative}
-Note: The inheritance is from the original declaration. In most
-cases replaced or original does not matter. It does matter if a user
-redeclares a variable to be a parameter and then redeclares it without
-parameter.
+Note: The inheritance is from the original declaration.
+In most cases replaced or original does not matter.
+It does matter if a user redeclares a variable to be a parameter and then redeclares it without parameter.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -648,6 +765,7 @@ M m(redeclare Modelica.Units.SI.Length x[2, 4]); // Valid redeclare of the type
 \end{lstlisting}
 \end{nonnormative}
 
+
 \subsection{The ``class extends'' Redeclaration Mechanism}\label{the-class-extends-redeclaration-mechanism}
 
 A class declaration of the type \lstinline!redeclare class extends B($\ldots$)!, where \lstinline!class! as usual can be replaced by any other specialized class, replaces the inherited class \lstinline!B! with another declaration that extends the inherited class where the optional class-modification is applied to the inherited class.
@@ -655,16 +773,14 @@ Inherited \lstinline!B! here means that the class containing \lstinline!redeclar
 The new declaration should explicitly include \lstinline!redeclare!.
 
 \begin{nonnormative}
-Since the rule about applying the optional class-modification implies that all declarations are inherited with modifications applied, there is no need
-to apply modifiers to the new declaration.
+Since the rule about applying the optional class-modification implies that all declarations are inherited with modifications applied, there is no need to apply modifiers to the new declaration.
 \end{nonnormative}
 
 % henrikt-ma: Adding index entry for 'replaceable' here, since I can't find a place where the term is really explained in terms of using the corresponding keyword.
 For \lstinline!redeclare class extends B($\ldots$)! the inherited class is subject to the same restrictions as a redeclare of the inherited element, and the original class \lstinline!B! should be \firstuse{replaceable}, and the new element is only replaceable if the new definition is replaceable.
 In contrast to normal extends it is not subject to the restriction that \lstinline!B! should be transitively non-replaceable (since \lstinline!B! should be replaceable).
 
-The syntax rule for \lstinline!class extends! construct is in the definition of the
-\lstinline!class-specifier! nonterminal (see also class declarations in \cref{class-declarations}):
+The syntax rule for \lstinline!class extends! construct is in the definition of the \lstinline!class-specifier! nonterminal (see also class declarations in \cref{class-declarations}):
 \begin{lstlisting}[language=grammar]
 class-definition :
    [ encapsulated ] class-prefixes
@@ -676,9 +792,7 @@ long-class-specifier : $\ldots$
     | extends IDENT [ class-modification ] description-string
       composition end IDENT
 \end{lstlisting}
-The nonterminal \lstinline!class-definition! is referenced in several places in the
-grammar, including the following case which is used in some examples
-below, including \lstinline!package extends! and \lstinline!model extends!:
+The nonterminal \lstinline!class-definition! is referenced in several places in the grammar, including the following case which is used in some examples below, including \lstinline!package extends! and \lstinline!model extends!:
 \begin{lstlisting}[language=grammar]
 element :
    import-clause |
@@ -745,20 +859,12 @@ package MoistAir "Special type of medium"
 end MoistAir;
 \end{lstlisting}
 
-Note, since \lstinline!MostAir! extends from \lstinline!PartialMedium!,
-constant \lstinline!nX! = 2 in package \lstinline!MoistAir! and the model
-\lstinline!BaseProperties! and the function \lstinline!dynamicViscosity! is present
-in \lstinline!MoistAir!. By the following definitions, the available
-\lstinline!BaseProperties! model is replaced by another implementation which
-extends from the \lstinline!BaseProperties! model that has been temporarily
-constructed during the extends of package \lstinline!MoistAir! from
-\lstinline!PartialMedium!. The redeclared \lstinline!BaseProperties! model
-references constant \lstinline!nX! which is 2, since by construction the
-redeclared \lstinline!BaseProperties! model is in a package with \lstinline!nX! = 2.
+Note, since \lstinline!MostAir! extends from \lstinline!PartialMedium!, constant \lstinline!nX! = 2 in package \lstinline!MoistAir! and the model \lstinline!BaseProperties! and the function \lstinline!dynamicViscosity! is present in \lstinline!MoistAir!.
+By the following definitions, the available \lstinline!BaseProperties! model is replaced by another implementation which extends from the \lstinline!BaseProperties! model that has been temporarily constructed during the extends of package \lstinline!MoistAir! from \lstinline!PartialMedium!.
+The redeclared \lstinline!BaseProperties! model references constant \lstinline!nX! which is 2, since by construction the redeclared \lstinline!BaseProperties! model is in a package with \lstinline!nX! = 2.
 
-This definition is compact but is difficult to understand. At a
-first glance an alternative exists that is more straightforward and
-easier to understand:
+This definition is compact but is difficult to understand.
+At a first glance an alternative exists that is more straightforward and easier to understand:
 \begin{lstlisting}[language=modelica]
 package MoistAir2 "Alternative definition that does not work"
   extends PartialMedium(nX=2,
@@ -783,7 +889,7 @@ end MoistAir2;
 Here, the usual approach is used to extend (here from \lstinline!PartialMedium!) and in the modifier perform all redeclarations.
 In order to perform these redeclarations, corresponding implementations of all elements of \lstinline!PartialMedium! have to be given under a different name, such as \lstinline!MoistAir2.MoistAir_BaseProperties!, since the name \lstinline!BaseProperties! already exists due to \lstinline!extends PartialMedium!.
 Then it is possible in the modifier to redeclare \lstinline!PartialMedium.BaseProperties! to \lstinline!MoistAir2.MoistAir_BaseProperties!.
-Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g.\ \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!:
+Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g., \lstinline!MoistAir2.BaseProperties! is identical to \lstinline!MoistAir2.MoistAir_BaseProperties!) the whole construction does not work if arrays are present that depend on constants in \lstinline!PartialMedium!, such as \lstinline!X[nX]!:
 The problem is that \lstinline!MoistAir_BaseProperties! extends from \lstinline!PartialMedium.BaseProperties! where the constant \lstinline!nX! does not yet have a value.
 This means that the dimension of array \lstinline!X! is undefined and model \lstinline!MoistAir_BaseProperties! is wrong.
 With this construction, all constant definitions have to be repeated whenever these constants shall be used, especially in \lstinline!MoistAir_BaseProperties! and \lstinline!MoistAir_dynamicViscosity!.
@@ -791,6 +897,7 @@ For larger models this is not practical and therefore the only practically usefu
 
 To detect this issue the rule on lookup of composite names (\cref{composite-name-lookup}) ensures that \lstinline!PartialMedium.dynamicViscosity! is incorrect in a simulation model.
 \end{nonnormative}
+
 
 \subsection{Constraining Type}\label{constraining-type}
 
@@ -803,7 +910,7 @@ If the \lstinline[language=grammar]!constraining-clause! is not present in the o
 \item
   The type of the declaration is also used as a constraining type.
 \item
-  The modifiers for subsequent redeclarations and constraining type are the modifiers on the component or \lstinline[language=grammar]!short-class-definition! if that is used in the original declaration, otherwise empty.
+  If modifiers are present in the original declaration, they also become modifiers on the constraining type.
 \end{itemize}
 
 The syntax of a \lstinline[language=grammar]!constraining-clause!\indexinline{constrainedby} is as follows:
@@ -838,8 +945,7 @@ class D
 end D;
 \end{lstlisting}
 
-A modification of the constraining type is automatically applied
-in subsequent redeclarations:
+A modification of the constraining type is automatically applied in subsequent redeclarations:
 \begin{lstlisting}[language=modelica]
 model ElectricalSource
   replaceable SineSource source constrainedby MO(final n=5);
@@ -852,8 +958,7 @@ model TrapezoidalSource
 end TrapezoidalSource;
 \end{lstlisting}
 
-A modification of the base type without a constraining type is
-automatically applied in subsequent redeclarations:
+A modification of the base type without a constraining type is automatically applied in subsequent redeclarations:
 \begin{lstlisting}[language=modelica]
 model Circuit
   replaceable model NonlinearResistor = Resistor(R=100);
@@ -877,11 +982,8 @@ model Circuit3
 end Circuit3;
 \end{lstlisting}
 
-\lstinline!Circuit2! is intended to illustrate that a user can still select
-any resistor model (including the original one, as is done in \lstinline!Circuit3!),
-since the constraining type is kept from the original declaration if not
-specified in the redeclare. Thus it is easy to select an advanced
-resistor model, without limiting the possible future changes.
+\lstinline!Circuit2! is intended to illustrate that a user can still select any resistor model (including the original one, as is done in \lstinline!Circuit3!), since the constraining type is kept from the original declaration if not specified in the redeclare.
+Thus it is easy to select an advanced resistor model, without limiting the possible future changes.
 
 A redeclaration can redefine the constraining type:
 \begin{lstlisting}[language=modelica]
@@ -898,27 +1000,17 @@ end Circuit5;
 \end{lstlisting}
 \end{example}
 
-The class or type of component shall be a subtype of the constraining
-type. In a redeclaration of a replaceable element, the class or type of
-a component must be a subtype of the constraining type. The constraining
-type of a replaceable redeclaration must be a subtype of the
-constraining type of the declaration it redeclares. In an element
-modification of a replaceable element, the modifications are applied
-both to the actual type and to the constraining type.
+The class or type of component shall be a subtype of the constraining type.
+In a redeclaration of a replaceable element, the class or type of a component must be a subtype of the constraining type.
+The constraining type of a replaceable redeclaration must be a subtype of the constraining type of the declaration it redeclares.
+In an element modification of a replaceable element, the modifications are applied both to the actual type and to the constraining type.
 
-In an element-redeclaration of a replaceable element the modifiers of
-the replaced constraining type are merged to both the new declaration
-and to the new constraining type, using the normal rules where outer
-modifiers override inner modifiers.
+In an element-redeclaration of a replaceable element the modifiers of the replaced constraining type are merged to both the new declaration and to the new constraining type, using the normal rules where outer modifiers override inner modifiers.
 
-When a class is flattened as a constraining type, the flattening of its
-replaceable elements will use the constraining type and not the actual
-default types.
+When a class is flattened as a constraining type, the flattening of its replaceable elements will use the constraining type and not the actual default types.
 
-The number of dimension in the constraining type should correspond to
-the number of dimensions in the type-part. Similarly the type used in a
-redeclaration must have the same number of dimensions as the type of
-redeclared element.
+The number of dimension in the constraining type should correspond to the number of dimensions in the type-part.
+Similarly the type used in a redeclaration must have the same number of dimensions as the type of redeclared element.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -926,9 +1018,9 @@ replaceable T1 x[n] constrainedby T2;
 replaceable type T=T1[n] constrainedby T2;
 replaceable T1[n] x constrainedby T2;
 \end{lstlisting}
-In these examples the number of dimensions must be the same in \lstinline!T1! and \lstinline!T2!, as well as in a redeclaration.  Normally \lstinline!T1! and \lstinline!T2! are scalar types, but both
-could also be defined as array types (with the same number of dimensions).  Thus if \lstinline!T2! is a scalar type (e.g.\ \lstinline!type T2 = Real!) then \lstinline!T1! must also be a scalar type,
-and if \lstinline!T2! is defined as vector type (e.g.\ \lstinline!type T2 = Real[3]!) then \lstinline!T1! must also be vector type.
+In these examples the number of dimensions must be the same in \lstinline!T1! and \lstinline!T2!, as well as in a redeclaration.
+Normally \lstinline!T1! and \lstinline!T2! are scalar types, but both could also be defined as array types (with the same number of dimensions).
+Thus if \lstinline!T2! is a scalar type (e.g., \lstinline!type T2 = Real!) then \lstinline!T1! must also be a scalar type, and if \lstinline!T2! is defined as vector type (e.g., \lstinline!type T2 = Real[3]!) then \lstinline!T1! must also be vector type.
 \end{example}
 
 \subsubsection{Constraining-Clause Annotations}\label{constraining-clause-annotations}
@@ -959,14 +1051,13 @@ replaceable Resistor load3
 
 See also the examples in \cref{annotation-choices-for-suggested-redeclarations-and-modifications}.
 
+
 \subsection{Restrictions on Redeclarations}\label{restrictions-on-redeclarations}
 
-The following additional constraints apply to redeclarations (after
-prefixes are inherited, \cref{redeclaration}):
+The following additional constraints apply to redeclarations (after prefixes are inherited, \cref{redeclaration}):
 \begin{itemize}
 \item
-  Only classes and components declared as replaceable can be redeclared with a new type, which must have an interface compatible with the constraining
-  interface of the original declaration, and to allow further redeclarations one must use \lstinline!redeclare replaceable!.
+  Only classes and components declared as replaceable can be redeclared with a new type, which must have an interface compatible with the constraining interface of the original declaration, and to allow further redeclarations one must use \lstinline!redeclare replaceable!.
   \begin{nonnormative}
   Redeclaration with the same type can be used to restrict variability and/or change array dimensions.
   \end{nonnormative}
@@ -983,23 +1074,46 @@ prefixes are inherited, \cref{redeclaration}):
   \end{nonnormative}
 \end{itemize}
 
+
 \subsection{Annotations for Redeclaration and Modification}\label{annotation-choices-for-suggested-redeclarations-and-modifications}
 
 A declaration can have an annotation \fmtannotationindex{choices} containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
-
-This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclaration, where the string comments on the choice declaration can be used as textual explanations of the choices.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comments on the \lstinline!choice! modifiers can be used as textual explanations of the choices.
 The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
-For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the definition \lstinline!checkBox = true!, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
 
-The annotation \lstinline!choicesAllMatching = true!\annotationindex{choicesAllMatching} on a replaceable element indicates that tools should automatically construct a menu with choices of elements usable for replacing it.
+The string comments for the \lstinline!choice! modifiers shall not automatically be copied to the modifier.
+
+The semantic restrictions in \cref{semantic-restrictions-of-annotation-syntax} are not enforced for the \lstinline!choice! modifiers.
+For instance, several examples of using \lstinline!redeclare! inside \lstinline!choice($\ldots$)! will be given below.
+
+Lookup inside a \lstinline!choice! modifier is performed in the context of the annotation, meaning that references may need to be transformed to preserve the meaning when a \lstinline!choice! is applied in a different context.
+
+\begin{nonnormative}
+It is recommended to avoid expressions with references to elements that are not globally accessible, such as contents within a \lstinline!protected! section of a class.
+By starting names with a dot it can be ensured that no transformation of references will be needed when a \lstinline!choice! is applied, and that applicability of a \lstinline!choice! does not depend on context, see \cref{global-name-lookup}.
+\end{nonnormative}
+
+It is allowed to include choices that are invalid in some contexts, e.g., a value might violate a \lstinline!min!-attribute.
+(Options for tools encountering such choices include not showing them, marking them as invalid, or detecting the violations later.)
+
+For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the annotation \lstinline!checkBox = true!\annotationindex{checkBox}, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
+
+The annotation \lstinline!choicesAllMatching = true!\annotationindex{choicesAllMatching} on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
+\begin{itemize}
+\item For a replaceable element the included elements should be usable for replacing it.
 Exact criteria for inclusion in such a menu are not defined, but there shall be a a way to at least get a selection of classes, \lstinline!A.B.$\ldots$.X.Z!, that are either directly or indirectly derived by inheritance from the constraining class of the declaration, where \lstinline!A! to \lstinline!X! are non-partial packages, and \lstinline!Z! is non-partial.
+\item For a record variable the included elements shall include matching record constants and calls of matching record constructors (matching classes as for replaceable elements).
+\end{itemize}
+
 This menu can be disabled using annotation \lstinline!choicesAllMatching = false!.
 It is possible to combine the two annotations for one declaration, and tools may avoid generating duplicate menu entries in that case.
 \begin{nonnormative}
-The behavior when \lstinline!choicesAllMatching! is not specified; ideally it should present (at least) the same choices as for \lstinline!choicesAllMatching = true;! but if it takes (too long) time to present the list it is better to have \lstinline!choicesAllMatching = false!.
+When \lstinline!choicesAllMatching! is not specified the following behavior is recommended for replaceable elements.
+A tool could ideally present (at least) the same choices as for \lstinline!choicesAllMatching = true!, but if it takes (too long) time to present the list it might be better to use the \lstinline!choicesAllMatching = false! behavior instead.
 \end{nonnormative}
 
 \begin{example}
+Demonstrating the \lstinline!choices! and  \lstinline!choicesAllMatching = true! annotations applied to replaceable elements.
 \begin{lstlisting}[language=modelica]
 replaceable model MyResistor = Resistor
   annotation(choices(
@@ -1021,8 +1135,29 @@ replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
   constrainedby Modelica.Media.Interfaces.PartialMedium
   annotation(choicesAllMatching = true);
 \end{lstlisting}
+\end{example}
 
-It can also be applied to nonreplaceable declarations, e.g.\ to describe enumerations.
+\begin{example}
+Demonstrating the \lstinline!choicesAllMatching = true! annotation for parameter records.
+\begin{lstlisting}[language=modelica]
+record Medium
+  parameter SI.Density rho "Density";
+  $\ldots$
+end Medium;
+
+record Air_30degC = Medium(rho = 1.149, $\ldots$);
+constant Medium MyAir = Medium(rho = 1.1, $\ldots$);
+
+model OpenTank
+  parameter Medium medium = Medium() annotation(choicesAllMatching = true);
+end OpenTank;
+\end{lstlisting}
+The choices for \lstinline!medium! shall include \lstinline!Medium()!, \lstinline!Air_30degC()!, and \lstinline!MyAir!.
+If \lstinline!Medium()! is chosen it is necessary to also set its \lstinline!rho!-parameter.
+\end{example}
+
+\begin{example}
+Applying the \lstinline!choices! annotation to nonreplaceable declarations, e.g., to describe enumerations.
 \begin{lstlisting}[language=modelica]
 type KindOfController = Integer(min = 1, max = 3)
   annotation(choices(
@@ -1033,11 +1168,155 @@ type KindOfController = Integer(min = 1, max = 3)
 model A
   parameter KindOfController x;
 end A;
-A a(x = 3 "PID");
+A a(x = 3);
 \end{lstlisting}
+Note that \lstinline!"PID"! was not copied here.
 
-It can also be applied to \lstinline!Boolean! variables to define a check box.
+The \lstinline!choices! annotation can also be applied to \lstinline!Boolean! variables to define a check box.
 \begin{lstlisting}[language=modelica]
 parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
 \end{lstlisting}
 \end{example}
+
+
+\section{Selective Model Extension}\label{selective-model-extension}\index{deselection!selective model extension}
+
+\begin{nonnormative}
+The goal of selective model extension is to enable unforeseen structural variability without requiring deliberately prepared base-models, \textcite{Buerger2019SelectiveModel}.
+This is done by deselecting specific elements from a base class, described here, combined with adding elements as normal.
+\end{nonnormative}
+
+Selective model extension is activated by using one (or more) \lstinline[language=grammar]!inheritance-modification! in the optional \lstinline[language=grammar]!class-or-inheritance-modification! of an \lstinline!extends!-clause.
+
+\begin{nonnormative}
+There is no corresponding mechanism for component modifications, short class definitions, or constrainedby.
+\end{nonnormative}
+
+Consider a class \lstinline!C! with an \lstinline!extends!-clause deselecting \lstinline!$D$!:
+\begin{lstlisting}[language=modelica]
+model C
+  extends B($\ldots$, break $D$, $\ldots$);
+  $\ldots$
+end C;
+\end{lstlisting}
+\index{break@\robustinline{break}!deselection}
+The semantic rules are:
+\begin{enumerate}
+\item
+  The deselection \lstinline!break $D$! is applied before any other, non selective model extension related, modifications of \lstinline!B! in \lstinline!C!.
+\item
+  When adding elements from \lstinline!B! to \lstinline!C! the elements matched by any deselection in \lstinline!extends B! are excluded.
+  \begin{itemize}
+  \item
+    A component deselection, \lstinline!break f!, matches the component with that name, \lstinline!f!, of \lstinline!B! and all connections with the  component or its subcomponents.
+    Matched components must be models, blocks or connectors.
+  \item
+    A connection deselection, \lstinline!break connect(a, b)!, matches all syntactical equivalent connections of \lstinline!B!.
+    A connection \lstinline!connect(c, d)!, with \lstinline!c! and \lstinline!d! arbitrary but valid connection arguments, is syntactically equivalent  to a connection deselection \lstinline!break connect(a, b)!, if, and only if, either, \lstinline!c! is syntactically equivalent to \lstinline!a! and   \lstinline!d! is syntactically equivalent to \lstinline!b! or, vice versa, \lstinline!c! is syntactically equivalent to \lstinline!b! and \lstinline! d! is syntactically equivalent to \lstinline!a!.
+    Two code fragments \lstinline!a! and \lstinline!c! are syntactically equivalent, if, and only if, the context-free derivations of \lstinline!a! and \ lstinline!c! according to the grammar given in \cref{expressions1} are the same.
+  \end{itemize}
+\item
+  Conditionally declared components of \lstinline!B! are assumed to be declared for all purposes of matching.
+\item
+  The deselected component may be of a partial class even in a simulation model.
+\item
+  The deselection \lstinline!break $D$! must match at least one element of \lstinline!B!.
+\item
+  The component deselection are applied before the connection deselections of the same \lstinline!extends!-clause.
+\end{enumerate}
+
+\begin{example}
+The following gives three typical use cases: adding a component \emph{on a connection}, replacing a non-replaceable component, and finally constructing a reusable model from an example.
+\begin{lstlisting}[language=modelica]
+model System "An example model"
+  Plant plant;
+  BearingFriction friction;
+  Controller controller;
+  StepReference reference;
+equation
+  connect(reference.y, controller.u_s);
+  connect(plant.y, controller.u_m);
+  connect(controller.y, plant.u);
+  connect(friction.flange_a, plant.flange_a);
+end System;
+
+model FilterMeasurement "Component on a connection"
+  extends System(break connect(plant.y, controller.u_m));
+  BesselFilter filter;
+equation
+  connect(plant.y, filter.u);
+  connect(filter.y, controller.u_m);
+end FilterMeasurement;
+
+model SampledControllerSystem "Replacing non-replaceable"
+  extends System(break controller);
+  SampledController controller;
+equation
+  connect(reference.y, controller.u1); // Note: Different name
+  connect(plant.y, controller.u_m);
+  connect(controller.y, plant.u);
+end FilterMeasurement;
+
+model NewPlant "Reusable model from example"
+  extends System(break controller, break reference);
+  RealInput u;
+  RealOutput y;
+equation
+  connect(u, plant.u);
+  connect(plant.y, y);
+end NewPlant;
+\end{lstlisting}
+In these examples it would be possible to modify the \lstinline!System! model instead, but in many cases that is not realistic.
+For instance, it may not be possible to modify the \lstinline!System! and the controlled system may be comprised of a large number of components in \lstinline!System! -- instead of only two.
+\end{example}
+
+\begin{nonnormative}
+Some consequences of the rules are listed below:
+
+The syntax ensures that nested components cannot be deselected.
+
+Deselected components cannot be modified, neither in the \lstinline!extends!-clause nor when using \lstinline!C!.
+However, \lstinline!C! may add a component with same name as a deselected component (directly or through another \lstinline!extends-clause!) and that new component can be modified when using \lstinline!C!.
+
+A class using selective model extension is not necessarily a sub-type of its base class.
+
+Deselection is designed to be light-weight in particular:
+\begin{itemize}
+\item Deselection is independent of any modification.
+\item What is deselected can be determined without considering any modifications, neither of the extending class \lstinline!C! nor its base class \lstinline!B!.
+\item There is no need to instantiate any classes to know that some component is deselected (i.e., not there) for every possible instance of the model with the deselection.
+An instance tree is not required.
+\item Selective model extension operates on the syntactic level only.
+\item Conditional components can be deselected without evaluating whether they are disabled or not.
+In particular deselecting a disabled conditional component is not an error.
+Connections involving the deselected conditional component are by the deselection removed as for a disabled component.
+\item No need to check whether the class of the deselected component was partial.
+\item Assuming the deselections are semantically valid they can be handled in any order.
+Handling component deselections before connection deselections is only necessary to semantically check that a connection deselection does not involve a deselected component.
+\end{itemize}
+
+\begin{example}
+The syntactic equivalence of connection deselection ensures that connect-statements in for-loops can be deselected:
+\begin{lstlisting}[language=modelica]
+model B
+  $\ldots$
+equation
+  if b then
+    for i in 2:10 loop
+      connect( // This comment does not impact syntactic equivalence.
+        a[i],
+        b[2*i] /* Without whitespace in the indexing expression. */ );
+    end for;
+  else
+    for i in 20:30 loop
+      connect(b[i], a[2*i]);
+    end for;
+  end for;
+end B;
+model C
+  extends B(break connect(b[2 * i], a[i]);
+end C;
+\end{lstlisting}
+In this case the deselection removes all of the connect-statements.
+\end{example}
+\end{nonnormative}

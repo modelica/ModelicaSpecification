@@ -1,6 +1,6 @@
 \chapter{Unit Expressions}\label{unit-expressions}
 
-Unless otherwise stated, the syntax and semantics of unit expressions in Modelica conform with the international standards \emph{International System of Units (SI)} by BIPM superseding parts of ISO 31/0-1992 \emph{General principles concerning quantities, units and symbols} and ISO 1000-1992 \emph{SI units and recommendations for the use of their multiples and of certain other units}.
+Unless otherwise stated, the syntax and semantics of unit expressions in Modelica (for example, \cref{real-type} or \cref{axis-properties}) conform with the international standards \emph{International System of Units (SI)} by BIPM superseding parts of ISO 31/0-1992 \emph{General principles concerning quantities, units and symbols} and ISO 1000-1992 \emph{SI units and recommendations for the use of their multiples and of certain other units}.
 Unfortunately, these standards do not define a formal syntax for unit expressions.
 There are recommendations and Modelica exploits them.
 
@@ -42,20 +42,21 @@ unit-factor :
   unit-operand [ unit-exponent ]
 
 unit-exponent :
-   [ "+" | "-" ] UNSIGNED-INTEGER
+   [ "+" | "-" ] ( UNSIGNED-INTEGER | "(" UNSIGNED-INTEGER "/" UNSIGNED-INTEGER ")" )
 \end{lstlisting}
 
 The SI standard uses super-script for the exponentation, and does thus not define any operator symbol for exponentiation.
-A \lstinline[language=grammar]!unit-factor! consists of a \lstinline[language=grammar]!unit-operand! possibly suffixed by a possibly signed integer number, which is interpreted as an exponent.
+A \lstinline[language=grammar]!unit-factor! consists of a \lstinline[language=grammar]!unit-operand! possibly suffixed by a possibly signed integer or rational number, which is interpreted as an exponent.
 There must be no spacing between the \lstinline[language=grammar]!unit-operand! and a possible \lstinline[language=grammar]!unit-exponent!.
+It is recommended to use the simplest representation of exponents, meaning that the explicit \lstinline!+! sign should be avoided, that leading zeros should be avoided, that rational exponents are reduced to not have common factors in the numerator and denominator, that rational exponents with denominator 1 should be avoided in favor of plain integer exponents, that the exponent 1 is omitted, and that entire factors with exponent 0 are omitted.
 
 \begin{lstlisting}[language=grammar]
 unit-operand :
    unit-symbol | unit-prefix unit-symbol
 
 unit-prefix :
-   "Y" | "Z" | "E" | "P" | "T" | "G" | "M" | "k" | "h" | "da"
-   | "d" | "c" | "m" | "u" | "n" | "p" | "f" | "a" | "z" | "y"
+   "Q" | "R" | "Y" | "Z" | "E" | "P" | "T" | "G" | "M" | "k" | "h" | "da"
+   | "d" | "c" | "m" | "u" | "n" | "p" | "f" | "a" | "z" | "y" | "r" | "q"
 
 unit-symbol :
    unit-char { unit-char }
@@ -64,9 +65,23 @@ unit-char :
    NON-DIGIT
 \end{lstlisting}
 
-It is required that basic and derived units of the SI system are recognized, but tools are allowed to additionally support user-defined unit symbols.
+The units required to be recognized are the basic and derived units of the SI system, as well as some units compatible with the SI system listed below, but tools are allowed to additionally support user-defined unit symbols.
 The required unit symbols do not make use of Greek letters, but a unit such as $\Omega$ is spelled out as \lstinline!"Ohm"!.
 Similarly degree is spelled out as \lstinline!"deg"!, both on its own (for angles) and as part of \lstinline!"degC"!, \lstinline!"degF"! and \lstinline!"degRk"! for temperatures (Celsius, Fahrenheit and Rankine).
+
+It is recommended that non-SI units are only used for the \lstinline!displayUnit!-attribute in order to reduce impact of unrecognized unit symbols when using another Modelica tool.
+
+The following are the units required to be recognized in addition to the SI system:
+\begin{itemize}
+\item minute \lstinline!"min"! (1 minute = 60 s)
+\item hour \lstinline!"h"! (1 hour = 3600 s)
+\item day \lstinline!"d"! (1 day = 86400 s)
+\item liter \lstinline!"l"! and \lstinline!"L"! (1 liter = 1 $\text{dm}^{3}$)
+\item electronvolt \lstinline!"eV"! (1 electronvolt = 1.602176634e-19 J)
+\item degree \lstinline!"deg"! (1 degree = $\pi/180$ rad)
+\item debye \lstinline!"debye"! (1 debye = 1e-21 / 299792458 Cm)
+\end{itemize}
+The first 7 are listed in the SI standard as non-SI units that are acceptable to use with the SI system.
 
 A \lstinline[language=grammar]!unit-operand! should first be interpreted as a \lstinline[language=grammar]!unit-symbol! and only if not successful the second alternative assuming a prefixed operand should be exploited.
 There must be no spacing between the \lstinline[language=grammar]!unit-symbol! and a possible \lstinline[language=grammar]!unit-prefix!.

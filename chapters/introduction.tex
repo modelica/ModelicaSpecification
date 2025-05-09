@@ -10,7 +10,7 @@ It provides object-oriented constructs that facilitate reuse of models, and can 
 The semantics of the Modelica language is specified by means of a set of rules for translating any class described in the Modelica language to a flat Modelica structure.
 The semantic specification should be read together with the Modelica grammar.
 
-A class (of specialized class \lstinline!model!, \lstinline!class! or \lstinline!block!) intended to be simulated on its own is called a \firstuse{simulation model}.
+A class (of specialized class \lstinline!model! or \lstinline!block!) intended to be simulated on its own is called a \firstuse{simulation model}.
 
 The flat Modelica structure is also defined for other cases than simulation models; including functions (can be used to provide algorithmic contents), packages (used as a structuring mechanism), and partial models (used as base-models).
 This allows correctness to be verified for those classes, before using them to build the simulation model.
@@ -28,11 +28,11 @@ However, it defines a set of equations that the simulation result should satisfy
 The key issues of the translation (or flattening) are:
 \begin{itemize}
 \item
-  Expansion of inherited base classes
+  Expansion of inherited base classes.
 \item
-  Parameterization of base classes, local classes and components
+  Parameterization of base classes, local classes and components.
 \item
-  Generation of connection equations from \lstinline!connect!-equations
+  Generation of connection equations from \lstinline!connect!-equations.
 \end{itemize}
 
 The flat hybrid DAE form consists of:
@@ -52,7 +52,7 @@ The flat hybrid DAE form consists of:
 Therefore, a flat hybrid DAE is seen as a set of equations where some of the equations are only conditionally evaluated.
 Initial setup of the model is specified using \lstinline!start!-attributes and equations that hold only during initialization.
 
-A Modelica class may also contain annotations, i.e.\ formal comments, which specify graphical representations of the class (icon and diagram), documentation text for the class, and version information.
+A Modelica class may also contain annotations, i.e., formal comments, which specify graphical representations of the class (icon and diagram), documentation text for the class, and version information.
 
 \section{Some Definitions}\label{some-definitions}
 
@@ -68,12 +68,41 @@ Class definition, \lstinline!extends!-clause, or \lstinline[language=grammar]!co
 \end{definition}
 
 \begin{definition}[Flattening]\index{flattening}
-The translation of a model described in Modelica to the corresponding model described as a hybrid DAE, involving expansion of inherited base classes, parameterization of base classes, local classes
-and components, and generation of connection equations from \lstinline!connect!-equations (basically, mapping the hierarchical structure of a model into a set of differential, algebraic and discrete equations together with the corresponding variable declarations and function definitions from the model).
+The translation of a model described in Modelica to the corresponding model described as a hybrid DAE (see \cref{modelica-dae-representation}), involving expansion of inherited base classes, parameterization of base classes, local classes and components, and generation of connection equations from \lstinline!connect!-equations.
+In other words, mapping the hierarchical structure of a model into a set of differential, algebraic and discrete equations together with the corresponding variable declarations and function definitions from the model.
 \end{definition}
 
+\begin{definition}[Initialization]\index{initialization}
+Simulation starts with solving the initialization problem at the starting time, resulting in values for all variables that are consistent with the result of the flattening.
+\end{definition}
+
+\begin{definition}[Transient analysis]\index{transient analysis}\index{initial value problem!see{transient analysis}}
+Starting from the result of the initialization problem, the model is simulated forward in time.
+This uses numerical methods for handling the hybrid DAE, resulting in solution trajectories for the model's variables, i.e., the value of the variables as a function of time.
+\end{definition}
+
+\begin{nonnormative}
+In the numerical literature transient analysis is often called solving the \firstuse{initial value problem}, but that term is not used here to avoid confusion with the initialization problem.
+\end{nonnormative}
+
+\begin{definition}[Simulation]\index{simulation}
+Simulation is the combination of initialization followed by transient analysis.
+\end{definition}
+
+\begin{nonnormative}
+The model can be analyzed in ways other than simulation, e.g., linearization, and parameter estimation, but they are not described in the specification.
+\end{nonnormative}
+
+\begin{definition}[Translation]\index{translation!of simulation model}
+Translation is the process of preparing a Modelica simulation model for simulation, starting with flattening but not including the simulation itself.
+\end{definition}
+
+\begin{nonnormative}
+Typically, in addition to flattening, translation involves symbolic manipulation of the hybrid DAE and transforming the result into computer code that can simulate the model.
+\end{nonnormative}
+
+
 % More terms that would be useful to define here:
-% - translation (for phrases such as "during translation")
 % - deprecated
 % - quality of implementation
 
@@ -100,6 +129,9 @@ Relying on implicit conversion of \lstinline!Integer! literals to \lstinline!Rea
 
 It is common to mix Modelica code with mathematical notation.
 For example, \lstinline!average($x$, $y$)! could be defined as $\frac{x + y}{2}$.
+
+Inline code fragments are sometimes surrounded by quotes to clearly mark their beginning and end, or to emphasize separation from the surrounding text.
+For example, `\lstinline!,!' is used to separate the arguments of a function call.
 
 \begin{definition}[Something]% Do not add this one to the index!
 Text defining the meaning of \emph{something}.
@@ -135,3 +167,5 @@ differentiated-expression :
     der "(" SOME-TOKEN ")"
     | "(" differentiated-expression "+" differentiated-expression ")"
 \end{lstlisting}
+
+Annotations are defined using the syntactic forms of Modelica record definitions and component declarations, but with special semantics given in \cref{notation-for-annotation-definitions}.

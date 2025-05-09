@@ -68,11 +68,13 @@ This means that the most restrictive derivatives should be written first.
 ### Things with name/keyword in the language
 
 As a general rule, when a concept is directly related to a construct in the Modelica language with a certain name/keyword, then the language concept is referred to using a hyphenated combination of the language name/keyword in code style, with a qualifying natural language word written as normal text.
+Annotations are an exception to this rule.
 Examples:
 
 Appearance | LaTeX source | Comment
 --- | --- | ---
 `connect`-equation | `\lstinline!connect!-equation` |
+`inverse` annotation | `\lstinline!inverse! annotation` |
 `if`-equation | `\lstinline!if!-equation` |
 `if`-expression | `\lstinline!if!-expression` |
 `when`-clause | `\lstinline!when!-clause` | A branch of a `when`-equation or `when`-statement
@@ -189,6 +191,18 @@ Fixed ordinals: 1st, 2nd, 3rd.
 Symbolic ordinals: $n$th, $(n+1)$th.
 ```
 
+## Inline code
+
+Inline code is typically formatted using just the `\lstinline` macro.
+
+Since the change of type face can be very hard to notice for small code fragments, single quotes may sometimes be used to emphasize the distinction from the surrounding text, unless the code fragment consists of a single identifier (consistent presentation of identifiers is given higher priority than clarity of presentation in this case).
+For example:
+```
+… and prepending the reduction expression with ``\lstinline!functionName(!''.
+```
+
+Avoid overusing quotes around code fragments, especially for multi-letter fragments.
+
 ## Code listings
 
 ### Modelica listings
@@ -242,3 +256,8 @@ When a sentence starts with inline code,
 this may be rewritten using _The_ inserted before the inline code to avoid a lower case letter at the beginning of the sentence:
 
 > The `import`-clauses are not inherited.
+
+### Wrap punctuations around some abbreviations 
+
+Always use comma (or colon if the following text starts on new line) _after_ "e.g." and "i.e."; and use comma or some other punctuation such as "(", "--", or "." before them.
+This also avoids the need to guard the space after the dot.

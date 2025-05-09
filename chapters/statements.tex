@@ -23,8 +23,7 @@ Equation equality \lstinline!=! or any other kind of equation (see \cref{equatio
 
 \subsection{Initial Algorithm Sections}\label{initial-algorithm-sections}
 
-See \cref{initialization-initial-equation-and-initial-algorithm} for a description of both initial algorithm sections and
-initial equation sections.
+See \cref{initialization-initial-equation-and-initial-algorithm} for a description of both initial algorithm sections and initial equation sections.
 
 \subsection{An Algorithm in a Model}\label{execution-of-an-algorithm-in-a-model}\label{an-algorithm-in-a-model}
 
@@ -34,16 +33,20 @@ Whenever an algorithm section is invoked, all variables appearing on the left ha
 \item
   A continuous-time variable is initialized with the value of its \lstinline!start!-attribute.
 \item
-  A discrete-time variable \lstinline!v! is initialized with \lstinline!pre(v)!.
+  A discrete-time variable \lstinline!v! in a non-initial algorithm is initialized with \lstinline!pre(v)!.
+\item
+  A clocked variable \lstinline!v! in a discrete-time sub-partition, \cref{clocked-and-discretized-partition}, is initialized with \lstinline!previous(v)!.
 \item
   If at least one element of an array appears on the left hand side of the assignment operator, then the complete array is initialized in this algorithm section.
 \item
-  A parameter assigned in an initial algorithm, \cref{initialization-initial-equation-and-initial-algorithm}, is initialized with the value of its \lstinline!start!-attribute.
+  In an initial algorithm, \cref{initialization-initial-equation-and-initial-algorithm}, any variable (including a parameter) is initialized with the value of its \lstinline!start!-attribute.
 \end{itemize}
 
 \begin{nonnormative}
 Initialization is performed, in order that an algorithm section cannot introduce a ``memory'' (except in the case of discrete-time variables assigned in the algorithm), which could invalidate the assumptions of a numerical integration algorithm.
 Note, a Modelica tool may change the evaluation of an algorithm section, provided the result is identical to the case, as if the above conceptual processing is performed.
+
+For a clocked variables it is important to skip this initialization when not needed, in order to avoid an excessive amount of clocked states, \cref{clocked-state-variables}.
 
 An algorithm section is treated as an atomic vector-equation, which is sorted together with all other equations.
 For the sorting process (BLT), every algorithm section with N different left-hand side variables, is treated as an atomic N-dimensional vector-equation containing all variables appearing in the algorithm section.
@@ -177,6 +180,12 @@ for IDENT in expression loop
 \end{lstlisting}
 The rules for \lstinline!for!-statements are the same as for \lstinline!for!-expressions in \cref{explicit-iteration-ranges-of-for-equations} -- except that the \lstinline!expression! of a \lstinline!for!-statement is not restricted to a parameter-expression.
 
+If the \lstinline!for!-statement contains event-generating expressions, any expression in \lstinline[language=grammar]!for-index! shall be evaluable.
+
+\begin{nonnormative}
+In general, the same event-generating expression requires distinct crossing functions for different iterations of the \lstinline!for!-loop, and the restriction ensures that the number of crossing functions is known during translation time.
+\end{nonnormative}
+
 \begin{example}
 \begin{lstlisting}[language=modelica]
 for i in 1 : 10 loop // i takes the values 1, 2, 3, $\ldots$, 10
@@ -202,11 +211,17 @@ equation
 An iterator \lstinline!IDENT in range-expr! without the \lstinline!in range-expr! requires that the \lstinline!IDENT! appears as the subscript of one or several subscripted expressions, where the expressions are not part of an array in a component of an expandable connector.
 The dimension size of the array expression in the indexed position is used to deduce the \lstinline!range-expr! as \lstinline!1:size(array-expression,indexpos)! if the indices are a subtype of \lstinline!Integer!, or as \lstinline!E.e1:E.en! if the indices are of an enumeration type \lstinline!E = enumeration(e1, $\ldots$, en)!, or as \lstinline!false:true! if the indices are of type \lstinline!Boolean!.
 If it is used to subscript several expressions, their ranges must be identical.
-The \lstinline!IDENT! may also, inside a reduction expression, array constructor expression, \lstinline!for!-statement, or \lstinline!for!-equation, occur freely outside of subscript positions, but only as a reference to the variable \lstinline!IDENT!, and not for deducing ranges.
+There may not be assignments to the entire arrays that are subscripted with \lstinline!IDENT! inside the loop, but there may be assignments to individual elements or ranges of elements.
 
+\begin{nonnormative}
+The size of an array -- the iteration range -- can be evaluated on entry to the \lstinline!for!-loop, since the array size cannot change during the execution of the \lstinline!for!-loop.
+\end{nonnormative}
+
+The \lstinline!IDENT! may also, inside a reduction expression, array constructor expression, \lstinline!for!-statement, or \lstinline!for!-equation, occur freely outside of subscript positions, but only as a reference to the variable \lstinline!IDENT!, and not for deducing ranges.
 The \lstinline!IDENT! may also be used as a subscript for an array in a component of an expandable connector but it is only seen as a reference to the variable \lstinline!IDENT! and cannot be used for deducing ranges.
 
 \begin{example}
+Implicit iterator ranges for an \lstinline!Integer! subscript:
 \begin{lstlisting}[language=modelica]
   Real x[4];
   Real xsquared[:] = {x[i] * x[i] for i};
@@ -222,22 +237,25 @@ algorithm
     xsquared3[i] := x[i]^2;
   end for;
 \end{lstlisting}
+\end{example}
 
+\begin{example}
+An array dimension's type of subscript does not matter for array compatibility, only the size of the array dimension matters.
+This is true also for array constructor expressions with implicit iterator ranges:
 \begin{lstlisting}[language=modelica]
 type FourEnums = enumeration(one, two, three, four);
+Real x[4];
 Real xe[FourEnums] = x;
-Real xsquared3[FourEnums] = {xe[i] * xe[i] for i};
-Real xsquared4[FourEnums] = {xe[i] * xe[i] for i in FourEnums};
+Real xsquared3[FourEnums] = {xe[i] * xe[i] for i in FourEnums};
+Real xsquared4[FourEnums] = {xe[i] * xe[i] for i};
 Real xsquared5[FourEnums] = {x[i] * x[i] for i};
 \end{lstlisting}
 \end{example}
 
-The size of an array -- the iteration range -- is evaluated on entry to the \lstinline!for!-loop and the array size shall not change during the execution of the \lstinline!for!-loop.
-
 \subsubsection{Types as Iteration Ranges}\label{types-as-iteration-ranges}
 
 The iteration range can be specified as \lstinline!Boolean! or as an enumeration type.
-This means iteration over the type from min to max, i.e.\ for \lstinline!Boolean! it is the same as \lstinline!false:true! and for an enumeration \lstinline!E! it is the same as \lstinline!E.min:E.max!.
+This means iteration over the type from min to max, i.e., for \lstinline!Boolean! it is the same as \lstinline!false:true! and for an enumeration \lstinline!E! it is the same as \lstinline!E.min:E.max!.
 This can be used for \lstinline!for!-loops and reduction expressions.
 
 \begin{example}
@@ -280,7 +298,8 @@ while expression loop
 end while
 \end{lstlisting}
 The \lstinline!expression! of a \lstinline!while!-statement shall be a scalar \lstinline!Boolean! expression.
-The \lstinline!while!-statement corresponds to while-statements in programming languages, and is formally defined as follows:
+
+The \lstinline!while!-statement corresponds to while-statements in other programming languages, and is formally defined as follows:
 \begin{enumerate}
 \item
   \label{while-execution-top}
@@ -290,6 +309,9 @@ The \lstinline!while!-statement corresponds to while-statements in programming l
 \item
   If the \lstinline!expression! of the \lstinline!while!-statement is true, the entire body of the \lstinline!while!-statement is executed (except if a \lstinline!break!-statement, see \cref{break-statement}, or a \lstinline!return!-statement, see \cref{return-statements}, is executed), and then execution proceeds at step~\ref{while-execution-top}.
 \end{enumerate}
+
+Event-generating expressions are neither allowed in the \lstinline!expression! nor in the loop body statements.
+A deprecated feature is that all expressions in a \lstinline!while!-statement are implicitly inside \lstinline!noEvent!.
 
 \subsection{Break-Statement}\label{break-statement}
 
@@ -456,7 +478,7 @@ algorithm
   end if;
 \end{lstlisting}
 with \lstinline!edge(A) = A and not pre(A)! and the additional guarantee, that the statements within this special \lstinline!if!-statement are only evaluated at event instants.
-The difference compared to the when-statements is that e.g.\ \lstinline!pre! may only be used on continuous-time real variables inside the body of a \lstinline!when!-clause and not inside these if-statements.
+The difference compared to the when-statements is that, e.g., \lstinline!pre! may only be used on continuous-time real variables inside the body of a \lstinline!when!-clause and not inside these if-statements.
 
 \subsection{Special Statements}\label{special-statements}
 
@@ -465,7 +487,7 @@ These special statements have the same form and semantics as the corresponding e
 \subsubsection{Assert-Statement}\label{assert-statement}
 
 See \cref{assert}.
-A failed \lstinline!assert!\index{assert@\robustinline{assert}!statement@\robustinline{statement}} stops the execution of the current algorithm.
+A failed \lstinline!assert!\index{assert@\robustinline{assert}!statement} stops the execution of the current algorithm.
 
 \subsubsection{Terminate-Statement}\label{terminate-statement}
 

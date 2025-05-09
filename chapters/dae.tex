@@ -1,17 +1,11 @@
 \chapter{Modelica DAE Representation}\label{modelica-dae-representation}
 
-In this appendix, the mapping of a Modelica model into an appropriate
-mathematical description form is discussed.
+In this appendix, the mapping of a Modelica model into an appropriate mathematical description form is discussed.
 
-In a first step, a Modelica translator transforms a hierarchical
-Modelica simulation model into a ``flat'' set of Modelica
-``statements'', consisting of the equation and algorithm sections of all
-used components by:
+In a first step, a Modelica translator transforms a hierarchical Modelica simulation model into a ``flat'' set of Modelica ``statements'', consisting of the equation and algorithm sections of all used components by:
 \begin{itemize}
 \item
-  Expanding all class definitions (flattening the inheritance tree) and
-  adding the equations and assignment statements of the expanded classes
-  for every instance of the model.
+  Expanding all class definitions (flattening the inheritance tree) and adding the equations and assignment statements of the expanded classes for every instance of the model.
 \item
   Replacing all \lstinline!connect!-equations by the corresponding equations of the connection set (see \cref{generation-of-connection-equations}).
 \item
@@ -20,18 +14,17 @@ used components by:
   Mapping all \lstinline!when!-clauses to equation sets (see \cref{when-equations}).
 \end{itemize}
 
-As a result of this transformation process, a set of equations is
-obtained consisting of differential, algebraic and discrete equations of
-the following form where ($v := \lbrack p; t; \dot{x}; x; y; z; m; \text{\lstinline!pre!}(z); \text{\lstinline!pre!}(m)\rbrack$):
+As a result of this transformation process, a set of equations is obtained consisting of differential, algebraic and discrete equations of the following form where ($v := \lbrack p; t; \dot{x}; x; y; z; m; \text{\lstinline!pre!}(z); \text{\lstinline!pre!}(m)\rbrack$):
 \begin{subequations}
+\label{eq:hydrid-dae}
 \begin{equation}\label{eq:dae}
 0 = f_{\mathrm{x}}(v, c)
 \end{equation}
 \begin{equation}\label{eq:dae-discrete-real}
-0 =
+z =
 \begin{cases}
 f_{\mathrm{z}}(v, c) & \text{at events} \\
-z - \text{\lstinline!pre!}(z) & \text{otherwise}
+\text{\lstinline!pre!}(z) & \text{otherwise}
 \end{cases}
 \end{equation}
 \begin{equation}\label{eq:dae-discrete-valued}
@@ -40,7 +33,6 @@ m := f_{\mathrm{m}}(v, c)
 \begin{equation}\label{eq:crossing}
 c := f_{\mathrm{c}}(\mathit{relation}(v))
 \end{equation}
-\label{eq:hydrid-dae}
 \end{subequations}
 and where
 \begin{itemize}
@@ -72,21 +64,57 @@ and where
   These variables change their value only at event instants $t_{\mathrm{e}}$.
   \lstinline!pre(m)! are the values of $m$ immediately before the current event occurred.
 
+  \begin{nonnormative}
+    For equations in \lstinline!when!-clauses with discrete-valued variables on the left-hand side, the form \eqref{eq:dae-discrete-valued} relies upon the conceptual rewriting of equations described in \cref{defining-when-equations-by-if-expressions-in-equality-equations}.
+  \end{nonnormative}
+
 \item
   $c(t_{\mathrm{e}})$:
   The conditions of all \lstinline!if!-expressions generated including \lstinline!when!-clauses after conversion, see \cref{when-equations}).
 
 \item
   $\mathit{relation}(v)$:
-  A relation containing variables $v_{i}$, e.g.\ $v_{1} > v_{2}$, $v_{3} \geq 0$.
+  A relation containing variables $v_{i}$, e.g., $v_{1} > v_{2}$, $v_{3} \geq 0$.
 \end{itemize}
 
 For simplicity, the special cases of \lstinline!noEvent! and \lstinline!reinit! are not contained in the equations above and are not discussed below.
 
 The key difference between the two groups of discrete-time variables $z$ and and $m$ here is how they are determined.
 The interpretation of the solved form of \eqref{eq:dae-discrete-valued} is that given values for everything else, there is a closed-form solution for $m$ in the form of a sequence of assignments to each of the variables of $m$ in turn -- there must be no cyclic dependencies between the equations used to solve for $m$.
-Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in solved form, at most requiring flipping sides of the equation to obtain the used assignment form.
+Further, each of the original model equations behind \eqref{eq:dae-discrete-valued} must be given in almost solved form:
+\begin{itemize}
+\item
+  Non-\lstinline!Integer! equations at most requiring flipping sides of the equation to obtain the used assignment form.
+\item
+  For \lstinline!Integer! equations the solved variable must appear uniquely as a term (without any multiplicative factor) on either side of the equation, at most requiring addition or subtraction of other terms in the equation to obtain the used assignment form.
+\end{itemize}
 The interpretation of the non-solved form of \eqref{eq:dae-discrete-real} at events, on the other hand, is that at events, the discrete-time \lstinline!Real! variables $z$ are solved together with the continuous-time variables using \eqref{eq:dae} and \eqref{eq:dae-discrete-real}.
+
+\begin{example}
+The following model demonstrates that \cref{eq:dae-discrete-real} does not imply that all discrete-time \lstinline!Real! variables are given by equations in solved form, as also the discrete-time \lstinline!Real! variables are included in $z$:
+\begin{lstlisting}[language=modelica]
+model M
+  discrete Real x(start = 1.0, fixed = true);
+equation
+  when sample(1.0, 1.0) then
+    x = 3 * pre(x) - x^2; // Valid equation for discrete-time Real variable x.
+  end when;
+end M;
+\end{lstlisting}
+
+Another way that a discrete-time \lstinline!Real! variable can end up becoming determined by a nonlinear equation is through coupling with other variables.
+\begin{lstlisting}[language=modelica]
+model M
+  discrete Real x(start = 1.0, fixed = true);
+  discrete Real y(start = 0.0, fixed = true);
+equation
+  when sample(1.0, 1.0) then
+    y = x ^ 2 + 2 * exp(-time);
+    x = 3 * pre(x) - y; // OK, forming nonlinear equation system with y.
+  end when;
+end M;
+\end{lstlisting}
+\end{example}
 
 \begin{example}
 The following model is illegal since there is no equation in solved form that can be used in \eqref{eq:dae-discrete-valued} to solve for the discrete-valued variable \lstinline!y!:
@@ -102,14 +130,16 @@ end M;
 \end{example}
 
 The generated set of equations is used for simulation and other analysis activities.
-Simulation means that an initial value problem is solved, i.e., initial values have to be provided for the states $x$, \cref{initialization-initial-equation-and-initial-algorithm}.
+Simulation proceeds as follows.
+First, initialization takes place, during which initial values for the states $x$ are found, \cref{initialization-initial-equation-and-initial-algorithm}.
+Given those initial values the equations are simulated forward in time; this is the transient analysis.
 The equations define a DAE\index{DAE} (Differential Algebraic Equations) which may have discontinuities, a variable structure and/or which are controlled by a discrete-event system.
 Such types of systems are called \firstuse[hybrid DAE]{hybrid DAEs}.
-Simulation is performed in the following way:
+After initialization, simulation proceeds with transient analysis in the following way:
 \begin{enumerate}
 \item\label{perform-simulation-integrate}
   The DAE \eqref{eq:dae} is solved by a numerical integration method.
-  In this phase the conditions $c$ of the if- and \lstinline!when!-clauses, as well as the discrete-time variables $z$ and $m$ are kept constant.
+  In this phase the conditions $c$ of the \lstinline!if!- and \lstinline!when!-clauses, as well as the discrete-time variables $z$ and $m$ are kept constant.
   Therefore, \eqref{eq:dae} is a continuous function of continuous variables and the most basic requirement of numerical integrators is fulfilled.
 \item
   During integration, all relations from \eqref{eq:crossing} are monitored.
@@ -146,7 +176,7 @@ Clocked variables are handled similarly as $z$ and $m$ (depending on type), but 
 
 Solving \eqref{eq:hydrid-dae} for the unknowns is non-trivial, because this set of equations contains not only \lstinline!Real!, but also discrete-valued unknowns.
 Usually, in a first step these equations are sorted and in many cases the discrete-valued unknowns $m$ can be just computed by a forward evaluation sequence.
-In some cases, there remain systems of equations involving $m$ due to cyclic dependencies with $y$ and $z$ (e.g.\ for ideal diodes, Coulomb friction elements), and specialized algorithms have to be used to solve them.
+In some cases, there remain systems of equations involving $m$ due to cyclic dependencies with $y$ and $z$ (e.g., for ideal diodes, Coulomb friction elements), and specialized algorithms have to be used to solve them.
 
 Due to the construction of the equations by \emph{flattening} a Modelica model, the hybrid DAE \eqref{eq:hydrid-dae} contains a huge number of sparse equations.
 Therefore, direct simulation of \eqref{eq:hydrid-dae} requires sparse matrix methods.

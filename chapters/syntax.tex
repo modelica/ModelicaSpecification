@@ -9,10 +9,10 @@ The following syntactic metasymbols are used (extended BNF):
 \tablehead{Syntax} & \tablehead{Description}\\
 \hline
 \hline
-\lstinline[language=grammar]![ $\ldots$ ]! & Optional\\
-\lstinline[language=grammar]!{ $\ldots$ }! & Repeat zero or more times\\
-\lstinline[language=grammar]!$\ldots$ | $\ldots$! & Alternatives\\
-\lstinline[language=grammar]!"$\mathit{text}$"! & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
+{\lstinline[language=grammar]![ $\ldots$ ]!} & Optional\\
+{\lstinline[language=grammar]!{ $\ldots$ }!} & Repeat zero or more times\\
+{\lstinline[language=grammar]!$\ldots$ | $\ldots$!} & Alternatives\\
+{\lstinline[language=grammar]!"$\mathit{text}$"!} & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
 \hline
 \end{tabular}
 \end{center}
@@ -47,7 +47,8 @@ For example, the identifiers \lstinline!'x'! and \lstinline!x! are different.
 Note:
 \begin{itemize}
 \item
-  White-space and comments can be used between separate lexical units and/or symbols, and also separates them. Each lexical unit will consume the maximum number of characters from the input stream.
+  White-space and comments can be used between separate lexical units and/or symbols, and also separates them.
+  Each lexical unit will consume the maximum number of characters from the input stream.
   White-space and comments cannot be used inside other lexical units, except for \lstinline[language=grammar]!STRING! and \lstinline[language=grammar]!Q-IDENT! where they are treated as part of the \lstinline[language=grammar]!STRING! or \lstinline[language=grammar]!Q-IDENT! lexical unit.
 \item
   Concatenation of string literals requires a binary expression.
@@ -62,9 +63,12 @@ Note:
   Productions use hyphen as separator both in the grammar and in the text.
   (Previously the grammar used underscore.)
 \end{itemize}
+
 \begin{nonnormative}
-  Within a description-string the optional tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define the start and end of content that is HTML encoded.
-  \end{nonnormative}
+Within a description-string the optional tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define the start and end of content that is HTML encoded.
+\end{nonnormative}
+
+
 \section{Grammar}\label{grammar}
 
 \subsection{Stored Definition -- Within}\label{stored-definition-within}
@@ -168,10 +172,19 @@ import-list :
 
 \begin{lstlisting}[language=grammar]
 extends-clause :
-   extends type-specifier [ class-modification ] [ annotation-clause ]
+   extends type-specifier [ class-or-inheritance-modification ] [ annotation-clause ]
 
 constraining-clause :
    constrainedby type-specifier [ class-modification ]
+
+class-or-inheritance-modification :
+   "(" [ argument-or-inheritance-modification-list ] ")"
+
+argument-or-inheritance-modification-list :
+    ( argument | inheritance-modification ) { "," ( argument | inheritance-modification ) }
+
+inheritance-modification :
+    break ( connect-equation | IDENT )
 \end{lstlisting}
 
 \subsection{Component Clause}\label{component-clause}
@@ -202,9 +215,12 @@ declaration :
 
 \begin{lstlisting}[language=grammar]
 modification :
-   class-modification [ "=" expression ]
-   | "=" expression
-   | ":=" expression
+   class-modification [ "=" modification-expression ]
+   | "=" modification-expression
+
+modification-expression :
+   expression
+   | break
 
 class-modification :
    "(" [ argument-list ] ")"
@@ -240,20 +256,21 @@ short-class-definition :
    class-prefixes short-class-specifier
 \end{lstlisting}
 
+
 \subsection{Equations}\label{equations1}
 
 \begin{lstlisting}[language=grammar]
 equation-section :
-   [ initial ] equation { equation ";" }
+   [ initial ] equation { some-equation ";" }
 
 algorithm-section :
    [ initial ] algorithm { statement ";" }
 
-equation :
+some-equation :
    ( simple-expression "=" expression
      | if-equation
      | for-equation
-     | connect-clause
+     | connect-equation
      | when-equation
      | component-reference function-call-args
    )
@@ -274,12 +291,12 @@ statement :
 
 if-equation :
    if expression then
-     { equation ";" }
+     { some-equation ";" }
    { elseif expression then
-     { equation ";" }
+     { some-equation ";" }
    }
    [ else
-     { equation ";" }
+     { some-equation ";" }
    ]
    end if
 
@@ -296,7 +313,7 @@ if-statement :
 
 for-equation :
    for for-indices loop
-     { equation ";" }
+     { some-equation ";" }
    end for
 
 for-statement :
@@ -317,9 +334,9 @@ while-statement :
 
 when-equation :
    when expression then
-     { equation ";" }
+     { some-equation ";" }
    { elsewhen expression then
-     { equation ";" }
+     { some-equation ";" }
    }
    end when
 
@@ -331,7 +348,7 @@ when-statement :
    }
    end when
 
-connect-clause :
+connect-equation :
    connect "(" component-reference "," component-reference ")"
 \end{lstlisting}
 
@@ -375,7 +392,7 @@ mul-operator :
    "*" | "/" | ".*" | "./"
 
 factor :
-   primary [ ("^" | ".^") primary ]
+   primary [ ( "^" | ".^" ) primary ]
 
 primary :
    UNSIGNED-NUMBER
@@ -384,7 +401,7 @@ primary :
    | true
    | ( component-reference | der | initial | pure ) function-call-args
    | component-reference
-   | "(" output-expression-list ")"
+   | "(" output-expression-list ")" [ ( array-subscripts | "." IDENT ) ]
    | "[" expression-list { ";" expression-list } "]"
    | "{" array-arguments "}"
    | end
