@@ -4,7 +4,7 @@
 
 This document is a tutorial for the Modelica language, which is developed by the Modelica
 Association, a non-profit organization with seat in Linköping, Sweden. 
-This tutorial was originally for version 1.4 of the Modelica Language, but has been updated.
+This tutorial was originally for version 1.4 of the Modelica Language, the text and examples has been updated to be correct for latest version, but the tutorial does not explain features introduced later.
 Modelica is a freely available,
 object-oriented language for modeling of large, complex, and heterogeneous physical systems. It is suited
 for multi-domain modeling, for example, mechatronic models in robotics, automotive and aerospace
@@ -2180,6 +2180,27 @@ Within the documentation HTML-tags may be present. When extracting the documenta
 a model, a tool shall store this part of the documentation as HTML-file which can be displayed
 by appropriate browsers such as Netscape or Microsoft Explorer in a nice way.
 
+## Additional features
+
+The following is a list of some important features introduced after the tutorial was written.
+
+- "Balanced models" Makes it possible to check that sub-models have the same number of equations and variables.
+  https://modelica.org/events/conference2008/sessions/session1a3.pdf
+- "Initialization of models" 
+   - Initial equations and using fixed=false to compute parameters; https://modelica.org/events/Conference2002/papers/p02_Mattsson.pdf
+   - homotopy operator makes the initialization more robust https://2011.international.conference.modelica.org/proceedings/pages/papers/04_1_ID_154_a_fv.pdf
+- Improved connectors
+  - "Streams connectors" Makes it possible to have connectors for convective properties
+  http://dx.doi.org/10.3384/ecp09430078
+  - "Overdetermined connectors" for 3d-mechanical systems; Section 5 of https://modelica.org/events/Conference2003/papers/h37_Otter_multibody.pdf
+- "Operator overloading" Allows user-defined types such as Complex numbers.
+   http://dx.doi.org/10.3384/ecp09430100
+- "Clocked semantics"
+  - "Synchronous Modelica" Introduces clocked semantics as a stricter variant of discrete events.
+   http://dx.doi.org/10.3384/ecp1207615
+  - "State machines" Clocked state machines
+   http://dx.doi.org/10.3384/ecp1207637
+
 ## Examples
 
 Modelica has been used to model various kinds of systems. Otter et.al., 1997 describes modeling
@@ -2193,7 +2214,7 @@ supporting the bond graph modeling methodology. Franke, 1998 models a central so
 plant using Modelica. Mosterman et.al., 1998 describes a Petri-Net library written in Modelica.
 In October 2000, the first workshop on Modelica with 85 participants took place in Lund,
 Sweden. All papers and posters of this workshop are available in pdf-format from
-http://www.Modelica.org/modelica2000/proceedings.
+https://modelica.org/events/workshop2000/
 
 ## Conclusions
 
