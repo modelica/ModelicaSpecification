@@ -4,7 +4,7 @@
 
 This document is a tutorial for the Modelica language, which is developed by the Modelica
 Association, a non-profit organization with seat in Linköping, Sweden. 
-This tutorial was originally for version 1.4 of the Modelica Language, the text and examples has been updated to be correct for latest version, but the tutorial does not explain features introduced later.
+This tutorial was originally for version 1.4 of the Modelica Language, the text and examples has been updated to be correct for the latest version, but the tutorial does not explain features introduced later.
 Modelica is a freely available,
 object-oriented language for modeling of large, complex, and heterogeneous physical systems. It is suited
 for multi-domain modeling, for example, mechatronic models in robotics, automotive and aerospace
@@ -34,6 +34,7 @@ Modelica™ is a trademark of the "Modelica Association".
   - [Library Construction](#library-construction)
   - [Units and Quantities](#units-and-quantities)
   - [Annotations for Graphics and Documentation](#annotations-for-graphics-and-documentation)
+- [Additional features](#additional-features)
 - [Examples](#examples)
 - [Conclusions](#conclusions)
 - [References](#references)
