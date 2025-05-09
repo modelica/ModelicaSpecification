@@ -29,6 +29,15 @@ When an annotation is defined with a component variability prefix (\cref{compone
 If the annotation is declared as an \lstinline!/*evaluable*/ parameter! the corresponding modifier is further restricted to be evaluable.
 If the annotation is declared as a \lstinline!/*literal*/ constant! the corresponding modifier is further restricted to be a literal value.
 
+\begin{example}
+Since the semantics of an annotation comes from the interpretation as a modification, empty annotations have no impact at all.
+For example, the following is allowed, but meaningless:
+\begin{lstlisting}[language=modelica]
+annotation(Dialog());
+\end{lstlisting}
+An annotation such as \lstinline!annotation(Dialog)! is also meaningless, but deprecated according to \cref{semantic-restrictions-of-annotation-syntax}.
+\end{example}
+
 
 \section{Semantic Restrictions of Annotation Syntax}\label{semantic-restrictions-of-annotation-syntax}
 
@@ -48,7 +57,21 @@ In particular, the keyword \lstinline!redeclare! cannot be used.
 \item
 \lstinline[language=grammar]!element-replaceable! in the grammar.
 In particular the keywords \lstinline!replaceable! and \lstinline!constrainedby! cannot be used.
+\item
+A \lstinline[language=grammar]!element-modification! without \lstinline[language=grammar]!modification! is deprecated without exceptions.
+The meaning of such annotations has never been defined.
 \end{itemize}
+
+\begin{example}
+The following annotations are not merely meaningless, but deprecated:
+\begin{lstlisting}[language=modelica]
+annotation(
+  Dialog,
+  Dialog(colorSelector)
+);
+\end{lstlisting}
+In particular, the effect of \lstinline!colorSelector! is not the same as \lstinline!colorSelector = true!, even though the latter is the only meaningful use of \lstinline!colorSelector!.
+\end{example}
 
 
 \section{Expression Evaluation Inside Annotations}\label{expression-evaluation-inside-annotations}
@@ -378,7 +401,9 @@ In the places listed in \cref{attributes-with-variable-replacements} where text 
 This is similar to the \lstinline!Text! graphical primitive in \cref{text}.
 
 \begin{table}[H]
-\caption{Attributes that can use variable replacements.}
+\caption{
+  Attributes that can use variable replacements.
+}
 \label{attributes-with-variable-replacements}
 \begin{center}
 \begin{tabular}{l l}
@@ -891,7 +916,7 @@ type FillPattern = enumeration(None, Solid, Horizontal, Vertical,
                                HorizontalCylinder, VerticalCylinder, Sphere);
 type BorderPattern = enumeration(None, Raised, Sunken, Engraved);
 type Smooth = enumeration(None, Bezier);
-type EllipseClosure = enumeration(None, Chord, Radial);
+type EllipseClosure = enumeration(None, Chord, Radial, Automatic);
 \end{lstlisting}%
 \annotationindex{Color}\annotationindex{LinePattern}\annotationindex{FillPattern}\annotationindex{BorderPattern}\annotationindex{Smooth}\annotationindex{EllipseClosure}
 The \lstinline!LinePattern! attribute \lstinline!Solid! indicates a normal line, \lstinline!None! an invisible line, and the other attributes various forms of dashed/dotted lines.
@@ -907,10 +932,11 @@ The border pattern attributes \lstinline!Raised!, \lstinline!Sunken! and \lstinl
   \begin{center}
     \includegraphics{bezierpoints}
   \end{center}
-  \caption{%
+  \caption{
     Line with \lstinline!smooth = Bezier!.
     The four line points $P_{1}$, \ldots{}, $P_{4}$ result in two quadratic splines and two straight line segments.
-  }\label{fig:smooth-bezier}
+  }
+  \label{fig:smooth-bezier}
 \end{figure}
 
 The \lstinline!smooth! attribute specifies that a line can be drawn as straight line segments (\lstinline!None!) or using a spline (\lstinline!Bezier!), where the line's points specify control points of a quadratic Bezier curve, see \cref{fig:smooth-bezier}.
@@ -1183,11 +1209,7 @@ record Ellipse
   Extent extent;
   Real startAngle(quantity = "angle", unit = "deg") = 0;
   Real endAngle(quantity = "angle", unit = "deg") = 360;
-  EllipseClosure closure =
-    if startAngle == 0 and endAngle == 360 then
-      EllipseClosure.Chord
-    else
-      EllipseClosure.Radial;
+  EllipseClosure closure = EllipseClosure.Automatic;
 end Ellipse;
 \end{lstlisting}%
 \annotationindex{Ellipse}
@@ -1197,10 +1219,10 @@ Partial ellipses can be drawn using the \lstinline!startAngle! and \lstinline!en
 These specify the endpoints of the arc prior to the stretch and rotate operations.
 The arc is drawn counter-clockwise from \lstinline!startAngle! to \lstinline!endAngle!, where \lstinline!startAngle! and \lstinline!endAngle! are defined counter-clockwise from 3 o'clock (the positive x-axis).
 
-The closure attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).
+The \lstinline!closure! attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).
 In the latter case, the ellipse is treated as an open curve instead of a closed shape, and the \lstinline!fillPattern! and \lstinline!fillColor! are not applied (if present, they are ignored).
 
-The default closure is \lstinline!EllipseClosure.Chord! when \lstinline!startAngle! is 0 and \lstinline!endAngle! is 360, or \lstinline!EllipseClosure.Radial! otherwise.
+The effect of \lstinline!EllipseClosure.Automatic! is that of \lstinline!EllipseClosure.Chord! when both \lstinline!startAngle! is 0 and \lstinline!endAngle! is 360, and that of \lstinline!EllipseClosure.Radial! otherwise.
 
 \begin{nonnormative}
 The default for a closed ellipse is not \lstinline!EllipseClosure.None!, since that would result in \lstinline!fillColor! and \lstinline!fillPattern! being ignored, making it impossible to draw a filled ellipse.
@@ -1301,10 +1323,12 @@ The center of the image is positioned at the center of the extent.
 
 \subsection{Variable Graphics and Schematic Animation}\label{variable-graphics-and-schematic-animation}
 
-Any value (coordinates, color, text, etc.) in graphical annotations can be dependent on class variables using \lstinline!DynamicSelect!.
-\lstinline!DynamicSelect! has the syntax of a function call with two arguments, where the first argument specifies the value of the editing state and the second argument the value of the non-editing state.
-The first argument must be a literal expression.
-The second argument may contain references to variables to enable a dynamic behavior.
+Any value in graphical annotations can be dependent on evaluable parameters except when restricted otherwise in their respective definitions, (for example with \lstinline!/* literal */ constant!).
+
+\lstinline!DynamicSelect! has the syntax of a function call with two arguments, where the first argument specifies the value of the static state and the second argument the value of the dynamic state.
+The first argument follows the same rules as when not using \lstinline!DynamicSelect!.
+The second argument may contain references to variables of a higher variability to enable displaying dynamic behavior of a simulation.
+
 
 \begin{example}
 The level of a tank could be animated by a rectangle expanding in vertical direction and its color depending on a variable overflow:
@@ -1340,8 +1364,7 @@ end OnMouseDownSetBoolean;
 \end{lstlisting}
 
 \begin{example}
-A button can be represented by a rectangle changing color depending on a \lstinline!Boolean! variable \lstinline!on! and toggles the
-variable when the rectangle is clicked on:
+A button can be represented by a rectangle changing color depending on a \lstinline!Boolean! variable \lstinline!on! and toggles the variable when the rectangle is clicked on:
 \begin{lstlisting}[language=modelica]
 annotation(Icon(
   graphics = {
@@ -1529,12 +1552,18 @@ inner replaceable World world;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Allowed for simple types and components of a simple types.
-If \lstinline!false!, then the variable defines a relative quantity, and if \lstinline!true! an absolute quantity.
+If \lstinline!false!, then the component defines a relative quantity, and if \lstinline!true! an absolute quantity.
+When converting between units (e.g., in plots and where parameters are edited), the unit offset must be ignored for relative quantities.
+The annotation is inherited in the sense that when \lstinline!absoluteValue! is defined for a simple type, it also applies derived classes.
+When \lstinline!absoluteValue! is defined for a simple type, it also applies to components declared with the type.
+
+When \lstinline!absoluteValue! of a component is not determined by an annotation (possibly through inheritance), the \lstinline!absoluteValue! status may be inferred by the tool.
+If the \lstinline!absoluteValue! of a component is neither determined by annotation nor inference, unit conversions that would differ depending on \lstinline!absoluteValue! cannot be performed.
 
 \begin{nonnormative}
-When converting between units (in the user-interface for plotting and entering parameters), the unit offset must be ignored for a variable defined with annotation \lstinline!absoluteValue = false!.
-This annotation is used in the Modelica Standard Library, for example in \lstinline!Modelica.Units.SI! for the type definition \lstinline!TemperatureDifference!.
-For most types there is no unit offset and the annotation is not needed for them.
+For most quantities there are no units with offset, and the annotation is not needed.
+For a component where unit conversions involving offsets could be of interest (mainly temperatures), ensuring that \lstinline!absoluteValue! is determined by an annotation (typically by means of using a type where it has been specified) may reduce impact of quality-of-implementation in tool ability to infer \lstinline!absoluteValue!.
+Example applications of this annotation can be found among the type definitions in the \lstinline!Modelica.Units! package of the Modelica Standard Library, such as \lstinline!TemperatureDifference!.
 \end{nonnormative}
 \end{semantics}
 \end{annotationdefinition}
@@ -1610,7 +1639,7 @@ record Dialog
   /*literal*/ constant String tab = "General";
   /*literal*/ constant String group = "";
   /*evaluable*/ parameter Boolean enable = true;
-  /*literal*/ constant Boolean showStartAttribute = false;
+  /*literal*/ constant Boolean showStartAttribute;
   /*literal*/ constant Boolean colorSelector = false;
   /*literal*/ constant Selector loadSelector;
   /*literal*/ constant Selector saveSelector;
@@ -1634,6 +1663,8 @@ The order of components (and class definitions) within each group and the order 
 
 A component shall have at most one of \lstinline!showStartAttribute=true!, \lstinline!colorSelector=true!, \lstinline!loadSelector!, \lstinline!saveSelector!, \lstinline!directorySelector!, or \lstinline!connectorSizing=true!.
 
+Modifiable parameters (except for \lstinline!connectorSizing = true!), non-connector inputs, and short replaceable class definitions should normally be shown in the dialog even without this annotation.
+
 \begin{example}
 When \lstinline!group! is empty, a tool may place parameters in the group ``Parameters'', and place variables with \lstinline!showStartAttribute = true! in the group ``Start Attributes''.
 \end{example}
@@ -1645,6 +1676,8 @@ If \lstinline!showStartAttribute = true! the dialog should allow the user to set
 \begin{nonnormative}
 The \lstinline!showStartAttribute = true! is primarily intended for non-parameter values and avoids introducing a separate parameter for the \lstinline!start!-attribute of the variable.
 \end{nonnormative}
+
+If a non-parameter declaration has a modifier for the \lstinline!start!-attribute and does not have \lstinline!showStartAttribute = false!, the \lstinline!start!- and \lstinline!fixed!-attributes may also be shown.
 
 If \lstinline!colorSelector = true!, it suggests the use of a color selector to pick an \textsc{rgb} color as a vector of three values in the range 0..255 (the color selector should be useable both for vectors of \lstinline!Integer! and \lstinline!Real!).
 
@@ -1664,6 +1697,7 @@ Disabling the input field will not disable the image.
 The background of the \lstinline!groupImage! and any image used in HTML-documentation is recommended to be transparent (intended to be a light color) or white.
 
 The \lstinline!connectorSizing! is described separately in \cref{connector-sizing}.
+A dialog annotation only containing \lstinline!showStartAttribute = false! and/or \lstinline!connectorSizing = true! does not indicate that the variable shall be shown.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1692,7 +1726,7 @@ When clicking on an instance of model \lstinline!DialogDemo!, a dialog is shown 
 \end{semantics}
 \end{annotationdefinition}
 
-\subsection{Connector Sizing}\label{connector-sizing}
+\subsection{Connector Sizing}\label{connector-sizing}\annotationindex{connectorSizing}
 
 This section describes the \lstinline!connectorSizing! annotation inside a \lstinline!Dialog! annotation.
 The value of \lstinline!connectorSizing! must be a literal \lstinline!false! or \lstinline!true!.
@@ -1700,8 +1734,7 @@ If \lstinline!connectorSizing = false!, this annotation has no effect.
 If \lstinline!connectorSizing = true!, the corresponding variable must be declared with the \lstinline!parameter! prefix, must be a subtype of a scalar \lstinline!Integer! and must have a literal default value of zero.
 
 \begin{nonnormative}
-The reason why \lstinline!connectorSizing! must be given a literal value is that if the value is an expression,
-the \lstinline!connectorSizing! functionality is conditional and this will then lead easily to wrong models.
+The reason why \lstinline!connectorSizing! must be given a literal value is that if the value is an expression, the \lstinline!connectorSizing! functionality is conditional and this will then lead easily to wrong models.
 
 The default value of the variable must be zero since this annotation is designed for a parameter that is used as vector dimension, and the dimension of the vector should be zero when the component is dragged or redeclared.
 Furthermore, when a tool does not support the \lstinline!connectorSizing! annotation, dragging will still result in a correct model.
@@ -1931,8 +1964,7 @@ Consider the following as part of a conversion script:
 convertClass("Modelica.SIunits", "Modelica.Units.SI");
 convertClass("Modelica.SIunits.Icons", "Modelica.Units.Icons");
 \end{lstlisting}
-This ensures that for example \lstinline!Modelica.SIunits.Length! is converted to \lstinline!Modelica.Units.SI.Length!
-and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.Units.Icons!.
+This ensures that for example \lstinline!Modelica.SIunits.Length! is converted to \lstinline!Modelica.Units.SI.Length! and \lstinline!Modelica.SIunits.Icons! is converted to \lstinline!Modelica.Units.Icons!.
 \end{example}
 
 \paragraph*{convertClassIf("OldClass", "oldElement", "whenValue", "NewClass")}\label{convertclassifoldclass-oldelement-whenvalue-newclass}\annotationindex{convertClassIf}
@@ -2173,8 +2205,7 @@ end M2
 The meanings of these annotations are:
 \begin{itemize}
 \item
-  \lstinline!version! is the version number of the released library,
-  see \cref{version-handling}.
+  \lstinline!version! is the version number of the released library, see \cref{version-handling}.
 \item
   \lstinline!versionDate! is the date in UTC format (according to ISO 8601) when the library was released.
   This string is updated by the library author to correspond with the version number.
@@ -2410,20 +2441,22 @@ In this section annotations within the \lstinline!Protection! annotation are def
 record Protection
   /*literal*/ constant Access access;
   /*literal*/ constant String features[:] "Required license features";
-
-  record License
-    /*literal*/ constant String libraryKey;
-    /*literal*/ constant String licenseFile = "" "Optional, default mapping if empty";
-  end License;
+  /*literal*/ constant UserLicense License;
 end Protection;
+
+record UserLicense "Internal class name, do not use"
+  /*literal*/ constant String libraryKey;
+  /*literal*/ constant String licenseFile = "" "Default mapping if empty";
+end UserLicense;
 \end{lstlisting}
-See \cref{protection-of-classes} for a description of \lstinline!access!, and note that licensing information uses another record \lstinline!Protection! with different contents given below.
+See \cref{protection-of-classes} for a description of \lstinline!access!.
 The \fmtannotationindex{License} annotation has only an effect on the top of an encrypted class and is then valid for the whole class hierarchy.
 (Usually the licensed class is a package.)
 The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
 
 The \lstinline!features! annotation defines the required license options.
-If the features vector has more than one element, then at least a license feature according to one of the elements must be present.
+If the features vector in the library has one or more elements, then at least a license feature according to one of the elements must be present in the authorization file.
+If the features vector in the library is empty or not provided there is no need for a license feature in the authorization file.
 As with the other annotations, the \lstinline!features! annotation holds for the respective class and for all classes that are hierarchically on a lower level, unless further restricted by a corresponding annotation.
 If no license according to the \lstinline!features! annotation is provided in the authorization file, the corresponding classes are not visible and cannot be used, not even internally in the package.
 
@@ -2440,28 +2473,30 @@ annotation(Protection(features={"LicenseOption1 LicenseOption2", "LicenseOption3
 \end{lstlisting}
 \end{example}
 
-In order that the protected class can be used either a tool specific license manager, or a license file (called \lstinline!licenseFile!) must be present.
-The license file is standardized.
-It is a Modelica package without classes that has a \lstinline!Protection! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
+In order that the protected class can be used either a tool specific license manager, or an authorization file (called \lstinline!licenseFile!) must be present.
+The authorization file is standardized.
+It is a Modelica package without classes that has an \lstinline!Authorization! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
 \begin{lstlisting}[language=modelica]
-record Protection
-  record Authorization
-    /*literal*/ constant String licensor = "" "Optional string to show information about the licensor";
-    /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
-    /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
-  end Authorization;
-
-  record License
-    /*literal*/ constant String licensee = "" "Optional string to show information about the licensee";
-    /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
-    /*literal*/ constant String features[:] "Activated library license features";
-    /*literal*/ constant String startDate = "" "Optional start date in UTCformat YYYY-MM-DD";
-    /*literal*/ constant String expirationDate = "" "Optional expiration date in UTCformat YYYY-MM-DD";
-    /*literal*/ constant String operations[:] "Library usage conditions";
-  end License;
-end Protection;
+record Authorization
+  /*literal*/ constant String licensor = "" "Information about the licensor";
+  /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
+  /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
+end Authorization;
 \end{lstlisting}%
-\index{Authorization@\robustinline{Authorization}!license file}\index{License@\robustinline{License}!license file}
+\index{Authorization@\robustinline{Authorization}!authorization file}\index{License@\robustinline{License}!authorization file}
+using the following definition:
+\begin{lstlisting}[language=modelica]
+record License
+  /*literal*/ constant String licensee = "" "Information about the licensee";
+  /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
+  /*literal*/ constant String features[:] "Activated library license features";
+  /*literal*/ constant String startDate = "" "Start date in UTCformat YYYY-MM-DD";
+  /*literal*/ constant String expirationDate = "" "Expiration date in UTCformat YYYY-MM-DD";
+  /*literal*/ constant String operations[:] "Library usage conditions";
+end License;
+\end{lstlisting}
+
+If \lstinline!startDate! and \lstinline!expirationDate! are empty (the default) it is a perpetual license.
 
 The format of the strings used for \lstinline!libraryKey! and \lstinline!id! are not specified (they are vendor specific).
 The \lstinline!libraryKey! is a secret of the library developer.

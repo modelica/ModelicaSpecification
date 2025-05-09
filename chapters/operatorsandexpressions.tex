@@ -42,10 +42,10 @@ Since Modelica tools have the freedom to symbolically manipulate expressions, th
 
 The following table presents the precedence and associativity of all the expression operators, consistent with and complementing information that can be derived from the Modelica grammar in \cref{modelica-concrete-syntax}.
 \begin{table}[H]
-\caption{%
-Operators in order of precedence from highest to lowest.
-Operators with different precedence are separated by horizontal lines.
-All operators are binary except array index, member access, function call, those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
+\caption{
+  Operators in order of precedence from highest to lowest.
+  Operators with different precedence are separated by horizontal lines.
+  All operators are binary except array index, member access, function call, those shown as unary together with \emph{expr}, the conditional operator, the array construction operator
 % Beware that the array construction operator, normally expressed as \lstinline!{ }! needs escaped braces inside \caption.
 % This isn't handled correctly by LaTeXML, as reported here:
 % - https://github.com/brucemiller/LaTeXML/issues/1377 (fixed on master 2022-12-10)
@@ -54,9 +54,10 @@ All operators are binary except array index, member access, function call, those
 \else
 \lstinline!{ }! % Intentional space at end of line.
 \fi
-and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.\\
-$^{\dagger}$ The associativity of array construction and concatenation refers to the separator (`\lstinline!,!' or `\lstinline!;!'), not the enclosing delimiters.
-}\label{tab:operator-precedence}
+  and concatenation operator \lstinline![ ]!, and the array range constructor which is either binary or ternary.\\
+  $^{\dagger}$ The associativity of array construction and concatenation refers to the separator (`\lstinline!,!' or `\lstinline!;!'), not the enclosing delimiters.
+}
+\label{tab:operator-precedence}
 \begin{center}
 \begin{tabular}{l c l l}
 \hline
@@ -431,6 +432,8 @@ The mathematical functions and conversion operators listed below do not generate
 \hline
 {\lstinline!abs($v$)!} & Absolute value (event-free) & \Cref{modelica:abs} \\
 {\lstinline!sign($v$)!} & Sign of argument (event-free) & \Cref{modelica:sign} \\
+{\lstinline!min($x$, $y$)!} & Least of two scalars (event-free) & \Cref{modelica:min-binary} \\
+{\lstinline!max($x$, $y$)!} & Greatest of two scalars (event-free) & \Cref{modelica:max-binary} \\
 {\lstinline!sqrt($v$)!} & Square root & \Cref{modelica:sqrt} \\
 {\lstinline!nthRoot($v$, $n$)!} & $n$th root & \Cref{modelica:nthRoot} \\
 {\lstinline!Integer($e$)!} & Conversion from enumeration to {\lstinline!Integer!} & \Cref{modelica:integer-of-enumeration} \\
@@ -440,7 +443,8 @@ The mathematical functions and conversion operators listed below do not generate
 \end{tabular}
 \end{center}
 
-All of these except for the \lstinline!String! conversion operator are vectorizable according to \cref{scalar-functions-applied-to-array-arguments}.
+Except for the \lstinline!min!, \lstinline!max! and the \lstinline!String! conversion operator they are vectorizable according to \cref{scalar-functions-applied-to-array-arguments}.
+The \lstinline!min! and \lstinline!max! functions have array-specific variants which perform array reduction operations described in \cref{reduction-functions-and-operators}.
 
 Additional non-event generating mathematical functions are described in \cref{built-in-mathematical-functions-and-external-built-in-functions}, whereas the event-triggering mathematical functions are described in \cref{event-triggering-mathematical-functions}.
 
@@ -959,32 +963,35 @@ Furthermore, the maximum step size of the integrator is limited by this minimum 
 \begin{nonnormative}
 Many applications involve the modelling of variable-speed transport of properties.
 One option to model this infinite-dimensional system is to approximate it by an ODE, but this requires a large number of state variables and might introduce either numerical diffusion or numerical oscillations.
-Another option is to use a built-in operator that keeps track of the spatial distribution of $z(x, t)$, by suitable sampling, interpolation, and shifting of the stored distribution.
+Another option is to use a built-in operator that keeps track of the spatial distribution of $z(\xi, t)$, by suitable sampling, interpolation, and shifting of the stored distribution.
 In this case, the internal state of the operator is hidden from the ODE solver.
 \end{nonnormative}
 
 \lstinline!spatialDistribution! allows the infinite-dimensional problem below to be solved efficiently with good accuracy
 \begin{align*}
-\frac{\partial z(x,t)}{\partial t}+v(t)\frac{\partial z(x,t)}{\partial x} &= 0.0\\
-z(0.0, t) &= \mathrm{in}_0(t) \text{ if $v\geq 0$}\\
-z(1.0, t) &= \mathrm{in}_1(t) \text{ if $v<0$}
+\frac{\partial z(\xi, t)}{\partial t} + v(t) \frac{\partial z(\xi, t)}{\partial \xi} &= 0\\
+z(0, t) &= \mathrm{in}_{0}(t) \quad \text{if $v(t) \geq 0$}\\
+z(1, t) &= \mathrm{in}_{1}(t) \quad \text{if $v(t) < 0$}
 \end{align*}
-where $z(x, t)$ is the transported quantity, $x$ is the normalized spatial coordinate ($0.0 \le x \le 1.0$), $t$ is the time, $v(t)=\mathrm{der}(x)$ is the normalized transport velocity and the boundary conditions are set at either $x=0.0$ or $x=1.0$, depending on the sign of the velocity.
+where $z(\xi, t)$ is the transported quantity, $\xi$ is the normalized spatial coordinate ($0 \le \xi \le 1$), $t$ is the time, $v(t)$ is the normalized transport velocity and the boundary conditions are set at either $\xi = 0$ or $\xi = 1$, depending on the sign of the velocity.
+
 The calling syntax is:
 \begin{lstlisting}[language=modelica]
 (out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
                                    initialPoints = {0.0, 1.0},
                                    initialValues = {0.0, 0.0});
 \end{lstlisting}
-where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real! of equal size, containing the x coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(x, \mathit{t0})$.
-The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0.0, t)$ and $z(1.0, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0.0, t)$ and $z(1.0, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
+where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, and \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real!.
+The position \lstinline!x! is the integral of the transport velocity $v$, where the constant of integration does not matter.
+The arrays \lstinline!initialPoints! and \lstinline!initialValues! shall be parameter expressions of equal size, containing the $\xi$ coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(\xi, t_{0})$.
+The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0, t)$ and $z(1, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0, t)$ and $z(1, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
 The \lstinline!initialPoints! array shall span the entire range from 0 to 1, and must be sorted in non-descending order.
 The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.
 The operator can be vectorized only with respect to the arguments \lstinline!in0! and \lstinline!in1! (which must have the same size), returning vectorized outputs \lstinline!out0! and \lstinline!out1! of the same size; the arguments \lstinline!initialPoints! and \lstinline!initialValues! are vectorized accordingly.
 
 The solution, $z$, can be described in terms of characteristics:
 \begin{equation*}
-z(x+\int_{t}^{t+\beta} v(\alpha) \mathrm{d}\alpha, t+\beta) = z(x, t),\quad\text{for all $\beta$ as long as staying inside the domain}
+z(\xi+\int_{t}^{t+\beta}\! v(\alpha) \mathrm{d}\alpha,\, t+\beta) = z(\xi, t), \quad\text{for all $\beta$ as long as staying inside the domain}
 \end{equation*}
 
 This allows the direct computation of the solution based on interpolating the boundary conditions.
@@ -1567,10 +1574,7 @@ Constant expressions\index{constant!expression}\index{expression variability!con
 \item
   Constant variables, see \cref{component-variability}.
 \item
-  Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!,
-  \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with constant
-  subexpressions as argument (and no parameters defined in the function)
-  is a constant expression.
+  Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!, \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with constant subexpressions as argument (and no parameters defined in the function) is a constant expression.
 \item
   Some function calls are constant expressions regardless of the arguments:
   \begin{itemize}
@@ -1616,9 +1620,7 @@ Parameter expressions\index{parameter!expression}\index{expression variability!p
 \item
   Non-evaluable parameter variables, see \cref{component-variability}.
 \item
-  Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!,
-  \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with parameter
-  subexpressions is a parameter expression.
+  Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!, \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with parameter subexpressions is a parameter expression.
 \item
   Some function calls are parameter expressions even if the arguments are not:
   \begin{itemize}
