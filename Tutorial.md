@@ -2214,8 +2214,9 @@ oriented models. Broenink, 1997 describes a Modelica library with bond graph mod
 supporting the bond graph modeling methodology. Franke, 1998 models a central solar heating
 plant using Modelica. Mosterman et.al., 1998 describes a Petri-Net library written in Modelica.
 In October 2000, the first workshop on Modelica with 85 participants took place in Lund,
-Sweden. All papers and posters of this workshop are available in pdf-format from
-https://modelica.org/events/workshop2000/
+Sweden. 
+
+This has been followed by later conferences, see https://modelica.org/events/#conference-proceedings
 
 ## Conclusions
 
