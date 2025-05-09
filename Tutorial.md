@@ -2189,7 +2189,7 @@ The following is a list of some important features introduced after the tutorial
   https://modelica.org/events/conference2008/sessions/session1a3.pdf
 - "Initialization of models" 
    - Initial equations and using fixed=false to compute parameters; https://modelica.org/events/Conference2002/papers/p02_Mattsson.pdf
-   - homotopy operator makes the initialization more robust https://2011.international.conference.modelica.org/proceedings/pages/papers/04_1_ID_154_a_fv.pdf
+   - The `homotopy` operator makes the initialization more robust http://dx.doi.org/10.3384/ecp1106375
 - Improved connectors
   - "Streams connectors" Makes it possible to have connectors for convective properties
   http://dx.doi.org/10.3384/ecp09430078
