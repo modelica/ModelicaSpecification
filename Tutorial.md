@@ -512,7 +512,8 @@ R1.p.v = R3.p.v;
 R1.p.i + R2.p.i + R3.p.i = 0;
 ```
 In certain cases, a model library might be built on the assumption that only one connection can
-be made to each connector, that can be checked using `annotation(mayOnlyConnectOnce="reason")`; see https://specification.modelica.org/master/annotations.html#modelica:mayOnlyConnectOnce
+be made to each connector, that can be checked using `annotation(mayOnlyConnectOnce="reason")`; see 
+[specification of mayOnlyConnectOnce](https://specification.modelica.org/master/annotations.html#modelica:mayOnlyConnectOnce)
 
 ### Partial Models and Inheritance
 
@@ -1028,7 +1029,8 @@ input arguments are marked with the keyword `input` (since the causality is inpu
 argument of the function is marked with the keyword `output`.
 
 No internal states are allowed, i.e., the der- and pre- operators are not allowed. 
-Only components of the value like classes like record can be used in function; see https://specification.modelica.org/master/functions.html#function-as-a-specialized-class for details.
+Only components of the value like classes like record can be used in function; see 
+[specification of function as special class](https://specification.modelica.org/master/functions.html#function-as-a-specialized-class) for details.
 All public, non-constant variables of a class in the output argument are the outputs of a function.
 
 Instead of creating a polyeval object as was needed for the block PolynomialEvaluator:
@@ -1205,7 +1207,7 @@ The if-attribute allows statically enabling or disabling a component.
 The connects to the disabled components are automatically removed, ensuring that there is only one connection to the output y.
 
 Dynamically enabling and disabling components is currently only possible in clocked state-machines, and also allow reseting the states of the component when it is enabled, see 
-https://specification.modelica.org/master/state-machines.html
+[specification of state machines](https://specification.modelica.org/master/state-machines.html)
 
 #### Discrete Event and Discrete Time Models
 
@@ -1878,9 +1880,9 @@ environment can locate a desired class uniquely in the file system without any a
 information, it is precisely defined how Modelica classes have to be stored. Therefore, when a
 referenced class, such as `Modelica.Mechanics.Rotational.Components.Inertia`, is not yet available in the
 "workspace" of the simulation environment, the tool can locate this class in the file system and
-can load it automatically, this is described in https://specification.modelica.org/master/packages.html#file-system-mapping-of-package-class
+can load it automatically, this is described in [specification of file system mapping](https://specification.modelica.org/master/packages.html#file-system-mapping-of-package-class)
 
-The top-level classes, such as "Modelica", are located in all directories defined in the MODELICAPATH, see https://specification.modelica.org/master/packages.html#the-modelica-library-path-modelicapath
+The top-level classes, such as "Modelica", are located in all directories defined in the MODELICAPATH, see [specification of MODELICAPATH](https://specification.modelica.org/master/packages.html#the-modelica-library-path-modelicapath)
 
 ### Units and Quantities
 
@@ -2042,7 +2044,7 @@ the coordinate system is mapped to the region defined in the component declarati
 The attribute set to represent component positions, connections and various graphical primitives
 for building icons is shown below. The attribute structures are described through Modelica
 classes. Points and extents (two opposite points) are described in matrix notation.
-The specification contains the details, https://specification.modelica.org/master/annotations.html#annotations-for-graphical-objects this is just a short introduction.
+The specification contains the [details of graphical objects](https://specification.modelica.org/master/annotations.html#annotations-for-graphical-objects), this is just a short introduction.
 ```Modelica
  type DrawingUnit = Real(final unit="mm");
  type Point = DrawingUnit[2]; // {x, y}
@@ -2216,7 +2218,7 @@ plant using Modelica. Mosterman et.al., 1998 describes a Petri-Net library writt
 In October 2000, the first workshop on Modelica with 85 participants took place in Lund,
 Sweden. 
 
-This has been followed by later conferences, see https://modelica.org/events/#conference-proceedings
+This has been followed by later conferences, see [Conference Proceedings](https://modelica.org/events/#conference-proceedings)
 
 ## Conclusions
 
