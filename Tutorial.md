@@ -770,7 +770,9 @@ The actual dimensions of `A`, `B` and `C` are implicitly given by the actual mat
 parameters. `D` defaults to a zero matrix:
 ```Modelica
 block TestStateSpace 
-  StateSpace S(A = [0.12, 2; 3, 1.5], B = [2, 7; 3, 1], C = [0.1, 2]);
+  StateSpace S(A = [0.12, 2; 3, 1.5],
+               B = [2, 7; 3, 1],
+               C = [0.1, 2]);
 equation
   S.u = {time, sin(time)};
 end TestStateSpace;
@@ -1282,14 +1284,16 @@ For a relation like `v1 > v2`, a proper indicator function is `v1 - v2`.
 If the resulting if-then-else expression is smooth, the modeller has the possibility to give this extra information to the integrator in order to avoid event handling and thus enhance efficiency.
 This can be done by embedding the corresponding relation in a function noEvent as follows.
 ```Modelica
-  y = noEvent(if u > HighLimit then HighLimit else if u < LowLimit then LowLimit else u);
+  y = noEvent(if u > HighLimit then HighLimit
+               else if u < LowLimit then LowLimit else u);
 ```
 The `noEvent()` operator can only be applied in Real equations, but not in Boolean, Integer or String equations, in order that Boolean, Integer and String variables can change their value only at event instants, i.e., they are always discrete-time variables.
 (For the exact formulation of this restriction, see section [variability of expressions](https://specification.modelica.org/master/operators-and-expressions.html#variability-of-expressions) in the Modelica Language Specification).
 
 In this case it would also be possible to state that it is `smooth` (in this case with `0` continuous derivatives) and have the tools handle events completely.
 ```Modelica
-  y = smooth(0, if u > HighLimit then HighLimit else if u < LowLimit then LowLimit else u);
+  y = smooth(0, if u > HighLimit then HighLimit
+                else if u < LowLimit then LowLimit else u);
 ```
 
 #### Synchronization and event propagation
@@ -1704,10 +1708,17 @@ Consequently, when moving or copying an encapsulated class, at most the import s
 
 The import statement can be used in four different variants:
 ```Modelica
-import Modelica.Mechanics.Rotational.Sources; // access by Sources.Torque
-import R = Modelica.Mechanics.Rotational;// access by R.Sources.Torque
-import Modelica.Mechanics.Rotational.Sources.*; // access by Torque
-import Modelica.Mechanics.Rotational.Sources.{Torque,Speed}; // access by Torque
+import Modelica.Mechanics.Rotational.Sources; 
+// access by Sources.Torque
+
+import R = Modelica.Mechanics.Rotational;
+// access by R.Sources.Torque
+
+import Modelica.Mechanics.Rotational.Sources.*;
+// access by Torque
+
+import Modelica.Mechanics.Rotational.Sources.{Torque,Speed};
+// access by Torque
 ```
 In all cases, the first part of the name defined in the import statement is located within the top-level classes and no hierarchical search in upper hierarchical levels is performed.
 Note, that import statements are not inherited in order to not introduce hidden dependencies.
