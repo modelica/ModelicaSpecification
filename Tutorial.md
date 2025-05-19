@@ -206,15 +206,14 @@ In order that Modelica is useful for model exchange, it is important that librar
 For this reason, the Modelica Association develops and maintains a growing Modelica Standard Library.
 Furthermore, other people and organizations are developing free and commercial Modelica libraries.
 For more information and especially for downloading the free libraries, see http://www.Modelica.org/library/library.html.
-Currently, component libraries are available in the
-following domains:
+Currently, component libraries are available in the following domains:
+
 * About 450 type definitions, such as Angle, Voltage, Inertia.
 * Mathematical functions such as sin, cos, ln
 * Continuous and discrete input/output blocks, such as transfer functions, filters, sources.
 * Electric and electronic components such as resistor, diode, MOS and BJT transistor.
 * 1-dim. translational components such as mass, spring, stop.
-* 1-dim. rotational components such as inertia, gearbox, planetary gear, bearing friction,
-clutch.
+* 1-dim. rotational components such as inertia, gearbox, planetary gear, bearing friction, clutch.
 * 3-dim. mechanical components such as joints, bodies and 3-dim. springs.
 * Hydraulic components, such as pumps, cylinders, valves.
 * Thermo-fluid flow components, such as pipes with multi-phase flow, heat exchangers.
@@ -223,6 +222,7 @@ clutch.
 * Power train components such as driver, engine, torque converter, automatic gearboxes.
 
 A screenshot of several examples built by available Modelica libraries is given below:
+
 ![Several examples!](./tutorialExtra/Fig5.png "Collection of examples")
 
 ## Modelica Language Overview
@@ -243,6 +243,7 @@ The language constructs will be developed gradually starting with small examples
 
 Handling large models means careful structuring in order to reuse model knowledge.
 A model is built-up from
+
 * basic components such as Real, Integer, Boolean and String
 * structured components, to enable hierarchical structuring
 * component arrays, to handle real matrices, arrays of submodels, etc
@@ -1847,11 +1848,11 @@ However, in order that graphical and documentation information can be exchanged 
 #### Graphical representation of models
 
 Graphical annotation information is given in three separate contexts:
-* Annotations associated with a component, typically to specify position and size of the
-component.
-* Annotations of a class to specify the graphical representation of its icon (see above),
-diagram, and common properties such as the local coordinate system.
+
+* Annotations associated with a component, typically to specify position and size of the component.
+* Annotations of a class to specify the graphical representation of its icon (see above), diagram, and common properties such as the local coordinate system.
 * Annotations associated with connections, i.e., route, color of connection line, etc.
+
 The example below shows the use of such graphical attributes to define a resistor.
 ```Modelica
 model Resistor
