@@ -1,0 +1,205 @@
+\usepackage{ifpdf} % duplicate use
+
+% When producing PDF, the ttfamily looks better in size \small, but with LaTeXML this becomes too small,
+% and the size is applied deep down on the HTML elements, making it hard to adjust using CSS.
+% Thus, the problem has to be addressed already when a listings language's 'basicstyle' is defined.
+% This needs to go before mlsshared.sty is loaded.
+\ifpdf
+\let\smallifpdf\small
+\else
+\let\smallifpdf\normalsize
+\fi
+\usepackage{listings}
+\usepackage{color}
+\usepackage[table]{xcolor}
+
+\definecolor{keywordcolor1} {rgb}{0.00, 0.20, 0.47}
+\definecolor{keywordcolor3} {rgb}{0.33, 0.24, 0.03}
+\definecolor{commentcolor}  {rgb}{0.07, 0.46, 0.00}
+
+% It would be nice to have comments set in normal variable-width font without any sort of
+% column alignment by the listsings.sty package, just like the comments look in the LaTeXML build.
+% Adding the following \commentfullflexible to the 'commentstyle'
+% makes words look good, but the words are still aligned in mysterious ways.
+%\let\commentfullflexible\lst@column@fullflexible
+
+% See https://github.com/modelica-tools/listings-modelica/blob/master/listings-modelica.cfg
+% Note: Changed comment color from green to [rgb]{0,0.4,0} - since the other variant was too distracting
+% And added pure,impure,stream as keywords
+% Remove cross as red
+% Note: have basicstyle=\upshape\small\ttfamily in all languages,
+% except the dialect [short]modelica - which is used for inline listings.
+% Apart from that change that dialect should be identical to modelica
+
+% The morekeywords=[3] part is a bit unclear.
+% The current logic is that "operators" are marked specially, but not normal functions.
+%
+% Note that Integer is both a predefined type and a function; we cannot treat them differently.
+% Another solution would be to remove this completely.
+\lstdefinelanguage{modelica}{% Language for use with the lstlisting environment.
+    basicstyle=\upshape\ttfamily\smallifpdf, % Font size for displayed code listings.
+    alsoletter={},
+%   otherkeywords={-, =, +, [, ], (, ), \{, \}, :, *, !},%
+    morekeywords=[1]{% Keywords not used to define code structure
+        der,connect,assert,terminate,break,return,%
+        false,true,and,not,or,%
+        final,each,%
+        flow,stream,%
+        input,output,%
+        discrete,parameter,constant,%
+    },
+    morekeywords=[2]{% Keywords used to define code structure
+        annotation,block,class,connector,constrainedby,%
+        encapsulated,enumeration,else,elseif,elsewhen,end,%
+        expandable,extends,external,for,%
+        function,if,in,inner,initial,import,loop,model,operator,outer,%
+        package,partial,record,redeclare,replaceable,%
+        then,type,when,while,within,algorithm,equation,%
+        protected,public,pure,impure,%
+    },%
+    % Note: initial is in both variants - depending on context, use first variant
+    morekeywords=[3]{% Selected recognized names that are not actual keywords, including:
+        % 3.7.2 #derivative-and-special-purpose-operators-with-function-syntax
+        delay,cardinality,homotopy,semiLinear,inStream,actualStream,spatialDistribution,getInstanceName,%
+        terminal,noEvent,smooth,sample,pre,edge,change,reinit,%
+        % 3.7.3 #event-related-operators-with-function-syntax (except initial)
+        previous,hold,subSample,superSample,shiftSample,backSample,noClock,firstTick,interval,%
+        % 4.8 #predefined-types-and-classes
+        Real,Integer,Boolean,String,%
+        % Highlights from #built-in-array-functions
+        promote,ndims,size,%
+        % Assorted things from #state-machines -- what about all the other operators in this chapter?
+        transition,initialState,%
+    },%
+    sensitive=true, % just in case
+    comment=[l]{//}, % comment lines
+    morecomment=[s]{/*}{*/}, % comment blocs
+    morestring=[b]{'},
+    morestring=[b]{"},
+}[keywords,comments,strings]
+
+\lstdefinelanguage[short]{modelica}[]{modelica}{% Language for use with the \lstinline command.
+    basicstyle=\upshape\ttfamily,              % Font size for inline code snippets.
+}
+
+% Special dialect of Modelica to use when there are URLs appearing outside string literals, to avoid the part
+% starting with '//' being treated as comment.
+\lstdefinelanguage[nocomment]{modelica}[short]{modelica}{%
+    commentstyle=\upshape\ttfamily, % Camouflage comments as workaround for not being able to remove rest-of-line comment recognition.
+}
+
+% Note: within only a keyword in grammar
+\lstdefinelanguage{grammar}{%
+    basicstyle=\upshape\ttfamily\smallifpdf, % size of fonts used for the code
+    identifierstyle=\itshape,
+    alsodigit={-},
+    breaklines=true,
+    breakatwhitespace=true,
+    morekeywords=[1]{%
+        % Keywords corresponding to morekeywords=[1] for language=modelica
+        der,connect,assert,terminate,break,return,%
+        false,true,and,not,or,%
+        final,each,%
+        flow,stream,%
+        input,output,%
+        discrete,parameter,constant,%
+        % Keywords corresponding to morekeywords=[2] for language=modelica
+        annotation,block,class,connector,constrainedby,%
+        encapsulated,enumeration,else,elseif,elsewhen,end,%
+        expandable,extends,external,for,%
+        function,if,in,inner,initial,import,loop,model,operator,outer,%
+        package,partial,record,redeclare,replaceable,%
+        then,type,when,while,within,algorithm,equation,%
+        protected,public,pure,impure,%
+    },
+    % Instead of using color to highlight BNF syntactical constructs as below, the production rule names
+    % are set in italics, so that the syntactical constructs stand out by having upright shape.
+%   alsoletter={|,\{,\},[,],(,)},
+%   morekeywords=[2]{|,\{,\},[,],(,)},
+    morekeywords=[3]{%
+        letters,%
+    },
+    morestring=[b]{"},
+    stringstyle=\color{keywordcolor1}, % For the grammar, fixed strings and keywords are the same kind of token.
+}[keywords,comments,strings]
+
+% Duplicate this definition here to avoid issue
+\lstdefinelanguage{FORTRAN77}{% Define custom language to avoid collision with predefined [77]Fortran.
+    basicstyle=\upshape\ttfamily\smallifpdf, % size of fonts used for the code
+    morekeywords=[1]{%
+        ASSIGN,BACKSPACE,CALL,CHARACTER,%
+        CLOSE,COMMON,COMPLEX,CONTINUE,DATA,DIMENSION,DO,DOUBLE,%
+        ELSE,ELSEIF,END,ENDIF,ENDDO,ENTRY,EQUIVALENCE,EXTERNAL,%
+        FILE,FORMAT,FUNCTION,GO,TO,GOTO,IF,IMPLICIT,%
+        INQUIRE,INTEGER,INTRINSIC,LOGICAL,%
+        OPEN,PARAMETER,PAUSE,PRECISION,PRINT,PROGRAM,READ,REAL,%
+        RETURN,REWIND,STOP,SUBROUTINE,THEN,%
+        WRITE,SAVE},
+    morekeywords=[2]{%
+        ACCESS,BLANK,BLOCK,DIRECT,EOF,ERR,EXIST,%
+        FMT,FORM,FORMATTED,IOSTAT,NAMED,NEXTREC,NUMBER,OPENED,%
+        REC,RECL,SEQUENTIAL,STATUS,TYPE,UNFORMATTED,UNIT},
+    morekeywords=[3]{%
+        INT,DBLE,CMPLX,ICHAR,CHAR,AINT,ANINT,% left out real
+        NINT,ABS,MOD,SIGN,DIM,DPROD,MAX,MIN,AIMAG,CONJG,SQRT,EXP,LOG,%
+        LOG10,SIN,COS,TAN,ASIN,ACOS,ATAN,ATAN2,SINH,COSH,TANH,LGE,LLE,LLT,%
+        LEN,INDEX},
+    morekeywords=[4]{AND,EQ,EQV,FALSE,GE,GT,OR,LE,LT,NE,NEQV,NOT,TRUE},%
+    sensitive=true,
+    morecomment=[f]*,
+    morecomment=[f]C,
+    morecomment=[f]c,
+    morestring=[d]", % not Fortran-77 standard, but allowed in Fortran-95 %%
+    morestring=[d]'
+}[keywords,comments,strings]
+
+\lstdefinelanguage[MLS]{C}{% Define new dialect to avoid collision with predefined dialects of C.
+    basicstyle=\upshape\ttfamily\smallifpdf, % size of fonts used for the code
+    morekeywords=[1]{%
+        auto,break,case,char,const,continue,default,do,double,%
+        else,enum,extern,float,for,goto,if,int,long,register,return,%
+        short,signed,sizeof,static,struct,switch,typedef,union,unsigned,%
+        void,volatile,while},
+    morekeywords=[3]{%
+        size_t},
+    sensitive=true,
+    morecomment=[s]{/*}{*/},
+    morecomment=[l]//, % nonstandard
+    morestring=[b]",
+    morestring=[b]',
+    moredelim=*[directive]\#,
+    moredirectives={%
+        define,elif,else,endif,error,if,ifdef,ifndef,line,%
+        include,pragma,undef,warning}
+}[keywords,comments,strings,directives]
+
+\lstdefinelanguage{CSS}{
+      keywords={},
+      sensitive=true,
+      morecomment=[l]{//},
+      morecomment=[s]{/*}{*/},
+      morestring=[b]',
+      morestring=[b]",
+      alsoletter={:},
+      alsodigit={-}
+}
+
+\lstset{%
+  backgroundcolor=\color{white},   % choose the background color
+  mathescape=true,
+  breaklines=true,                 % automatic line breaking only at white-space
+  keepspaces,                      % don't remove space such as those after closing parenthesis
+  upquote=true,                    % Don't turn apostrophe/backtick into single quotation marks.
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{commentcolor}\sffamily,
+  keywordstyle=\color{red},        % Unused keyword style in bright red to make it easy to detect and fix.
+  keywordstyle=[1]\color{keywordcolor1},
+  keywordstyle=[2]\color{keywordcolor1}\bfseries,
+  keywordstyle=[3]\color{keywordcolor3},
+  stringstyle=\color{black},     % string literal style
+  language=[short]modelica,     % Language that will be used by default, in particluar by plain \lstinline.
+  showstringspaces=false,
+  frame=lrtb,
+  belowskip=0pt,
+  defaultdialect=[MLS]C,
+}
