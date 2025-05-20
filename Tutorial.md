@@ -1540,7 +1540,7 @@ A generic gravity field shall be defined by the partial function gravityInterfac
 ```Modelica
 partial function gravityInterface
   input Real r[3] "position";
-  output Real g[3] ”gravity acceleration";
+  output Real g[3] "gravity acceleration";
 end gravityInterface;
 ```
 where only the interface of the function is defined. Since it is a partial function, this function cannot be called and can only be used as superclass for other functions, such as:
