@@ -2024,21 +2024,24 @@ When extracting the documentation from a model, a tool shall store this part of 
 
 The following is a list of some important features introduced after the tutorial was written.
 
-- "Balanced models" Makes it possible to check that sub-models have the same number of equations and variables.
+- "Balanced models" Makes it possible to check that sub-models have the same number of equations and variables.\
   https://modelica.org/events/conference2008/sessions/session1a3.pdf
 - "Initialization of models" 
-   - Initial equations and using fixed=false to compute parameters; https://modelica.org/events/Conference2002/papers/p02_Mattsson.pdf
-   - The `homotopy` operator makes the initialization more robust http://dx.doi.org/10.3384/ecp1106375
+   - Initial equations and using fixed=false to compute parameters;\
+     https://modelica.org/events/Conference2002/papers/p02_Mattsson.pdf
+   - The `homotopy` operator makes the initialization more robust\
+     http://dx.doi.org/10.3384/ecp1106375
 - Improved connectors
-  - "Streams connectors" Makes it possible to have connectors for convective properties
+  - "Streams connectors" Makes it possible to have connectors for convective properties\
   http://dx.doi.org/10.3384/ecp09430078
-  - "Overdetermined connectors" for 3d-mechanical systems; Section 5 of https://modelica.org/events/Conference2003/papers/h37_Otter_multibody.pdf
-- "Operator overloading" Allows user-defined types such as Complex numbers.
+  - "Overdetermined connectors" for 3d-mechanical systems; Section 5 of \
+    https://modelica.org/events/Conference2003/papers/h37_Otter_multibody.pdf
+- "Operator overloading" Allows user-defined types such as Complex numbers.\
    http://dx.doi.org/10.3384/ecp09430100
 - "Clocked semantics"
-  - "Synchronous Modelica" Introduces clocked semantics as a stricter variant of discrete events.
+  - "Synchronous Modelica" Introduces clocked semantics as a stricter variant of discrete events.\
    http://dx.doi.org/10.3384/ecp1207615
-  - "State machines" Clocked state machines
+  - "State machines" Clocked state machines\
    http://dx.doi.org/10.3384/ecp1207637
 
 ## Examples
