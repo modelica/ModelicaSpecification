@@ -1968,6 +1968,7 @@ type FilterType = enumeration(
     LowPass "Low pass filter",
     HighPass "High pass filter",
     BandPass "Band pass filter");
+
 model test
   parameter FilterType filter;
   ...
