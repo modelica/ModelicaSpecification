@@ -1948,20 +1948,33 @@ A graphical user environment could display the string comments in a list and aft
 This annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumerated types, and simple variables.
 Example:
 ```Modelica
-type controllerType=Integer(min=1,max=3)
-  annotation(choices(
-    choice=1 "P",
-    choice=2 "PI",
-    choice=3 "PID"));
+type Axis = Real[3] annotation(choices(
+    choice={1,0,0} "x-axis",
+    choice={0,1,0} "y-axis",
+    choice={0,0,1} "z-axis"));
 
 model test
-  parameter controllerType c;
+  parameter Axis axis;
   ...
 end test;
-test t;
 ```
-When displaying the parameter menu for model `t`, a Modelica environment could present not a value field for parameter c, but a choice selecting menu with the entries `P`, `PI` and `PID` as choices.
-After the selection, the graphical environment transforms the choice into the Integer values `1`, `2` or `3`.
+When displaying the parameter menu for model `test`, a Modelica environment could for parameter `axis` present a choice selecting a menu with the entries `x-axis`, `y-axis` and `z-axis` as choices.
+After the selection, the graphical environment transforms the choice into the values `{1,0,0}`, `{0,0,1}` or `{0,0,1}`.
+Note that the choice doesn't prevent other editing.
+
+Modelica also has enumeration types, where the description for elements are automatically used in the same way without the need for a choices-annotation.
+```Modelica
+type FilterType = enumeration(
+    LowPass "Low pass filter",
+    HighPass "High pass filter",
+    BandPass "Band pass filter");
+model test
+  parameter FilterType filter;
+  ...
+end test;
+```
+When displaying the parameter menu for model `test`, a Modelica environment could for parameter `filter` present a choice selecting a menu with the entries `Low pass filter`, `High pass filter` and `Band pass filter` as choices.
+After the selection, the graphical environment transforms the choice into the values `FilterType.LowPass`, `FilterType.HighPass` or `FilterType.BandPass`.
 
 #### Documentation of models
 
