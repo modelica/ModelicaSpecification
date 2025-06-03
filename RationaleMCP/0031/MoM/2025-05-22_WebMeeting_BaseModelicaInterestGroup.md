@@ -105,10 +105,8 @@ Going back to our road map defined earlier, the plan was to first finalize the p
 
 Henrik:
 
-Currently BaseModelica prototyping is not yet ready to proof that all constraints defined in Modelica can be considered.
 Currently BaseModelica is designed to enforce structural parameters to be constant.
 This makes it much easier to implement than Modelica.
-We will have to see if this constraint is really required.
 
 ## Issues
 
