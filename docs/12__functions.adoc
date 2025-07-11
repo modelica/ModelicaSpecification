@@ -1,0 +1,2860 @@
+== Functions
+:id: functions
+
+This chapter describes the Modelica function construct.
+
+=== Function Declaration
+
+A Modelica _function_ is a specialized class (see <<function-as-a-specialized-class>>) using the keyword `function`.
+The body of a Modelica function is an algorithm section that contains procedural algorithmic code to be executed when the function is called, or alternatively an external function specifier (see <<external-function-interface>>).
+Formal parameters are specified using the `input` keyword, whereas results are denoted using the `output` keyword.
+This makes the syntax of function definitions quite close to Modelica class definitions, but using the keyword `function` instead of `class`.
+
+[example]
+====
+The structure of a typical function declaration is sketched by the following schematic function example:
+
+[source,modelica]
+----
+function functionname
+  input  TypeI1 in1;
+  input  TypeI2 in2;
+  input  TypeI3 in3 = defaultExpr_1 "Comment" annotation(...);
+  ...
+  output TypeO1 out1;
+  output TypeO2 out2 = defaultExpr_2;
+  ...
+protected
+  // local variables
+  ...
+algorithm
+  // statements
+  ...
+end functionname;
+----
+====
+
+Optional explicit default values can be associated with any input or output formal parameter through binding equations.
+Comment strings and annotations can be given for any formal parameter declaration, as usual in Modelica declarations.
+
+[NOTE]
+Explicit default values are shown for the third input parameter and the second output parameter in the example above.
+
+[NOTE]
+--
+All internal parts of a function are optional; i.e., the following is also a legal function:
+
+[source,modelica]
+----
+function functionname
+end functionname;
+----
+--
+
+==== Ordering of Formal Parameters
+
+The relative ordering between input formal parameter declarations is significant since that determines the matching between actual arguments and formal parameters at function calls with positional parameter passing.
+Likewise, the relative ordering between the declarations of the outputs is significant since that determines the matching with receiving variables at function calls of functions with multiple results.
+However, the declarations of the inputs and outputs can be intermixed as long as these internal orderings are preserved.
+
+[NOTE]
+Mixing declarations in this way is not recommended, however, since it makes the code hard to read.
+
+[example]
+=====
+Example:
+
+[source,modelica]
+----
+function functionname
+  output TypeO1 out1; // Intermixed declarations of inputs and outputs
+  input TypeI1 in1; // not recommended since code becomes hard to read
+  input TypeI2 in2;
+  ...
+  output TypeO2 out2;
+  input TypeI3 in3;
+  ...
+end functionname;
+----
+=====
+
+==== Function Return-Statements
+
+The `return` statement terminates the current function call, see <<function-call>>.
+It can only be used in an algorithm section of a function.
+It has the following form:
+
+[source,modelica]
+----
+return;
+----
+
+[example]
+=====
+Example: (Note that this could alternatively use `break:`)
+
+[source,modelica]
+----
+function findValue "Returns position of val or 0 if not found"
+  input Integer x[:];
+  input Integer val;
+  output Integer index;
+algorithm
+  for i in 1:size(x,1) loop
+    if x[i] == val then
+      index := i;
+      return;
+    end if;
+  end for;
+  index := 0;
+  return;
+end findValue;
+----
+=====
+
+==== Inheritance of Functions
+
+It is allowed for a function to inherit and/or modify another function following the usual rules for inheritance of classes (see <<inheritance-modification-and-redeclaration>>).
+
+[NOTE]
+For example, it is possible to modify and extend a `function` class to add default values for input variables.
+
+A special case is defining a `function` as a short-class definition with modifiers for inputs inside a model.
+These default values, unless overridden in the function call, will then be considered for variability similarly as if they were given in the function call (see <<function-variability>>).
+
+[example]
+====
+Example: Demonstrating the variability implications. Note that functions cannot directly use nonconstants in enclosing scopes, so we cannot write `input Real x1 = x;` directly in `foo`.
+
+[source,modelica]
+----
+model M
+  function foo
+    input Real x1;
+    input Real x2 = 2;
+    output Real y;
+  algorithm
+    y := x1 + x2;
+  end foo;
+  Real x = time;
+  function f1 = foo(x1 = x);
+  constant Real z1 = f1(x1 = 2); // Legal, since 'x1' has a new value.
+  constant Real z2 = f1(x2 = 1); // Illegal, since 'x' is seen as an argument.
+end M;
+----
+====
+
+=== Function as a Specialized Class
+
+The function concept in Modelica is a specialized class (see <<specialized-classes>>).
+
+[NOTE]
+The syntax and semantics of a function have many similarities to those of the `block` specialized class.
+A function has many of the properties of a general class, e.g., being able to inherit other functions, or to redeclare or modify elements of a function declaration.
+
+Modelica functions have the following restrictions compared to a general Modelica `class`:
+
+* Each public component must have the prefix `input` or `output`.
+
+* Input formal parameters are read-only after being bound to the actual arguments or default values, i.e., they shall not be assigned values in the body of the function.
+
+* A function shall _not be used in connections_, shall not have _equations_, shall not have _initial algorithms_.
+
+* A function can have at most _one algorithm_ section or _one external function interface_ (not both), which, if present, is the body of the function.
+
+* A function may only contain components of the specialized classes `type`, `record`, `operator record`, and `function`; and it must not contain, e.g., `model`, `block`, `operator` or `connector` components.
+
+* A function may not contain components of type `Clock`.
+
+* The elements of a function shall not have prefixes `inner`, or `outer`.
+
+* A function may have zero or one external function interface, which, if present, is the external definition of the function.
+
+* For a function to be called in a simulation model, the function shall not be partial, and the output variables must be assigned inside the function either in binding equations or in an algorithm section, or have an external function interface as its body, or be defined as a function partial derivative.
+The output variables of a function should be computed.
++
+[NOTE]
+It is a quality of implementation how much analysis a tool performs in order to determine if the output variables are computed.
++
+A function _cannot contain_ calls to the Modelica _built-in operators_ `der`, `initial`, `terminal`, `sample`, `pre`, `edge`, `change`, `reinit`, `delay`, `cardinality`, `inStream`, `actualStream`, to the operators of the built-in package `Connections`, to the operators defined in <<synchronous-language-elements>> and <<state-machines>>, and is not allowed to contain `when`-statements.
+
+* The dimension _sizes_ not declared with colon (`:`) of each array result or array local variable (i.e., a non-input component) of a function must be either given by the input formal parameters, or given by constant or parameter expressions, or by expressions containing combinations of those (see <<initialization-and-binding-equations>>).
+
+* For initialization of local variables of a function see <<initialization-and-binding-equations>>.
+
+* Components of a function will inside the function behave as though they had discrete-time variability.
+
+Modelica functions have the following enhancements compared to a general Modelica `class`:
+
+* Functions can be called (see <<function-call>>).
+
+** The calls can use a mix of positional and named arguments (see <<positional-or-named-input-arguments>>).
+
+** Instances of functions have a special meaning (see <<functional-input-arguments>>).
+
+** The lookup of the `function` class to be called is extended (see <<composite-name-lookup>>).
+
+* A function can be _recursive_.
+
+* A formal parameter or local variable may be initialized through a _binding_ (=) of a default value in its declaration (see <<initialization-and-binding-equations>>).
+  If a non-input component in the function uses a record class that contain one or more binding equations they are viewed as initialization of those component of the record component.
+
+* A function is dynamically instantiated when it is called rather than being statically instantiated by an instance declaration, which is the case for other kinds of classes.
+
+* A function may have an external function interface specifier as its body.
+
+* A function may have a `return` statement in its algorithm section body.
+
+* A function allows dimension sizes declared with colon (`:`) to be resized for non-input array variables (see <<flexible-array-sizes-and-resizing-of-arrays>>).
+
+* A function may be defined in a short function definition to be a function partial derivative.
+
+=== Pure Modelica Functions
+
+Modelica functions are normally _pure_ which makes it easy for humans to reason about the code since they behave as mathematical functions, and possible for compilers to optimize.
+
+* _Pure_ Modelica functions always give the same output values or errors for the same input values and only the output values influence the simulation result, i.e., is seen as equivalent to a mathematical map from input values to output values.
+Some input values may map to errors.
+Pure functions are thus allowed to fail by calling `assert`, or `ModelicaError` in C code, or dividing by zero.
+Such errors will only be reported when and if the function is called.
+_Pure_ Modelica functions are not assumed to be thread-safe.
+
+* A Modelica function which does not have the _pure_ function properties is _impure_.
+
+The declaration of functions follow these rules:
+
+* Functions defined in Modelica (non-external) are _normally_ assumed to be pure (the exception is the deprecated case below), if they are impure they shall be marked with the `impure` keyword.
+They can be explicitly marked as `pure`.
++
+[NOTE]
+However, since functions as default are pure it is not recommended to explicitly declare them as `pure`.
+
+* External functions must be explicitly declared with `pure` or `impure`.
+
+* If a function is declared as `impure` any function extending from it shall be declared as `impure`.
+
+* A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without `pure` or `impure` keyword are assumed to be impure, but without any restriction on calling them.
+  Except for the function `Modelica.Utilities.Streams.print`, a diagnostic must be given if called in a simulation model.
+
+Calls of pure functions used inside expression may be skipped if the resulting expression will not depend on the possible returned value; ignoring the possibility of the function generating an error.
+
+A call to a function with no declared outputs is assumed to have desired side-effects or assertion checks.
+
+[NOTE]
+A tool shall thus not remove such function calls, with exception of non-triggered assert calls.
+A pure function, used in an expression or used with a non-empty left hand side, need not be called if the output from the function call do not mathematically influence the simulation result, even if errors would be generated if it were called.
+
+[NOTE]
+Comment 1: This property enables writing declarative specifications using Modelica.
+It also makes it possible for Modelica compilers to freely perform algebraic manipulation of expressions containing function calls while still preserving their semantics.
+For example, a tool may use common subexpression elimination to call a pure function just once, if it is called several times with identical input arguments.
+However, since functions may fail we can, e.g., only move a common function call from inside a loop to outside the loop if the loop is run at least once.
+
+[NOTE]
+Comment 2: The Modelica translator is responsible for maintaining this property for pure non-external functions.
+Regarding external functions, the external function implementor is responsible.
+Note that external functions can have side-effects as long as they do not influence the internal Modelica simulation state, e.g., caching variables for performance or printing trace output to a log file.
+
+With the prefix keyword `impure` it is stated that a Modelica function is _impure_ and it is only allowed to call such a function from within:
+
+* Another function marked with the prefix `impure`.
+
+* A `when`-equation.
+
+* A `when`-statement.
+
+* `pure(impureFunction(...))` -- which allows calling impure functions in any pure context.
+  The wrapping in `pure(...)` only by-passes the purity checking of the callee `impureFunction`; the argument expressions of the function call are not affected.
+
+* Initial equations and initial algorithms.
+
+* Binding equations for components declared as parameter -- which is seen as syntactic sugar for having a parameter with `fixed=false` and the binding as an initial equation.
++
+[NOTE]
+Thus, evaluation of the same function call at a later time during simulation is not guaranteed to result in the same value as when the parameter was initialized, seemingly breaking the declaration equation.
+
+* Binding equations for external objects.
+
+It is an error if an impure function call is part of a systems of equations (including linear systems), even if called in agreement with the restrictions above.
+The reason is that solving systems of equations generally requires expressions to be evaluated an unknown number of times.
+This includes the special handling of `when initial()` during initialization.
+
+There are two ways in which an impure function could be called in a system of equations, namely in the deprecated case of external functions assumed to be impure, and when using `pure(...)` to call an impure function from within a pure function.
+The side-effect semantics of the function call are then undefined.
+Specifically, the number of calls with external side-effects is unspecified.
+However, for impure functions where the outputs only depend on the inputs the system of equations should be solved correctly.
+
+[NOTE]
+A tool is not allowed to perform any optimizations on function calls to an impure function, e.g., reordering calls from different statements in an algorithm or common subexpression elimination is not allowed.
+
+By <<function-compatibility-or-function-subtyping-for-functions>>, it follows that an impure function can only be passed as argument to a function formal parameter of impure type.
+A function having a formal function parameter that is `impure` must be marked `pure` or `impure`.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+function evaluateLinear // pure function
+  input Real a0;
+  input Real a1;
+  input Real x;
+  output Real y;
+algorithm
+  y := a0 + a1*x;
+end evaluateLinear;
+
+impure function receiveRealSignal // impure function
+  input HardwareDriverID id;
+  output Real y;
+external "C"
+  y = receiveSignal(id);
+end receiveRealSignal;
+----
+
+Examples of allowed optimizations of pure functions:
+
+[source,modelica]
+----
+model M // Assume sin, cos, asin are pure functions with normal derivatives.
+  input Real x[2];
+  input Real w;
+  Real y[2] = [cos(w), sin(w); -sin(w), cos(w)] * x;
+  Real z[2] = der(y);
+  Real a = 0 * asin(w);
+end M;
+----
+
+A tool only needs to generate one call of the pure function `cos(w)` in the model `M` -- a single call used for both the two elements of the matrix, as well as for the derivative of that matrix.
+A tool may also skip the possible error for `asin(w)` and assume that `a` is zero.
+
+Examples of restrictions on optimizing pure functions:
+
+[source,modelica]
+----
+  Real x =
+    if noEvent(abs(x)) < 1 then
+      asin(x) // Cannot move asin(x) out of if-branch.
+    else
+      0;
+algorithm
+  assertCheck(p, T); // Must call function
+algorithm
+  if b then
+    y := 2 * someOtherFunction(x);
+  end if;
+  y := y + asin(x);
+  y := y + someOtherFunction(x);
+  // Cannot evaluate someOtherFunction(x) before asin(x) - unless b is true
+  // The reason is that asin(x) may fail and someOtherFunction may hang,
+  // and it might be possible to recover from this error.
+----
+====
+
+=== Function Call
+
+Function classes and record constructors (see <<record-constructor-functions>>) and enumeration type conversions (see <<conversion-of-integer-to-enumeration>>) can be called as described in this section.
+
+==== Positional or Named Input Arguments
+
+A function call has optional positional arguments followed by zero, one or more named arguments, such as
+
+[source,modelica]
+----
+f(3.5, 5.76, arg3=5, arg6=8.3);
+----
+
+The formal syntax of a function call (simplified by removing reduction expression, see <<reduction-expressions>>):
+
+[source,grammar]
+----
+primary :
+   component-reference function-call-args
+
+function-call-args :
+   "(" [ function-arguments ] ")"
+
+function-arguments :
+   function-argument [ "," function-arguments]
+   | named-arguments
+
+named-arguments: named-argument [ "," named-arguments ]
+
+named-argument: IDENT "=" function-argument
+
+function-argument : function-partial-application | expression
+----
+
+The interpretation of a function call is as follows: First, a list of unfilled slots is created for all formal input parameters.
+If there are _N_ positional arguments, they are placed in the first _N_ slots, where the order of the parameters is given by the order of the component declarations in the function definition.
+Next, for each named argument `identifier = expression`, the `identifier` is used to determine the corresponding slot.
+The value of the argument is placed in the slot, filling it (it is an error if this slot is already filled).
+When all arguments have been processed, the slots that are still unfilled are filled with the corresponding default value of the function definition.
+The default values may depend on other inputs (these dependencies must be acyclical in the function) -- the values for those other inputs will then be substituted into the default values (this process may be repeated if the default value for that input depend on another input).
+The default values for inputs shall not depend on non-input variables in the function.
+The list of filled slots is used as the argument list for the call (it is an error if any unfilled slots still remain).
+
+Special purpose operators with function syntax defined in the specification shall not be called with named arguments, unless otherwise noted.
+
+The type of each argument must agree with the type of the corresponding parameter, except where the standard type coercion (see <<standard-type-coercion>>) can be used to make the types agree.
+(See also <<automatic-vectorization>> on applying scalar functions to arrays.)
+
+[example]
+====
+Example: Assume a function `RealToString` is defined as follows to convert a `Real` number to a `String`:
+
+[source,modelica]
+----
+function RealToString
+  input Real number;
+  input Real precision = 6 "number of significantdigits";
+  input Real length = 0 "minimum length of field";
+  output String string "number as string";
+  ...
+end RealToString;
+----
+
+Then the following applications are equivalent:
+
+[source,modelica]
+----
+RealToString(2.0);
+RealToString(2.0, 6, 0);
+RealToString(2.0, 6);
+RealToString(2.0, precision=6);
+RealToString(2.0, length=0);
+RealToString(2.0, 6, precision=6); // error: slot is used twice
+----
+====
+
+==== Functional Input Arguments
+
+A functional input argument to a function is an argument of function type.
+The declared type of such an input formal parameter in a function can be the type-specifier of a partial function that has no replaceable elements.
+It cannot be the type-specifier of a record or enumeration (i.e., record constructor functions and enumeration type conversions are not allowed in this context).
+Such an input formal parameter of function type can also have an optional functional default value.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+function quadrature "Integrate function y = integrand(x) from x1 to x2"
+  input Real x1;
+  input Real x2;
+  input Integrand integrand; // Integrand is a partial function, see below
+  // With default: input Integrand integrand = Modelica.Math.sin;
+  output Real integral;
+algorithm
+  integral := (x2 - x1) * (integrand(x1) + integrand(x2)) / 2;
+end quadrature;
+
+partial function Integrand
+  input Real u;
+  output Real y;
+end Integrand;
+----
+====
+
+A functional argument can be provided in one of the following forms to be passed to a scalar formal parameter of function type in a function call:
+
+. as a function type-specifier (`Parabola` example below),
+. as a function partial application (see <<function-partial-application>> below),
+. as a function that is a component (i.e., a formal parameter of function type of the enclosing function),
+. as a function partial application of a function that is a component (example in <<function-partial-application>> below).
+
+In all cases the provided function must be function-compatible (see <<function-compatibility>>) with the corresponding formal parameter of function type.
+
+[example]
+====
+Example: A function as a positional input argument according to case 1 above:
+
+[source,modelica]
+----
+function Parabola
+  extends Integrand;
+algorithm
+  y := x * x;
+end Parabola;
+area = quadrature(0, 1, Parabola);
+----
+
+The `quadrature2` example below uses a function `integrand` that is a component as input argument according to case 3 above:
+[source,modelica]
+----
+function quadrature2 "Integrate function y = integrand(x) from x1 to x2"
+  input Real x1;
+  input Real x2;
+  input Integrand integrand; // Integrand is a partial function type
+  output Real integral;
+algorithm
+  integral :=
+    quadrature(x1, (x1 + x2) / 2, integrand) +
+    quadrature((x1 + x2) / 2, x2, integrand);
+end quadrature2;
+----
+====
+
+===== Function Partial Application
+
+A function partial application is similar to a function call with certain formal parameters bound to expressions, the specific rules are specified in this section and are not identical to the ones for function call in <<positional-or-named-input-arguments>>.
+A function partial application returns a partially evaluated function that is also a function, with the remaining not bound formal parameters still present in the same order as in the original function declaration.
+A function partial application is specified by the `function` keyword followed by a function call to `func_name` giving named formal parameter associations for the formal parameters to be bound, e.g.:
+
+[source,modelica]
+----
+function func_name(..., formal_parameter_name = expr, ...)
+----
+
+[NOTE]
+Note that the keyword `function` in a function partial application differentiates the syntax from a normal function call where some parameters have been left out, and instead supplied via default values.
+
+The function created by the function partial application acts as the original function but with the bound formal input parameters(s) removed, i.e., they cannot be supplied arguments at function call.
+The binding occurs when the partially evaluated function is created.
+A partially evaluated function is function-compatible (see <<function-compatibility>>) with the same function where all bound arguments are removed.
+
+[NOTE]
+Thus, for checking function type compatibility, bound formal parameters are ignored.
+
+[example]
+====
+Example: Function partial application as argument, positional argument passing, according to case 2 above:
+[source,modelica]
+----
+model Test
+  parameter Integer N;
+  Real area;
+algorithm
+  area := 0;
+  for i in 1:N loop
+    area := area + quadrature(0, 1, function Sine(A = 2, w = i * time));
+  end for;
+end Test;
+
+function Sine "y = Sine(x, A, w)"
+  extends Integrand;
+  input Real A;
+  input Real w;
+algorithm
+  y := A * Modelica.Math.sin(w * x);
+end Sine;
+----
+
+Call with function partial application as named input argument:
+
+[source,modelica]
+----
+area :=
+  area + quadrature(0, 1, integrand = function Sine(A = 2, w = i * time));
+----
+====
+
+[example]
+====
+Example: Function types are matching after removing the bound arguments `A` and `w` in a function partial application:
+
+[source,modelica]
+----
+function Sine2 "y = Sine2(A, w, x)"
+  input Real A;
+  input Real w;
+  input Real x; // Note: x is now last in argument list.
+  output Real y;
+algorithm
+  y := A * Modelica.Math.sin(w * x);
+end Sine2;
+area = quadrature(0, 1, integrand = function Sine2(A = 2, w = 3));
+----
+
+The partially evaluated `Sine2` has only one argument: `x` -- and is thus type compatible with `Integrand`.
+====
+
+[example]
+====
+Example: Function partial application of a function that is a component, according to case 4 above:
+
+[source,modelica]
+----
+partial function SurfaceIntegrand
+  input Real x;
+  input Real y;
+  output Real z;
+end SurfaceIntegrand;
+
+function quadratureOnce
+  input Real x;
+  input Real y1;
+  input Real y2;
+  input SurfaceIntegrand integrand;
+  output Real z;
+algorithm
+  z := quadrature(y1, y2, function integrand(y = x));
+  // This is according to case 4 and needs to bind the 2nd argument
+end quadratureOnce;
+
+function surfaceQuadrature
+  input Real x1;
+  input Real x2;
+  input Real y1;
+  input Real y2;
+  input SurfaceIntegrand integrand;
+  output Real integral;
+algorithm
+  integral :=
+    quadrature(x1, x2,
+      function quadratureOnce(y1 = y1, y2 = y2, integrand = integrand));
+  // Case 2 and 3
+end surfaceQuadrature;
+----
+====
+
+==== Output Formal Parameters
+
+A function may have more than one output component, corresponding to multiple return values.
+The only way to use more than the first return value of such a function is to make the function call the right hand side of an equation or assignment.
+In this case, the left hand side of the equation or assignment shall contain a list of component references within parentheses:
+
+`(out1, out2, out3) = f(...);`
+
+The component references are associated with the output components according to their position in the list.
+Thus output component i is set equal to, or assigned to, component reference i in the list, where the order of the output components is given by the order of the component declarations in the function definition.
+The type of each component reference in the list must agree with the type of the corresponding output component.
+
+A function application may be used as expression whose value and type is given by the value and type of the first output component, if at least one return result is provided.
+
+It is possible to omit left hand side component references and/or truncate the left hand side list in order to discard outputs from a function call.
+
+[NOTE]
+Optimizations to avoid computation of unused output results can be automatically deduced by an optimizing compiler.
+
+[example]
+====
+Example: Function `eigen` to compute eigenvalues and optionally eigenvectors may be called in the following ways:
+
+[source,modelica]
+----
+ev = eigen(A); // calculate eigenvalues
+x = isStable(eigen(A)); // used in an expression
+(ev, vr) = eigen(A) // calculate eigenvectors
+(ev,vr,vl) = eigen(A) // and also left eigenvectors
+(ev,,vl) = eigen(A) // no right eigenvectors
+----
+
+The function may be defined as:
+[source,modelica]
+----
+function eigen "calculate eigenvalues and optionally eigenvectors"
+  input Real A[:, size(A,1)];
+  output Real eigenValues[size(A,1),2];
+  output Real rightEigenVectors[size(A,1),size(A,1)];
+  output Real leftEigenVectors [size(A,1),size(A,1)];
+algorithm
+  // The output variables are computed separately (and not, e.g., by one
+  // call of a Fortran function) in order that an optimizing compiler can
+  // remove unnecessary computations, if one or more output arguments are
+  // missing
+  //   compute eigenvalues
+  //   compute right eigenvectors using the computed eigenvalues
+  //   compute left eigenvectors using the computed eigenvalues
+end eigen;
+----
+====
+
+The only permissible use of an expression in the form of a list of expressions in parentheses, is when it is used as the left hand side of an equation or assignment where the right hand side is an application of a function.
+
+[example]
+====
+Example: The following are illegal:
+
+[source,modelica]
+----
+(x+1, 3.0, z/y) = f(1.0, 2.0); // Not a list of component references.
+(x, y, z) + (u, v, w) // Not LHS of suitable eqn/assignment.
+----
+====
+
+==== Initialization and Binding Equations
+
+Components in a function can be divided into three groups:
+
+* Public components which are input formal parameters.
+
+* Public components which are output formal parameters.
+
+* Protected components which are local variables, parameters, or constants.
+
+When a function is called, components of the function do not have `start` attributes.
+However, a binding equation (`= expression`) with an expression may be present for a component.
+
+A binding equation for a non-input component initializes the component to this `expression` at the start of every function invocation (before executing the algorithm section or calling the external function).
+These bindings must be executed in an order where a variable is not used before its binding equations has been executed; it is an error if no such order exists (i.e., the binding must be acyclic).
+
+Binding equations can only be used for components of a function.
+If no binding equation is given for a non-input component the variable is uninitialized (except for record components where modifiers may also initialize that component).
+It is an error to use (or return) an uninitialized variable in a function.
+Binding equations for input formal parameters are interpreted as default arguments, as described in <<positional-or-named-input-arguments>>.
+
+[NOTE]
+It is recommended to check for use of uninitialized variables statically -- if this is not possible a warning is recommended combined with a run-time check.
+
+[NOTE]
+The properties of components in functions described in this section are also briefly described in <<function-as-a-specialized-class>>.
+
+==== Flexible Array Sizes and Resizing of Arrays
+
+[NOTE]
+Flexible setting of array dimension sizes of arrays in functions is also briefly described in <<function-as-a-specialized-class>>.
+
+A dimension size not specified with colon (`:`) for a non-input array component of a function must be given by the inputs or be constant.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+function joinThreeVectors
+  input Real v1[:],v2[:],v3[:];
+  output Real vres[size(v1,1)+size(v2,1)+size(v3,1)];
+algorithm
+  vres := cat (1,v1,v2,v3);
+end joinThreeVectors;
+----
+====
+
+A non-input array component declared in a function with a dimension size specified by colon (`:`) and no binding equation, can change size according to these special rules:
+
+* Prior to execution of the function algorithm the dimension size is zero.
+
+* The entire array (without any subscripts) may be assigned with a corresponding array with arbitrary dimension size (the array variable is re-sized).
+
+These rules also apply if the array component is an element of a record component in a function.
+
+[example]
+====
+Example: A function to collect the positive elements in a vector:
+
+[source,modelica]
+----
+function collectPositive
+  input Real x[:];
+  output Real xpos[:];
+algorithm
+  for i in 1 : size(x, 1) loop
+    if x[i] > 0 then
+      xpos := cat(1, xpos, x[i:i]);
+    end if;
+  end for;
+end collectPositive;
+----
+====
+
+==== Automatic Vectorization
+
+Functions with one scalar return value can be applied to arrays element-wise, e.g., if `A` is a vector of reals, then `sin(A)` is a vector where each element is the result of applying the function `sin` to the corresponding element in `A`.
+Only `function` classes that are transitively non-replaceable (see <<transitively-non-replaceable>> and <<require-transitively-non-replaceable>>) may be called vectorized.
+
+Consider the expression `f(arg1, ..., argn)`, an application of the function `f` to the arguments `arg1`, ..., `argn`.
+Potential vectorization of this call is defined as follows.
+For each passed argument, the type of the argument is checked against the type of the corresponding formal parameter of the function:
+
+. If the types match, nothing is done.
+
+. If the types do not match, and a type conversion can be applied, it is applied.
+
+. If the types do not match, and no type conversion is applicable, the passed argument type is checked to see if it is an n-dimensional array of the formal parameter type.
+If it is not, the function call is invalid.
+If it is, we call this a _foreach argument_.
+
+. For all foreach arguments, the number and sizes of dimensions must match.
+If they do not match, the function call is invalid.
+
+. If no foreach argument exists, the function is applied in the normal fashion, and the result has the type specified by the function definition.
+
+. The result of the function call expression is an n-dimensional array `e` with the same dimension sizes as the foreach arguments.
+Each element `e[i, ..., j]` is the result of applying `f` to arguments constructed from the original arguments in the following way:
++
+* If the argument is not a foreach argument, it is used as-is.
++
+* If the argument is a foreach argument, the element at index `[i, ..., j]` is used.
+
+If more than one argument is an array, all of them have to be the same size, and they are traversed in parallel.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+sin({a, b, c}) = {sin(a), sin(b), sin(c)} // argument is a vector
+sin([a, b, c]) = [sin(a), sin(b), sin(c)] // argument may be a matrix
+atan2({a, b, c}, {d, e, f}) = {atan2(a, d), atan2(b, e), atan2(c, f)}
+----
+
+This works even if the function is declared to take an array as one of its arguments.
+If `pval` is defined as a function that takes one argument that is a `Real` vector and returns a `Real`, then it can be used with an actual argument which is a two-dimensional array (a vector of vectors).
+The result type in this case will be a vector of `Real`.
+
+[source,modelica]
+----
+pval([1,2;3,4]) = [pval([1,2]); pval([3,4])]
+sin([1,2;3,4]) = [sin({1,2}); sin({3,4})]
+  = [sin(1), sin(2); sin(3), sin(4)]
+----
+
+[source,modelica]
+----
+function add
+  input Real e1, e2;
+  output Real sum1;
+algorithm
+  sum1 := e1 + e2;
+end add;
+----
+
+`add(1, [1,2,3])` adds one to each of the elements of the second argument giving the result `[2,3,4]`.
+For built-in operators one can do this with `1 .+ [1,2,3]` but not with `1 + [1,2,3]`, because the rules for the built-in operators are more restrictive.
+====
+
+==== Empty Function Calls
+
+An _empty_ function call is a call that does not return any results.
+
+[NOTE]
+An empty call is of limited use in Modelica since a function call without results does not contribute to the simulation, but it is useful to check assertions and in certain cases for desired side-effects (see <<pure-modelica-functions>>).
+
+An empty call can occur either as a kind of "null equation" or "null statement".
+
+[example]
+====
+Example: The empty calls to `eigen()` are examples of a "null equation" and a "null statement":
+
+[source,modelica]
+----
+equation
+  Modelica.Math.Matrices.eigen(A); // Empty function call as an equation
+algorithm
+  Modelica.Math.Matrices.eigen(A); // Empty function call as a statement
+----
+====
+
+=== Built-in Functions
+
+There are basically four groups of built-in functions in Modelica:
+
+* Intrinsic mathematical and conversion functions (see <<numeric-functions-and-conversion-operators>>).
+
+* Derivative and special operators with function syntax (see <<derivative-and-special-purpose-operators-with-function-syntax>>).
+
+* Event-related operators with function syntax (see <<event-related-operators-with-function-syntax>>).
+
+* Built-in array functions (see <<built-in-array-operators-and-functions>>).
++
+Note that when the specification references a function having the name of a built-in function it references the built-in function, not a user-defined function having the same name.
+
+=== Record Constructor Functions
+
+Whenever a record is defined, a record constructor function with the same name and in the same scope as the record class is implicitly defined according to the following rules:
+
+The declaration of the record is partially flattened including inheritance, modifications, redeclarations, and expansion of all names referring to declarations outside of the scope of the record to their fully qualified names.
+
+[NOTE]
+The partial flattening is performed in order to remove potentially conflicting `import` clauses in the record constructor function due to flattening the inheritance tree.
+
+All record elements (i.e., components and local class definitions) of the partially flattened record declaration are used as declarations in the record constructor function with the following exceptions:
+
+* Component declarations which do not allow a modification (such as `final parameter Real`) are declared as protected components in the record constructor function.
+
+* Prefixes (`constant`, `parameter`, `final`, `discrete`, ...) of the remaining record components are removed.
+
+* The prefix `input` is added to the public components of the record constructor function.
+
+An instance of the record is declared as output parameter using a name not appearing in the record, together with a modification.
+In the modification, all input parameters are used to set the corresponding record variables.
+
+A record constructor can only be called if the referenced record class is found in the global scope, and thus cannot be modified.
+
+[example]
+====
+This allows constructing an instance of a record, with an optional modification, at all places where a function call is allowed.
+
+Examples:
+
+[source,modelica]
+----
+  record Complex "Complex number"
+    Real re "real part";
+    Real im "imaginary part";
+  end Complex;
+
+  function add
+    input Complex u, v;
+    output Complex w(re = u.re + v.re, im = u.im + v.re);
+  end add;
+
+  Complex c1, c2;
+equation
+  c2 = add(c1, Complex(sin(time), cos(time));
+----
+
+In the following example, a convenient data sheet library of components is built up:
+[source,modelica]
+----
+package Motors
+  record MotorData "Data sheet of a motor"
+    parameter Real inertia;
+    parameter Real nominalTorque;
+    parameter Real maxTorque;
+    parameter Real maxSpeed;
+  end MotorData;
+
+  model Motor "Motor model" // using the generic MotorData
+    MotorData data;
+    ...
+  equation
+    ...
+  end Motor;
+
+  record MotorI123 = MotorData( // data of a specific motor
+    inertia = 0.001,
+    nominalTorque = 10,
+    maxTorque = 20,
+    maxSpeed = 3600) "Data sheet of motor I123";
+  record MotorI145 = MotorData( // data of another specific motor
+    inertia = 0.0015,
+    nominalTorque = 15,
+    maxTorque = 22,
+    maxSpeed = 3600) "Data sheet of motor I145";
+end Motors
+
+model Robot
+  import Motors.*;
+  Motor motor1(data = MotorI123()); // just refer to data sheet
+  Motor motor2(data = MotorI123(inertia = 0.0012));
+  // data can still be modified (if no final declaration in record)
+  Motor motor3(data = MotorI145());
+  ...
+end Robot;
+----
+
+Example showing most of the situations, which may occur for the implicit record constructor function creation.
+With the following record definitions:
+
+[source,modelica]
+----
+package Demo
+  record Record1
+    parameter Real r0 = 0;
+  end Record1;
+
+  record Record2
+    import Modelica.Math.*;
+    extends Record1;
+    final constant Real c1 = 2.0;
+    constant Real c2;
+    parameter Integer n1 = 5;
+    parameter Integer n2;
+    parameter Real r1 "comment";
+    parameter Real r2 = sin(c1);
+    final parameter Real r3 = cos(r2);
+    Real r4;
+    Real r5 = 5.0;
+    Real r6[n1];
+    Real r7[n2];
+  end Record2;
+end Demo;
+----
+
+The following record constructor functions are implicitly defined (the name of the output, given in italic below, is not defined; it should be chosen to not cause any conflict):
+
+[source,modelica]
+----
+package Demo
+  function Record1
+    input Real r0 = 0;
+    output Record1 result(r0 = r0);
+  end Record1;
+
+  function Record2
+    input Real r0 = 0;
+    input Real c2;
+    input Integer n1 = 5;
+    input Integer n2;
+    input Real r1 "comment"; // the comment also copied from record
+    input Real r2 = Modelica.Math.sin(c1);
+    input Real r4;
+    input Real r5 = 5.0;
+    input Real r6[n1];
+    input Real r7[n2];
+    output Record2 result(
+      r0 = r0, c2 = c2, n1 = n1, n2 = n2,
+      r1 = r1, r2 = r2, r4 = r4, r5 = r5, r6 = r6, r7 = r7);
+  protected
+    final constant Real c1 = 2.0; // referenced from r2
+    final parameter Real r3 = Modelica.Math.cos(r2);
+  end Record2;
+end Demo;
+----
+
+and can be applied in the following way
+
+[source,modelica]
+----
+Demo.Record2 r1 =
+  Demo.Record2(r0 = 1, c2 = 2, n1 = 2, n2 = 3, r1 = 1, r2 = 2, r4 = 5, r5 = 5,
+               r6 = {1, 2}, r7 = {1, 2, 3});
+Demo.Record2 r2 =
+  Demo.Record2(1, 2, 2, 3, 1, 2, 5, 5, {1, 2}, {1, 2, 3});
+parameter Demo.Record2 r3 =
+  Demo.Record2(c2 = 2, n2 = 1, r1 = 1, r4 = 4, r6 = 1 : 5, r7 = {1});
+----
+
+The above example is only used to show the different variants appearing with prefixes, but it is not very meaningful, because it is simpler to just use a direct modifier.
+====
+
+==== Casting to Record
+
+A constructor of a record `R` can be used to cast an instance m of a `model`, `block`, `connector` class `M` to a value of type `R`, provided that for each component defined in `R` (that do not have a default value) there is also a public component defined in `M` with identical name and type.
+A nested record component of `R` is handled as follows, if the corresponding component of `M` is a `model`/`block`/`connector` a nested record constructor is called -- otherwise the component is used directly; and the resulting call/component is used as argument to the record constructor `R`.
+If the corresponding component of `R` in `M` is a conditional component, it is an error.
+The instance `m` is given as single (un-named) argument to the record constructor of `R`.
+The interpretation is that `R(m)` is replaced by a record constructor of type `R` where all public components of `M` that are present in `R` are assigned to the corresponding components of `R`.
+The record cast can be used in vectorized form according to <<automatic-vectorization>>.
+
+[NOTE]
+The problem if `R` would be a conditional component is that the corresponding binding would be illegal since it is not a `connect`-equation.
+
+[NOTE]
+The record cast operation is uniquely distinguished from a record constructor call, because an argument of the record constructor cannot be a `model`, `block` or `connector` instance.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+connector Flange
+  Real phi;
+  flow Real tau;
+end Flange;
+
+model Model1
+  Real m1;
+  Boolean b1;
+  Flange flange;
+end Model1;
+
+model Model2
+  Real r1;
+  Real r2;
+  Integer i2;
+  Pin p1, p2;
+  Model1 sub1;
+  protected
+  Integer i1;
+  ...
+end Model2;
+
+record MyFlange
+  Real tau;
+end MyFlange;
+
+record MyRecord1
+  Boolean b1;
+  MyFlange flange;
+end MyRecord1;
+
+record MyRecord2
+  Real r1;
+  Integer i2;
+  MyRecord1 sub1;
+end MyRecord2;
+
+model Model
+  Model2 s1;
+  Model2 s2[2];
+  MyRecord2 rec1 = MyRecord2(s1);
+  MyRecord2 rec2[2] = MyRecord2(s2);
+  ...
+end Model;
+// Model is conceptually mapped to
+model ModelExpanded
+  Model2 s1;
+  Model2 s2[2];
+  MyRecord2 rec1 = MyRecord2(r1=s1.r1, i2=s1.i2,
+  sub1 = MyRecord1(b1=s1.sub1.b1,
+  flange = MyFlange(tau=s1.sub1.flange.tau));
+  MyRecord2 rec2[2] = {MyRecord2(r1=s2[1].r1, i2=s2[1].i2,
+  sub1 = MyRecord1(b1=s2[1].sub1.b1,
+  flange = MyFlange(tau=s1[1].sub1.flange.tau)),
+  MyRecord2(r1=s2[2].r1, i2=s2[2].i2,
+  sub1 = MyRecord1(b1=s2[2].sub1.b1,
+  flange = MyFlange(tau=s2[2].sub1.flange.tau)}};
+  ...
+end ModelExpanded;
+----
+====
+
+=== Derivatives and Inverses of Functions
+
+The annotations listed below are related to differentiation and closed-form inverses of functions.
+A function declaration can have `derivative` annotations specifying derivative functions or preferably, for a function written in Modelica, use the `smoothOrder` annotation to indicate that the tool can construct the derivative function automatically.
+Partial derivatives are not provided via annotations, but using a certain type of short function definition described in <<partial-derivatives-of-functions>>.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Annotation    |Description                   |Details
+
+|`smoothOrder` |Function smoothness guarantee |<<annotation:smoothOrder>>
+|`derivative`  |Provide function derivative   |<<annotation:derivative>>
+|`inverse`     |Provide closed-form inverses  |<<annotation:inverse>>
+|===
+
+[[annotation:smoothOrder,Annotation smoothOrder]]
+Annotation smoothOrder::
++
+[source,grammar]
+----
+"smoothOrder" "=" UNSIGNED-NUMBER
+"smoothOrder"
+   "("
+      "normallyConstant" "=" IDENT
+      { "," "normallyConstant" "=" IDENT }
+   ")"
+   "=" UNSIGNED-NUMBER
+----
++
+This annotation has only an effect within a function declaration.
++
+`smoothOrder` defines the number of differentiations of the function, in order that all of the differentiated outputs are continuous provided all input arguments and their derivatives up to order `smoothOrder` are continuous.
++
+[NOTE]
+--
+This means that the function is at least C^smoothOrder^.
+
+When a tool computes the derivative of a function, e.g., for index reduction or to compute an analytic Jacobian, each differentiation of a function reduces the `smoothOrder` by 1.
+The `smoothOrder` information can then be used to infer continuity of the resulting differentiated function calls, provided the input arguments are continuous.
+This is a conservative check, however, meaning that a tool may be able to establish continuity of a function call even though the `smoothOrder` has been reduced to less than 0, and/or some input arguments are not continuous.
+--
++
+The optional argument `normallyConstant` of `smoothOrder` defines that the function argument `IDENT` is usually constant.
++
+[NOTE]
+--
+A tool might check whether the actual argument to `IDENT` is a parameter expression at the place where the function is called.
+If this is the case, the derivative of the function might be constructed under the assumption that the corresponding argument is constant, to enhance efficiency.
+Typically, a tool would generate at most two different derivative functions of a function:
+One, under the assumption that all `normallyConstant` arguments are actually constant.
+And one, under the assumption that all input arguments are time varying.
+Based on the actual arguments of the function call either of the two derivative functions is used.
+
+This annotation is used by many functions of the `Modelica.Fluid` library, such as `Modelica.Fluid.Dissipation.PressureLoss.StraightPipe.dp_laminar_DP`, since geometric arguments to these functions are usually constant.
+--
+
+[[annotation:derivative,Annotation derivative]]
+Annotation derivative::
++
+[source,grammar]
+----
+"derivative" [ derivative-constraints ] "=" name
+
+derivative-constraints :
+   "(" derivative-constraint { "," derivative-constraint } ")"
+
+derivative-constraint :
+   "order" = UNSIGNED-NUMBER
+   | "noDerivative" = IDENT
+   | "zeroDerivative" = IDENT
+----
++
+This annotation has only an effect within a function declaration.
++
+The `derivative` annotation can influence simulation time and accuracy, can be applied to both functions written in Modelica and to external functions, and may be used several times for the same function declaration.
++
+Each use of the `derivative` annotation points to another derivative-function that expresses a derivative of the declared function, and the annotation can state that it is only valid under certain restrictions on the input arguments.
+These restrictions are defined using the optional attributes `order`, `noDerivative`, and `zeroDerivative`.
+The `order` may be specified at most once for each `derivative` annotation, must be at least 1, and defaults to 1.
+Specifying `order` is only considered a restriction if `order > 1`.
++
+For details abouts using the `derivative` annotation, see <<using-the-derivative-annotation>>.
+
+[[annotation:inverse,Annotation inverse]]
+Annotation inverse::
++
+[source,grammar]
+----
+"inverse" "(" function-inverse { "," function-inverse } ")"
+
+function-inverse :
+   IDENT "=" type-specifier function-call-args"
+----
++
+A function with one output formal parameter may have one or more `inverse` annotations to define inverses of this function.
++
+For details abouts using the `inverse` annotation, see <<using-the-inverse-annotation>>.
+
+==== Using the Derivative Annotation
+
+The given derivative-function must be a valid derivative if the `derivative` annotation restrictions are satisfied, and can thus be used to compute the derivative in those cases.
+There may be multiple restrictions on the derivative, in which case they must all be satisfied.
+The restrictions also imply that some derivatives of some inputs are excluded from the call of the derivative (since they are not necessary).
+When a function supplies multiple derivative-functions subject to different restrictions, the first one that can be used (i.e., satisfying the restrictions) will be used for each call.
+
+[NOTE]
+This means that the most restrictive derivatives should be written first.
+
+[example]
+====
+Example: The following model illustrates the requirement that a provided derivative must be valid.
+That `fder` is a valid derivative of `f` means that it can be used safely to compute `x2` by numeric integration: the function value, `x1`, will up to numerical precision be matched by the integral of the derivative, `x2`.
+
+[source,modelica]
+----
+function f
+  input Real x;
+  output Real y;
+  annotation(derivative = fder);
+  external "C";
+end f;
+model M
+  input Real u;
+  Real x1 "Directly from function";
+  Real x2 "Integrated from derivative";
+equation
+  x1 = f(u);
+  der(x2) = der(x1);
+initial equation
+  x2 = x1;
+end M;
+----
+
+Note that tools are not required to use the provided derivative, and might solve the equations completely without numeric integration.
+====
+
+[example]
+====
+Example: Use of `order` to specify a second order derivative:
+[source,modelica]
+----
+function foo0 annotation(derivative = foo1);
+end foo0;
+
+function foo1 annotation(derivative(order=2) = foo2);
+end foo1;
+
+function foo2 end foo2;
+----
+====
+
+The inputs and outputs of the derivative function of `order` 1 are constructed as follows:
+
+* First are all inputs to the original function, and after all them we will in order append one derivative for each input containing reals.
+  These common inputs must have the same name, type, and declaration order for the function and its derivative.
+
+* The outputs are constructed by starting with an empty list and then in order appending one derivative for each output containing reals.
+  The outputs must have the same type and declaration order for the function and its derivative.
+
+If the Modelica function call is a __n__th derivative (_n_ ≥ 1), i.e., this function call has been derived from an (_n_-1)th derivative by differentiation inside the tool, an `annotation(derivative(order=n+1) = ...)`, specifies the (_n_+1)th derivative, and the (_n_+1)th derivative call is constructed as follows:
+
+* The input arguments are appended with the (_n_+1)th derivative, which are constructed in order from the __n__th `order` derivatives.
+
+* The output arguments are similar to the output argument for the __n__th derivative, but each output is one higher in derivative order.
+  The outputs must have the same type and declaration order for the function and its derivative.
+
+[NOTE]
+The restriction that only the result of differentiation can use higher-order derivatives ensures that the derivatives `x`, `der_x`, ... are in fact derivatives of each other.
+Without that restriction we would have both `der(x)` and `x_der` as inputs (or perform advanced tests to verify that they are the same).
+
+[example]
+====
+Example: Given the declarations
+
+[source,modelica]
+----
+function foo0
+  ...
+  input Real x;
+  input Boolean linear;
+  input ...;
+  output Real y;
+  ...
+  annotation(derivative = foo1);
+end foo0;
+
+function foo1
+  ...
+  input Real x;
+  input Boolean linear;
+  input ...;
+  input Real der_x;
+  ...
+  output Real der_y;
+  ...
+  annotation(derivative(order=2) = foo2);
+end foo1;
+
+function foo2
+  ...
+  input Real x;
+  input Boolean linear;
+  input ...;
+  input Real der_x;
+  ...;
+  input Real der_2_x;
+  ...
+  output Real der_2_y;
+  ...
+----
+
+the equation
+
+[latexmath]
+++++
+(\ldots,\, y(t),\, \ldots) = \text{foo0}(\ldots,\, x(t),\, b,\ldots)
+++++
+
+implies that:
+
+[latexmath]
+++++
+(\ldots,\, \frac{dy(t)}{dt},\, \ldots) = \text{foo1}(\ldots,\, x(t),\, b,\, \ldots,\,  \ldots,\, \frac{dx(t)}{dt},\, \ldots)
+++++
+
+[latexmath]
+++++
+(\ldots,\, \frac{d^2y(t)}{dt^2},\, \ldots) = \text{foo2}(\ldots,\, x(t),\, b,\, \ldots,\, \frac{dx(t)}{dt},\, \ldots,\, \ldots,\, \frac{d^2x(t)}{dt^2},\, \ldots)
+++++
+====
+
+An input or output to the function may be any simple type (`Real`, `Boolean`, `Integer`, `String` and enumeration types) or a record.
+For a record containing `Real` values, the corresponding derivative uses a derivative record that only contains the real-predefined types and sub-records containing reals (handled recursively) from the original record.
+When using `smoothOrder`, then the derivative record is automatically constructed.
+The function must have at least one input containing reals.
+The output list of the derivative function shall not be empty.
+
+[example]
+====
+Example: Here is one example use case with records mixing `Real` and non-`Real` as inputs and outputs:
+
+[source,modelica]
+----
+record ThermodynamicState "Thermodynamic state"
+  SpecificEnthalpy h "Specific enthalpy";
+  AbsolutePressure p "Pressure";
+  Integer phase(min = 1, max = 2, start = 1);
+end ThermodynamicState;
+
+record ThermoDynamicState_der "Derivative"
+  SpecificEnthalpyDerivative h "Specific enthalphy derivative";
+  PressureDerivative p "Pressure derivative";
+  // Integer input is skipped
+end ThermodynamicState_der;
+
+function density
+  input ThermodynamicState state "Thermodynamic state";
+  output Density d "Density";
+algorithm
+  ...
+  annotation(derivative = density_der);
+end density;
+
+function density_der
+  input ThermodynamicState state "Thermodynamic state";
+  input ThermodynamicState_der state_der;
+  output DensityDerivative d "Density derivative";
+algorithm
+  ...
+end density_der;
+
+function setState_ph
+  input Pressure p;
+  input SpecificEnthalpy h;
+  input Integer phase = 0;
+  output ThermodynamicState state;
+algorithm
+  ...
+  annotation(derivative = setState_ph_der);
+end setState_ph;
+
+function setState_ph_der
+  input Pressure p;
+  input SpecificEnthalpy h;
+  input Integer phase;
+  input PressureDerivative p_der;
+  input SpecificEnthalpyDerivative h_der;
+  output ThermodynamicState_der state_der;
+algorithm
+  ...
+end setState_ph_der;
+
+ThermodynamicState state1 = setState_ph(p=..., h=..., phase=...);
+Density rho1 = density(state1);
+DensityDerivative d_rho1 = der(rho1);
+Density rho2 = density(setState_ph(p=..., h=..., phase=...));
+DensityDerivative d_rho2 = der(rho2);
+----
+====
+
+* `"zeroDerivative" "=" inputVar~1~, { "," "zeroDerivative" "=" inputVar~2~ }`
+
+The derivative function is only valid if `inputVar~1~` (and `inputVar~2~` etc.) are independent of the variables the function call is differentiated with respect to (i.e., that the derivative of `inputVar1` is zero).
+The derivative of `inputVar~1~` (and `inputVar~2~` etc.) are excluded from the argument list of the derivative-function.
+If the derivative-function also specifies a derivative the common variables should have consistent `zeroDerivative`.
+
+[example]
+====
+Assume that function `f` takes a matrix and a scalar.
+Since the matrix argument is usually a parameter expression it is then useful to define the function as follows (the additional derivative = `fGeneralDer` is optional and can be used when the derivative of the matrix or offset is non-zero).
+Note that the derivative annotation of `fDer` must specify `zeroDerivative` for both `y` and `offset` as below, but the derivative annotation of `fGeneralDer` shall not have `zeroDerivative` for either of them (it may specify `zeroDerivative` for `x_der`, `y_der`, or `offset_der`).
+
+[source,modelica]
+----
+function f "Simple table lookup"
+  input Real x;
+  input Real y[:, 2];
+  input Real offset "Shortened to o below";
+  output Real z;
+algorithm
+  ...
+  annotation(derivative(zeroDerivative=y, zeroDerivative=offset) = fDer,
+             derivative = fGeneralDer);
+end f;
+
+function fDer "Derivative of simple table lookup"
+  input Real x;
+  input Real y[:, 2];
+  input Real offset;
+  input Real x_der;
+  output Real z_der;
+algorithm
+  ...
+  annotation(
+    derivative(zeroDerivative=y, zeroDerivative=offset, order=2) = fDer2);
+end fDer;
+
+function fDer2 "Second derivative of simple table lookup"
+  input Real x;
+  input Real y[:, 2];
+  input Real offset;
+  input Real x_der;
+  input Real x_der2;
+  output Real z_der2;
+algorithm
+  ...
+end fDer2;
+
+function fGeneralDer "Derivative of table lookup taking
+into account varying tables"
+  input Real x;
+  input Real y[:, 2];
+  input Real offset;
+  input Real x_der;
+  input Real y_der[:, 2];
+  input Real offset_der;
+  output Real z_der;
+algorithm
+  ...
+  //annotation(derivative(order=2) = fGeneralDer2);
+end fGeneralDer;
+----
+
+In the example above `zeroDerivative=y` and `zeroDerivative=offset` imply that
+
+[latexmath]
+++++
+\begin{align}
+\frac{d}{dt}f(x(t),\, y(t),\, o(t))
+&= \frac{\partial f}{\partial x} \frac{dx}{dt} + \frac{\partial f}{\partial y} \frac{dy}{dt} + \frac{\partial f}{\partial o} \frac{do}{dt}\\
+&= \frac{\partial f}{\partial x} \frac{dx}{dt} + \frac{\partial f}{\partial y} \cdot 0 + \frac{\partial f}{\partial o} \cdot 0\\
+&= \frac{\partial f}{\partial x} \frac{dx}{dt}\\
+&= fDer \cdot \frac{dx}{dt}
+\end{align}
+++++
+====
+
+* `"noDerivative" "=" inputVar~1~`
+
+The derivative of `inputVar~1~` is excluded from the argument list of the derivative-function.
+This relies on assumptions on the arguments to the function; and the function should document these assumptions (it is not always straightforward to verify them).
+In many cases even the undifferentiated function will only behave correctly under these assumptions.
+
+The inputs excluded using `zeroDerivative` or `noDerivative` may be of any type (including types not containing reals).
+
+[example]
+====
+Assume that function `fg` is defined as a composition `f(x, g(x))`.
+When differentiating `f` it is useful to give the derivative under the assumption that the second argument is defined in this way:
+
+[source,modelica]
+----
+function fg
+  input Real x;
+  output Real z;
+algorithm
+  z := f(x, g(x));
+end fg;
+
+function f
+  input Real x;
+  input Real y;
+  output Real z;
+algorithm
+  ...
+  annotation(derivative(noDerivative=y) = h);
+end f;
+
+function h
+  input Real x;
+  input Real y;
+  input Real x_der;
+  output Real z_der;
+algorithm
+  ...
+end h;
+----
+
+This is useful if `g` represents the major computational effort of `fg`.
+
+Therefore `h` indirectly includes the derivative with respect to `y` as follows:
+
+[latexmath]
+++++
+\begin{align}
+\frac{d}{dt}fg(x(t))
+&= \frac{d}{dt}f(x(t),\, g(x(t))) \\
+&= \frac{\partial f}{\partial x} \frac{dx}{dt} + \frac{\partial f}{\partial y} \frac{\partial g}{\partial x} \frac{dx}{dt} \\
+&= \left(\frac{\partial f}{\partial x} + \frac{\partial f}{\partial y} \frac{\partial g}{\partial x} \right) \frac{dx}{dt} \\
+&= h(x(t),\, y(t))) \frac{dx}{dt}
+\end{align}
+++++
+====
+
+==== Partial Derivatives of Functions
+
+A class defined as:
+[source,grammar]
+----
+IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
+----
+is the partial derivative of a function, and may only be used as declarations of functions.
+
+The semantics is that a function (and only a function) can be specified in this form, defining that it is the partial derivative of the function to the right of the equal sign (looked up in the same way as a short class definition, and the looked up name must be a function), and partially differentiated with respect to each `IDENT` in order (starting from the first one).
+Each `IDENT` must be a scalar `Real` input to the function.
+
+The comment allows a user to comment the function (in the info-layer and as one-line description, and as icon).
+
+[example]
+====
+Example: The specific enthalpy can be computed from a Gibbs-function as follows:
+
+[source,modelica]
+----
+function Gibbs
+  input Real p, T;
+  output Real g;
+algorithm
+  ...
+end Gibbs;
+function Gibbs_T = der(Gibbs, T);
+function specificEnthalpy
+  input Real p, T;
+  output Real h;
+algorithm
+  h := Gibbs(p, T) - T * Gibbs_T(p, T);
+end specificEnthalpy;
+----
+====
+
+==== Using the Inverse Annotation
+
+If a function `f1` with one output formal parameter `y` can be restricted to an informally defined domain and codomain, such that the mapping of the input formal parameter `uk` to `y` is bijective for any fixed assignment to the other input formal parameters in the domain (see examples below), then it can be given an `inverse` annotation to provide an explicit inverse `f2` to this mapping, provided that the function is only applied on this domain:
+
+The `inverse` annotation takes the following form in a function declaration:
+[source,modelica]
+----
+function f1
+  input A1 u1;
+  ...
+  input T1 uk;
+  ...
+  input Am um = am;
+  ...
+  input An un;
+  output T2 y;
+algorithm
+  ...
+  annotation(inverse(uk = f2(..., y, ...));
+end f1;
+----
+
+In addition to `y`, the formal call to `f2` in the annotation shall also pass the other formal parameters (excluding `uk`) needed determine the inverse, see below.
+The function `f2` must be an actual inverse, meaning that if `uk` is calculated as `uk = f2(..., y, ...)`, then the equality `y = f1(..., uk, ...)` is satisfied up to a certain precision, for all values of the input arguments of `f2(..., y, ...)` in the range and informal domain of `f1`.
+
+More than one inverse can be defined within the same `inverse` annotation, separated by commas:
+
+[source,modelica]
+----
+annotation(inverse(uk = f2(..., y, ...), ui = f3(..., y, ...), ...));
+----
+
+Function `f1` can have any number and types of formal parameters with and without default value.
+The restriction is that the number of unknown variables (see <<balanced-models>>) in the output formal parameter of both `f1` and `f2` must be the same and that `f2` should have a union of output and formal parameters that is the same or a subset of that union for `f1`, but the order of the formal parameters may be permuted.
+
+[example]
+====
+Example: Inverse function with same union of formal parameters:
+
+[source,modelica]
+----
+function h_pTX
+  input Real p "pressure";
+  input Real T "temperature";
+  input Real X[:] "mass fractions";
+  output Real h "specific enthalpy";
+algorithm
+  ...
+  annotation(inverse(T = T_phX(p, h, X)));
+end h_pTX;
+
+function T_phX
+  input Real p "pressure";
+  input Real h "specific enthalpy";
+  input Real X[:] "mass fractions";
+  output Real T "temperature";
+algorithm
+  ...
+end T_phX;
+----
+====
+
+The subset case is useful if `f1` computes the inverse of `f2` within a region, or up to a certain tolerance.
+Then, `f1` may specify `f2` as inverse with fewer arguments, skipping the arguments for tolerance and/or the region.
+
+[example]
+====
+Example: Inverse function with subset of formal parameters:
+
+[source,modelica]
+----
+function inv_sine
+  input Real x;
+  input Real angleOrig;
+  output Real angle;
+  // Finds sine(angle) = x with angle closest to angleOrig.
+algorithm
+  ...
+  annotation(inverse(x = sine(angle)));
+end inv_sine;
+
+function sine
+  input Real angle;
+  output Real x;
+algorithm
+  x := sin(angle);
+  // Note: No inverse.
+end sine;
+----
+====
+
+Tools are not expected to verify the bijectiveness requirement, meaning that it is the user's responsibility to ensure that this requirement is fulfilled, and that tools can rely on the requirement as an assumption for symbolic manipulations when an inverse function is provided.
+
+There is no guarantee that a provided inverse will be used, and no rule for at which stage of symbolic processing it could be applied.
+Inlining a function means that the possibility to apply provided inverses is lost.
+Hence, the recommended inlining annotations -- if any -- for use together with the `inverse` annotation is either `Inline = false` or `LateInline = true`.
+
+[example]
+====
+Example: If an inverse is provided, but the injectiveness part of the bijectiveness requirement is not fulfilled, this may introduce additional ambiguity to the solution of equations with multiple solutions.
+Consider the following invalid use of the `inverse` annotation:
+
+[source,modelica]
+----
+model NotInjective
+  function square
+    input Real x;
+    output Real y = x^2;
+    annotation(inverse(x = sqrt(y))); // Invalid!}
+  end square;
+
+  parameter Real y0 = -1.0;
+  Real y(start = y0, fixed = true);
+  Real x(start = sign(y0) * sqrt(abs(y0))); // Good guess with same sign as y.
+equation
+  der(y) = -y;
+  square(x) = abs(y); // Expecting continuous solution for x.
+end NotInjective;
+----
+
+That the parameter `y0` may have any sign means the sign of `x` cannot be restricted in the informal domain of `square`, and hence that the injectiveness requirement cannot be fulfilled.
+Without the `inverse` annotation, the nonlinear equation in `x` and `y` has an ambiguity, but it is generally expected that this is handled so that a continuous solution for `x` is obtained, meaning that it will keep the same sign as `y` throughout the simulation.
+The additional ambiguity introduced by the `inverse` annotation is that if the provided inverse is used to solve the nonlinear equation instead of using a generic nonlinear equation solver based on local search, then the solution with positive sign is always obtained.
+The lack of guarantees that a provided inverse will be used thus implies a worse ambiguity than what was present in the model before introducing the `inverse` annotation.
+====
+
+[example]
+====
+Example: If an inverse is provided, but the surjectiveness part of the bijectiveness requirement is not fulfilled, this may introduce an invalid solution to equations that do not have a solution at all.
+Consider the following invalid use of the `inverse` annotation:
+
+[source,modelica]
+----
+model NotSurjective
+  function cube
+    input Real x;
+    output Real y = x ^ 3;
+  end cube;
+
+  function cbrtPos "Cubic root of positive number"
+    input Real y;
+    output Real x;
+  algorithm
+    assert(y > 0, "Argument must be positive.");
+    x := exp(log(y) / 3);
+    annotation(inverse(y = cube(x))); // Invalid!}
+  end cbrtPos;
+
+  Real x = 0.5 + sin(time);
+  Real y;
+equation
+  cbrtPos(y) = x; // Calling cbrtPos requires y > 0.
+  annotation(experiment(StopTime = 10.0));
+end NotSurjective;
+----
+
+As the value of `x` varies over the interval `[-1, 1]`, but the range of `cbrtPos` is only `(0, ∞)`, the informal codomain of `cbrtPos` cannot be restricted such that the surjectiveness is fulfilled.
+A valid solution to the equation in `x` and `y` must satisfy `y > 0`, and when no `inverse` annotation is given, a violation will be detected by a nonlinear solver applied directly to the equation.
+When the (invalid) inverse provided by the `inverse` annotation is used, however, the equation gets transformed into
+
+[source,modelica]
+----
+  y = cube(x);
+----
+
+where the requirement `y > 0` can no longer be detected, resulting in a simulation result that does not fulfill the original model equations.
+====
+
+=== Function Inlining and Event Generation
+
+The annotations listed below affect inlining of functions and the related topic of event generation inside functions.
+See <<notation-for-annotation-definitions>> regarding the notation used to describe the annotations.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Annotation                  |Description                                    |Details
+
+|`Inline`                    |Inline function                                |<<annotation:inline>>
+|`LateInline`                |Inline after all symbolic transformations      |<<annotation:late-inline>>
+|`InlineAfterIndexReduction` |Inline after index reduction                   |<<annotation:inline-after-index-reduction>>
+|`GenerateEvents`            |Generate events for zero crossings in function |<<annotation:generate-events>>
+|===
+
+Inlining a function makes the statements of the function body accessible to symbolic operations, potentially leading to expression simplifications and more efficient solution of equations.
+At the same time, another important consequence of inlining a function is that any annotations for derivatives or inverses are lost.
+Hence, one needs to find the right balance between inlining too early (loss of provided derivatives and inverses) and too late (earlier stages of symbolic processing cannot benefit from symbolic simplifications).
+
+[[annotation:inline,Annotation Inline]]
+Annotation Inline::
++
+[source,modelica]
+----
+/*literal*/ constant Boolean Inline;
+----
++
+Has only an effect within a function declaration.
++
+If `Inline = true`, the model developer proposes to inline the function.
+This means, that the body of the function is included at all places where the function is called.
++
+If `Inline = false`, the model developer proposes to not inline the function.
+The default for inlining is tool-specific.
++
+[NOTE]
+`Inline = true` is for example used in `Modelica.Mechanics.MultiBody.Frames` and in functions of `Modelica.Media` to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
+
+[[annotation:late-inline,Annotation LateInline]]
+Annotation LateInline::
++
+[source,modelica]
+----
+/*literal*/ constant Boolean LateInline;
+----
++
+Has only an effect within a function declaration.
++
+If `LateInline = true`, the model developer proposes to inline the function after all symbolic transformations have been performed.
++
+[NOTE]
+Late inlining is especially useful for differentiation and inversion of functions; for efficiency reasons it is then useful to replace all function calls with identical input arguments by one function call, before the inlining.
++
+If `LateInline = false`, the model developer proposes to not inline the function after symbolic transformations have been performed.
++
+The default for late inlining is tool-specific.
+In particular, tools may automatically delay inlining in order to take advantage of function annotations for derivatives and inverses.
++
+`Inline = true, LateInline = false` is identical to `Inline = true`.
++
+`Inline = true, LateInline = true` is identical to `LateInline = true`.
++
+`Inline = false, LateInline = true` is identical to `LateInline = true`.
++
+[NOTE]
+This annotation is for example used in `Modelica.Media.Water.IF97_Utilities.T_props_ph` to provide in combination with common subexpression elimination the automatic caching of function calls.
+Furthermore, it is used in order that a tool is able to propagate specific enthalpy over connectors in the `Modelica.Fluid` library.
+
+[[annotation:inline-after-index-reduction,Annotation InlineAfterIndexReduction]]
+Annotation InlineAfterIndexReduction::
++
+[source,modelica]
+----
+/*literal*/ constant Boolean InlineAfterIndexReduction;
+----
++
+Has only an effect within a function declaration.
++
+If `true`, the model developer proposes to inline the function after the function is differentiated for index reduction, and before any other symbolic transformations are performed.
++
+The default is to not perform this specific inlining.
+This annotation cannot be combined with annotations `Inline` and `LateInline`.
+
+[[annotation:generate-events,Annotation GenerateEvents]]
+Annotation GenerateEvents::
++
+[source,modelica]
+----
+/*literal*/ constant Boolean GenerateEvents;
+----
++
+Has only an effect within a function declaration.
++
+By default, `GenerateEvents = false` and expressions in the function body that would normally be event-generating shall not generate events, similar to inlining the function body while wrapping all expressions in `noEvent`, see <<operator:noEvent>>.
+By specifying `GenerateEvents = true`, event-generating expressions in the function body shall generate events as normal, similar to inlining the function body without wrapping all expressions in `noEvent`.
+Having `GenerateEvents = true` implies `Inline = true` unless overridden by specifying one of the inlining annotations with value `true` (in particular, `GenerateEvents = true` cannot be combined with `Inline = false`).
++
+[NOTE]
+--
+In case a given inlining annotation proposes to inline at a stage when the tool cannot process `GenerateEvents = true`, it is recommended to give a diagnostic and instead perform inlining of the function at the nearest stage where `GenerateEvents = true` can still be respected.
+
+If the function is called in a context where events will not be generated (e.g., inside another function without `GenerateEvents = true`) no special action is needed.
+--
+
+=== External Function Interface
+
+Here, the word *function* is used to refer to an arbitrary external routine, whether or not the routine has a return value or returns its result via output parameters (or both).
+The Modelica external function call interface provides the following:
+
+* Support for external functions written in C (specifically C89) and FORTRAN 77.
+  Other languages, e.g., C++ and Fortran 90, may be supported in the future, and provided the function is link-compatible with C89 or FORTRAN 77 it can be written in any language.
+
+* Mapping of argument types from Modelica to the target language and back.
+
+* Natural type conversion rules in the sense that there is a mapping from Modelica to standard libraries of the target language.
+
+* Handling arbitrary parameter order for the external function.
+
+* Passing arrays to and from external functions where the dimension sizes are passed as explicit integer parameters.
+
+* Handling of external function parameters which are used both for input and output, by passing an output that has a binding equation to the external function.
++
+[NOTE]
+Binding equations are executed prior to calling the external function.
+
+The format of an external function declaration is as follows.
+
+[source,grammar]
+----
+function IDENT description-string
+  { component-clause ";" }
+  [ protected { component-clause ";" } ]
+external [ language-specification ]
+  [ external-function-call ]
+    [ annotation-clause ] ";"
+  [ annotation-clause ";" ]
+end IDENT;
+----
+
+Just as for any other function, components in the public part of an external function declaration shall be declared either as `input` or `output`.
+
+Protected components can be passed to the external function without being initialized by means of a declaration equation, which is useful for passing workspace memory to functions with FORTRAN style memory management, and the reason for passing them in the same (writable) way as output components (see <<argument-type-mapping>>).
+The value of a protected component passed to the external function should be considered undefined (destroyed) after the external function call.
+
+The `language-specification` must currently be one of `"builtin"` (deprecated), `"C"`, `"C..."` (for one of the specific C standards like C89, C99, and C11 -- specifying that it relies on the C standard library of that version) or `"FORTRAN 77"`.
+Unless the external language is specified, it is assumed to be `"C"`.
+
+[NOTE]
+The intended use of, e.g., C99 is to detect if the user tries to link with a C99-function using a C89 compiler.
+
+The deprecated `"builtin"` specification is only used for the elementary mathematical functions described in <<elementary-mathematical-functions>>.
+The external function call mechanism for `"builtin"` functions is implementation-defined.
+
+[NOTE]
+Typically, for functions from the standard C library, the prototype of the function is provided but no `Library` annotation.
+Currently, there are no other builtin functions defined in Modelica.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+package Modelica
+  package Math
+    function sin
+      input Real x;
+      output Real y;
+    external "builtin"
+      y = sin(x);
+    end sin;
+  end Math;
+end Modelica;
+
+model UserModel
+  parameter Real p = Modelica.Math.sin(2);
+end UserModel;
+----
+====
+
+The `external-function-call` specification allows functions whose prototypes do not match the default assumptions as defined below to be called.
+It also gives the name used to call the external function.
+If the external call is not given explicitly, this name is assumed to be the same as the Modelica name.
+
+The only permissible kinds of expressions in the argument list are component references, scalar constant expressions, and the function `size` applied to an array and a constant dimension number.
+The annotations are used to pass additional information to the compiler when necessary.
+
+A component reference to a component that is part of an input or output is treated the same way as a top-level input or output in the external call.
+
+==== Argument type Mapping
+
+The arguments of the external function are declared in the same order as in the Modelica declaration, unless specified otherwise in an explicit external function call.
+Protected variables (i.e., temporaries) are passed in the same way as outputs, whereas constants and `size` calls are passed as inputs.
+
+===== Simple Types
+
+Arguments of *simple* types are by default mapped as follows for C:
+
+[cols="a,a,a",options=autowidth]
+|===
+|Modelica         |C Input        |C Output
+
+|`Real`           |`double`       |`double *`
+|`Integer`        |`int`          |`int *`
+|`Boolean`        |`int`          |`int *`
+|`String`         |`const char *` |`const char **`
+|Enumeration type |`int`          |`int *`
+|===
+
+An exception is made when the argument is of the form `size(..., ...)`.
+In this case the corresponding C type is `size_t`.
+
+Strings are NUL-terminated (i.e., terminated by `'\0'`) and are encoded using UTF-8 (assuming `CHAR_BIT==8` in C) to facilitate calling of C functions.
+The valid return values for an external function returning a `String` are:
+
+* A string given as `String` input to the external function.
+
+* A pointer to a C string literal.
+
+* A pointer returned by one of the string allocation functions in <<string-allocation-utility-functions>>.
+
+[NOTE]
+The reason why it is not allowed to return a string allocated with, for instance, `malloc` is that there is no transfer of ownership when a string is returned from the external function.
+The external code would remain the owner of such a string, and would be responsible for eventually releasing the memory at some point.
+Consequently, the Modelica simulation environment would not be able to assume that only its own string deallocation routines could invalidate any of the strings returned by external functions.
+
+`Boolean` values are mapped to C such that `false` in Modelica is 0 in C and `true` in Modelica is 1 in C.
+If the returned value from C is 0 it is treated as `false` in Modelica; otherwise as `true`.
+
+[NOTE]
+It is recommended that the C function should interpret any non-zero value as true.
+
+Arguments of simple types are by default mapped as follows for FORTRAN 77:
+
+[cols="a,a,a",options=autowidth]
+|===
+|Modelica         |FORTRAN 77 Input   |FORTRAN 77 Output
+
+|`Real`           |`DOUBLE PRECISION` |`DOUBLE PRECISION`
+|`Integer`        |`INTEGER`          |`INTEGER`
+|`Boolean`        |`LOGICAL`          |`LOGICAL`
+|`String`         |Special            |Not available
+|Enumeration type |`INTEGER`          |`INTEGER`
+|===
+
+Sending string literals to FORTRAN 77 subroutines/functions is supported for LAPACK/BLAS-routines, and the strings are NUL-terminated for compatibility with C.
+String are UTF-8 encoded, even though the support for non-ASCII characters in FORTRAN 77 is unclear and it is not relevant for the LAPACK/BLAS-routines.
+Returning strings from FORTRAN 77 subroutines/functions is currently not supported.
+
+Enumeration types used as arguments are mapped to type int when calling an external C function, and to type `INTEGER` when calling an external FORTRAN function.
+The ith enumeration literal is mapped to integer value i, starting at 1.
+
+Return values are mapped to enumeration types analogously: integer value 1 is mapped to the first enumeration literal, 2 to the second, etc.
+Returning a value which does not map to an existing enumeration literal for the specified enumeration type is an error.
+
+===== Arrays
+
+Unless an explicit function call is present in the `external`-clause, an array is passed by its address followed by n arguments of type `size_t` with the corresponding array dimension sizes, where n is the number of dimensions.
+
+[NOTE]
+The type `size_t` is a C unsigned integer type.
+
+Arrays are stored in row-major order when calling C functions and in column-major order when calling FORTRAN 77 functions.
+
+The table below shows the mapping of an array argument in the absence of an explicit external function call when calling a C function.
+The type `T` is allowed to be any of the simple types which can be passed to C as defined in <<simple-types>> or a record type as defined in <<records>> and it is mapped to the type `T'` as defined in these sections for input arguments.
+Array inputs to C-functions are const-pointers, indicating that the arrays shall not be changed.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Modelica        |C Input                                |C Output
+
+|`T[dim1]`       |`const T' *, size_t dim1`              |`T' *, size_t dim1`
+|`T[dim1, dim2]` |`const T' *, size_t dim1, size_t dim2` |`T' *, size_t dim1, size_t dim2`
+|`T[..., dimn]`  |`const T' *, ..., size_t dimn`         |`T' *, ..., size_t dimn`
+|===
+
+The method used to pass array arguments to FORTRAN 77 functions in the absence of an explicit external function call is similar to the one defined above for C: first the address of the array, then the dimension sizes as integers.
+See the table below.
+The type `T` is allowed to be any of the simple types which can be passed to FORTRAN 77 as defined in <<simple-types>> and it is mapped to the type `T'` as defined in that section.
+
+[cols="a,a",options=autowidth]
+|===
+|Modelica             |FORTRAN 77 Input and output
+
+|`T[dim1]`            |`T', INTEGER dim1`
+|`T[dim1, dim2]`      |`T', INTEGER dim1, INTEGER dim2`
+|`T[dim1, ..., dimn]` |`T', INTEGER dim1, ..., INTEGER dimn`
+|===
+
+[example]
+====
+Example: The following two examples illustrate the default mapping of array arguments to external C and FORTRAN 77 functions.
+
+[source,modelica]
+----
+function foo
+  input Real a[:,:,:];
+  output Real x;
+  external;
+end foo;
+----
+
+The corresponding C prototype is as follows:
+
+[source,c]
+----
+double foo(const double *, size_t, size_t, size_t);
+----
+
+If the external function is written in FORTRAN 77, i.e.:
+
+[source,modelica]
+----
+function foo
+  input Real a[:,:,:];
+  output Real x;
+external "FORTRAN 77";
+end foo;
+----
+
+the default assumptions correspond to a FORTRAN 77 function defined as follows:
+
+[source,fortran]
+----
+FUNCTION foo(a, d1, d2, d3)
+  DOUBLE PRECISION(d1, d2, d3) a
+  INTEGER                      d1
+  INTEGER                      d2
+  INTEGER                      d3
+  DOUBLE PRECISION             foo
+  ...
+END
+----
+====
+
+When an explicit call to the external function is present, the array and the sizes of its dimensions must be passed explicitly.
+
+[example]
+====
+Example: This example shows how arrays can be passed explicitly to an external FORTRAN 77 function when the default assumptions are unsuitable.
+
+[source,modelica]
+----
+function foo
+  input Real x[:];
+  input Real y[size(x,1),:];
+  input Integer i;
+  output Real u1[size(y,1)];
+  output Integer u2[size(y,2)];
+external "FORTRAN 77"
+  myfoo(x, y, size(x,1), size(y,2), u1, i, u2);
+end foo;
+----
+
+The corresponding FORTRAN 77 subroutine would be declared as follows:
+
+[source,fortran]
+----
+SUBROUTINE myfoo(x, y, n, m, u1, i, u2)
+  DOUBLE PRECISION(n) x
+  DOUBLE PRECISION(n,m) y
+  INTEGER n
+  INTEGER m
+  DOUBLE PRECISION(n) u1
+  INTEGER i
+  DOUBLE PRECISION(m) u2
+  ...
+END
+----
+====
+
+===== Records
+
+Mapping of record types is only supported for C.
+A Modelica record class is mapped as follows:
+
+* The record class is represented by a struct in C.
+
+* Each component of the Modelica record is mapped to its corresponding C representation.
+  A nested record component is mapped to a nested struct component.
+
+* The components of the Modelica record class are declared in the same order in the C struct.
+
+* Arrays cannot be mapped.
+
+Records are passed by reference (i.e., a pointer to the record is being passed).
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+record A
+  Integer b;
+end A;
+record R
+  Real x;
+  Real z;
+  A a1, a2;
+end R;
+----
+
+is mapped to:
+
+[source,c]
+----
+struct A {
+  int b;
+};
+struct R {
+  double x;
+  double z;
+  struct A a1, b2;
+};
+----
+====
+
+==== Return Type Mapping
+
+If there is a single output parameter and no explicit call of the external function, or if there is an explicit external call in the form of an equation, in which case the LHS must be one of the output parameters, the external routine is assumed to be a value-returning function.
+Otherwise the external function is assumed not to return anything; i.e., it is really a procedure or, in C, a void-function.
+
+Mapping of the return type of functions is performed as indicated in the table below.
+Storage for arrays as return values is allocated by the calling routine, so the dimensions of the returned array are fixed at call time.
+See <<simple-types>> regarding returning of `String` values.
+
+[NOTE]
+In the case of an external function not returning anything, argument type mapping according to <<simple-types>> is performed in the absence of any explicit external function call.
+
+Return types are by default mapped as follows for C and FORTRAN 77:
+
+[cols="a,a,a",options=autowidth]
+|===
+|Modelica             |C               |FORTRAN 77
+
+|`Real`               |`double`        |`DOUBLE PRECISION`
+|`Integer`            |`int`           |`INTEGER`
+|`Boolean`            |`int`           |`LOGICAL`
+|`String`             |`const char*`   |Not allowed
+|`T[dim1, ..., dimn]` |Not allowed     |Not allowed
+|Enumeration type     |`int`           |`INTEGER`
+|Record               |See <<records>> |Not allowed
+|===
+
+The element type `T` of an array can be any simple type as defined in <<simple-types>> or, for C, a record type is returned as a value of the record type defined in <<records>>.
+
+==== Aliasing
+
+Any potential aliasing in the external function is the responsibility of the tool and not the user.
+An external function is not allowed to internally change the inputs (even if they are restored before the end of the function).
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+function foo
+  input Real x;
+  input Real y;
+  output Real z = x;
+external "FORTRAN 77"
+  myfoo(x, y, z);
+end foo;
+----
+The following Modelica function:
+[source,modelica]
+----
+function f
+  input Real a;
+  output Real b;
+algorithm
+  b := foo(a, a);
+  b := foo(b, 2 * b);
+end f;
+----
+can on most systems be transformed into the following C function:
+[source,c]
+----
+double f(double a) {
+  extern void myfoo_(double*, double*, double*);
+  double b, temp1, temp2;
+
+  myfoo_(&a, &a, &b);
+  temp1 = 2 * b;
+  temp2 = b;
+  myfoo_(&b, &temp1, &temp2);
+
+  return temp2;
+}
+----
+
+The reason for not allowing the external function to change the inputs is to ensure that inputs can be stored in static memory and to avoid superfluous copying (especially of matrices).
+If the routine does not satisfy the requirements the interface must copy the input argument to a temporary.
+This is rare but occurs, e.g., in `dormlq` in some Lapack implementations.
+In those special cases the writer of the external interface have to copy the input to a temporary.
+If the first input was changed internally in myfoo the designer of the interface would have to change the interface function `foo` to:
+[source,modelica]
+----
+function foo
+  input Real x;
+  protected Real xtemp = x; // Temporary used because myfoo changes its input
+  public input Real y;
+  output Real z;
+external "FORTRAN 77"
+  myfoo(xtemp, y, z);
+end foo;
+----
+
+Note that we discuss input arguments for Fortran-routines even though FORTRAN 77 does not formally have input arguments and forbid aliasing between any pair of arguments to a function (Section 15.9.3.6 of X3J3/90.4).
+For the few (if any) FORTRAN 77 compilers that strictly follow the standard and are unable to handle aliasing between input variables the tool must transform the first call of `foo` into:
+[source,c]
+----
+temp1 = a; /* Temporary to avoid aliasing */
+myfoo_(&a, &temp1, &b);
+----
+
+The use of the function `foo` in Modelica is uninfluenced by these considerations.
+====
+
+==== Annotations for External Functions
+
+The following annotations are useful in the context of calling external functions from Modelica, and they should occur on the `external`-clause and no other standard annotations should occur on the `external`-clause.
+They can all specify either a scalar value or an array of values as indicated below for the `Library` annotation:
+
+* The `annotation(Library="libraryName")`, used by the linker to include the library file where the compiled external function is available.
+
+* The `annotation(Library={"libraryName1", "libraryName2"})`, used by the linker to include the library files where the compiled external function is available and additional libraries used to implement it.
+For shared libraries it is recommended to include all non-system libraries in this list.
+
+* The `annotation(Include="insertedCode")`, used to insert function prototypes or definitions needed for calling the external function in the code generated by the Modelica compiler.
+When generating a call to the external function, the `"insertedCode"` shall be present at the top level somewhere before the point of the call (similar to where include directives are typically placed).
+The `Include` annotation shall be used in such a way that each external function can be handled in a separate translation unit.
+In particular, different external functions must not have `Include` annotations providing exported definitions of the same function symbol to avoid linking errors.
++
+A deprecated feature is that if multiple `Include` annotations -- possibly coming from different external functions -- have identical content, the tool shall not include this content more than once in any translation unit.
+In case calls to several external functions are generated in the same translation unit, the `Include` annotations of the different functions must not define the same function -- except when relying on the deprecated behavior.
++
+The included code should be valid C89 code.
+If the `external-function-call` contains any `size`-expression, the tool is responsible for ensuring that a C-header defining `size_t` is included before the `"insertedCode"`.
+The `"insertedCode"`, conditionally preceded by a header for `size_t`, must be a valid translation unit.
++
+When an `Include` annotation is present, it shall provide a prototype for the external function, and hence the tool shall not produce an automatically generated prototype in the generated code in this case.
++
+Although all pointer types are const pointers in the type mapping for input arguments, it is a deprecated feature that the prototype in an `Include` annotation may use non-const pointers instead.
++
+[NOTE]
+--
+For an external function declaration calling the external function `myfoo`, examples of `"insertedCode"` include:
+
+* An `#include` directive including a header file with a prototype for `myfoo`.
+
+* An `#include` directive including a source file with a `static` definition of `myfoo`.
+Include guards should be used (either in the `Include` annotation or in the source file) to avoid relying on the deprecated feature that tools shall include at most one copy in the same translation unit.
+(Having a `static` definition allows the same source file to be included by multiple `Include` annotations in different translation units.)
+
+* A prototype for `myfoo`.
+This may be useful when no header file is available and it is not desirable to rely on the automatic generation of a prototype.
+
+* A piece of C code directly defining `myfoo`.
+Since no other `Include` annotation is expected to contain a definition of `myfoo`, it is not necessary to make the definition `static`.
+--
+
+* The `annotation(IncludeDirectory="modelica:/TopPackage/Resources/Include")`, used to specify a location for header files.
+The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the include directory, see <<external-resources>>.
+
+* The `annotation(LibraryDirectory="modelica:/TopPackage/Resources/Library")`, used to specify a location for library files.
+The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the library directory, see <<external-resources>>.
+Different versions of one object library can be provided (e.g., for Windows and for Linux) by providing a _platform_ directory below the `LibraryDirectory`.
+If no platform directory is present, the object library must be present in the `LibraryDirectory`.
+The following _platform_ names are standardized:
+
+** `"win32"` (Microsoft Windows 32 bit)
+** `"win64"` (Microsoft Windows 64 bit)
+** `"linux32"` (Linux Intel 32 bit)
+** `"linux64"` (Linux Intel 64 bit)
+
+* The `annotation(SourceDirectory="modelica:/TopPackage/Resources/Source")`, gives the location for source files.
+The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the source directory, see <<external-resources>>.
+It is not specified how they are built.
+
+* The `annotation(License="modelica:/TopPackage/Resources/Licenses/MyLicense.txt")`, gives the license text file for the function.
+It is analogous to the `License` annotation for a top-level class, see <<license-texts>>.
+
+The `win32` or `win64` directories may contain `gcc47`, `vs2010`, `vs2012` for specific versions of these compilers and these are used instead of the general `win32` or `win64` directories, and similarly for other platforms.
+
+The library on Windows may refer to a lib-file (static library), both a lib- and dll-file (in this case the lib-file is an import-library), or just a dll-file.
+It shall not refer to an obj-file.
+
+If the directory for the specific compiler version is missing the platform specific directory is used.
+
+[NOTE]
+A tool may give a diagnostic if the directory corresponding to the selected compiler version is missing.
+The directories may use symbolic links or use a text-file as described below: e.g., a text-file `vs2008` containing the text ../win32/vs2005 (or vs2005) suggesting that it is compatible with vs2005.
+
+The `TopPackage` used for `IncludeDirectory`, `LibraryDirectory`, and `SourceDirectory` indicates the top-level class where the annotation is found in the Modelica source code.
+
+[example]
+====
+Example: Use of external functions and of object libraries:
+
+[source,modelica]
+----
+package ExternalFunctions
+  model Example
+    Real x(start = 1.0), y(start = 2.0);
+  equation
+    der(x) = -ExternalFunc1(x);
+    der(y) = -ExternalFunc2(y);
+  end Example;
+
+  model OtherExample
+    Real x(start = 1.0);
+  equation
+    der(x) = -ExternalFunc3(x);
+  end OtherExample;
+
+  function ExternalFunc1 "Include header file for library implementation"
+    input Real x;
+    output Real y;
+  external "C"
+    y = ExternalFunc1_ext(x)
+      annotation(Library = "ExternalLib1",
+                 Include = "#include \"ExternalFunc1.h\"",
+                 SourceDirectory =
+                  "modelica:/ExternalFunctions/Resources/Source");
+      // The specified SourceDirectory is the default and thus redundant.
+  end ExternalFunc1;
+
+  function ExternalFunc2 "Include header file for library implementation"
+    input Real x;
+    output Real y;
+  external "C"
+      annotation(Library = "ExternalLib2",
+                 Include = "#include \"ExternalFunc2.h\"");
+  end ExternalFunc2;
+
+  function ExternalFunc3 "Include source file"
+    input Real x;
+    output Real y;
+  external "C"
+      annotation(Include = "#include \"ExternalFunc3.c\"");
+  end ExternalFunc3;
+end ExternalFunctions;
+
+package MyExternalFunctions
+  extends ExternalFunctions;
+end MyExternalFunctions;
+----
+
+Directory structure:
+
+[listing]
+----
+ExternalFunctions
+  package.mo                        -- Modelica code from above
+  Resources
+    Include                      -- Include files
+      ExternalFunc1.h            -- C header file
+      ExternalFunc2.h            -- C header file
+      ExternalFunc3.c            -- C source file (not ideal)
+    Library                      -- Object libraries for different platforms
+      win32
+        ExternalLib1.lib         -- Static link library for VisualStudio
+        ExternalLib2.lib         -- statically linking the dynamic link library
+        ExternalLib2.dll         -- Dynamic link library (with manifest)
+      linux32
+        libExternalLib1.a        -- Static link library
+        libExternalLib2.so       -- Shared library
+    Source                       -- Sources for library
+      Func1.c                    -- C source for ExternalLib1.lib
+      Func2.c                    -- C source for ExternalLib2.lib
+      HelperFunc.c               -- C source also included in ExternalLib2.lib
+MyExternalFunctions
+  package.mo
+----
+
+Note that calling the function `MyExternalFunctions.ExternalFunc1` will use the header and library files from `ExternalFunction`, the `ExternalFunctions.Example` will not use ExternalFunc3.c, and one library file may contain multiple functions.
+
+The C-source ExternalFunc3.c will be included fully, and is not part of any library.
+That is not ideal for C-code, but it works for small functions.
+
+It is not specified how the C-sources in the specified `SourceDirectory` will be used to build the libraries.
+
+Header file for the function in the dynamic link / shared library ExternalLib2 so that the desired functions are defined to be exported for Microsoft VisualStudio and for GNU C compiler (note, for Linux it is recommended to use the compiler option `-fPIC` to build shared libraries or object libraries that are later transformed to a shared library):
+
+[source,c]
+----
+/* File ExternalFunc2.h */
+#ifndef EXTERNAL_FUNC2_H_
+#define EXTERNAL_FUNC2_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifdef _MSC_VER
+#ifdef EXTERNAL_FUNCTION_EXPORT
+#  define EXTLIB2_EXPORT __declspec( dllexport )
+#else
+#  define EXTLIB2_EXPORT __declspec( dllimport )
+#endif
+#elif  __GNUC__ >= 4
+  /* In gnuc, all symbols are by default exported. It is still often useful,
+  to not export all symbols but only the needed ones */
+#  define EXTLIB2_EXPORT __attribute__ ((visibility("default")))
+#else
+#  define EXTLIB2_EXPORT
+#endif
+
+EXTLIB2_EXPORT double ExternalFunc2(double);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+----
+====
+
+The `Library` name and the `LibraryDirectory` name in the function annotation are mapped to a linkage directive in a compiler-dependent way thereby selecting the object library suited for the respective computer platform.
+
+==== Examples
+
+===== Input Parameters, Function Value
+
+[example]
+====
+Example: Here all parameters to the external function are input parameters.
+One function value is returned.
+If the external language is not specified, the default is `"C"`, as below.
+
+[source,modelica]
+----
+function foo
+  input Real x;
+  input Integer y;
+  output Real w;
+  external;
+end foo;
+----
+
+This corresponds to the following C prototype:
+
+[source,c]
+----
+double foo(double, int);
+----
+
+Example call in Modelica:
+
+[source,modelica]
+----
+z = foo(2.4, 3);
+----
+Translated call in C:
+[source,c]
+----
+z = foo(2.4, 3);
+----
+====
+
+===== Arbitrary Placement of Output Parameters, No External Function Value
+
+[example]
+====
+Example: In the following example, the external function call is given explicitly which allows passing the arguments in a different order than in the Modelica version.
+
+[source,modelica]
+----
+function foo
+  input Real x;
+  input Integer y;
+  output Real u1;
+  output Integer u2;
+external "C"
+  myfoo(x, u1, y, u2);
+end foo;
+----
+
+This corresponds to the following C prototype:
+
+[source,c]
+----
+void myfoo(double, double *, int, int *);
+----
+
+Example call in Modelica:
+
+[source,modelica]
+----
+(z1,i2) = foo(2.4, 3);
+----
+Translated call in C:
+[source,c]
+----
+myfoo(2.4, &z1, 3, &i2);
+----
+====
+
+===== Both Function Value and Output Variable
+
+[example]
+====
+Example: The following external function returns two results: one function value and one output parameter value.
+Both are mapped to Modelica output parameters.
+
+[source,modelica]
+----
+function foo
+  input Real x;
+  input Integer y;
+  output Real funcvalue;
+  output Integer out1;
+external "C"
+  funcvalue = myfoo(x, y, out1);
+end foo;
+----
+
+This corresponds to the following C prototype:
+
+[source,c]
+----
+double myfoo(double, int, int *);
+----
+
+Example call in Modelica:
+
+[source,modelica]
+----
+(z1,i2) = foo(2.4, 3);
+----
+
+Translated call in C:
+
+[source,c]
+----
+z1 = myfoo(2.4, 3, &i2);
+----
+====
+
+==== Utility Functions
+
+This section describes the utility functions declared in `ModelicaUtilities.h`, which can be called in external Modelica functions written in C.
+
+The tool must ensure that the header is found by `#include "ModelicaUtilities.h"` within an `Include` annotation (see <<annotations-for-external-functions>>); no `IncludeDirectory` annotation is needed.
+
+[example]
+====
+Example: The following usage patterns are common:
+
+* The `Include` annotation may first `#include "ModelicaUtilities.h"`, and then contain the external function definition where the utility functions may be used.
+
+* Like above, but moving the annotation content above to, say, myExtFun.c, and then just do `#include "myExtFun.c"` in the annotation.
+
+* After `#include "ModelicaUtilities.h"`, the `Include` annotation can also define a wrapper around a function in a linked library that does the real job, where the wrapper forwards the arguments as well as passes function pointers for a selection of functions from `ModelicaUtilities.h`.
+====
+
+[NOTE]
+When building external libraries independently of Modelica tools, it is not possible to rely on the tool mechanism that provides `ModelicaUtilities.h` for `Include` annotations.
+Instead, an external library project may contain its own instance of `ModelicaUtilities.h`, for example obtained by making a copy of the instance included within the Modelica Standard Library.
+
+===== Error Reporting Utility Functions
+
+The functions listed below produce a message in different ways.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression                           |Description                                |Details
+
+|`ModelicaMessage(string)`            |Message with fixed string             .3+.^|<<function:ModelicaMessage-et-al>>
+|`ModelicaWarning(string)`            |Warning with fixed string
+|`ModelicaError(string)`              |Error with fixed string
+|`ModelicaFormatMessage(format, ...)` |Message with printf style formatting  .3+.^|<<function:ModelicaFormatMessage-et-al>>
+|`ModelicaFormatWarning(format, ...)` |Warning with printf style formatting  
+|`ModelicaFormatError(format, ...)`   |Error with printf style formatting
+|`ModelicaVFormatMessage(format, ap)` |Message with vprintf style formatting .3+.^|<<function:ModelicaVFormatMessage-et-al>>
+|`ModelicaVFormatWarning(format, ap)` |Warning with vprintf style formatting
+|`ModelicaVFormatError(format, ap)`   |Error with vprintf style formatting
+|===
+
+The _Message_-functions only produce the message, but the _Warning_- and _Error_-functions combine this with error handling as follows.
+
+The _Warning_-functions view the message as a warning and can skip duplicated messages similarly as an `assert` with `level = AssertionLevel.Warning` in the Modelica code.
+
+The _Error_-functions never return to the calling function, but handle the error similarly to an `assert` with `level = AssertionLevel.Error` in the Modelica code.
+
+[[function:ModelicaMessage-et-al,Function ModelicaMessage et al.]]
+Function ModelicaMessage, ModelicaWarning, ModelicaError::
++
+[source,c]
+----
+void ModelicaMessage(const char* string);
+void ModelicaWarning(const char* string);
+void ModelicaError(const char* string);
+----
++
+Output the fixed message string (no format control).
+
+[[function:ModelicaFormatMessage-et-al,Function ModelicaFormatMessage et al.]]
+Function ModelicaFormatMessage, ModelicaFormatWarning, ModelicaFormatError::
++
+[source,c]
+----
+void ModelicaFormatMessage(const char* format, ...);
+void ModelicaFormatWarning(const char* format, ...);
+void ModelicaFormatError(const char* format, ...);
+----
++
+Output the message under the same format control as the C function `printf`.
+
+[[function:ModelicaVFormatMessage-et-al,Function ModelicaVFormatMessage et al.]]
+Function ModelicaVFormatMessage, ModelicaVFormatWarning, ModelicaVFormatError::
++
+[source,c]
+----
+void ModelicaVFormatMessage(const char* format, va_list ap);
+void ModelicaVFormatWarning(const char* format, va_list ap);
+void ModelicaVFormatError(const char* format, va_list ap);
+----
++
+Output the message under the same format control as the C function `vprintf`.
+
+===== String Allocation Utility Functions
+
+The functions listed below are related to string allocation.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression                                    |Description        |Details
+
+|`ModelicaAllocateString(len)`                 |Allocate or error  |<<function:ModelicaAllocateString>>
+|`ModelicaAllocateStringWithErrorReturn(len)`  |Allocate or null   |<<function:ModelicaAllocateStringWithErrorReturn>>
+|`ModelicaDuplicateString(str)`                |Duplicate or error |<<function:ModelicaDuplicateString>>
+|`ModelicaDuplicateStringWithErrorReturn(str)` |Duplicate or null  |<<function:ModelicaDuplicateStringWithErrorReturn>>
+|===
+
+As described in <<simple-types>>, an external function wanting to return a newly constructed string must allocate this string with one of the string allocation functions in this section.
+The allocated memory is owned by the Modelica simulation environment, and may only be accessed by the external function during the currently executing external function call.
+The string allocation functions can also be used to allocate temporary strings that are not returned from the external function, with the convenience of the Modelica simulation environment being responsible for deallocation after the return of the external function.
+(This is particularly convenient for avoiding memory leaks in the event of abnormal termination of the external function, for example, via `ModelicaError`.)
+
+[NOTE]
+Memory that is not passed to the Modelica simulation environment, such as memory that is freed before leaving the function, or in an `ExternalObject`, see <<external-objects>>, may be allocated with the standard C mechanisms, like `malloc`.
+
+[[function:ModelicaAllocateString,Function ModelicaAllocateString]]
+Function ModelicaAllocateString::
++
+[source,c]
+----
+char* ModelicaAllocateString(size_t len);
+----
++
+Allocates len+1 characters, and sets the last one to NUL.
+If an error occurs, this function does not return, but calls `ModelicaError`.
+
+[[function:ModelicaAllocateStringWithErrorReturn,Function ModelicaAllocateStringWithErrorReturn]]
+Function ModelicaAllocateStringWithErrorReturn::
++
+[source,c]
+----
+char* ModelicaAllocateStringWithErrorReturn(size_t len);
+----
++
+Same as `ModelicaAllocateString`, except that in case of error, the function returns 0.
+This allows the external function to close files and free other open resources in case of error.
+After cleaning up resources, use `ModelicaError` or `ModelicaFormatError` to signal the error.
+
+[[function:ModelicaDuplicateString,Function ModelicaDuplicateString]]
+Function ModelicaDuplicateString::
++
+[source,c]
+----
+char* ModelicaDuplicateString(const char* str);
+----
++
+Returns a writeable duplicate of the NUL-terminated string str.
+If an error occurs, this function does not return, but calls `ModelicaError`.
+
+[[function:ModelicaDuplicateStringWithErrorReturn,Function ModelicaDuplicateStringWithErrorReturn]]
+Function ModelicaDuplicateStringWithErrorReturn::
++
+[source,c]
+----
+char* ModelicaDuplicateStringWithErrorReturn(const char* str);
+----
++
+Same as `ModelicaDuplicateString`, except that in case of error, the function returns 0.
+This allows the external function to close files and free other open resources in case of error.
+After cleaning up resources, use `ModelicaError` or `ModelicaFormatError` to signal the error.
+
+==== External Objects
+
+External functions may need to store their internal memory between function calls.
+Within Modelica this memory is defined as instance of the predefined class `ExternalObject` according to the following rules:
+
+* There is a predefined partial class `ExternalObject`.
++
+[NOTE]
+Since the class is partial, it is not possible to define an instance of this class.
+
+* An external object class shall be directly extended from `ExternalObject`, shall have exactly two function definitions, called `constructor` and `destructor`, may extend from empty classes (<<defintion:empty-class>>), but not contain any other elements.
+The functions `constructor` and `destructor` shall not be replaceable.
+It is not legal to call the `constructor` and `destructor` functions explicitly.
+
+* The `constructor` function is called exactly once before the first use of the object.
+The `constructor` shall have exactly one output argument in which the constructed instance derived from `ExternalObject` is returned.
+The arguments to the constructor must not -- directly nor indirectly -- depend on the external object being constructed.
+The constructor shall initialize the object, and must not require any other calls to be made for the initialization to be complete (e.g., from an initial algorithm or initial equation).
+To indicate failure, the `constructor` may return a null pointer, to be treated in the same way as a failed `assert` in Modelica.
++
+The constructor shall not assume that pointers sent to the external object will remain valid for the life-time of the external object.
+An exception is that if the pointer to another external object is given as argument to the constructor, that pointer will remain valid as long as the other external object lives.
+
+* For each completely constructed object, the `destructor` is called exactly once, after the last use of the object, even if an error occurs.
+The `destructor` shall have no output arguments and the only input argument of the destructor shall be of the type derived from `ExternalObject`.
+The destructor shall delete the object, and must not require any other calls to be made for the deletion to be complete (e.g., from a `when terminal()` clause).
++
+[NOTE]
+External objects may be a protected component (or part of one) in a function.
+The constructor is in that case called at the start of the function call, and the destructor when the function returns, or when recovering from errors in the function.
++
+[NOTE]
+External objects may be an input (or part of an input) to a function, in that case the destructor is not called (since the external object is active before and after the function call).
+Normally this is an external function, but it could be a non-external function as well (e.g., calling external functions one or more times).
+The function input shall not have a default value using the constructor.
+
+* An external object class shall be of the specialized class `class`.
++
+[NOTE]
+Apart from empty classes (<<defintion:empty-class>>), this is the only use of `class`.
+
+* Classes derived from `ExternalObject` can neither be used in an `extends`-clause nor in a short class definition.
+
+* Only the constructor may return external objects and an external object can only be bound in component declarations and neither modified later nor assigned to.
++
+[NOTE]
+It follows that a function cannot return a component containing an external object, since only the constructor may return an external object and the constructor exactly returns the external object.
+
+* External functions may be defined which operate on the internal memory of an `ExternalObject`.
+An `ExternalObject` used as input argument or return value of an external C function is mapped to the C type `void*`.
+
+[example]
+====
+Example: A user-defined table may be defined in the following way as an `ExternalObject` (the table is read in a user-defined format from file and has memory for the last used table interval):
+
+[source,modelica]
+----
+class MyTable
+  extends ExternalObject;
+  function constructor
+    input String fileName = "";
+    input String tableName = "";
+    output MyTable table;
+  external "C"
+    table = initMyTable(fileName, tableName);
+  end constructor;
+
+  function destructor "Release storage of table"
+    input MyTable table;
+  external "C"
+    closeMyTable(table);
+  end destructor;
+end MyTable;
+----
+and used in the following way:
+[source,modelica]
+----
+model test "Define a new table and interpolate in it"
+  MyTable table=MyTable(fileName ="testTables.txt",
+    tableName="table1"); // call initMyTable
+  Real y;
+equation
+  y = interpolateMyTable(table, time);
+end test;
+----
+
+This requires to provide the following Modelica function:
+
+[source,modelica]
+----
+function interpolateMyTable "Interpolate in table"
+  input MyTable table;
+  input Real u;
+  output Real y;
+external "C"
+  y = interpolateMyTable(table, u);
+end interpolateTable;
+----
+
+The external C functions may be defined in the following way:
+
+[source,c]
+----
+typedef struct { /* User-defined datastructure of the table */
+  double* array; /* nrow*ncolumn vector */
+  int nrow; /* number of rows */
+  int ncol; /* number of columns */
+  int type; /* interpolation type */
+  int lastIndex; /* last row index for search */
+} MyTable;
+
+void* initMyTable(const char* fileName, const char* tableName) {
+  MyTable* table = malloc(sizeof(MyTable));
+  if ( table == NULL ) ModelicaError("Not enough memory");
+  // read table from file and store all data in *table
+  return (void*) table;
+}
+
+void closeMyTable(void* object) { /* Release table storage */
+  MyTable* table = (MyTable*) object;
+  if ( object == NULL ) return;
+  free(table->array);
+  free(table);
+}
+
+double interpolateMyTable(void* object, double u) {
+  MyTable* table = (MyTable*) object;
+  double y;
+  // Interpolate using "table" data (compute y)
+  return y;
+}
+----
+====

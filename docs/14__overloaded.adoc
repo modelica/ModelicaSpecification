@@ -1,0 +1,462 @@
+== Overloaded Operators
+
+A Modelica `operator record` can overload the behavior for operations such as constructing, adding, multiplying etc.
+
+The overloading is defined in such a way that ambiguities are not allowed and give an error.
+Furthermore, it is sufficient to define overloading for scalars.
+Some overloaded array operations are automatically deduced from the overloaded scalar operations (see item 4 and item 3 in the lists below), and others can be defined independently of the corresponding scalar operations.
+
+=== Overview of Overloaded Operators
+
+In an `operator record` the definition of operations are done using the specialized class `operator` (a specialized class similar to `package`, see <<specialized-classes>>) followed by the name of the operation.
+Each `operator` class is comprised of functions implementing different variants of the operation for the `operator record` class in which the definition resides.
+
+* Overloaded constructors, see <<overloaded-constructors>>: +
+`'constructor'`, `'0'`
+
+* Overloaded string conversions, see <<overloaded-string-conversions>>: +
+`'String'`
+
+* Overloaded binary operations, see <<overloaded-binary-operations>>: +
+`'+'`, `'-'` (subtraction), `'*'`, `'/'`, `'^'`,
+`'=='`, `'<='`, `'>'`, `'<'`,
+`'>='`, `'<='`, `'and'`, `'or'`
+
+* Overloaded unary operations, see <<overloaded-unary-operations>>: +
+`'-'` (negation), `'not'`
+
+The functions defined in the operator-class must take at least one component of the record class as input, except for the constructor-functions which instead must return one component of the record class.
+All of the functions shall return exactly one output.
+
+The functions can be either called as defined in this section, or they can be called directly using the hierarchical name.
+The operator or operator function must be encapsulated; this allows direct calls of the functions and prohibits the functions from using the elements of operator record class.
+
+The `operator record` may also contain additional functions, and declarations of components of the record.
+It is not legal to extend from an `operator record`, except as a short class definition modifying the default attributes for the component elements directly inside the operator record.
+
+If an operator record was derived by a short class definition, the overloaded operators of this operator record are the operators that are defined in its base class, for subtyping see <<interface-or-type-relationships>>.
+
+The precedence and associativity of the overloaded operators is identical to the one defined in <<tab:operator-precedence>> in <<operator-precedence-and-associativity>>.
+
+[NOTE]
+====
+Note, the operator overloading as defined in this section is only a short hand notation for function calls.
+====
+
+=== Matching Function
+
+All functions defined inside the `operator` class must return one output (based on the restriction above), and may include functions with optional arguments, i.e., functions of the form
+
+[source,modelica]
+----
+function f
+  input A₁ u₁;
+  ...
+  input Aₘ uₘ = aₘ;
+  ...
+  input Aₙ uₙ;
+  output B y;
+algorithm
+  ...
+end f;
+----
+
+The vector _P_ indicates whether argument _m_ of `f` has a default value (true for default value, false otherwise).
+A call `f(a₁, a₂, ..., aₖ, b₁ = w₁, ..., bₚ = wₚ)` with distinct names _bⱼ_ is a valid match for the function `f`, provided (treating `Integer` and `Real` as the same type)
+
+* _Aᵢ_ = typeOf(_aᵢ_) for 1 ≤ _i_ ≤ _k_,
+* the names _bⱼ_ = _uQⱼ_, _Qⱼ_ > _k_, _AQⱼ_ = typeOf(_wⱼ_) for 1 ≤ _j_ ≤ _p_, and
+* if the union of {_i_: 1 ≤ _i_ ≤ _k_ }, {_Qⱼ_: 1 ≤ _j_ ≤ _p_}, and {_m_: _Pₘ_ and 1 ≤ _m_ ≤ _n_ } is the set {_i_: 1 ≤ _i_ ≤ _n_}.
+
+[NOTE]
+====
+This corresponds to the normal treatment of function calls with named arguments, requiring that all inputs have some value given by a positional argument, named argument, or a default value (and that positional and named arguments do not overlap).
+Note, that this only defines a valid call, but does not explicitly define the set of domains.
+====
+
+=== Overloaded Constructors
+
+Let `C` denote an operator record class and consider an expression `C(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`.
+
+. [[overloaded-constructor-unique]]If there exists a unique function _f_ in `C.'constructor'` such that (_A₁_, _a₂_, ..., _aₖ_, _b₁_=_w₁_, ..., _bₚ_=_wₚ_) is a valid match for the function _f_, then
+`C(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`
+is resolved to
+`C.'constructor'.f(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`.
+
+. If there is no operator `C.'constructor'` the automatically generated record constructor is called.
+
+. Otherwise the expression is erroneous.
+
+Restrictions:
+
+* The operator `C.'constructor'` shall only contain functions that declare one output component, which shall be of the operator record class `C`.
+* For an operator record class there shall not exist any potential call that lead to multiple matches in item 1 above.
++
+[NOTE]
+====
+How to verify this is not specified.
+====
+
+* For a pair of operator record classes `C` and `D` and components `c` and `d` of these classes, respectively, at most one of `C.'constructor'(d)` and `D.'constructor'(c)` shall be legal.
++
+[NOTE]
+====
+Hence, one of the two definitions must be removed.
+====
+
+[NOTE]
+====
+By the last restriction the following problem for binary operators is avoided:
+
+Assume there are two operator record classes `C` and `D` that both have a constructor from `Real`.
+If we want to extend `c + c` and `d + d` to support mixed operations, one variant would be to define `c + d` and `d + c`; but then `c + 2` becomes ambiguous (since it is not clear which instance should be converted to).
+Without mixed operations expressions such as `c + d` are only ambiguous if both conversion from `C` to `D` and back from `D` to `C` are both available, and this possibility is not allowed by the restriction above.
+====
+
+Additionally there is an operator `'0'` defining the zero-value which can also be used to construct an element.
+The operator `'0'` for an operator record `C` can contain only one function, having zero inputs and one output of type `C` (the called function is therefore unambiguous).
+It should return the identity element of addition, and is used for generating flow-equations for `connect`-equations and zero elements for matrix multiplication.
+
+=== Overloaded String Conversions
+
+Consider an expression `String(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`, _k_ ≥ 1 where _A₁_ is an element of class `A`.
+
+. If `A` is a predefined type except `String` (i.e., `Boolean`, `Integer`, `Real` or an enumeration), or derived from such a type, then the corresponding built-in operation is performed.
+
+. [[binary-operator-record-unique-match]]If `A` is an operator record class and there exists a unique function _f_ in `A.'String'` such that
+`A.'String'.f(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`
+is a valid match for _f_, then
+`String(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`
+is evaluated to +
+`A.'String'.f(A₁, a₂, ..., aₖ, b₁=w₁, ..., bₚ=wₚ)`.
+
+. Otherwise the expression is erroneous.
+
+Restrictions:
+
+* The operator `A.'String'` shall only contain functions that declare one output component, which shall be of the `String` type, and the first input argument shall be of the operator record class `A`.
+* For an operator record class there shall not exist any call that lead to multiple matches in item 2 above.
++
+[NOTE]
+====
+How to verify this is not specified.
+====
+
+=== Overloaded Binary Operations
+
+Let _X_ denote a binary operator and consider an expression `a X b` where `a` is an instance or array of instances of class `A` and `b` is an instance or array of instances of class `B`.
+
+. [[overloaded-binary-predefined]]If `A` and `B` are predefined types of such, then the corresponding built-in operation is performed.
+
+. [[overloaded-binary-unique]]Otherwise, if there exists _exactly one_ function _f_ in the union of `A.X` and `B.X` such that `f(a, b)` is a valid match for the function _f_, then `a X b` is evaluated using this function.
+It is an error, if multiple functions match.
+If `A` is not an operator record class, `A.X` is seen as the empty set, and similarly for `B`.
++
+[NOTE]
+====
+Having a union of the operators ensures that if `A` and `B` are the same, each function only appears once.
+====
++
+Note that if the operations take array arguments, they will in this step only match if the number of dimensions match.
+
+. Otherwise, consider the set given by _f_ in `A.X` and an operator record class `C` (different from `B`) with a constructor, _g_, such that
+`C.'constructor'.g(b)`
+is a valid match, and
+`f(a, C.'constructor'.g(b))`
+is a valid match; and another set given by _f_ in `B.X` and an operator record class `D` (different from `A`) with a constructor, _h_, such that
+`D.'constructor'.h(a)`
+is a valid match and
+`f(D.'constructor'.h(a), b)`
+is a valid match.
+If the sum of the sizes of these sets is one this gives the unique match.
+If the sum of the sizes is larger than one it is an error.
+Note that if the operations take array arguments, they will in this step only match if the number of dimensions match.
++
+[NOTE]
+====
+Informally, this means:
+If there is no direct match of `a X b`, then it is tried to find a direct match by automatic type casts of `a` or `b`, by converting either `a` or `b` to the needed type using an appropriate constructor function from one of the operator record classes used as arguments of the overloaded `op` functions.
+Example using the `Complex`-definition below:
+[source,modelica]
+----
+Real a;
+Complex b;
+Complex c = a * b; // interpreted as:
+// Complex.'*'.multiply(Complex.'constructor'.fromReal(a), b);
+----
+====
+
+. [[overloaded-binary-arrays]]Otherwise, if `a` or `b` is an array expression, then the expression is conceptually evaluated according to the rules of <<scalar-vector-matrix-and-array-operator-functions>> with the following exceptions concerning <<multiplication-of-matrices-and-vectors>>:
+.. `vector * vector` is not automatically defined based on the scalar multiplication.
++
+[NOTE]
+====
+The scalar product of <<tab:matrix-vector-multiplication>> does not generalize to the expected linear and conjugate linear scalar product of complex numbers.
+It is possible to define a specific product function taking two array arguments handling this case.
+====
+.. `vector * matrix` is not automatically defined based on the scalar multiplication.
++
+[NOTE]
+====
+The corresponding definition of <<tab:matrix-vector-multiplication>> does not generalize to complex numbers in the expected way.
+It is possible to define a specific product function taking two array arguments handling this case.
+====
+.. If the inner dimension for `matrix * vector` or `matrix * matrix` is zero, this uses the overloaded `'0'` operator of the result array element type.
+If the operator `'0'` is not defined for that class it is an error if the inner dimension is zero.
+
++
+[NOTE]
+====
+For array multiplication it is assumed that the scalar elements form a non-commutative ring that does not necessarily have a multiplicative identity.
+====
+
+. [[overloaded-binary-error]]Otherwise the expression is erroneous.
+
+For an element-wise operator, `a .op b`, items 1, 4 and 5 are used; e.g., the operator `.+` will always be defined in terms of `'+'`.
+
+Restrictions:
+
+* A function is allowed for a binary operator if and only if it has at least two inputs; at least one of which is of the operator record class, and the first two inputs shall not have default values, and all inputs after the first two must have default values.
+
+* For an operator record class there shall not exist any (potential) call that lead to multiple matches in item 2 above.
+
+=== Overloaded Unary Operations
+
+Let _X_ denote a unary operator and consider an expression `X a` where `a` is an instance or array of instances of class `A`.
+Then `X a` is evaluated in the following way.
+
+. If `A` is a predefined type, then the corresponding built-in operation is performed.
+
+. [[unary-operator-record-unique-match]]If `A` is an operator record class and there exists a unique function _f_ in `A.X` such that `A.X.f(a)` is a valid match, then `X a` is evaluated to `A.X.f(a)`.
+It is an error, if there are multiple valid matches.
+Note that if the operations take array arguments, they will in this step only match if the number of dimensions match.
+
+. [[overloaded-unary-array]]Otherwise, if `a` is an array expression, then the expression is conceptually evaluated according to the rules of <<scalar-vector-matrix-and-array-operator-functions>>.
+
+. Otherwise the expression is erroneous.
+
+Restrictions:
+
+* A function is allowed for a unary operator if and only if it has least one input; and the first input is of the record type (or suitable arrays of such) and does not have a default value, and all inputs after the first one must have default values.
+
+* For an operator record class there shall not exist any (potential) call that lead to multiple matches in item 2 above.
+
+* A binary and/or unary operator-class may only contain functions that are allowed for this binary and/or unary operator-class; and in case of `'-'` it is the union of these sets, since it may define both a unary (negation) and binary (subtraction) operator.
+
+=== Example of Overloading for Complex Numbers
+
+[example]
+====
+Example: The rules in the previous subsections are demonstrated at hand of a record class to work conveniently with complex numbers:
+
+[source,modelica]
+----
+operator record Complex "Record defining a Complex number"
+  Real re "Real part of complex number";
+  Real im "Imaginary part of complex number";
+  encapsulated operator 'constructor'
+    import Complex;
+    function fromReal
+      input Real re;
+      input Real im = 0;
+      output Complex result(re = re, im = im);
+    algorithm
+      annotation(Inline = true);
+    end fromReal;
+  end 'constructor';
+
+  encapsulated operator function '+' // short hand notation, see specialized-classes
+    import Complex;
+    input Complex c1;
+    input Complex c2;
+    output Complex result "= c1 + c2";
+  algorithm
+    result := Complex(c1.re + c2.re, c1.im + c2.im);
+    annotation(Inline = true);
+  end '+';
+
+  encapsulated operator '-'
+    import Complex;
+    function negate
+      input Complex c;
+      output Complex result "= - c";
+    algorithm
+      result := Complex(-c.re, -c.im);
+      annotation(Inline = true);
+    end negate;
+
+    function subtract
+      input Complex c1;
+      input Complex c2;
+      output Complex result "= c1 - c2";
+    algorithm
+      result := Complex(c1.re - c2.re, c1.im - c2.im);
+      annotation(Inline = true);
+    end subtract;
+  end '-';
+
+  encapsulated operator function '*'
+    import Complex;
+    input Complex c1;
+    input Complex c2;
+    output Complex result "= c1 * c2";
+  algorithm
+    result :=
+      Complex(c1.re * c2.re - c1.im * c2.im, c1.re * c2.im + c1.im * c2.re);
+    annotation(Inline = true);
+  end '*';
+
+  encapsulated operator function '/'
+    import Complex; input Complex c1;
+    input Complex c2;
+    output Complex result "= c1 / c2";
+  algorithm
+    result :=
+      Complex((c1.re*c2.re + c1.im*c2.im) / (c2.re^2 + c2.im^2),
+              (-c1.re*c2.im + c1.im*c2.re) / (c2.re^2 + c2.im^2));
+    annotation(Inline = true);
+  end '/';
+
+  encapsulated operator function '=='
+    import Complex;
+    input Complex c1;
+    input Complex c2;
+    output Boolean result "= c1 == c2";
+  algorithm
+    result := c1.re == c2.re and c1.im == c2.im;
+    annotation(Inline = true);
+  end '==';
+
+  encapsulated operator function 'String'
+    import Complex;
+    input Complex c;
+    input String name = "j"
+      "Name of variable representing sqrt(-1) in the string";
+    input Integer significantDigits = 6
+      "Number of significant digits to be shown";
+    output String s;
+  algorithm
+    s := String(c.re, significantDigits = significantDigits);
+    if c.im <> 0 then
+      s := if c.im > 0 then s + " + " else s + " - ";
+      s := s + String(abs(c.im), significantDigits = significantDigits) + name;
+    end if;
+  end 'String';
+
+  encapsulated function j
+    import Complex;
+    output Complex c;
+  algorithm
+    c := Complex(0, 1);
+    annotation(Inline = true);
+  end j;
+
+  encapsulated operator function '0'
+    import Complex;
+    output Complex c;
+  algorithm
+    c := Complex(0, 0);
+    annotation(Inline = true);
+  end '0';
+end Complex;
+
+function eigenValues
+  input Real A [:,:];
+  output Complex ev[size(A, 1)];
+  protected
+  Integer nx = size(A, 1);
+  Real eval[nx, 2];
+  Integer i;
+algorithm
+  eval := Modelica.Math.Matrices.eigenValues(A);
+  for i in 1 : nx loop
+    ev[i] := Complex(eval[i, 1], eval[i, 2]);
+  end for;
+end eigenValues;
+
+// Usage of Complex number above:
+  Complex j = Complex.j();
+  Complex c1 = 2 + 3 * j;
+  Complex c2 = 3 + 4 * j;
+  Complex c3 = c1 + c2;
+  Complex c4[:] = eigenValues([1, 2; -3, 4]);
+algorithm
+  Modelica.Utilities.Streams.print("c4 = " + String(c4));
+  // results in output:
+  // c4 = {2.5 + 1.93649j, 2.5 - 1.93649j}
+----
+
+How overloaded operators can be symbolically processed.
+Example:
+
+[source,modelica]
+----
+Real a;
+Complex b;
+Complex c = a + b;
+----
+
+Due to inlining of functions, the equation for `c` is transformed to:
+
+[source,modelica]
+----
+c = Complex.'+'.add(Complex.'constructor'.fromReal(a), b);
+  = Complex.'+'.add(Complex(re = a, im = 0), b)
+  = Complex(re = a + b.re, im = b.im);
+----
+
+or
+
+[source,modelica]
+----
+c.re = a + b.re;
+c.im = b.im;
+----
+
+These equations can be symbolically processed as other equations.
+
+Complex can be used in a connector:
+
+[source,modelica]
+----
+  operator record ComplexVoltage = Complex(re(unit = "V"), im(unit = "V"));
+  operator record ComplexCurrent = Complex(re(unit = "A"), im(unit = "A"));
+
+  connector ComplexPin
+    ComplexVoltage v;
+    flow ComplexCurrent i;
+  end ComplexPin;
+
+  ComplexPin p1, p2, p3;
+equation
+  connect(p1, p2);
+  connect(p1, p3);
+----
+
+The two `connect`-equations result in the following connection equations:
+
+[source,modelica]
+----
+p1.v = p2.v;
+p1.v = p3.v;
+p1.i + p2.i + p3.i = Complex.'0'();
+// Complex.'+'(p1.i, Complex.'+'(p2.i, p3.i)) = Complex.'0'();
+----
+
+The restrictions on extends are intended to avoid combining two variants inheriting from the same operator record, but with possibly different operations; thus `ComplexVoltage` and `ComplexCurrent` still use the operations from `Complex`.
+The restriction that it is not legal to extend from any of its enclosing scopes implies that:
+
+[source,modelica]
+----
+package A
+  extends Icon; // Ok
+  operator record B ... end B;
+end A;
+
+package A2
+  extends A(...); // Not legal
+end A2;
+
+package A3 = A(...); // Not legal
+----
+====

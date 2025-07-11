@@ -1,0 +1,1338 @@
+== Inheritance, Modification, and Redeclaration
+:id: inheritance-modification-and-redeclaration
+
+One of the major benefits of object-orientation is the ability to _extend_ the behavior and properties of an existing class.
+The original class, known as the _base class_, is extended to create a more specialized version of that class, known as the _derived class_.
+In this process, the data and behavior of the original class in the form of variable declarations, equations, and certain other contents are reused, or _inherited_, by the derived class.
+In fact, the inherited contents is copied from the superclass into the derived class, but before copying certain operations, such as type expansion, checking, and modification, are performed on the inherited contents when appropriate.
+This chapter describes the inheritance concept in Modelica, together with the related concepts modification and redeclaration.
+
+=== Inheritance -- Extends Clause
+
+The class `A` is called a _base class_ of `B`, if `B` extends `A`.
+The converse relation is then expressed as `B` being a _derived class_ of `A`, or as `B` being _derived from_ `A`.
+This relation is specified by an `extends`-clause in `B` or in one of `B`'s base classes.
+A class inherits all elements from its base classes, and may modify all non-final elements inherited from base classes, as explained below.
+
+The `extends`-clause is used to specify inheritance from a base class into an (enclosing) class containing the `extends`-clause.
+It is an unnamed element of a class definition that uses a name and an optional modification to specify a base class of the class defined using the class definition. The syntax of the `extends`-clause is as follows:
+
+[source,grammar]
+----
+extends-clause :
+   extends name [ class-or-inheritance-modification ] [ annotation-clause ]
+----
+
+The name of the base class is looked up in the partially flattened enclosing class (see <<enclosing-classes>>) of the `extends`-clause.
+If the optional `class-or-inheritance-modification` contains any `inheritance-modification` the base class is then modified as described in <<selective-model-extension>>.
+The possibly modified found base class is flattened with a new environment and the partially flattened enclosing class of the `extends`-clause.
+The new environment is the result of merging
+
+* arguments of all enclosing class environments that match names in the flattened base class
+* a `class-modification` constructed from all `argument` of the `inheritance-modification`
+
+in that order.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+class A
+  parameter Real a, b;
+end A;
+
+class B
+  extends A(b = 2);
+end B;
+
+class C
+  extends B(a = 1);
+end C;
+----
+====
+
+The elements of the flattened base class become elements of the flattened enclosing class, and are added at the place of the `extends`-clause: specifically components and classes, the equation sections, algorithm sections, optional `external`-clause, and the contents of the annotation at the end of the class, but excluding `import`-clauses.
+
+[example]
+====
+From the example above we get the following flattened class:
+
+[source,modelica]
+----
+class Cinstance
+  parameter Real a = 1;
+  parameter Real b = 2;
+end Cinstance;
+----
+
+The ordering of the merging rules ensures that, given classes `A` and `B` defined above,
+
+[source,modelica]
+----
+class C2
+  B bcomp(b = 3);
+end C2;
+----
+
+yields an instance with `bcomp.b = 3`, which overrides `b = 2`.
+====
+
+The declaration elements of the flattened base class shall either:
+
+* Not already exist in the partially flattened enclosing class (i.e., have different names).
+* The new element is a long form of redeclare or uses the `class extends A` syntax, see <<redeclaration>>.
+* Be exactly identical to any element of the flattened enclosing class with the same name and the same level of protection (public or protected) and same contents.
+  In this case, the first element in order (can be either inherited or local) is kept.
+  It is recommended to give a warning for this case; unless it can be guaranteed that the identical contents will behave in the same way.
+
+Otherwise the model is incorrect.
+
+[example]
+====
+Clarifying order:
+
+[source,modelica]
+----
+function A
+  input Real a;
+  input Real b;
+end A;
+
+function B
+  extends A;
+  input Real a;
+end B;
+----
+
+The inputs of `B` are `{a, b}` in that order; the `input Real a;` is ignored.
+====
+
+Equations of the flattened base class that are syntactically equivalent to equations in the flattened enclosing class are discarded.
+This feature is deprecated, and it is recommended to give a warning when discarding them and for the future give a warning about all forms of equivalent equations due to inheritance.
+
+[NOTE]
+Equations that are mathematically equivalent but not syntactically equivalent are not discarded, hence yield an overdetermined system of equations.
+
+==== Multiple Inheritance
+
+Multiple inheritance is possible since multiple `extends`-clauses can be present in a class.
+
+[NOTE]
+As stated in <<steps-of-instantiation>>, it is illegal for an `extends`-clause to influence the lookup of the class name of any `extends`-clause in the same class definition.
+
+==== Inheritance of Protected and Public Elements
+
+If an `extends`-clause is used under the `protected` heading, all elements of the base class become protected elements of the current class.
+If an `extends`-clause is a public element, all elements of the base class are inherited with their own protection.
+The eventual headings `protected` and `public` from the base class do not affect the consequent elements of the current class (i.e., headings `protected` and `public` are not inherited).
+
+==== Restrictions on the Kind of Base Class
+
+Since specialized classes of different kinds have different properties, see <<specialized-classes>>, only specialized classes that are _in some sense compatible_ to each other can be derived from each other via inheritance.
+The following table shows which kind of specialized class can be used in an `extends`-clause of another kind of specialized class (the grey cells mark the few exceptional cases, where a specialized class can be derived from a specialized class of another kind):
+
+[cols="13*^",options="autowidth"]
+|===
+h| 12+h|Base Class
+.>h|Derived Class
+h|[.vertical-text]#package#
+h|[.vertical-text]#operator#
+h|[.vertical-text]#function#
+h|[.vertical-text]#operator function#
+h|[.vertical-text]#type#
+h|[.vertical-text]#record#
+h|[.vertical-text]#operator record#
+h|[.vertical-text]#expandable connector#
+h|[.vertical-text]#connector#
+h|[.vertical-text]#block#
+h|[.vertical-text]#model#
+h|[.vertical-text]#class#
+
+h|package |&check; | | | | | | | | | | h|&check;
+h|operator | |&check; | | | | | | | | | h|&check;
+h|function | | |&check; | | | | | | | | h|&check;
+h|operator function | | h|&check; |&check; | | | | | | | h|&check;
+h|type | | | | |&check; | | | | | | h|&check;
+h|record | | | | | |&check; | | | | | h|&check;
+h|operator record | | | | | | |&check; | | | | h|&check;
+h|expandable connector | | | | | | | |&check; | | | h|&check;
+h|connector | | | | h|&check; h|&check; h|&check; | |&check; | | h|&check;
+h|block | | | | | h|&check; | | | |&check; | h|&check;
+h|model | | | | | h|&check; | | | h|&check; |&check; h|&check;
+h|class | | | | | | | | | | | |&check;
+|===
+
+If a derived class is inherited from another type of specialized class, then the result is a specialized class of the derived class type.
+
+[NOTE]
+For example, if a `block` inherits from a `record`, then the result is a `block`.
+
+All specialized classes can be derived from `class`, provided that the resulting class fulfills the restriction of the specialized class.
+A `class` may only contain class definitions, annotations, and `extends`-clauses (having any other contents is deprecated).
+
+[NOTE]
+It is recommended to use the most specific specialized class.
+
+The specialized classes `package`, `operator`, `function`, `type`, `record`, `operator record`, and `expandable connector` can only be derived from their own kind and from `class`.
+
+[NOTE]
+E.g., a package can only be base class for packages.
+All other kinds of classes can use the `import`-clause to use the contents of a package.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+record RecordA
+  ...
+end RecordA;
+
+package PackageA
+  ...
+end PackageA;
+
+package PackageB
+  extends PackageA; // fine
+end PackageB;
+
+model ModelA
+  extends RecordA; // fine
+end ModelA;
+
+model ModelB
+  extends PackageA; // error, inheritance not allowed
+end ModelB;
+----
+====
+
+==== Require Transitively Non-Replaceable
+
+The class name used after `extends` for base classes and for constraining classes must use a class reference considered transitively non-replaceable, see definition in <<transitively-non-replaceable>>.
+For a replaceable component declaration without `constraining-clause` the class must use a class reference considered transitively non-replaceable.
+
+[NOTE]
+The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e., `redeclare model extends M ...` where `M` must be an inherited replaceable class.
+
+[NOTE]
+The rule for a replaceable component declaration without `constraining-clause` implies that constraining classes are always transitively non-replaceable -- both if explicitly given or implicitly by the declaration.
+
+=== Modifications
+
+A _modification_ is part of an element.
+It modifies the instance generated by that element.
+A modification contains _element modifications_ (e.g., `vcc(unit = "V") = 1000`) and _element-redeclarations_ (e.g., `redeclare type Voltage = Real(unit="V")`).
+
+There are three kinds of constructs in the Modelica language in which modifications can occur:
+
+* variable declarations
+* short class definitions
+* `extends`-clauses
+
+A modifier modifies one or more declarations (definitions) from a class by changing some aspect(s) of the declarations (definitions).
+The most common kind of modifier just changes the _default value_ or the `start`-attribute in a binding equation; the value and/or `start`-attribute should be compatible with the variable according to <<type-compatible-expressions>>.
+
+An _element modification_ overrides the declaration equation in the class used by the instance generated by the modified element.
+
+[example]
+====
+Example: Modifying the default `start` value of the `altitude` variable:
+
+[source,modelica]
+----
+Real altitude(start = 59404);
+----
+====
+
+A modification (e.g., `C1 c1(x = 5)`) is called a _modification equation_, if the modified variable (here: `c1.x`) is a non-parameter variable.
+
+[NOTE]
+The modification equation is created, if the modified component (here: `c1`) is also created (see <<class-declarations>>).
+In most cases a modification equation for a non-parameter variable requires that the variable was declared with a declaration equation, see <<balanced-models>>; in those cases the declaration equation is replaced by the modification equation.
+
+A more dramatic change is to modify the _type_ and/or the _prefixes_ and possibly the _dimension sizes_ of a declared element.
+This kind of modification is called an _element-redeclaration_ (see <<redeclaration>>) and requires the special keyword `redeclare` to be used in the modifier in order to reduce the risk for accidental modeling errors.
+In most cases a declaration that can be redeclared must include the prefix `replaceable` (see <<redeclaration>>).
+The modifier value (and class for redeclarations) is found in the context in which the modifier occurs, see also <<simple-name-lookup>>.
+
+[example]
+====
+Example: Scope for modifiers:
+
+[source,modelica]
+----
+model B
+  parameter Real x;
+  package Medium = Modelica.Media.PartialMedium;
+end B;
+
+model C
+  parameter Real x = 2;
+  package Medium = Modelica.Media.PartialMedium;
+  B b(x = x, redeclare package Medium = Medium);
+  // The 'x' and 'Medium' being modified are declared in the model B.
+  // The modifiers '= x' and '= Medium' are found in the model C.
+end C;
+
+model D
+  parameter Real x = 3;
+  package Medium = Modelica.Media.PartialMedium;
+  C c(b(x = x, redeclare package Medium = Medium));
+  // The 'x' and 'Medium' being modified are declared in the model B.
+  // The modifiers '= x' and '= Medium' are found in the model D.
+end D;
+----
+====
+
+When present, the description-string of a modifier overrides the existing description.
+
+==== Syntax of Modifications and Redeclarations
+
+The syntax is defined in the grammar, see <<modification>>.
+
+==== Modification Environment
+
+The _modification environment_ of a class contains arguments which modify elements of the class (e.g., parameter changes) when the class is flattened.
+The modification environment is built by merging class modifications, where outer modifications override inner modifications.
+
+[NOTE]
+This should not be confused with `inner outer` prefixes described in <<inner-declarations-instance-hierarchy-name-lookup>>.
+
+==== Merging of Modifications
+
+Merging of modifiers means that outer modifiers override inner modifiers.
+The merging is hierarchical, and a value for an entire non-simple component overrides value modifiers for all components, and it is an error if this overrides a `final` prefix for a component, or if value for a simple component would override part of the value of a non-simple component.
+When merging modifiers each modification keeps its own `each` prefix.
+
+[example]
+====
+Example: The following larger example demonstrates several aspects:
+
+[source,modelica]
+----
+class C1
+  class C11
+    parameter Real x;
+  end C11;
+end C1;
+
+class C2
+  class C21
+    ...
+  end C21;
+end C2;
+
+class C3
+  extends C1;
+  C11 t(x = 3); // ok, C11 has been inherited from C1
+  C21 u; // ok, even though C21 is inherited below
+  extends C2;
+end C3;
+----
+The modification environment of the declaration of `t` is `(x = 3)`.
+
+The following example demonstrates overriding part of non-simple component:
+[source,modelica]
+----
+record A
+  parameter Real x;
+  parameter Real y;
+end A;
+
+model B
+  parameter A a = A(2, 3);
+end B;
+
+model C
+  B b1(a(x = 4)); // Error: Cannot override value for a.x when a has a value.
+end C;
+----
+
+The modification environment is built by merging class modifications, as shown by:
+[source,modelica]
+----
+class C1
+  parameter Real a;
+end C1;
+
+class C2
+  parameter Real b;
+  parameter Real c;
+end C2;
+
+class C3
+  parameter Real x1; // No default value
+  parameter Real x2 = 2; // Default value 2
+  parameter C1 x3; // No default value for x3.a
+  parameter C2 x4(b = 4); // x4.b has default value 4
+  parameter C1 x5(a = 5); // x5.a has default value 5
+  extends C1; // No default value for inherited element a
+  extends C2(b = 6, c = 77); // Inherited b has default value 6
+end C3;
+
+class C4
+  extends C3(x2 = 22, x3(a = 33), x4(c = 44), x5 = x3, a = 55, b = 66);
+end C4;
+----
+
+Outer modifications override inner modifications, e.g., `b = 66` overrides the nested class modification of extends `C2(b = 6)`.
+This is known as merging of modifications: merge((b = 66), (b = 6)) becomes (b = 66).
+
+A flattening of class `C4` will give an object with the following variables:
+
+[cols="a,a",options=autowidth]
+|===
+|Variable |Default value
+
+|`x1`     |`none`
+|`x2`     |`22`
+|`x3.a`   |`33`
+|`x4.b`   |`4`
+|`x4.c`   |`44`
+|`x5.a`   |`x3.a`
+|`a`      |`55`
+|`b`      |`66`
+|`c`      |`77`
+|===
+====
+
+==== Single Modification
+
+Two arguments of a modification shall not modify the same element, attribute, or description-string.
+When using qualified names the different qualified names starting with the same identifier are merged into one modifier.
+This merged modifier can be described as a purely syntactic rewriting to an equivalent modifier, except in the case of replaceable redeclarations without a constraining type, see <<redeclaration>>.
+The latter is described in the example below.
+If a modifier with a qualified name has the `each` or `final` prefix, that prefix is only seen as applied to the final part of the name.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+class C1
+  Real x[3];
+end C1;
+class C2 = C1(x = ones(3), x = ones(3)); // Error: x designated twice
+class C3
+  class C4
+    Real x;
+  end C4;
+  C4 a(final x.unit = "V", x.displayUnit = "mV", x = 5.0);
+  // Ok, different attributes designated (unit, displayUnit and value)
+  // identical to:
+  C4 b(x(final unit = "V", displayUnit = "mV") = 5.0));
+
+  C4 c(final x, final x.unit = "V", x.displayUnit = "mV");
+  // OK, different attributes and "final x" in itself is OK,
+  // identical to (the final on unit is redundant):
+  C4 d(final x(final unit = "V", displayUnit = "mV"));
+end C3;
+----
+
+The following examples are incorrect:
+[source,modelica]
+----
+m1(r = 1.5, r = 1.6) // Multiple modifier for r (its value)
+m1(r = 1.5, r = 1.5) // Multiple modifier for r (its value) - even if identical
+m1(r.start = 2, r(start = 3)) // Multiple modifier for r.start
+m1(x.r = 1.5 "x", x.r(start = 2.0) "y")) // Multiple description-string for x.r
+m1(r = R(), r(y = 2)) // Multiple modifier for r.y - both direct value and
+                      // part of record
+----
+
+The following examples are correct:
+[source,modelica]
+----
+m1(r = 1.5, r(start = 2.0))
+m1(r = 1.6, r "x")
+m1(r = R(), r(y(min = 2)))
+----
+
+Modifiers can be merged for non-replaceable redeclarations, or replaceable redeclarations with a constraining type, see <<redeclaration>>.
+[source,modelica]
+----
+model Test
+  model A
+    replaceable Real x = 1;
+  end A;
+
+  A a(redeclare Real x, x.start = 2);
+  // Identical to A a(redeclare Real x(start=2));
+  A a(redeclare replaceable Real x constrainedby Real, x.start = 2);
+  // Identical to A a(redeclare Real x constrainedby Real(start=2));
+end Test;
+----
+
+For replaceable redeclarations without a constraining type the merging is not a local syntactic rewrite as it requires the constraining type, see <<redeclaration>>.
+[source,modelica]
+----
+model Test
+  partial model Base
+    parameter Real p;
+  end Base;
+
+  model Implementation
+    extends Base;
+    parameter Real q;
+  end Implementation;
+
+  model A
+    replaceable Base b constrainedby Base(p=1);
+  end A;
+
+  A a(redeclare replaceable Implementation b, b.q=1);
+  // This is treated the same as
+  // A a(redeclare replaceable Implementation b constrainedby Base(q=1));
+  // This is no longer a local syntactic rewrite as the constrainedby
+  // references the constraining class
+end Test;
+----
+====
+
+==== Modifiers for Array Elements
+
+The following rules apply to modifiers:
+
+* The `each` keyword on a modifier requires that it is applied in an array declaration/modification, and the modifier is applied individually to each element of the enclosing array (with regard to the position of `each`).
+  In case of nested modifiers this implies it is applied individually to each element of each element of the enclosing array; see example.
+  If the modified element is a vector and the modifier does not contain the `each` prefix, the modification is split such that the first element in the vector is applied to the first element of the vector of elements, the second to the second element, until the last element of the vector is applied to the last element of the array; it is an error if these sizes do not match.
+  Matrices and general arrays of elements are treated by viewing those as vectors of vectors etc.
+* If a nested modifier is split, the split is propagated to all elements of the nested modifier, and if they are modified by the `each` keyword the split is inhibited for those elements.
+  If the nested modifier that is split in this way contains re-declarations that are split, it is illegal.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+model C
+  parameter Real a[3];
+  parameter Real d;
+end C;
+
+model B
+  C c[5](each a = {1, 2, 3}, d = {1, 2, 3, 4, 5});
+  parameter Real b = 0;
+end B;
+----
+This implies `c[i].a[j] = j` and `c[i].d = i`.
+
+[source,modelica]
+----
+model D
+  B b(each c.a = {3, 4, 5}, c.d = {2, 3, 4, 5, 6});
+  // Equivalent to:
+  B b2(c(each a = {3, 4, 5}, d = {2, 3, 4, 5, 6}));
+end D;
+----
+This implies `b.c[i].a[j] = 2+j` and `b.c[i].d = 1+i`.
+
+[source,modelica]
+----
+model E
+  B b[2](each c(each a = {1, 2, 3}, d = {1, 2, 3, 4, 5}), p = {1, 2});
+  // Without the first each one would have to use:
+  B b2[2](c(each a = {1, 2, 3}, d = fill({1, 2, 3, 4, 5}, 2)), p = {1, 2});
+end E;
+----
+This implies `b[k].c[i].a[j] = j`, `b[k].c[i].d = i`, and `b[k].p = k`.
+For `c.a` the additional (outer) `each` has no effect, but it is necessary for `c.d`.
+
+Specifying array dimensions after the type works the same as specifying them after the variable name.
+[source,modelica]
+----
+model F
+  Real fail1[2](each start = {1, 2}); // Illegal
+  Real work1[2](each start = 1);      // Legal
+  Real[2] fail2(each start = {1, 2}); // Illegal
+  Real[2] work2(each start = 2);      // Legal
+end F;
+----
+====
+
+==== Final Element Modification Prevention
+
+An element defined as final by the `final` prefix in an element modification or declaration cannot be modified by a modification or by a redeclaration.
+All elements of a final element are also final.
+
+[NOTE]
+Setting the value of a parameter in an experiment environment is conceptually treated as a modification.
+This implies that a final modification equation of a parameter cannot be changed in a simulation environment.
+
+[example]
+====
+Example: Final component modification.
+
+[source,modelica]
+----
+type Angle =
+  Real(final quantity = "Angle", final unit = "rad", displayUnit = "deg");
+
+model TransferFunction
+  parameter Real b[:] = {1} "numerator coefficient vector";
+  parameter Real a[:] = {1, 1} "denominator coefficient vector";
+  ...
+end TransferFunction;
+
+model PI "PI controller"
+  parameter Real k = 1 "gain";
+  parameter Real T = 1 "time constant";
+  TransferFunction tf(final b = k * {T, 1}, final a = {T, 0});
+end PI;
+
+model Test
+  PI c1(k = 2, T = 3); // fine, will indirectly change tf.b to 2 * {3, 1}
+  PI c2(tf(b = {1}));  // error, b is declared as final
+end Test;
+----
+====
+
+[example]
+====
+Example: Final class declaration.
+
+[source,modelica]
+----
+model Test2
+  final model MyTF = TransferFunction(b = {1, 2});
+  /* Equivalently:
+  final model MyTF = TransferFunction(final a, final b = {1, 2});
+  */
+  MyTF tf1;                        // fine
+  MyTF tf2(a = {1, 2});            // error, all elements in MyTF are final
+  model M = MyTF(a = {4});         // error, all elements in MyTF are final
+  model TFX
+    extends MyTF;                  // fine
+    Real foo = 1.0;
+  end TFX;
+  TFX tfx(foo = 2.0);              // fine, foo is not from MyTF
+  TFX tfx2(a = {1, 3});            // error, all elements from MyTF are final
+  model TFX3 = TFX(a = {1, 4});    // error, all elements from MyTF are final
+end Test2;
+----
+====
+
+==== Removing Modifiers - break
+
+Modifications may contain the special keyword `break` instead of an expression.
+The intention of `break` is to remove the value.
+
+The modifiers using `break` are merged using the same rule as other modifications, and follow the same restrictions so they cannot override a final modifier.
+During flattening of an instantiated model, remaining `break` modifications (i.e., the ones that are not further overriden) are treated as if the expression was missing.
+The `break` modifier for a variable of a simple type can be applied to the value and/or to specific attributes.
+Unless `final` was specified, it is possible to override even if no value is present, either because there was no expression originally or because `break` overrides another `break`.
+
+[NOTE]
+In a dialog, a tool may hide the keyword `break` and show an empty input field, without the overriden modification.
+It should also be possible to remove this modifier to restore the overriden modification.
+
+There are also other uses of the keyword `break`, but importantly it is not an expression and thus it cannot be used as a sub-expression.
+
+[example]
+====
+Example: Remove unwanted defaults for parameters:
+
+[source,modelica]
+----
+partial model PartialStraightPipe
+  parameter Real roughness = 2.5e-5 "Average height of surface asperities";
+  parameter Real height_ab (unit = "m" ) = 0 "Height between a and b";
+  ...
+end PartialStraightPipe;
+
+model StaticPipe
+  extends PartialStraightPipe;
+  parameter Real p_a_start = system.p_start;
+  ...
+end StaticPipe;
+
+model MyPipe "Without defaults"
+  extends StaticPipe(
+    p_a_start = break,
+    roughness = break,
+    height_ab = break);
+end MyPipe;
+----
+
+Replace a given parameter value by an initial computation:
+
+[source,modelica]
+----
+model A
+  parameter Real diameter  = 1;
+  final parameter Real radius = diameter / 2;
+end A;
+
+model B "Initial equation for diameter"
+  extends A( final diameter(fixed = false) = break );
+  parameter Real square=2;
+initial equation
+  //  solving equation below for diameter
+  square = f(diameter);
+end B;
+----
+
+Replace the value for an inherited variable with a value computed from an algorithm:
+
+[source,modelica]
+----
+model A
+  Real x = 1;
+end A;
+
+model B "Computing x instead"
+  extends A(final x=break);
+algorithm
+  x := 0;
+  while ...
+    x := x + ...;
+  end while;
+end B;
+----
+
+Note that this is only legal because the modifier is modifying an inherited declaration.
+Due to <<balanced-models>> it is not legal to construct the corresponding component declaration, `A a(x=break);`.
+====
+
+=== Redeclaration
+
+A `redeclare` construct in a modifier replaces the declaration of a local class or component with another declaration.
+A `redeclare` construct as an element replaces the declaration of a local class or component with another declaration.
+Both `redeclare` constructs work in the same way.
+The `redeclare` construct as an element requires that the element is inherited, and cannot be combined with a modifier of the same element in the `extends`-clause.
+For modifiers, the redeclare of classes uses the `short-class-definition` construct, which is a special case of normal class definitions and semantically behaves as the corresponding `class-definition`.
+
+A modifier with the keyword `replaceable` is automatically seen as being a `redeclare`.
+
+In redeclarations some parts of the original declaration is automatically inherited by the new declaration.
+This is intended to make it easier to write declarations by not having to repeat common parts of the declarations, and does in particular apply to prefixes that must be identical.
+The inheritance only applies to the declaration itself and not to elements of the declaration.
+
+The general rule is that if no prefix within one of the following groups is present in the new declaration the old prefixes of that kind are preserved.
+
+The groups that are valid for both classes and components:
+
+* `public`, `protected`
+* `inner`, `outer`
+* constraining type according to rules in <<constraining-type>>
+
+The groups that are only valid for components:
+
+* `flow`, `stream`
+* `discrete`, `parameter`, `constant`
+* `input`, `output`
+* array dimensions
+
+Note that if the old declaration was a short class definition with array dimensions the array dimensions are not automatically preserved, and thus have to be repeated in the few cases they are used.
+
+Replaceable component array declarations with array sizes on the left of the component are seen as syntactic sugar for having all arrays sizes on the right of the component; and thus can be redeclared in a consistent way.
+
+The presence of annotations on the `redeclare` construct in a modifier is deprecated, but since none of the annotations in the specification ever had a meaning in this context it only impacts vendor-specific annotations.
+
+[NOTE]
+The inheritance is from the original declaration.
+In most cases replaced or original does not matter.
+It does matter if a user redeclares a variable to be a parameter and then redeclares it without parameter.
+
+[example]
+====
+[source,modelica]
+----
+model HeatExchanger
+  replaceable parameter GeometryRecord geometry;
+  replaceable input Real u[2];
+end HeatExchanger;
+
+  HeatExchanger(
+    /*redeclare*/ replaceable /*parameter*/ GeoHorizontal geometry,
+    redeclare /*input*/ Modelica.Units.SI.Angle u /*[2]*/);
+   // The semantics ensure that parts in /*.*/ are automatically added
+   // from the declarations in HeatExchanger.
+----
+
+Example of arrays on the left of the component name:
+[source,modelica]
+----
+model M
+  replaceable Real [4] x[2];
+  // Seen as syntactic sugar for "replaceable Real x[2, 4];"
+  // Note the order.
+end M;
+M m(redeclare Modelica.Units.SI.Length x[2, 4]); // Valid redeclare of the type
+----
+====
+
+==== The "class extends" Redeclaration Mechanism
+
+A class declaration of the type `redeclare class extends B(...)`, where `class` as usual can be replaced by any other specialized class, replaces the inherited class `B` with another declaration that extends the inherited class where the optional class-modification is applied to the inherited class.
+Inherited `B` here means that the class containing `redeclare class extends B(...)` should also inherit another declaration of `B` from one of its `extends`-clauses.
+The new declaration should explicitly include `redeclare`.
+
+[NOTE]
+Since the rule about applying the optional class-modification implies that all declarations are inherited with modifications applied, there is no need to apply modifiers to the new declaration.
+
+For `redeclare class extends B(...)` the inherited class is subject to the same restrictions as a redeclare of the inherited element, and the original class `B` should be _replaceable_, and the new element is only replaceable if the new definition is replaceable.
+In contrast to normal extends it is not subject to the restriction that `B` should be transitively non-replaceable (since `B` should be replaceable).
+
+The syntax rule for `class extends` construct is in the definition of the `class-specifier` nonterminal (see also class declarations in <<class-declarations>>):
+
+[source,grammar]
+----
+class-definition :
+   [ encapsulated ] class-prefixes
+   class-specifier
+
+class-specifier : long-class-specifier | ...
+
+long-class-specifier : ...
+    | extends IDENT [ class-modification ] description-string
+      composition end IDENT
+----
+
+The nonterminal `class-definition` is referenced in several places in the grammar, including the following case which is used in some examples below, including `package extends` and `model extends`:
+[source,grammar]
+----
+element :
+   import-clause |
+   extends-clause |
+   [ redeclare ]
+   [ final ]
+   [ inner ] [ outer ]
+   ( ( class-definition | component-clause) |
+      replaceable ( class-definition | component-clause)
+        [constraining-clause comment])
+----
+
+[example]
+====
+Example to extend from existing packages:
+
+[source,modelica]
+----
+package PowerTrain // library from someone else
+  replaceable package GearBoxes
+    ...
+  end GearBoxes;
+end PowerTrain;
+
+package MyPowerTrain
+  extends PowerTrain; // use all classes from PowerTrain
+  redeclare package extends GearBoxes // add classes to sublibrary
+    ...
+  end GearBoxes;
+end MyPowerTrain;
+----
+
+Example for an advanced type of package structuring with constraining types:
+
+[source,modelica]
+----
+partial package PartialMedium "Generic medium interface"
+  constant Integer nX "number of substances";
+  replaceable partial model BaseProperties
+    Real X[nX];
+    ...
+  end BaseProperties;
+
+  replaceable partial function dynamicViscosity
+    input Real p;
+    output Real eta;
+    ...
+  end dynamicViscosity;
+end PartialMedium;
+
+package MoistAir "Special type of medium"
+  extends PartialMedium(nX=2);
+
+  redeclare model extends BaseProperties(T(stateSelect = StateSelect.prefer))
+    // replaces BaseProperties by a new implementation and
+    // extends from Baseproperties with modification
+    // note, nX = 2 (!)
+  equation
+    X = {0, 1};
+    ...
+  end BaseProperties;
+
+  redeclare function extends dynamicViscosity
+    // replaces dynamicViscosity by a new implementation and
+    // extends from dynamicViscosity
+  algorithm
+    eta := 2 * p;
+  end dynamicViscosity;
+end MoistAir;
+----
+
+Note, since `MostAir` extends from `PartialMedium`, constant `nX = 2` in package `MoistAir` and the model `BaseProperties` and the function `dynamicViscosity` is present in `MoistAir`.
+By the following definitions, the available `BaseProperties` model is replaced by another implementation which extends from the `BaseProperties` model that has been temporarily constructed during the extends of package `MoistAir` from `PartialMedium`.
+The redeclared `BaseProperties` model references constant `nX` which is 2, since by construction the redeclared `BaseProperties` model is in a package with `nX = 2`.
+
+This definition is compact but is difficult to understand.
+At a first glance an alternative exists that is more straightforward and easier to understand:
+
+[source,modelica]
+----
+package MoistAir2 "Alternative definition that does not work"
+  extends PartialMedium(nX=2,
+    redeclare model BaseProperties = MoistAir_BaseProperties,
+    redeclare function dynamicViscosity = MoistAir_dynamicViscosity);
+
+  model MoistAir_BaseProperties
+    // wrong model since nX has no value
+    extends PartialMedium.BaseProperties;
+  equation
+    X = {1, 0};
+  end MoistAir_BaseProperties;
+
+  function MoistAir_dynamicViscosity
+    extends PartialMedium.dynamicViscosity;
+  algorithm
+    eta := p;
+  end MoistAir_dynamicViscosity;
+end MoistAir2;
+----
+
+Here, the usual approach is used to extend (here from `PartialMedium`) and in the modifier perform all redeclarations.
+In order to perform these redeclarations, corresponding implementations of all elements of `PartialMedium` have to be given under a different name, such as `MoistAir2.MoistAir_BaseProperties`, since the name `BaseProperties` already exists due to `extends PartialMedium`.
+Then it is possible in the modifier to redeclare `PartialMedium.BaseProperties` to `MoistAir2.MoistAir_BaseProperties`.
+Besides the drawback that the namespace is polluted by elements that have different names but the same implementation (e.g., `MoistAir2.BaseProperties` is identical to `MoistAir2.MoistAir_BaseProperties`) the whole construction does not work if arrays are present that depend on constants in `PartialMedium`, such as `X[nX]`:
+The problem is that `MoistAir_BaseProperties` extends from `PartialMedium.BaseProperties` where the constant `nX` does not yet have a value.
+This means that the dimension of array `X` is undefined and model `MoistAir_BaseProperties` is wrong.
+With this construction, all constant definitions have to be repeated whenever these constants shall be used, especially in `MoistAir_BaseProperties` and `MoistAir_dynamicViscosity`.
+For larger models this is not practical and therefore the only practically useful definition is the complicated construction in the previous example with `redeclare model extends BaseProperties`.
+
+To detect this issue the rule on lookup of composite names (see <<composite-name-lookup>>) ensures that `PartialMedium.dynamicViscosity` is incorrect in a simulation model.
+====
+
+==== Constraining Type
+:id: constraining-type
+
+In a replaceable declaration the optional `constraining-clause` defines a constraining type.
+Any modifications following the constraining type name are applied both for the purpose of defining the actual constraining type and they are automatically applied in the declaration and in any subsequent redeclaration.
+The precedence order is that declaration modifiers override constraining type modifiers.
+
+If the `constraining-clause` is not present in the original declaration (i.e., the non-redeclared declaration):
+
+* The type of the declaration is also used as a constraining type.
+* If modifiers are present in the original declaration, they also become modifiers on the constraining type.
+
+The syntax of a `constraining-clause` is as follows:
+
+[source,grammar]
+----
+constraining-clause :
+   constrainedby name [ class-modification ]
+----
+
+[example]
+====
+Example: Merging of modifiers
+
+[source,modelica]
+----
+class A
+  parameter Real x;
+end A;
+
+class B
+  parameter Real x = 3.14, y; // B is a subtype of A
+end B;
+
+class C
+  replaceable A a(x = 1);
+end C;
+
+class D
+  extends C(redeclare B a(y = 2));
+end D;
+----
+which is equivalent to defining `D` as:
+[source,modelica]
+----
+class D
+  B a(x = 1, y = 2);
+end D;
+----
+
+A modification of the constraining type is automatically applied in subsequent redeclarations:
+[source,modelica]
+----
+model ElectricalSource
+  replaceable SineSource source constrainedby MO(final n=5);
+  ...
+end ElectricalSource;
+
+model TrapezoidalSource
+  extends ElectricalSource(
+    redeclare Trapezoidal source); // source.n=5
+end TrapezoidalSource;
+----
+
+A modification of the base type without a constraining type is automatically applied in subsequent redeclarations:
+[source,modelica]
+----
+model Circuit
+  replaceable model NonlinearResistor = Resistor(R=100);
+  ...
+end Circuit;
+
+model Circuit2
+  extends Circuit(
+    redeclare replaceable model NonlinearResistor
+                           = ThermoResistor(T0 = 300));
+      // As a result of the modification on the base type,
+      // the default value of R is 100
+end Circuit2;
+
+model Circuit3
+  extends Circuit2(
+   redeclare replaceable model NonlinearResistor
+                           = Resistor(R = 200));
+  // The T0 modification is not applied because it did not
+  // appear in the original declaration
+end Circuit3;
+----
+
+`Circuit2` is intended to illustrate that a user can still select any resistor model (including the original one, as is done in `Circuit3`), since the constraining type is kept from the original declaration if not specified in the redeclare.
+Thus it is easy to select an advanced resistor model, without limiting the possible future changes.
+
+A redeclaration can redefine the constraining type:
+[source,modelica]
+----
+model Circuit4
+  extends Circuit2(
+    redeclare replaceable model NonlinearResistor
+                 = ThermoResistor constrainedby ThermoResistor);
+end Circuit4;
+
+model Circuit5
+  extends Circuit4(
+    redeclare replaceable model NonlinearResistor = Resistor); // illegal
+end Circuit5;
+----
+====
+
+The class or type of component shall be a subtype of the constraining type.
+In a redeclaration of a replaceable element, the class or type of a component must be a subtype of the constraining type.
+The constraining type of a replaceable redeclaration must be a subtype of the constraining type of the declaration it redeclares.
+In an element modification of a replaceable element, the modifications are applied both to the actual type and to the constraining type.
+
+In an element-redeclaration of a replaceable element the modifiers of the replaced constraining type are merged to both the new declaration and to the new constraining type, using the normal rules where outer modifiers override inner modifiers.
+
+When a class is flattened as a constraining type, the flattening of its replaceable elements will use the constraining type and not the actual default types.
+
+The number of dimensions in the constraining type should correspond to the number of dimensions in the type-part.
+Similarly the type used in a redeclaration must have the same number of dimensions as the type of redeclared element.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+replaceable T1 x[n] constrainedby T2;
+replaceable type T=T1[n] constrainedby T2;
+replaceable T1[n] x constrainedby T2;
+----
+In these examples the number of dimensions must be the same in `T1` and `T2`, as well as in a redeclaration.
+Normally `T1` and `T2` are scalar types, but both could also be defined as array types (with the same number of dimensions).
+Thus if `T2` is a scalar type (e.g., `type T2 = Real;`) then `T1` must also be a scalar type, and if `T2` is defined as vector type (e.g., `type T2 = Real[3];`) then `T1` must also be vector type.
+====
+
+===== Constraining-Clause Annotations
+:id: constraining-clause-annotations
+
+Description and annotations on the `constraining-clause` are applied to the entire declaration, and it is an error if they also appear on the definition.
+
+[NOTE]
+The intent is that the description and/or annotation are at the end of the declaration, but it is not straightforward to specify this in the grammar.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+replaceable model Load1 =
+  Resistor constrainedby TwoPin "The Load"; // Recommended
+replaceable model Load2 =
+  Resistor "The Load" constrainedby TwoPin; // Identical to Load1
+replaceable model Load3 =
+  Resistor "The Load" constrainedby TwoPin "The Load"; // Error
+
+replaceable Resistor load1
+  constrainedby TwoPin "The Load"; // Recommended
+replaceable Resistor load2
+  "The Load" constrainedby TwoPin; // Identical to load1
+replaceable Resistor load3
+  "The Load" constrainedby TwoPin "The Load!"; // Error
+----
+====
+
+See also the examples in <<annotations-for-redeclaration-and-modification>>.
+
+==== Restrictions on Redeclarations
+:id: restrictions-on-redeclarations
+
+The following additional constraints apply to redeclarations (after prefixes are inherited, see <<redeclaration>>):
+
+* Only classes and components declared as replaceable can be redeclared with a new type, which must have an interface compatible with the constraining interface of the original declaration, and to allow further redeclarations one must use `redeclare replaceable`.
++
+[NOTE]
+Redeclaration with the same type can be used to restrict variability and/or change array dimensions.
+* An element declared as `constant` cannot be redeclared.
+* An element declared as `final` shall not be modified, and thus not redeclared.
+* Modelica does not allow a protected element to be redeclared as public, or a public element to be redeclared as protected.
+* Array dimensions may be redeclared; provided the sub-typing rules in <<interface-compatibility-or-subtyping>> are satisfied.
++
+[NOTE]
+This is one example of redeclaration of non-replaceable elements.
+
+==== Annotations for Redeclaration and Modification
+:id: annotation-choices-for-suggested-redeclarations-and-modifications
+
+A declaration can have an annotation `choices` containing modifiers on `choice`, where each of them indicates a suitable redeclaration or modifications of the element.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comments on the `choice` modifiers can be used as textual explanations of the choices.
+The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
+
+The string comments for the `choice` modifiers shall not automatically be copied to the modifier.
+
+The semantic restrictions in <<semantic-restrictions-of-annotation-syntax>> are not enforced for the `choice` modifiers.
+For instance, several examples of using `redeclare` inside `choice(...)` will be given below.
+
+Lookup inside a `choice` modifier is performed in the context of the annotation, meaning that references may need to be transformed to preserve the meaning when a `choice` is applied in a different context.
+
+[NOTE]
+It is recommended to avoid expressions with references to elements that are not globally accessible, such as contents within a `protected` section of a class.
+By starting names with a dot it can be ensured that no transformation of references will be needed when a `choice` is applied, and that applicability of a `choice` does not depend on context, see <<global-name-lookup>>.
+
+It is allowed to include choices that are invalid in some contexts, e.g., a value might violate a `min` attribute.
+(Options for tools encountering such choices include not showing them, marking them as invalid, or detecting the violations later.)
+
+For a `Boolean` variable, a `choices` annotation may contain the annotation `checkBox = true`, meaning to display a checkbox to input the values `false` or `true` in the graphical user interface.
+
+The annotation `choicesAllMatching = true` on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
+
+* For a replaceable element the included elements should be usable for replacing it.
+  Exact criteria for inclusion in such a menu are not defined, but there shall be a way to at least get a selection of classes, `A.B....X.Z`, that are either directly or indirectly derived by inheritance from the constraining class of the declaration, where `A` to `X` are non-partial packages, and `Z` is non-partial.
+* For a record variable the included elements shall include matching record constants and calls of matching record constructors (matching classes as for replaceable elements).
+
+This menu can be disabled using annotation `choicesAllMatching = false`.
+It is possible to combine the two annotations for one declaration, and tools may avoid generating duplicate menu entries in that case.
+
+[NOTE]
+When `choicesAllMatching` is not specified the following behavior is recommended for replaceable elements.
+A tool could ideally present (at least) the same choices as for `choicesAllMatching = true`, but if it takes (too long) time to present the list it might be better to use the `choicesAllMatching = false` behavior instead.
+
+[example]
+====
+Example: Demonstrating the `choices` and  `choicesAllMatching = true` annotations applied to replaceable elements.
+
+[source,modelica]
+----
+replaceable model MyResistor = Resistor
+  annotation(choices(
+               choice(redeclare model MyResistor=lib2.Resistor(a={2}) "..."),
+               choice(redeclare model MyResistor=lib2.Resistor2 "...")));
+
+replaceable Resistor Load(R = 2) constrainedby TwoPin
+  annotation(choices(
+               choice(redeclare lib2.Resistor Load(a={2}) "..."),
+               choice(redeclare Capacitor Load(L=3) "...")));
+
+replaceable FrictionFunction a(func = exp) constrainedby Friction
+  annotation(choices(
+               choice(redeclare ConstantFriction a(c=1) "..."),
+               choice(redeclare TableFriction a(table="...") "..."),
+               choice(redeclare FunctionFriction a(func=exp) "...")));
+
+replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
+  constrainedby Modelica.Media.Interfaces.PartialMedium
+  annotation(choicesAllMatching = true);
+----
+====
+
+[example]
+====
+Example: Demonstrating the `choicesAllMatching = true` annotation for parameter records.
+
+[source,modelica]
+----
+record Medium
+  parameter SI.Density rho "Density";
+  ...
+end Medium;
+
+record Air_30degC = Medium(rho = 1.149, ...);
+constant Medium MyAir = Medium(rho = 1.1, ...);
+
+model OpenTank
+  parameter Medium medium = Medium() annotation(choicesAllMatching = true);
+end OpenTank;
+----
+The choices for `medium` shall include `Medium()`, `Air_30degC()`, and `MyAir`.
+If `Medium()` is chosen it is necessary to also set its `rho` parameter.
+====
+
+[example]
+====
+Example: Applying the `choices` annotation to nonreplaceable declarations, e.g., to describe enumerations.
+
+[source,modelica]
+----
+type KindOfController = Integer(min = 1, max = 3)
+  annotation(choices(
+              choice = 1 "P",
+              choice = 2 "PI",
+              choice = 3 "PID"));
+
+model A
+  parameter KindOfController x;
+end A;
+A a(x = 3);
+----
+Note that `"PID"` was not copied here.
+
+The `choices` annotation can also be applied to `Boolean` variables to define a check box.
+[source,modelica]
+----
+parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
+----
+====
+
+=== Selective Model Extension
+:id: selective-model-extension
+
+[NOTE]
+The goal of selective model extension is to enable unforeseen structural variability without requiring deliberately prepared base-models, Bürger (2019).
+This is done by deselecting specific elements from a base class, described here, combined with adding elements as normal.
+
+Selective model extension is activated by using one (or more) `inheritance-modification` in the optional `class-or-inheritance-modification` of an `extends`-clause.
+
+[NOTE]
+There is no corresponding mechanism for component modifications, short class definitions, or constrainedby.
+
+Consider a class `C` with an `extends` clause deselecting `D`:
+[source,modelica]
+----
+model C
+  extends B(..., break D, ...);
+  ...
+end C;
+----
+The semantic rules are:
+
+. The deselection `break D` is applied before any other, non selective model extension related, modifications of `B` in `C`.
+. When adding elements from `B` to `C` the elements matched by any deselection in `extends B` are excluded.
+  * A component deselection, `break f`, matches the component with that name, `f`, of `B` and all connections with the component or its subcomponents.
+    Matched components must be models, blocks or connectors.
+  * A connection deselection, `break connect(a, b)`, matches all syntactical equivalent connections of `B`.
+    A connection `connect(c, d)`, with `c` and `d` arbitrary but valid connection arguments, is syntactically equivalent to a connection deselection `break connect(a, b)`, if, and only if, either, `c` is syntactically equivalent to `a` and `d` is syntactically equivalent to `b` or, vice versa, `c` is syntactically equivalent to `b` and `d` is syntactically equivalent to `a`.
+    Two code fragments `a` and `c` are syntactically equivalent, if, and only if, the context-free derivations of `a` and `c` according to the grammar given in <<expressions>> are the same.
+. Conditionally declared components of `B` are assumed to be declared for all purposes of matching.
+. The deselected component may be of a partial class even in a simulation model.
+. The deselection `break D` must match at least one element of `B`.
+. The component deselection are applied before the connection deselections of the same `extends` clause.
+
+[example]
+====
+Example: The following gives three typical use cases: adding a component *on a connection*, replacing a non-replaceable component, and finally constructing a reusable model from an example.
+
+[source,modelica]
+----
+model System "An example model"
+  Plant plant;
+  BearingFriction friction;
+  Controller controller;
+  StepReference reference;
+equation
+  connect(reference.y, controller.u_s);
+  connect(plant.y, controller.u_m);
+  connect(controller.y, plant.u);
+  connect(friction.flange_a, plant.flange_a);
+end System;
+
+model FilterMeasurement "Component on a connection"
+  extends System(break connect(plant.y, controller.u_m));
+  BesselFilter filter;
+equation
+  connect(plant.y, filter.u);
+  connect(filter.y, controller.u_m);
+end FilterMeasurement;
+
+model SampledControllerSystem "Replacing non-replaceable"
+  extends System(break controller);
+  SampledController controller;
+equation
+  connect(reference.y, controller.u1); // Note: Different name
+  connect(plant.y, controller.u_m);
+  connect(controller.y, plant.u);
+end FilterMeasurement;
+
+model NewPlant "Reusable model from example"
+  extends System(break controller, break reference);
+  RealInput u;
+  RealOutput y;
+equation
+  connect(u, plant.u);
+  connect(plant.y, y);
+end NewPlant;
+----
+In these examples it would be possible to modify the `System` model instead, but in many cases that is not realistic.
+For instance, it may not be possible to modify the `System` and the controlled system may be comprised of a large number of components in `System` -- instead of only two.
+====
+
+[NOTE]
+--
+Some consequences of the rules are listed below:
+
+* The syntax ensures that nested components cannot be deselected.
+* Deselected components cannot be modified, neither in the `extends` clause nor when using `C`.
+  However, `C` may add a component with same name as a deselected component (directly or through another `extends` clause) and that new component can be modified when using `C`.
+* A class using selective model extension is not necessarily a sub-type of its base class.
+* Deselection is designed to be light-weight in particular:
+  ** Deselection is independent of any modification.
+  ** What is deselected can be determined without considering any modifications, neither of the extending class `C` nor its base class `B`.
+  ** There is no need to instantiate any classes to know that some component is deselected (i.e., not there) for every possible instance of the model with the deselection.
+     An instance tree is not required.
+  ** Selective model extension operates on the syntactic level only.
+  ** Conditional components can be deselected without evaluating whether they are disabled or not.
+     In particular deselecting a disabled conditional component is not an error.
+     Connections involving the deselected conditional component are by the deselection removed as for a disabled component.
+  ** No need to check whether the class of the deselected component was partial.
+  ** Assuming the deselections are semantically valid they can be handled in any order.
+     Handling component deselections before connection deselections is only necessary to semantically check that a connection deselection does not involve a deselected component.
+--
+
+[example]
+====
+Example: The syntactic equivalence of connection deselection ensures that connect-statements in for-loops can be deselected:
+
+[source,modelica]
+----
+model B
+  ...
+equation
+  if b then
+    for i in 2:10 loop
+      connect( // This comment does not impact syntactic equivalence.
+        a[i],
+        b[2*i] /* Without whitespace in the indexing expression. */ );
+    end for;
+  else
+    for i in 20:30 loop
+      connect(b[i], a[2*i]);
+    end for;
+  end for;
+end B;
+model C
+  extends B(break connect(b[2 * i], a[i]));
+end C;
+----
+
+In this case the deselection removes all of the connect-statements.
+====

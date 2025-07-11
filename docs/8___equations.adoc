@@ -1,0 +1,1072 @@
+== Equations
+:id: equations
+
+An _equation_ is part of a class definition.
+A scalar equation relates scalar variables, i.e., constrains the values that these variables can take simultaneously.
+When latexmath:[n-1] variables of an equation containing latexmath:[n] variables are known, the value of the latexmath:[n]th variable can be inferred (solved for).
+In contrast to an algorithm section, there is no order between the equations in an equation section and they can be solved separately.
+
+=== Equation Categories
+
+Equations in Modelica can be classified into different categories depending on the syntactic context in which they occur:
+
+* Normal equality equations occurring in equation sections, including `connect`-equations and other equation types of special syntactic form (see <<equations-in-equation-sections>>).
+* Declaration equations, which are part of variable, parameter, or constant declarations (see <<declaration-equations>>).
+* Modification equations, which are commonly used to modify attributes of classes (see <<modifications>>).
+* _Binding equations_, which include both declaration equations and element modification for the value of the variable itself. These are considered equations when appearing outside functions, and then a component with a binding equation has its value bound to some expression. (Binding equations can also appear in functions, see <<initialization-and-binding-equations>>.)
+* _Initial equations_, which are used to express equations for solving initialization problems (see <<initialization-initial-equation-and-initial-algorithm>>).
+
+=== Flattening and Lookup in Equations
+
+A flattened equation is identical to the corresponding nonflattened equation.
+
+Names in an equation shall be found by looking up in the partially flattened enclosing class of the equation.
+
+=== Equations in Equation Sections
+
+An equation section is comprised of the keyword `equation` followed by a sequence of equations.
+The formal syntax is as follows:
+
+[source,grammar]
+----
+equation-section :
+   [ initial ] equation { some-equation ";" }
+----
+
+The following kinds of equations may occur in equation sections.
+The syntax is defined as follows:
+
+[source,grammar]
+----
+some-equation :
+   ( simple-expression "=" expression
+     | if-equation
+     | for-equation
+     | connect-equation
+     | when-equation
+     | component-reference function-call-args
+   )
+   description
+----
+
+No statements are allowed in equation sections, including the assignment statement using the `:=` operator.
+
+==== Simple Equality Equations
+
+Simple equality equations are the traditional kinds of equations known from mathematics that express an equality relation between two expressions.
+There are two syntactic forms of such equations in Modelica.
+The first form below is _equality_ equations between two expressions, whereas the second form is used when calling a function with _several_ results.
+The syntax for simple equality equations is as follows:
+
+[source,grammar]
+----
+simple-expression "=" expression
+----
+
+The types of the left-hand-side and the right-hand-side of an equation need to be compatible in the same way as two arguments of binary operators (see <<type-compatible-expressions>>).
+
+Three examples:
+
+* `simple_expr1 = expr2;`
+* `(if pred then alt1 else alt2) = expr2;`
+* `(out1, out2, out3) = function_name(inexpr1, inexpr2);`
+
+[NOTE]
+According to the grammar the if-then-else expression in the second example needs to be enclosed in parentheses to avoid parsing ambiguities.
+Also compare with <<assignments-from-called-functions-with-multiple-results>> about calling functions with several results in assignment statements.
+
+==== For-Equations - Repetitive Equation Structures
+
+The syntax of a `for`-equation is as follows:
+
+[source,grammar]
+----
+for for-indices loop
+  { some-equation ";" }
+end for ";"
+----
+
+A `for`-equation may optionally use several iterators (`for-indices`), see <<nested-for-loops-and-reduction-expressions-with-multiple-iterators>> for more information:
+
+[source,grammar]
+----
+for-indices:
+   for-index { "," for-index }
+
+for-index:
+   IDENT [ in expression ]
+----
+
+The following is one example of a prefix of a `for`-equation:
+
+[source,grammar]
+----
+for IDENT in expression loop
+----
+
+===== Explicit Iteration Ranges of For-Equations
+
+The `expression` of a `for`-equation shall be a vector expression, where more general array expressions are treated as vector of vectors or vector of matrices.
+It is evaluated once for each `for`-equation, and is evaluated in the scope immediately enclosing the `for`-equation.
+The expression of a `for`-equation shall be evaluable.
+The iteration range of a `for`-equation can also be specified as `Boolean` or as an enumeration type, see <<types-as-iteration-ranges>> for more information.
+The loop-variable (`IDENT`) is in scope inside the loop-construct and shall not be assigned to.
+For each element of the evaluated vector expression, in the normal order, the loop-variable gets the value of that element and that is used to evaluate the body of the `for`-loop.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+for i in 1 : 10 loop           // i takes the values 1, 2, 3, ..., 10
+for r in 1.0 : 1.5 : 5.5 loop  // r takes the values 1.0, 2.5, 4.0, 5.5
+for i in {1, 3, 6, 7} loop     // i takes the values 1, 3, 6, 7
+for i in TwoEnums loop         // i takes the values TwoEnums.one, TwoEnums.two
+                              // for TwoEnums = enumeration(one, two)
+----
+
+The loop-variable may hide other variables as in the following example.
+Using another name for the loop-variable is, however, strongly recommended.
+
+[source,modelica]
+----
+  constant Integer j = 4;
+  Real x[j]
+equation
+  for j in 1:j loop  // j takes the values 1, 2, 3, 4
+    x[j] = j;        // Uses the loop-variable j
+  end for;
+----
+====
+
+===== Implicit Iteration Ranges of For-Equations
+
+The iteration range of a loop-variable may sometimes be inferred from its use as an array index.
+See <<implicit-iteration-ranges>> for more information.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+  Real x[n], y[n];
+equation
+  for i loop          // Same as: for i in 1:size(x, 1) loop
+    x[i] = 2 * y[i];
+  end for;
+----
+====
+
+==== Connect-Equations
+
+A `connect`-equation has the following syntax:
+
+[source,grammar]
+----
+connect "(" component-reference "," component-reference ")" ";"
+----
+
+These can be placed inside `for`-equations and `if`-equations; provided the indices of the `for`-loop and conditions of the `if`-equation are evaluable expressions that do not depend on `cardinality`, `rooted`, `Connections.rooted`, or `Connections.isRoot`.
+The `for`-equations/`if`-equations are expanded.
+`connect`-equations are described in detail in <<connect-equations-and-connectors>>.
+
+The same restrictions apply to `Connections.branch`, `Connections.root`, and `Connections.potentialRoot`; which after expansion are handled according to <<overconstrained-connections>>.
+
+==== If-Equations
+
+The `if`-equations have the following syntax:
+
+[source,grammar]
+----
+if expression then
+  { some-equation ";" }
+{ elseif expression then
+  { some-equation ";" }
+}
+[ else
+  { some-equation ";" }
+]
+end if ";"
+----
+
+The `expression` of an `if`- or `elseif`-clause must be a scalar `Boolean` expression.
+One `if`-clause, and zero or more `elseif`-clauses, and an optional `else`-clause together form a list of branches.
+One or zero of the bodies of these `if`-, `elseif`- and `else`-clauses is selected, by evaluating the conditions of the `if`- and `elseif`-clauses sequentially until a condition that evaluates to true is found.
+If none of the conditions evaluate to true the body of the `else`-clause is selected (if an `else`-clause exists, otherwise no body is selected).
+In an equation section, the equations in the body are seen as equations that must be satisfied.
+The bodies that are not selected have no effect on that model evaluation.
+
+The `if`-equations in equation sections which do not have exclusively parameter expressions as switching conditions shall have the same number of equations in each branch (a missing else is counted as zero equations and the number of equations is defined after expanding the equations to scalar equations).
+
+[NOTE]
+If this condition is violated, the single assignment rule would not hold, because the number of equations may change during simulation although the number of unknowns remains the same.
+
+==== When-Equations
+
+The `when`-equations have the following syntax:
+
+[source,grammar]
+----
+when expression then
+  { some-equation ";" }
+{ elsewhen expression then
+  { some-equation ";" }
+}
+end when ";"
+----
+
+The `expression` of a `when`-equation shall be a discrete-time `Boolean` scalar or vector expression.
+If `expression` is a clocked expression, the equation is referred to as a _clocked when-clause_ (see <<clocked-when-clause>>) rather than a `when`-equation, and is handled differently.
+The equations within a `when`-equation are activated only at the instant when the scalar expression or any of the elements of the vector expression becomes true.
+
+[example]
+====
+Example: The order between the equations in a `when`-equation does not matter, e.g.:
+
+[source,modelica]
+----
+equation
+  when x > 2 then
+    y3 = 2*x + y1 + y2; // Order of y1 and y3 equations does not matter
+    y1 = sin(x);
+  end when;
+  y2 = sin(y1);
+----
+====
+
+===== Defining When-Equations by If-Expressions in Equality Equations
+
+A `when`-equation:
+
+[source,modelica]
+----
+equation
+  when x > 2 then
+    v1 = expr1;
+    v2 = expr2;
+  end when;
+----
+
+is conceptually equivalent to the following equations containing special `if`-expressions
+
+[source,modelica]
+----
+// Not correct Modelica
+Boolean b(start = x.start > 2);
+equation
+  b  = x > 2;
+  v1 = if edge(b) then expr1 else pre(v1);
+  v2 = if edge(b) then expr2 else pre(v2);
+----
+
+[example]
+====
+The equivalence is conceptual since `pre(...)` of a non discrete-time `Real` variable or expression can only be used within a `when`-clause. Example:
+
+[source,modelica]
+----
+  /* discrete */ Real x;
+  input Real u;
+  output Real y;
+equation
+  when sample() then
+    x = a * pre(x) + b * pre(u);
+  end when;
+  y = x;
+----
+
+Here, `x` is a discrete-time variable (whether it is declared with the `discrete` prefix or not), but `u` and `y` cannot be discrete-time variables
+(since they are not assigned in `when`-clauses).
+However, `pre(u)` is legal within the `when`-clause, since the body of the `when`-clause is only evaluated at events, and thus all expressions are discrete-time expressions.
+====
+
+The start values of the introduced `Boolean` variables are defined by the taking the start value of the when-condition, as above where `b` is a parameter variable.
+The start value of the special functions `initial`, `terminal`, and `sample` is `false`.
+
+===== Where a When-Equation May Occur
+
+* `when`-equations shall not occur inside initial equations.
+* `when`-equations cannot be nested.
+* `when`-equations can only occur within `if`-equations and `for`-equations if the controlling expressions are exclusively parameter expressions.
+
+[example]
+====
+Example: The following `when`-equation is invalid:
+
+[source,modelica]
+----
+when x > 2 then
+  when y1 > 3 then
+    y2 = sin(x);
+  end when;
+end when;
+----
+====
+
+===== Equations within When-Equations
+
+The equations within the `when`-equation must have one of the following forms:
+
+* `v = expr;`
+* `(out1, out2, out3, ...) = function_call_name(in1, in2, ...);`
+* Operators `assert`, `terminate`, `reinit`.
+* The `for`- and `if`-equations if the equations within the `for`- and `if`-equations satisfy these requirements.
+
+Additionally,
+
+* The different branches of `when`/`elsewhen` must have the same set of component references on the left-hand side. Here, the destination variable of a `reinit` (including when inside a `when`-clause activated with `initial()`) is not considered a left-hand side, and hence `reinit` is unaffected by this requirement (as are `assert` and `terminate`).
+* The branches of an `if`-equation inside `when`-equations must have the same set of component references on the left-hand side, unless all switching conditions of the `if`-equation are parameter expressions.
+* Any left hand side reference, (`v`, `out1`, ...), in a `when`-clause must be a component reference, and any indices must be parameter expressions.
+
+[example]
+====
+The needed restrictions on equations within a `when`-equation becomes apparent with the following example:
+
+[source,modelica]
+----
+  Real x, y;
+equation
+  x + y = 5;
+  when condition then
+    2 * x + y = 7; // error: not valid Modelica
+  end when;
+----
+
+When the equations of the `when`-equation are not activated it is not clear which variable to hold constant, either `x` or `y`.
+A corrected version of this example is:
+
+[source,modelica]
+----
+  Real x,y;
+equation
+  x + y = 5;
+  when condition then
+    y = 7 - 2 * x; // fine
+  end when;
+----
+
+Here, variable `y` is held constant when the `when`-equation is deactivated and `x` is computed from the first equation using the value of `y` from the previous event instant.
+Note that during event iterations `y` will be solved from a system of two equations.
+====
+
+[example]
+====
+Example: The restrictions for `if`-equations mean that both of the following variants are illegal:
+
+[source,modelica]
+----
+  Real x, y;
+equation
+  if time < 1 then
+    when sample(1, 2) then
+      x = time;
+    end when;
+  else
+    when sample(1, 3) then
+      y = time;
+    end when;
+  end if;
+
+  when sample(1, 2) then
+    if time < 1 then
+      y = time;
+    else
+      x = time;
+    end if;
+  end when;
+----
+
+whereas the restriction to parameter-expression is intended to allow:
+
+[source,modelica]
+----
+  parameter Boolean b = true;
+  parameter Integer n = 3;
+  Real x[n];
+equation
+  if b then
+    for i in 1 : n loop
+      when sample(i, i) then
+        x[i] = time;
+      end when;
+    end for;
+  end if;
+----
+====
+
+===== Single Assignment Rule Applied to When-Equations
+
+The Modelica single-assignment rule (see <<synchronous-data-flow-principle-and-single-assignment-rule>>) has implications for `when`-equations:
+
+* Two `when`-equations shall _not_ define the same variable.
++
+[NOTE]
+--
+Without this rule this may actually happen for the erroneous model `DoubleWhenConflict` below, since there are two equations (`close = true; close = false;`) defining the same variable `close`.
+A conflict between the equations will occur if both conditions would become `true` at the same time instant.
+
+[source,modelica]
+----
+model DoubleWhenConflict
+  Boolean close;   // Erroneous model: close defined by two equations!
+equation
+  ...
+  when condition1 then
+    ...
+    close = true;
+  end when;
+  when condition2 then
+    close = false;
+  end when;
+  ...
+end DoubleWhenConflict;
+----
+
+One way to resolve the conflict would be to give one of the two `when`-equations higher priority.
+This is possible by rewriting the `when`-equation using `elsewhen`, as in the `WhenPriority` model below or using the statement version of the `when`-construct, see <<when-statements>>.
+--
+
+* A `when`-equation involving elsewhen-parts can be used to resolve assignment conflicts since the first of the when/elsewhen parts are given higher priority than later ones:
++
+[NOTE]
+--
+Below it is well defined what happens if both conditions become `true` at the same time instant since `condition1` with associated conditional equations has a higher priority than `condition2`.
+
+[source,modelica]
+----
+model WhenPriority
+  Boolean close;   // Correct model: close defined by two equations!
+equation
+  ...
+  when condition1 then
+    close = true;
+  elsewhen condition2 then
+    close = false;
+  end when;
+  ...
+end WhenPriority;
+----
+
+An alternative to `elsewhen` (in an equation or algorithm) is to use an algorithm with multiple `when`-statements.
+However, both statements will be executed if both conditions become `true` at the same time.
+Therefore they must be in reverse order to preserve the priority, and any side-effect would require more care.
+
+[source,modelica]
+----
+model WhenPriorityAlg
+  Boolean close;   // Correct model: close defined by two when-statements!
+algorithm
+  ...
+  when condition2 then
+    close := false;
+  end when;
+  when condition1 then
+    close := true;
+  end when;
+  ...
+end WhenPriorityAlg;
+----
+--
+
+==== reinit
+
+`reinit` can only be used in the body of a `when`-equation.
+ It has the following syntax:
+
+[source,modelica]
+----
+reinit(x, expr);
+----
+
+The operator reinitializes `x` with `expr` at an event instant.
+`x` is a component-reference (where any subscripts are evaluable) referring to a `Real` variable (or an array of `Real` variables) that must be selected as a state (resp., states), i.e., `reinit` on `x` implies `stateSelect = StateSelect.always` on `x`.
+`expr` needs to be type-compatible with `x`.
+For any given variable (possibly an array variable), `reinit` can only be applied (either to an individual variable or to a part of an array variable) in one `when`-equation (applying `reinit` to a variable in several `when`- or `elsewhen`-clauses of the same `when`-equation is allowed).
+If there are multiple `reinit` for a variable inside the same `when`- or `elsewhen`-clause, they must appear in different branches of an `if`-equation (in order that at most one `reinit` for the variable is active at any event).
+In case of `reinit` active during initialization (due to `when initial()`), see <<initialization-initial-equation-and-initial-algorithm>>.
+
+`reinit` does not break the single assignment rule, because `reinit(x, expr)` in equations evaluates `expr` to a value, then at the end of the current event iteration step it assigns this value to `x` (this copying from values to reinitialized state(s) is done after all other evaluations of the model and before copying `x` to `pre(x)`).
+
+[example]
+====
+Example: If a higher index system is present, i.e., constraints between state variables, some state variables need to be redefined to non-state variables.
+During simulation, non-state variables should be chosen in such a way that variables with an applied `reinit` are selected as states at least when the corresponding `when`-clauses become active.
+If this is not possible, an error occurs, since otherwise `reinit` would be applied to a non-state variable.
+
+Example for the usage of `reinit` (bouncing ball):
+
+[source,modelica]
+----
+der(h) = v;
+der(v) = if flying then -g else 0;
+flying = not (h <= 0 and v <= 0);
+when h < 0 then
+  reinit(v, -e * pre(v));
+end when
+----
+====
+
+==== assert
+
+An equation or statement of one of the following forms is an assertion:
+
+[source,modelica]
+----
+assert(condition, message); // Uses level=AssertionLevel.error
+assert(condition, message, assertionLevel);
+assert(condition, message, level = assertionLevel);
+----
+
+Here, `condition` is a `Boolean` expression, `message` is a `String` expression, and `assertionLevel` is an optional evaluable expression of the built-in enumeration type `AssertionLevel`.
+It can be used in equation sections or algorithm sections.
+
+[NOTE]
+This means that `assert` can be called as if it were a function with three formal parameters, the third formal parameter has the name `level` and the default value `AssertionLevel.error`.
+
+If the `condition` of an assertion is true, `message` is not evaluated and the procedure call is ignored.
+If the `condition` evaluates to false, different actions are taken depending on the `level` input:
+
+* `level = AssertionLevel.error`: The current evaluation is aborted. The simulation may continue with another evaluation. If the simulation is aborted, `message` indicates the cause of the error.
++
+[NOTE]
+Ways to continue simulation with another evaluation include using a shorter step-size, or changing the values of iterationvariables.
++
+Failed assertions take precedence over successful termination, such that if the model first triggers the end of successful analysis by reaching the stop-time or explicitly with `terminate`, but the evaluation with `terminal()=true` triggers an assert, the analysis failed.
+
+* `level = AssertionLevel.warning`: The current evaluation is not aborted. `message` indicates the cause of the warning.
++
+[NOTE]
+It is recommended to report the warning only once when the condition becomes false, and it is reported that the condition is no longer violated when the condition returns to true.
+The `assert`-statement shall have no influence on the behavior of the model.
+For example, by evaluating the condition and reporting the message only after accepted integrator steps.
+`condition` needs to be implicitly treated with `noEvent` since otherwise events might be triggered that can lead to slightly changed simulation results.
+
+Tools are recommended to provide more information than just the given message of a failed assertion, in particular the condition and the values of variables used in it.
+
+[NOTE]
+--
+The `AssertionLevel.error` case can be used to avoid evaluating a model outside its limits of validity; for instance, a function to compute the saturated liquid temperature cannot be called with a pressure lower than the triple point value.
+
+The `AssertionLevel.warning` case can be used when the boundary of validity is not hard: for instance, a fluid property model based on a polynomial interpolation curve might give accurate results between temperatures of 250 K and 400 K, but still give reasonable results in the range 200 K and 500 K.
+When the temperature gets out of the smaller interval, but still stays in the largest one, the user should be warned, but the simulation should continue without any further action.
+The corresponding code would be:
+
+[source,modelica]
+----
+assert(T > 250 and T < 400, "Medium model outside full accuracy range",
+       AssertionLevel.warning);
+assert(T > 200 and T < 500, "Medium model outside feasible region");
+----
+
+It is recommended that asserts have a simple message as above, formulated with the recommended tool behavior in mind.
+Writing `assert(T<500, "Temperature = "\+String(T)\+" was above 500")` is thus not recommended, and is likely to lead to duplicated information.
+--
+
+==== terminate
+
+The `terminate`-equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also <<assert>>.
+The termination is not immediate at the place where it is defined since not all variable results might be available that are necessary for a successful stop.
+Instead, the termination actually takes place when the current integrator step is successfully finalized or at an event instant after the event handling has been completed before restarting the integration.
+
+`terminate` takes a string argument indicating the reason for the success.
+
+[example]
+====
+Example: The intention of `terminate` is to give more complex stopping criteria than a fixed point in time:
+
+[source,modelica]
+----
+model ThrowingBall
+  Real x(start = 0);
+  Real y(start = 1);
+equation
+  der(x) = ...;
+  der(y) = ...;
+algorithm
+  when y < 0 then
+    terminate("The ball touches the ground");
+  end when;
+end ThrowingBall;
+----
+====
+
+==== Equation Operators for Overconstrained Connection-Based Equation Systems
+
+See <<overconstrained-connections>> for a description of this topic.
+
+=== Synchronous Data-Flow Principle and Single Assignment Rule
+
+Modelica is based on the synchronous data flow principle and the single assignment rule, which are defined in the following way:
+
+. Discrete-time variables keep their values until these variables are explicitly changed. Differentiated variables have `der(x)` corresponding to the time-derivative of `x`, and `x` is continuous, except when `reinit` is triggered, see <<reinit>>. Variable values can be accessed at any time instant during continuous integration and at event instants.
+. At every time instant, during continuous integration and at event instants, the equations express relations between variables which have to be fulfilled concurrently.
+. Computation and communication at an event instant does not take time.
++
+[NOTE]
+If computation or communication time has to be simulated, this property has to be explicitly modeled.
+. There must exist a perfect matching of variables to equations after flattening, where a variable can only be matched to equations that can contribute to solving for the variable (_perfect matching rule_ -- previously called _single assignment rule_; see also globally balanced <<balanced-models>>).
+
+=== Events and Synchronization
+
+An _event_ is something that occurs instantaneously at a specific time or when a specific condition occurs.
+Events are for example defined by the condition occurring in a `when`-clause, `if`-equation, or `if`-expression.
+
+The integration is halted and an event occurs whenever an event generation expression, e.g., `x > 2` or `floor(x)`, changes its value.
+An event generating expression has an internal buffer, and the value of the expression can only be changed at event instants.
+If the evaluated expression is inconsistent with the buffer, that will trigger an event and the buffer will be updated with a new value at the event instant.
+During continuous integration event generation expression has the constant value of the expression from the last event instant.
+
+[NOTE]
+A root finding mechanism is needed which determines a small time interval in which the expression changes its value; the event occurs at the right side of this interval.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+y = if u > uMax then uMax else if u < uMin then uMin else u;
+----
+
+During continuous integration always the same `if`-branch is evaluated.
+The integration is halted whenever `u-uMax` or `u-uMin` crosses zero.
+At the event instant, the correct `if`-branch is selected and the integration is restarted.
+
+Numerical integration methods of order $n$ ($n \geq 1$) require continuous model equations which are differentiable up to order $n$.
+This requirement can be fulfilled if `Real` elementary relations are not treated literally but as defined above, because discontinuous changes can only occur at event instants and no longer during continuous integration.
+====
+
+[NOTE]
+--
+It is a quality of implementation issue that the following special relations
+
+[source,modelica]
+----
+time >= discrete expression
+time < discrete expression
+----
+
+trigger a time event at `time = discrete expression`, i.e., the event instant is known in advance and no iteration is needed to find the exact event instant.
+--
+
+Relations are taken literally also during continuous integration, if the relation or the expression in which the relation is present, are the argument of `noEvent`.
+`smooth` also allows relations used as argument to be taken literally.
+The `noEvent` feature is propagated to all subrelations in the scope of the `noEvent` application.
+For `smooth` the liberty to not allow literal evaluation is propagated to all subrelations, but the smoothness property itself is not propagated.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+x = if noEvent(u > uMax) then uMax elseif noEvent(u < uMin) then uMin else u;
+y = noEvent(  if u > uMax then uMax elseif u < uMin then uMin else u);
+z = smooth(0, if u > uMax then uMax elseif u < uMin then uMin else u);
+----
+
+In this case `x = y = z`, but a tool might generate events for `z`.
+The `if`-expression is taken literally without inducing state events.
+
+The `smooth` operator is useful, if, e.g., the modeler can guarantee that the used `if`-expressions fulfill at least the continuity requirement of integrators.
+In this case the simulation speed is improved, since no state event iterations occur during integration.
+The `noEvent` operator is used to guard against _outside domain_ errors, e.g., `y = if noEvent(x >= 0) then sqrt(x) else 0.`
+====
+
+All equations and assignment statements within `when`-clauses and all assignment statements within `function` classes are implicitly treated with `noEvent`, i.e., relations within the scope of these operators never induce state or time events.
+
+[NOTE]
+Using state events in `when`-clauses is unnecessary because the body of a `when`-clause is not evaluated during continuous integration.
+
+[example]
+====
+Example: Two different errors caused by non-discrete-time expressions:
+
+[source,modelica]
+----
+when noEvent(x1 > 1) or x2 > 10 then // When-condition must be discrete-time
+  close = true;
+end when;
+above1 = noEvent(x1 > 1);            // Boolean equation must be discrete-time
+----
+
+The when-condition rule is stated in <<when-equations>>, and the rule for a non-`Real` equation is stated in <<discrete-time-expressions>>.
+====
+
+Modelica is based on the synchronous data flow principle (see <<synchronous-data-flow-principle-and-single-assignment-rule>>).
+
+[example]
+====
+The rules for the synchronous data flow principle guarantee that variables are always defined by a unique set of equations.
+It is not possible that a variable is, e.g., defined by two equations, which would give rise to conflicts or non-deterministic behavior.
+Furthermore, the continuous and the discrete parts of a model are always automatically "synchronized".
+Example:
+
+[source,modelica]
+----
+equation // Illegal example
+  when condition1 then
+    close = true;
+  end when;
+
+  when condition2 then
+    close = false;
+  end when;
+----
+
+This is not a valid model because rule 4 is violated since there are two equations for the single unknown variable close.
+If this would be a valid model, a conflict occurs when both conditions become true at the same time instant, since no priorities between the two equations are assigned.
+To become valid, the model has to be changed to:
+
+[source,modelica]
+----
+equation
+  when condition1 then
+    close = true;
+  elsewhen condition2 then
+    close = false;
+  end when;
+----
+
+Here, it is well-defined if both conditions become true at the same time instant (`condition1` has a higher priority than `condition2`).
+====
+
+There is no guarantee that two different events occur at the same time instant.
+
+[example]
+====
+As a consequence, synchronization of events has to be explicitly programmed in the model, e.g., via counters.
+Example:
+
+[source,modelica]
+----
+  Boolean fastSample, slowSample;
+  Integer ticks(start=0);
+equation
+  fastSample = sample(0,1);
+algorithm
+  when fastSample then
+    ticks      := if pre(ticks) < 5 then pre(ticks)+1 else 0;
+    slowSample := pre(ticks) == 0;
+  end when;
+algorithm
+  when fastSample then   // fast sampling
+    ...
+  end when;
+algorithm
+  when slowSample then   // slow sampling (5-times slower)
+    ...
+  end when;
+----
+
+The `slowSample` `when`-clause is evaluated at every 5th occurrence of the `fastSample` `when`-clause.
+====
+
+[NOTE]
+The single assignment rule and the requirement to explicitly program the synchronization of events allow a certain degree of model verification already at compile time.
+
+=== Initialization, initial equation, and initial algorithm
+
+Before any operation is carried out with a Modelica model (e.g., simulation or linearization), initialization takes place to assign consistent values for all variables present in the model.
+During this phase, called the _initialization problem_, also the derivatives (`der`), and the pre-variables (`pre`), are interpreted as unknown algebraic variables.
+The initialization uses all equations and algorithms that are utilized in the intended operation (such as simulation or linearization).
+
+The equations of a `when`-clause are active during initialization, if and only if they are explicitly enabled with `initial()`, and only in one of the two forms `when initial() then` or `when {..., initial(), ...} then` (and similarly for `elsewhen` and algorithms see below).
+In this case, the `when`-clause equations remain active during the whole initialization phase.
+In case of a `reinit(x, expr)` being active during initialization (due to being inside `when initial()`) this is interpreted as adding `x = expr` (the `reinit`-equation) as an initial equation.
+The `reinit` handling applies both if directly inside `when`-clause or inside an `if`-equation in the `when`-clause.
+In particular, `reinit(x, expr)` needs to be counted as the equation `x = expr;` for the purpose of balancing of `if`-equations inside `when`-clauses that are active during initialization, see <<if-equations>>.
+
+[NOTE]
+If a `when`-clause equation `v = expr;` is not active during the initialization phase, the equation `v = pre(v);` is added for initialization.
+This follows from the mapping rule of `when`-clause equations.
+If the condition of the `when`-clause contains `initial()`, but not in one of the specific forms, the `when`-clause is not active during initialization: `when not initial() then print("simulation started"); end when;`
+
+The algorithmic statements within a `when`-statement are active during initialization, if and only if they are explicitly enabled with `initial()`, and only in one of the two forms `when initial() then` or `when {..., initial(), ...} then`.
+In this case, the algorithmic statements within the `when`-statement remain active during the whole initialization phase.
+
+An active `when`-clause inactivates the following `elsewhen` (similarly as for `when`-clauses during simulation), but apart from that the first `elsewhen initial() then` or `elsewhen {..., initial(), ...} then` is similarly active during initialization as `when initial() then` or `when {..., initial(), ...} then`.
+
+[NOTE]
+That means that any subsequent `elsewhen initial()` has no effect, similarly as `when false then`.
+
+[NOTE]
+There is no special handling of inactive `when`-statements during initialization, instead variables assigned in `when`-statements are initialized using `v := pre(v)` before the body of the algorithm (since they are discrete), see <<an-algorithm-in-a-model>>.
+
+Further constraints, necessary to determine the initial values of all variables (depending on the component variability, see <<component-variability>> for definitions), can be defined in the following ways:
+
+. As equations in an `initial equation` section or as assignments in an `initial algorithm` section. The equations and assignments in these initial sections are purely algebraic, stating constraints between the variables at the initial time instant. It is not allowed to use `when`-clauses in these sections.
+. For a continuous-time `Real` variable `vc`, the equation `pre(vc) = vc` is added to the initialization equations.
++
+[NOTE]
+If `pre(vc)` is not present in the flattened model, a tool may choose not to introduce this equation, or if it was introduced it can eliminate it (to avoid the introduction of many dummy variables `pre(vc)`).
+. Implicitly by using the `start`-attribute for variables with `fixed = true`.
+  With `start` given by `startExpression`:
+  * For a variable declared as `constant` or `parameter`, no equation is added to the initialization equations.
+  * For a discrete-time variable `vd`, the equation `pre(vd) = startExpression` is added to the initialization equations.
+  * For a continuous-time `Real` variable `vc`, the equation `vc = startExpression` is added to the initialization equations.
+
+Constants shall be determined by declaration equations (see <<constants>>), and `fixed = false` is not allowed.
+For parameters, `fixed` defaults to `true`.
+For other variables, `fixed` defaults to `false`.
+
+`start`-values of variables having `fixed = false` can be used as initial guesses, in case iterative solvers are used in the initialization phase.
+
+[NOTE]
+In case of iterative solver failure, it is recommended to specially report those variables for which the solver needs an initial guess, but where the fallback value (see <<predefined-types-and-classes>>) has been applied, since the lack of appropriate initial guesses is a likely cause of the solver failure.
+
+If a parameter has a value for the `start`-attribute, does not have `fixed = false`, and neither has a binding equation nor is part of a record having a binding equation, the value for the `start`-attribute can be used to add a parameter binding equation assigning the parameter to that `start` value.
+In this case a diagnostic message is recommended in a simulation model, unless the parameter has a `Dialog.enable` annotation set to false.
+
+[NOTE]
+This is used in libraries to give rudimentary defaults so that users can quickly combine models and simulate without setting parameters; but still easily find the parameters that should be set properly.
+The `enable=false` case can be used to provide default values for parameters that are not used in the current configuration, while ensuring that they are explicitly given a value when used.
+
+All variables declared as `parameter` having `fixed = false` are treated as unknowns during the initialization phase, i.e., there must be additional equations for them -- and the `start`-value can be used as a guess-value during initialization.
+
+[NOTE]
+--
+In the case a parameter has both a binding equation and `fixed = false` a diagnostic is recommended, but the parameter should be solved from the binding equation.
+
+Continuous-time `Real` variables `vc` have exactly one initialization value since the rules above assure that during initialization `vc = pre(vc) = vc.startExpression` (if `fixed = true`).
+
+Before the start of the integration, it must be guaranteed that for all variables `v`, `v = pre(v)`.
+If this is not the case for some variables `vi`, `pre(vi) := vi` must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
+In detail this means that during initialization initial equations and normal equations are solved with `v` and `pre(v)` as unknowns without any event iterations.
+Then only the normal equations are solved repeatedly (each time after `v` is copied to `pre(v)`) until `v = pre(v)`.
+
+Tools may optimize initialization by not computing unnecessary `pre(v)`, and only performing the event iteration if necessary.
+
+A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.
+This may require to differentiate equations for index reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.
+This whole set of equations, together with the additional constraints defined above, should lead to an algebraic system of equations where the number of equations and the number of all variables (including `der` and `pre` variables) is equal.
+Often, this is a nonlinear system of equations and therefore it may be necessary to provide appropriate guess values (i.e., `start` values and `fixed = false`) in order to compute a solution numerically.
+
+It may be difficult for a user to figure out how many initial equations have to be added, especially if the system has a higher index.
+--
+
+These non-normative considerations are addressed as follows.
+A tool may add or remove initial equations automatically according to the rules below such that the resulting system is structurally nonsingular:
+
+* A missing initial value of a discrete-time variable (see <<component-variability>> -- this does not include parameter and constant variables) which does not influence the simulation result, may be automatically set to the start value or its default without informing the user. For example, variables assigned in a `when`-clause which are not accessed outside of the `when`-clause and where `pre` is not explicitly used on these variables, do not have an effect on the simulation.
+* A `start`-attribute that is not fixed may be treated as fixed with a diagnostic.
+* A consistent start value or initial equation may be removed with a diagnostic.
+
+[NOTE]
+The goal is to be able to initialize the model, while satisfying the initial equations and fixed start values.
+
+[example]
+====
+Example: Continuous time controller initialized in steady-state:
+
+[source,modelica]
+----
+  Real y(fixed = false);  // fixed=false is redundant
+equation
+  der(y) = a * y + b * u;
+initial equation
+  der(y) = 0;
+----
+
+This has the following solution at initialization:
+[source,modelica]
+----
+der(y) = 0;
+y = - b / a * u;
+----
+====
+
+[example]
+====
+Example: Continuous time controller initialized either in steady-state or by providing a `start` value for state `y`:
+
+[source,modelica]
+----
+  parameter Boolean steadyState = true;
+  parameter Real y0 = 0 "start value for y, if not steadyState";
+  Real y;
+equation
+  der(y) = a * y + b * u;
+initial equation
+  if steadyState then
+    der(y) = 0;
+  else
+    y = y0;
+  end if;
+----
+
+This can also be written as follows (this form is less clear):
+[source,modelica]
+----
+  parameter Boolean steadyState = true;
+  Real y    (start = 0, fixed = not steadyState);
+  Real der_y(start = 0, fixed = steadyState) = der(y);
+equation
+  der(y) = a * y + b * u;
+----
+====
+
+[example]
+====
+Example: Discrete-time controller initialized in steady-state:
+
+[source,modelica]
+----
+  discrete Real y;
+equation
+  when {initial(), sampleTrigger} then
+    y = a * pre(y) + b * u;
+  end when;
+initial equation
+  y = pre(y);
+----
+
+This leads to the following equations during initialization:
+[source,modelica]
+----
+y = a * pre(y) + b * u;
+y = pre(y);
+----
+with the solution:
+[source,modelica]
+----
+y := (b * u) / (1 - a);
+pre(y) := y;
+----
+====
+
+[example]
+====
+Example: Resettable continuous-time controller initialized either in steady-state or by providing a `start` value for state `y`:
+
+[source,modelica]
+----
+  parameter Boolean steadyState = true;
+  parameter Real y0 = 0 "start and reset value for y, if not steadyState";
+  input Boolean reset "For resetting integrator to y0";
+  Real y;
+equation
+  der(y) = a * y + b * u;
+  when {initial(), reset} then
+    if not (initial() and steadyState) then
+      reinit(y, y0);
+    end if;
+  end when;
+initial equation
+  if steadyState then
+    der(y) = 0;
+  end if;
+----
+
+If `not steadyState` this will add `y = y0` during the initialization; if not the `reinit` is ignored during initialization and the initial equation is used.
+This model can be written in various ways, this particular way makes it clear that the reset is equal to the normal initialization.
+
+During initialization this gives the following equations
+
+[source,modelica]
+----
+  if not steadyState then
+    y = y0;
+  end if;
+  if steadyState then
+    der(y) = 0;
+  end if;
+----
+
+if `steadyState` had not been a parameter-expression both of those equations would have been illegal according to the restrictions in <<if-equations>>.
+====
+
+==== Equations Needed for Initialization
+
+[NOTE]
+In general, for the case of a pure (first order) ordinary differential equation (ODE) system with latexmath:[n] state variables and latexmath:[m] output variables, we will have latexmath:[n+m] unknowns during transient analysis.
+The ODE initialization problem has latexmath:[n] additional unknowns corresponding to the derivative variables.
+During initialization of an ODE we will need to find the values of latexmath:[2n+m] variables, in contrast to just latexmath:[n+m] variables to be solved for during transient analysis.
+
+[example]
+====
+Example: Consider the following simple equation system:
+
+[source,modelica]
+----
+der(x1) = f1(x1);
+der(x2) = f2(x2);
+y = x1+x2+u;
+----
+
+Here we have three variables with unknown values: two dynamic variables that also are state variables, `x1` and `x2`, i.e., latexmath:[n=2], one output variable `y`, i.e., latexmath:[m=1], and one input variable `u` with known value.
+A consistent solution of the initialization problem requires finding initial values for `x1`, `x2`, `der(x1)`, `der(x2)`, and `y`.
+Two additional initial equations thus need to be provided to obtain a globally balanced initialization problem.
+Additionally, those two initial equations must be chosen with care to ensure that they, in combination with the dynamic equations, give a well-determined initialization problem.
+
+Regarding DAEs, only that at most latexmath:[n] additional equations are needed to arrive at latexmath:[2n+m] equations in the initialization system.
+The reason is that in a higher index DAE problem the number of dynamic continuous-time state variables might be less than the number of state variables latexmath:[n].
+As noted in <<initialization-initial-equation-and-initial-algorithm>> a tool may add/remove initial equations to fulfill this requirement, if appropriate diagnostics are given.
+====
+
+==== Start Value Recommended Priority
+
+In general many variables have `start`-attributes that are not fixed and selecting a subset of these can give a consistent set of start values close to the user-expectations.
+The following gives a non-normative procedure for finding such a subset.
+
+[NOTE]
+A model has a hierarchical component structure.
+Each component of a model can be given a unique model component hierarchy level number.
+The top-level model has a level number of 1.
+The level number increases by 1 for each level down in the model component hierarchy.
+The model component hierarchy level number is used to give `start`-attribute a confidence number, where a lower number means that the `start`-attribute is more confident.
+Loosely, if the `start`-attribute is set or modified on level latexmath:[i] then the confidence number is latexmath:[i].
+If a `start`-attribute is set by a possibly hierarchical modifier at the top level, then this `start`-attribute has the highest confidence, namely 1 irrespectively on what level, the variable itself is declared.
+If the `start`-attribute is set equal to a parameter, which may be equal to another parameter (etc), the lowest confidence number of these bindings are used.
+(In almost all cases that is the confidence number of the last parameter binding in the chain.)
+Note that this is only applied if the expression is exactly the parameter -- not an expression depending on one or more parameters.
+In case the confidence number considering parameter bindings is tied the confidence number of the `start`-attribute is used to break the tie, if unequal.
+
+[example]
+====
+Example: Simplified examples showing the priority of start-values.
+The example `M3` shows that it is important that parameter-confidence is used directly and not only when the other priority is tied.
+
+[source,modelica]
+----
+model M1
+  Real x(start = 4.0);
+  Real y(start = 5.0);
+equation
+  x = y;
+end M1;
+model M2
+  parameter Real xStart = 4.0;
+  parameter Real yStart = 5.0;
+  Real x(start = xStart);
+  Real y(start = yStart);
+equation
+  x = y;
+end M2;
+model M3
+  model MLocal
+    parameter Real xStart = 4.0;
+    Real x(start = xStart);
+  end MLocal;
+  model MLocalWrapped
+    parameter Real xStart = 4.0;
+    MLocal m(xStart = xStart);
+  end MLocalWrapped;
+  MLocal mx;
+  MLocalWrapped my(xStart = 3.0);
+equation
+  mx.x = my.y;
+end M3;
+M1 m1(x(start = 3.0));
+// Using m1.x.start = 3.0 with confidence number 1
+// over m1.y.start = 5.0 with confidence number 2
+M2 m2(xStart = 3.0);
+// Using m2.x.start = m2.xStart = 3.0 with confidence number 1
+// over m2.y.start = m2.yStart = 5.0 with confidence number 2
+M3 m3;
+// Using m3.my.x = m3.my.xStart = 3.0 with confidence number 1
+// over m3.mx.x = m3.mx.xStart = 4.0 with confidence number 2
+----
+====

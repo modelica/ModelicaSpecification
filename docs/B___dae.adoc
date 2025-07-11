@@ -1,0 +1,207 @@
+[appendix]
+== Modelica DAE Representation
+
+In this appendix, the mapping of a Modelica model into an appropriate mathematical description form is discussed.
+
+In a first step, a Modelica translator transforms a hierarchical Modelica simulation model into a "flat" set of Modelica "statements", consisting of the equation and algorithm sections of all used components by:
+
+* Expanding all class definitions (flattening the inheritance tree) and adding the equations and assignment statements of the expanded classes for every instance of the model.
+
+* Replacing all `connect`-equations by the corresponding equations of the connection set (see <<generation-of-connection-equations>>).
+
+* Mapping all algorithm sections to equation sets.
+
+* Mapping all `when`-clauses to equation sets (see <<when-equations>>).
+
+[[eq:hybrid-dae,B.1]]
+As a result of this transformation process, a set of equations is obtained consisting of differential, algebraic and discrete equations of the following form where (latexmath:[v := \lbrack p; t; \dot{x}; x; y; z; m; \text{pre}(z); \text{pre}(m)\rbrack]):
+
+.B.1a
+[[eq:dae,B.1a]]
+[latexmath]
+++++
+0 = f_{\mathrm{x}}(v, c)
+++++
+
+.B.1b
+[[eq:dae-discrete-real,B.1b]]
+[latexmath]
+++++
+z =
+\begin{cases}
+f_{\mathrm{z}}(v, c) & \text{at events} \\
+\text{pre}(z) & \text{otherwise}
+\end{cases}
+++++
+
+.B.1c
+[[eq:dae-discrete-valued,B.1c]]
+[latexmath]
+++++
+m := f_{\mathrm{m}}(v, c)
+++++
+
+.B.1d
+[[eq:crossing,B.1d]]
+[latexmath]
+++++
+c := f_{\mathrm{c}}(\mathit{relation}(v))
+++++
+
+and where
+
+* _p_:
+  Modelica variables declared as `parameter` or `constant`, i.e., variables without any time-dependency.
+
+* _t_:
+  Modelica variable `time`, the independent (real) variable.
+
+* _x(t)_:
+  Modelica variables of type `Real`, appearing differentiated.
+
+* _y(t)_:
+  Continuous-time modelica variables of type `Real` that do not appear differentiated (= algebraic variables).
+
+* _z(t~e~)_:
+  Discrete-time modelica variables of type `Real`.
+  These variables change their value only at event instants _t~e~_.
+  `pre(z)` are the values of _z_ immediately before the current event occurred.
+
+* _m(t~e~)_:
+  Modelica variables of discrete-valued types (`Boolean`, `Integer`, etc) which are unknown.
+  These variables change their value only at event instants _t~e~_.
+  `pre(m)` are the values of _m_ immediately before the current event occurred.
++
+[NOTE]
+====
+For equations in `when`-clauses with discrete-valued variables on the left-hand side, the form (<<eq:dae-discrete-valued>>) relies upon the conceptual rewriting of equations described in <<defining-when-equations-by-if-expressions-in-equality-equations>>.
+====
+
+* _c(t~e~)_:
+  The conditions of all `if`-expressions generated including `when`-clauses after conversion, see <<when-equations>>).
+
+* relation(_v_):
+  A relation containing variables _v~i~_, e.g., _v~1~_ > _v~2~_, _v~3~_ ≥ 0.
+
+For simplicity, the special cases of `noEvent` and `reinit` are not contained in the equations above and are not discussed below.
+
+The key difference between the two groups of discrete-time variables _z_ and and _m_ here is how they are determined.
+The interpretation of the solved form of (<<eq:dae-discrete-valued>>) is that given values for everything else, there is a closed-form solution for _m_ in the form of a sequence of assignments to each of the variables of _m_ in turn -- there must be no cyclic dependencies between the equations used to solve for _m_.
+Further, each of the original model equations behind (<<eq:dae-discrete-valued>>) must be given in almost solved form:
+
+* Non-`Integer` equations at most requiring flipping sides of the equation to obtain the used assignment form.
+* For `Integer` equations the solved variable must appear uniquely as a term (without any multiplicative factor) on either side of the equation, at most requiring addition or subtraction of other terms in the equation to obtain the used assignment form.
+
+The interpretation of the non-solved form of (<<eq:dae-discrete-real>>) at events, on the other hand, is that at events, the discrete-time `Real` variables _z_ are solved together with the continuous-time variables using (<<eq:dae>>) and (<<eq:dae-discrete-real>>).
+
+[example]
+====
+Example: The following model demonstrates that equation (<<eq:dae-discrete-real>>) does not imply that all discrete-time `Real` variables are given by equations in solved form, as also the discrete-time `Real` variables are included in _z_:
+
+[source,modelica]
+----
+model M
+  discrete Real x(start = 1.0, fixed = true);
+equation
+  when sample(1.0, 1.0) then
+    x = 3 * pre(x) - x^2; // Valid equation for discrete-time Real variable x.
+  end when;
+end M;
+----
+
+Another way that a discrete-time `Real` variable can end up becoming determined by a nonlinear equation is through coupling with other variables.
+
+[source,modelica]
+----
+model M
+  discrete Real x(start = 1.0, fixed = true);
+  discrete Real y(start = 0.0, fixed = true);
+equation
+  when sample(1.0, 1.0) then
+    y = x ^ 2 + 2 * exp(-time);
+    x = 3 * pre(x) - y; // OK, forming nonlinear equation system with y.
+  end when;
+end M;
+----
+====
+
+[example]
+====
+Example: The following model is illegal since there is no equation in solved form that can be used in (<<eq:dae-discrete-valued>>) to solve for the discrete-valued variable `y`:
+
+[source,modelica]
+----
+model M
+  Boolean x;
+  Boolean y;
+equation
+  x = time >= 1.0;
+  not y = x; /* Equation in solved form, but not with respect to y. */
+end M;
+----
+====
+
+The generated set of equations is used for simulation and other analysis activities.
+Simulation proceeds as follows.
+First, initialization takes place, during which initial values for the states _x_ are found, <<initialization-initial-equation-and-initial-algorithm>>.
+Given those initial values the equations are simulated forward in time; this is the transient analysis.
+The equations define a DAE (Differential Algebraic Equations) which may have discontinuities, a variable structure and/or which are controlled by a discrete-event system.
+Such types of systems are called _hybrid DAEs_.
+After initialization, simulation proceeds with transient analysis in the following way:
+
+. The DAE (<<eq:dae>>) is solved by a numerical integration method.
+  In this phase the conditions _c_ of the `if`- and `when`-clauses, as well as the discrete-time variables _z_ and _m_ are kept constant.
+  Therefore, (<<eq:dae>>) is a continuous function of continuous variables and the most basic requirement of numerical integrators is fulfilled.
+
+. During integration, all relations from (<<eq:crossing>>) are monitored.
+  If one of the relations changes its value an event is triggered, i.e., the exact time instant of the change is determined and the integration is halted.
+  As discussed in <<events-and-synchronization>>, relations which depend only on time are usually treated in a special way, because this allows determining the time instant of the next event in advance.
+
+. At an event instant, (<<eq:hybrid-dae>>) is a mixed set of algebraic equations which is solved for the `Real`, `Boolean` and `Integer` unknowns.
+
+. After an event is processed, the integration is restarted at phase 1.
+
+Note, that both the values of the conditions _c_ as well as the values of _z_ and _m_ (all discrete-time `Real`, `Boolean` and `Integer` variables) are only changed at an event instant and that these variables remain constant during continuous integration.
+At every event instant, new values of the discrete-time variables _z_ and _m_, as well as of new initial values for the states _x_, are determined.
+The change of discrete-time variables may characterize a new structure of a DAE where elements of the state vector _x_ are _disabled_.
+In other words, the number of state variables, algebraic variables and residue equations of a DAE may change at event instants by disabling the appropriate part of the DAE.
+For clarity of the equations, this is not explicitly shown by an additional index in (<<eq:hybrid-dae>>).
+
+At an event instant, including the initial event, the model equations are reinitialized according to the following iteration procedure:
+
+[source,modelica]
+----
+known  variables: x, t, p
+unkown variables: dx/dt, y, z, m, pre(z), pre(m), c
+
+// pre(z) = value of z before event occured
+// pre(m) = value of m before event occured
+loop
+  solve (<<eq:hybrid-dae>>) for the unknowns, with pre(z) and pre(m) fixed
+  if z == pre(z) and m == pre(m) then break
+  pre(z) := z
+  pre(m) := m
+end loop
+----
+
+Clocked variables are handled similarly as _z_ and _m_ (depending on type), but using `previous` instead of `pre` and only solved in the first event iteration.
+
+Solving (<<eq:hybrid-dae>>) for the unknowns is non-trivial, because this set of equations contains not only `Real`, but also discrete-valued unknowns.
+Usually, in a first step these equations are sorted and in many cases the discrete-valued unknowns _m_ can be just computed by a forward evaluation sequence.
+In some cases, there remain systems of equations involving _m_ due to cyclic dependencies with _y_ and _z_ (e.g., for ideal diodes, Coulomb friction elements), and specialized algorithms have to be used to solve them.
+
+Due to the construction of the equations by _flattening_ a Modelica model, the hybrid DAE (<<eq:hybrid-dae>>) contains a huge number of sparse equations.
+Therefore, direct simulation of (<<eq:hybrid-dae>>) requires sparse matrix methods.
+However, solving this initial set of equations directly with a numerical method is both unreliable and inefficient.
+One reason is that many Modelica models, like the mechanical ones, have a DAE index of 2 or 3, i.e., the overall number of states of the model is less than the sum of the states of the sub-components.
+In such a case, every direct numerical method has the difficulty that the numerical condition becomes worse, if the integrator step size is reduced and that a step size of zero leads to a singularity.
+Another problem is the handling of idealized elements, such as ideal diodes or Coulomb friction.
+These elements lead to mixed systems of equations having both `Real` and `Boolean` unknowns.
+Specialized algorithms are needed to solve such systems.
+
+To summarize, symbolic transformation techniques are needed to transform (<<eq:hybrid-dae>>) into a set of equations which can be numerically solved reliably.
+Most important, the algorithm of Pantelides should to be applied to differentiate certain parts of the equations in order to reduce the index.
+Note, that also explicit integration methods, such as Runge-Kutta algorithms, can be used to solve (<<eq:dae>>), after the index of (<<eq:dae>>) has been reduced by the Pantelides algorithm: During continuous integration, the integrator provides _x_ and _t_.
+Then, (<<eq:dae>>) is a linear or nonlinear system of equations to compute the algebraic variables _y_ and the state derivatives latexmath:[\frac{dx}{dt}] and the model returns latexmath:[\frac{dx}{dt}] to the integrator by solving these systems of equations.
+Often, (<<eq:dae>>) is just a linear system of equations in these unknowns, so that the solution is straightforward.
+This procedure is especially useful for real-time simulation where usually explicit one-step methods are used.
