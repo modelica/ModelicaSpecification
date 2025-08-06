@@ -185,7 +185,9 @@ If `var` has a declared `unit`-attribute, `var.unit` must be equivalent to it.
 (`var.unit` should be convertible to the `displayUnit`-attribute of `var` if it is present, but there is no corresponding constraints for the unit inference.)
 
 Consider the expression `e` of the form `var`, where `var` is a Modelica variable.
-* If `var` doesn't have a declared unit attribute, and has constant component variablity, `e.unit` is the `empty` unit.
+* If `var` is a constant without declared `unit`-attribute, `e.unit` is determined by evaluating the unit of the declaration equation.
+  When the declaration equation's unit is well-formed, it is propagated to `e.unit`.
+  Otherwise, `e.unit` is the `empty` unit, preventing it from being determined by general unit inference.
 * Otherwise, `e.unit` is `var.unit`.
 
 ### Literals
