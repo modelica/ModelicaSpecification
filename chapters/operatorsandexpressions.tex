@@ -772,6 +772,7 @@ The time derivative of $\mathit{expr}$.
 If the expression $\mathit{expr}$ is a scalar it needs to be a subtype of \lstinline!Real!.
 The expression and all its time-varying subexpressions must be continuous and semi-differentiable.
 An exception is when the operator \lstinline!reinit! (\Cref{modelica:reinit}) is activated, as not even states are continuous.
+The operator is not allowed inside \lstinline!function! classes.
 If $\mathit{expr}$ is an array, the operator is applied to all elements of the array.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 \begin{nonnormative}
@@ -826,6 +827,7 @@ The arguments, i.e., $\mathit{expr}$, $\mathit{delayTime}$ and $\mathit{delayMax
 $\mathit{delayMax}$ needs to be additionally a parameter expression.
 The following relation shall hold: $0 \leq \mathit{delayTime} \leq \mathit{delayMax}$, otherwise an error occurs.
 If $\mathit{delayMax}$ is not supplied in the argument list, $\mathit{delayTime}$ needs to be a parameter expression.
+The operator is not allowed inside \lstinline!function! classes.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 For further details, see \cref{delay}.
 \end{semantics}
@@ -886,6 +888,7 @@ inStream($v$)
 \begin{semantics}
 \lstinline!inStream($v$)! is only allowed for stream variables $v$ defined in stream connectors, and is the value of the stream variable $v$ close to the connection point assuming that the flow is from the connection point into the component.
 This value is computed from the stream connection equations of the flow variables and of the stream variables.
+The operator is not allowed inside \lstinline!function! classes.
 The operator is vectorizable.
 For further details, see \cref{stream-operator-instream-and-connection-equations}.
 \end{semantics}
@@ -897,6 +900,7 @@ actualStream($v$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 \lstinline!actualStream($v$)! returns the actual value of the stream variable $v$ for any flow direction.
+The operator is not allowed inside \lstinline!function! classes.
 The operator is vectorizable.
 For further details, see \cref{stream-operator-actualstream}.
 \end{semantics}
@@ -912,6 +916,7 @@ spatialDistribution(
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 \lstinline!spatialDistribution! allows approximation of variable-speed transport of properties.
+The operator is not allowed inside \lstinline!function! classes.
 For further details, see \cref{spatialdistribution}.
 \end{semantics}
 \end{operatordefinition}
@@ -1097,6 +1102,7 @@ end Resistor;
 
 The cardinality is counted after removing conditional components, and shall not be applied to expandable connectors, elements in expandable connectors, or to arrays of connectors (but can be applied to the scalar elements of array of connectors).
 \lstinline!cardinality! should only be used in the condition of assert and \lstinline!if!-statements that do not contain \lstinline!connect! and similar operators, see \cref{connect-equations}).
+The operator is not allowed inside \lstinline!function! classes.
 
 \subsubsection{homotopy}\label{homotopy}
 
@@ -1332,6 +1338,7 @@ initial()
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Returns \lstinline!true! during the initialization phase and \lstinline!false! otherwise.
+The operator is not allowed inside \lstinline!function! classes.
 \begin{nonnormative}
 Hereby, \lstinline!initial()! triggers a time event at the beginning of a simulation.
 \end{nonnormative}
@@ -1344,6 +1351,7 @@ terminal()
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Returns \lstinline!true! at the end of a successful analysis.
+The operator is not allowed inside \lstinline!function! classes.
 \begin{nonnormative}
 Hereby, \lstinline!terminal()! ensures an event at the end of successful simulation.
 \end{nonnormative}
@@ -1401,6 +1409,7 @@ Returns \lstinline!true! and triggers time events at time instants $\mathit{star
 At event iterations after the first one at each event and during continuous integration the operator always returns \lstinline!false!.
 The starting time $\mathit{start}$ and the sample interval $\mathit{interval}$ must be parameter expressions and need to be a subtype of \lstinline!Real! or \lstinline!Integer!.
 The sample interval $\mathit{interval}$ must be a positive number.
+The operator is not allowed inside \lstinline!function! classes.
 \end{semantics}
 \end{operatordefinition*}
 
@@ -1413,7 +1422,8 @@ Returns the \emph{left limit} $y(t^{-})$ of variable $y(t)$ at a time instant $t
 At an event instant, $y(t^{-})$ is the value of $y$ after the last event iteration at time instant $t$ (see comment below).
 % Warning "component expression" is a term defined for synchronous operator argument restrictions; this seems to conflict with also defining the present argument restriction below.
 Any subscripts in the component expression $y$ must be parameter expressions.
-\lstinline!pre! can be applied if the following three conditions are fulfilled simultaneously: (a) variable $y$ is either a subtype of a simple type or is a record component, (b) $y$ is a discrete-time expression (c) the operator is \emph{not} applied in a \lstinline!function! class.
+The operator is not allowed inside \lstinline!function! classes.
+\lstinline!pre! can be applied to the variable $y$ only if $y$ is a discrete-time expression and $y$ is either a subtype of a simple type or is a record component.
 \begin{nonnormative}
 This can be applied to continuous-time variables in \lstinline!when!-clauses, see \cref{discrete-time-expressions} for the definition of discrete-time expression.
 \end{nonnormative}
@@ -1451,7 +1461,7 @@ change(v)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 Expands into \lstinline!($v$ <> pre($v$))!.
-The same restrictions as for \lstinline!pre! apply.
+The same restrictions as for \lstinline!pre! apply (e.g., not to be used in \lstinline!function! classes).
 \end{semantics}
 \end{operatordefinition}
 
