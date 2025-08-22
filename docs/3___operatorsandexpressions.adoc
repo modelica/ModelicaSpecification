@@ -1,0 +1,1747 @@
+== Operators and Expressions
+:id: operators-and-expressions
+
+The lexical units are combined to form even larger building blocks such as expressions according to the rules given by the `expression` part of the Modelica grammar in <<modelica-concrete-syntax>>.
+For example, they can be built from operators, function references, components, or component references (referring to components) and literals.
+Each expression has a type and a variability.
+
+This chapter describes the evaluation rules for expressions, the concept of expression variability, built-in mathematical operators and functions, and the built-in special Modelica operators with function syntax.
+
+Expressions can contain variables and constants, which have types, predefined or user defined.
+The predefined built-in types of Modelica are `Real`, `Integer`, `Boolean`, `String`, and enumeration types which are presented in more detail in <<predefined-types-and-classes>>.
+
+=== Expressions
+
+Modelica equations, assignments and declaration equations contain expressions.
+
+Expressions can contain basic operations, `+`, `-`, `*`, `/`, `^`, etc. with normal precedence as defined in <<tab:operator-precedence>> in <<operator-precedence-and-associativity>> and the grammar in <<modelica-concrete-syntax>>.
+The semantics of the operations is defined for both scalar and array arguments in <<scalar-vector-matrix-and-array-operator-functions>>.
+
+It is also possible to define functions and call them in a normal fashion.
+The function call syntax for both positional and named arguments is described in <<positional-or-named-input-arguments>> and for vectorized calls in <<initialization-and-binding-equations>>.
+The built-in array functions are given in <<lower-and-upper-index-bounds>> and other built-in operators in <<built-in-operators-and-functions>>.
+
+=== Operator Precedence and Associativity
+
+Operator precedence determines the implicit subexpression structure of expressions with operators.
+(Explicit subexpression structure can be expressed by wrapping the subexpression in parentheses.)
+An operator with higher precedence ties harder to its operands than an operator with lower precedence.
+For example, `*` having higher precedence than `+` means that `1 + 2 * 3` is implicitly structured as `1 + (2 * 3)`.
+
+Precedence group associativity is used to determine the implicit subexpression structure when operators belong to the same group of equal precedence.
+Left associativity means that subexpressions are formed from left to right.
+For example, left associativity of binary additive operators means that `1 - 2 - 3` is implicitly structured as `(1 - 2) - 3`.
+A precedence group may also be non-associative, meaning that there is no implicit subexpression structure defined based on associativity.
+For example, non-associativity of relational operators means that `1 < 2 < 3` is an invalid expression.
+Note that the operators don't need to be identical for associativity to matter; also `1 == 2 < 3` is invalid, and `1 - 2 + 3` is implicitly structured as `(1 - 2) + 3`.
+Also note that the non-associative array range in Modelica can be used with either two or three operands separated by `:`, meaning that `1 : 2 : 5` is one valid ternary use of the operator rather than two invalid binary uses of the operator.
+
+At the parsing stage -- which is where the here defined operator precedence and associativity matters -- the subexpression structure is fixed.
+Since Modelica tools have the freedom to symbolically manipulate expressions, this subexpression structure cannot be expected to reflect order of evaluation, compare <<evaluation-order>>.
+
+The following table presents the precedence and associativity of all the expression operators, consistent with and complementing information that can be derived from the Modelica grammar in <<modelica-concrete-syntax>>.
+
+
+
+[[tab:operator-precedence,Table Operator Prececence]]
+.Operators in order of precedence from highest to lowest. Operators with different precedence are separated by horizontal lines. All operators are binary except array index, member access, function call, those shown as unary together with `expr`, the conditional operator, the array construction operator `{ }` and concatenation operator `[ ]`, and the array range constructor which is either binary or ternary.+++<br>+++^&dagger;^{nbsp}The associativity of array construction and concatenation refers to the separator (`,` or `;`), not the enclosing delimiters.
+[cols="a,^a,a,a"]
+|===
+|Operator group             |Assoc.           |Operator syntax               |Examples
+
+|Array index                |left             |`[]`                          |`arr[index]`
+|Member access              |left             |`.`                           |`a.b`
+|Function call              |none             |`funcName(args)`              |`sin(4.36)`
+|Array construction         |left^&dagger;^   |`{expr, expr, ...}`           |`{2, 3}`
+|Horizontal concatenation   |left^&dagger;^   |`[expr, expr, ...]`           |`[5, 6]`
+|Vertical concatenation     |left^&dagger;^   |`[expr; expr; ...]`           |`[2, 3; 7, 8]`
+|Exponentiation             |none             |`^`                           |`2 ^ 3`
+|Multiplicative             |left             |`* /`                         |`2 * 3`, `2 / 3`
+|Elementwise multiplicative |left             |`.* ./`                       |`{2, 3} .* {4, 5}`
+|Additive unary             |none             |`+expr -expr`                 |`-0.5`
+|Additive                   |left             |`+ -`                         |`1 + 2`
+|Elementwise additive       |left             |`. + .-`                      |`{2, 3} .+ {4, 5}`
+|Relational                 |none             |`< <= > >= == <>`             |`a < b`, `a <= b`, `a > b`
+|Unary negation             |none             |`not expr`                    |`not b1`
+|Logical and                |left             |`and`                         |`b1 and b2`
+|Logical or                 |left             |`or`                          |`b1 or b2`
+|Array range                |none             |`expr : expr`                 |`1 : 5`
+|Array range                |none             |`expr : expr : expr`          |`start : step : stop`
+|Conditional                |none             |`if expr then expr else expr` |`if b then 3 else x`
+|Named argument             |none             |`ident = expr`                |`x = 2.26`
+|===
+
+The array index and member access operators can both be part of a `component-reference` (one of the alternative productions for `primary` in the grammar) and be applied to general expressions when the left operand is parenthesized.
+Directly using both member access and array index in a `component-reference` has a special intuitive meaning.
+See <<indexing>> and <<member-access-operator>>.
+
+[example]
+====
+Example: Relative precedence of array index and member access.
+Consider the following definition of the array variable `a`:
+[source,modelica]
+----
+record R
+  Real[2] x;
+end R;
+R[3] a;
+----
+
+These are some valid as well as invalid ways to using array index and member access:
+
+[source,modelica]
+----
+a[3].x[2]   // OK: Component reference of type Real
+a[3].x      // OK: Component reference of type Real[2]
+a.x[2]      // OK: Component reference of type Real[3]
+a.x[2, :]   // Error.
+a.x         // OK: Component reference of type Real[3, 2]
+(a.x)[2]    // OK: Component reference of type Real[2] - same as a[2].x[:]
+(a.x)[2, :] // OK: Component reference of type Real[2] - same as a[2].x[:]
+a[3]        // OK: Component reference of type R
+(a[3]).x    // OK: Like a[3].x, but not a component reference
+(a[3]).x[1] // Error.
+((a[3]).x)[1] // OK: Like a[3].x[1], but not a component reference
+----
+
+The relation between `a.x`, `a.x[2]`, and `(a.x)[2]` illustrates the effect of giving higher precedence to array index than member access.
+Had the precedence been equal, this would have changed the meaning of `a.x[2]` to the same thing that `(a.x)[2]` expresses, being a component reference of type `Real[2]`.
+====
+
+[example]
+====
+Example: Non-associative exponentiation and array range operator (note that the array range operator only takes scalar operands):
+
+[source,modelica]
+----
+x ^ y ^ z     // Not legal, use parentheses to make it clear.
+a : b : c : d // Not legal, and parentheses cannot make it legal.
+----
+====
+
+The additive unary expressions are only allowed in the first term of a sum, that is, not immediately to the right of any of the additive or elementwise additive operators.
+For example, `1 + -1 + 1` is an invalid expression (not parseable according to <<modelica-concrete-syntax>>), whereas both `1 + (-1) + 1` and `-1 + 1 + 1` are fine.
+
+[example]
+====
+Example: The unary minus and plus in Modelica is slightly different than in Mathematicafootnote:[_Mathematica_ is a registered trademark of Wolfram Research Inc.] and in MATLABfootnote:[_MATLAB_ is a registered trademark of MathWorks Inc.
+], since the following expressions are illegal (whereas in Mathematica and in MATLAB these are valid expressions):
+[source,modelica]
+----
+2*-2 // = -4 in Mathematica/MATLAB; is illegal in Modelica
+--2  // = 2 in Mathematica/MATLAB; is illegal in Modelica
+++2  // = 2 in Mathematica/MATLAB; is illegal in Modelica
+2--2 // = 4 in Mathematica/MATLAB; is illegal in Modelica
+----
+====
+
+The conditional operator may also include `elseif`-branches.
+
+Equality `=` and assignment `:=` are not expression operators since they are allowed only in equations and in assignment statements respectively.
+
+[NOTE]
+The operator precedence table is useful when generating textual representations of Modelica expression trees.
+When doing this, attention must be paid to the rule that the unary additive operators are only allowed for the first term in a sum.
+A naive implementation might not produce all the required parentheses for an expression tree such as `1 + (-1)`, as it might think that the higher precedence of the unary operator makes the parentheses redundant.
+A trick that solves this problem is to instead treat the additive unary operators as left associative with the same precedence as the binary additive operators.
+
+=== Evaluation Order
+
+A tool is free to solve equations, reorder expressions and to not evaluate expressions if their values do not influence the result (e.g., short-circuit evaluation of `Boolean` expressions).
+`if`-statements and `if`-expressions guarantee that their branches are only evaluated if the appropriate condition is true, but relational operators generating state or time events will during continuous integration have the value from the most recent event.
+
+If a numeric operation overflows the result is undefined.
+For literals it is recommended to automatically convert the number to another type with greater precision.
+
+[example]
+====
+Example: If one wants to guard an expression against incorrect evaluation, it should be guarded by an `if`:
+
+[source,modelica]
+----
+  Boolean v[n];
+  Boolean b;
+  Integer I;
+equation
+  b = (I >= 1 and I <= n) and v[I];                // Unsafe, may result in error
+  b = if (I >= 1 and I <= n) then v[I] else false; // Safe
+----
+
+To guard square against square root of negative number use `noEvent`:
+
+[source,modelica]
+----
+der(h) = if h > 0 then -c * sqrt(h) else 0;          // Incorrect
+der(h) = if noEvent(h > 0) then -c * sqrt(h) else 0; // Correct
+----
+====
+
+=== Arithmetic Operators
+
+Modelica supports five binary arithmetic operators that operate on any numerical type:
+
+[cols="^a,l",options=autowidth]
+|===
+|Operator |Description
+
+|`^`      |Exponentiation
+|`*`      |Multiplication
+|`/`      |Division
+|`+`      |Addition
+|`-`      |Subtraction
+|===
+
+Some of these operators can also be applied to a combination of a scalar type and an array type, see <<scalar-vector-matrix-and-array-operator-functions>>.
+
+The syntax of these operators is defined by the following rules from the Modelica grammar:
+[source,grammar]
+----
+arithmetic-expression :
+   [ add-operator ] term { add-operator term }
+
+add-operator :
+   "+" | "-"
+
+term :
+   factor { mul-operator factor }
+
+mul-operator :
+   "*" | "/"
+
+factor :
+   primary [ "^" primary ]
+----
+
+=== Equality, Relational, and Logical Operators
+
+Modelica supports the standard set of relational and logical operators, all of which produce the standard boolean values `true` or `false`:
+
+[cols="^a,a",options=autowidth]
+|===
+|Operator |Description
+
+|`>`      |Greater than
+|`>=`     |Greater than or equal
+|`<`      |Less than
+|`+<=+`   |Less than or equal to
+|`==`     |Equality within expressions
+|`<>`     |Inequality
+|===
+
+A single equals sign `=` is never used in relational expressions, only in equations (see <<equations>>, <<equality-and-assignment>>) and in function calls using named parameter passing (see <<positional-or-named-input-arguments>>).
+
+The following logical operators are defined:
+
+[cols="^a,a",options=autowidth]
+|===
+|Operator |Description
+
+|`not`    |Logical negation (unary operator)
+|`and`    |Logical _and_ (conjunction)
+|`or`     |Logical _or_ (disjunction)
+|===
+
+The grammar rules define the syntax of the relational and logical operators.
+[source,grammar]
+----
+logical-expression :
+   logical-term { or logical-term }
+
+logical-term :
+   logical-factor { and logical-factor }
+
+logical-factor :
+   [ not ] relation
+
+relation :
+   arithmetic-expression [ relational-operator arithmetic-expression ]
+
+relational-operator :
+   "<" | "<=" | ">" | ">=" | "==" | "<>"
+----
+
+The following holds for relational operators:
+
+* Relational operators `<`, `+<=+`, `>`, `>=`, `==`, `<>`, are only defined for scalar operands of simple types.
+  The result is `Boolean` and is true or false if the relation is fulfilled or not, respectively.
+
+* For operands of type `String`, `str1` _op_ `str2` is for each relational operator, _op_, defined in terms of the C function `strcmp` as `strcmp(str1, str2)` _op_ `0`.
+
+* For operands of type `Boolean`, `false < true`.
+
+* For operands of enumeration types, the order is given by the order of declaration of the enumeration literals.
+
+* In relations of the form `v1 == v2` or `v1 <> v2`, `v1` or `v2` shall, unless used in a function, not be a subtype of `Real`.
++
+[NOTE]
+The reason for this rule is that relations with `Real` arguments are transformed to state events (see <<events-and-synchronization>>) and this transformation becomes unnecessarily complicated for the `==` and `<>` relational operators (e.g., two crossing functions instead of one crossing function needed, epsilon strategy needed even at event instants).
+Furthermore, testing on equality of `Real` variables is questionable on machines where the number length in registers is different to number length in main memory.
+
+* Relational operators can generate events, see <<discrete-time-expressions>>.
+
+=== Miscellaneous Operators and Variables
+
+Modelica also contains a few built-in operators which are not standard arithmetic, relational, or logical operators.
+These are described below, including `time`, which is a built-in variable, not an operator.
+
+==== String Concatenation
+
+Concatenation of strings (see the Modelica grammar) is denoted by the `+` operator in Modelica.
+
+[example]
+Example: `"a" + "b"` becomes `"ab"`.
+
+==== Array Constructor Operator
+
+The array constructor operator `{ ... }` is described in <<vector-matrix-and-array-constructors>>.
+
+==== Array Concatenation Operator
+
+The array concatenation operator `[ ... ]` is described in <<concatenation>>.
+
+==== Array Range Operator
+
+The array range constructor operator `:` is described in <<vector-construction>>.
+
+==== If-Expressions
+
+An expression
+
+[source,modelica]
+----
+if expression1 then expression2 else expression3
+----
+
+is one example of `if`-expression.
+First `expression1`, which must be `Boolean` expression, is evaluated.
+If `expression1` is true `expression2` is evaluated and is the value of the `if`-expression, else `expression3` is evaluated and is the value of the `if`-expression.
+The two expressions, `expression2` and `expression3`, must be type compatible expressions (see <<type-compatible-expressions>>) giving the type of the `if`-expression.
+The `if`-expressions with `elseif` are defined by replacing `elseif` by `else if`.
+For short-circuit evaluation see <<evaluation-order>>.
+
+[NOTE]
+`elseif` in expressions has been added to the Modelica language for symmetry with `if`-equations.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+Integer i;
+Integer sign_of_i1 = if i < 0 then -1 elseif i == 0 then 0 else 1;
+Integer sign_of_i2 = if i < 0 then -1 else if i == 0 then 0 else 1;
+----
+====
+
+==== Member Access Operator
+
+It is possible to access members of a class instance using dot notation, i.e., the `.` operator.
+It is also possible to select a record member of a general expression by enclosing it in parentheses.
+Note that while the selection is applied to an `output-expression-list` in the grammar, it is only semantically valid when the `output-expression-list` represents an expression.
+
+In case the first operand is an array it is seen as a slicing operation, see <<slice-operation>>.
+
+[example]
+====
+Example: The component reference `R1.R` accesses the resistance component `R` of resistor `R1`.
+
+The qualified class name `A.B` is a reference to the local class `B` which is a member of the class `A`.
+Note that the left operand in this case is a class, not an instance of the class.
+
+`(Complex(2, 3)).re` constructs the record `Complex(2, 3)` and then selects the `re` component in it.
+`Complex(2, 3).re` is not valid syntax.
+====
+
+==== Built-in Variable time
+
+All declared variables are functions of the independent variable `time`.
+The variable `time` is a built-in variable available in all models and blocks, which is treated as an input variable.
+It is implicitly defined as:
+
+[source,modelica]
+----
+input Real time (final quantity = "Time",
+                 final unit = "s");
+----
+
+The value of the `start`-attribute of `time` is set to the time instant at which the simulation is started.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+encapsulated model SineSource
+  import Modelica.Math.sin;
+  connector OutPort = output Real;
+  OutPort y = sin(time); // Uses the built-in variable time.
+end SineSource;
+----
+====
+
+=== Built-in Operators and Functions
+
+Certain built-in operators of Modelica are called using the same syntax as a function call.
+However, they do not behave as a mathematical function, because the result depends not only on the input arguments but also on the status of the simulation.
+
+There are also built-in functions that depend only on the input argument, but also may trigger events in addition to returning a value.
+The built-in functions may also be overloaded such that a single Modelica function cannot be compatible with all calls of the function.
+Here, _built-in_ means that they are defined at the Modelica language level, not through a Modelica `function` definition.
+The following built-in operators/functions are available:
+
+* Mathematical functions and conversion operators, see <<numeric-functions-and-conversion-operators>> below.
+* Derivative and special purpose operators with function syntax, see <<derivative-and-special-purpose-operators-with-function-syntax>> below.
+* Event-related operators, see <<event-related-operators-with-function-syntax>> below.
+* Array operators/functions, see <<built-in-array-operators-and-functions>>.
+* Synchronous operators, see <<synchronous-language-elements>>.
+* State machine operators, see <<transitions>>.
+
+Except where shadowing problems are being discussed, references to built-in functions and operators within this document always assume that the built-in definitions are not shadowed by user-defined definitions, see also <<built-in-functions>>.
+With the exception where inputs are named (e.g., `String`), all operators and functions in this section can only be called with positional arguments.
+
+==== Numeric Functions and Conversion Operators
+
+The mathematical functions and conversion operators listed below do not generate events.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression        |Description                              |Details
+
+|`abs(v)`          |Absolute value (event-free)              |<<abs>>
+|`sign(v)`         |Sign of argument (event-free)            |<<sign>>
+|`min(x, y)`       |Least of two scalars (event-free)        |<<operator:min-binary>>
+|`max(x, y)`       |Greatest of two scalars (event-free)     |<<operator:max-binary>>
+|`sqrt(v)`         |Square root                              |<<sqrt>>
+|`nthRoot(v, n)`   |__n__th root                               |<<nthRoot>>
+|`Integer(e)`      |Conversion from enumeration to `Integer` |<<integer-of-enumeration>>
+|`EnumTypeName(i)` |Conversion from `Integer` to enumeration |<<enumeration-of-integer>>
+|`String(...)`     |Conversion to `String`                   |<<to-string>>
+|===
+
+Except for the `min`, `max` and the `String` conversion operator they are vectorizable according to <<automatic-vectorization>>.
+The `min` and `max` functions have array-specific variants which perform array reduction operations described in <<reduction-functions-and-operators>>.
+
+Additional non-event generating mathematical functions are described in <<elementary-mathematical-functions>>, whereas the event-triggering mathematical functions are described in <<event-triggering-mathematical-functions>>.
+
+[[abs,Function abs]]
+Function abs::
++
+[source,modelica]
+----
+abs(v)
+----
++
+Expands into `noEvent(if v >= 0 then v else -v)`.
+Argument `v` needs to be an `Integer` or `Real` expression.
+
+[NOTE]
+====
+By not generating events the property `abs(x) >= 0` for all `x` is ensured at the cost of sometimes having a derivative that changes discontinuously between events.
+
+A typical case requiring the event-free semantics is a flow equation of the form `abs(x) * x = y`.
+With event generation, the equation would switch between the two forms `x^2 = y` and `-x^2 = y` at the events, where the events would not be coinciding exactly with the sign changes of `y`.
+When `y` passes through zero, neither form of the equation would have a solution in an open neighborhood of `y = 0`, and hence solving the equation would have to fail at some point sufficiently close to `y = 0`.
+Without event generation, on the other hand, the equation can be solved easily for `x`, also as `y` passes through zero.
+Note that without event generation the derivative of `abs(x) * x` never changes discontinuously, despite `abs(x)` having a discontinuous derivative.
+
+In inverted form this equation is `x = sign(y) * sqrt(abs(y))`.
+With event generation, the call to `sqrt` would fail when applied to a negative number during root finding of the zero crossing for `abs(y)`, compare <<events-and-synchronization>>.
+Without event generation, on the other hand, evaluating `sqrt(abs(y))` will never fail.
+====
+
+[[sign,Function sign]]
+Function sign::
++
+[source,modelica]
+----
+sign(v)
+----
++
+Expands into `noEvent(if v > 0 then 1 else if v < 0 then -1 else 0)`.
+Argument `v` needs to be an `Integer` or `Real` expression.
+
+[[sqrt,Function sqrt]]
+Function sqrt::
++
+[source,modelica]
+----
+sqrt(v)
+----
++
+Square root of `v`, equivalent to `nthRoot(v, 2)`.
+
+[[nthRoot,Function nthRoot]]
+Function nthRoot::
++
+[source,modelica]
+----
+nthRoot(v, n)
+----
++
+__n__th root of `v`, where `v` shall be a `Real` expression, and `n > 0` shall be an `Integer` expression.
+The result `y` is a real root of the equation `y^n = v`.
+If `n` is even, `v` must be non-negative and `y` shall be the non-negative root.
+(If `n` is odd, there is no constraint on `v` and `y` will have the same sign as `v`.)
+
+[[integer-of-enumeration,Operator Integer]]
+Operator Integer::
++
+[source,modelica]
+----
+Integer(e)
+----
++
+Ordinal number of the expression `e` of enumeration type that evaluates to the enumeration value `E.enumvalue`, where `Integer(E.e1) = 1`, `Integer(E.en) = n`, for an enumeration type `E = enumeration(e1, ..., en)`.
+See also <<conversion-of-enumeration-to-string-or-integer>>.
+
+[[enumeration-of-integer, Operator <EnumTypeName>]]
+Operator <EnumTypeName>::
++
+[source,modelica]
+----
+EnumTypeName(i)
+----
++
+For any enumeration type `EnumTypeName`, returns the enumeration value `EnumTypeName.e` such that `Integer(EnumTypeName.e) = i`.
+Refer to the definition of `Integer` above.
++
+It is an error to attempt to convert values of `i` that do not correspond to values of the enumeration type.
+See also <<conversion-of-integer-to-enumeration>>.
+
+[[to-string,Operator String]]
+Operator String::
++
+--
+[source,modelica]
+----
+String(b, <options>)
+String(i, <options>)
+String(i, format = s)
+String(r, <options>)
+String(r, format = s)
+String(e, <options>)
+----
+
+Convert a scalar non-`String` expression to a `String` representation.
+The first argument may be a `Boolean` b, an `Integer` i, a `Real` r, or an enumeration value e (see <<conversion-of-enumeration-to-string-or-integer>>).
+The `<options>` represent zero or more of the following named arguments (that cannot be passed as positional arguments):
+
+* `Integer minimumLength = 0`: Minimum length of the resulting string. If necessary, the blank character is used to fill up unused space.
+* `Boolean leftJustified = true`: If true, the converted result is left justified in the string; if false it is right justified in the string.
+* `Integer significantDigits = 6`: Number of significant digits in the result string. Only allowed when formatting a `Real` value.
+
+The standard type coercion described in <<standard-type-coercion>> shall not be applied for the first argument of `String`.
+Hence, specifying `significantDigits` is an error when the first argument of `String` is an `Integer` expression.
+
+For `Real` expressions the output shall be according to the Modelica grammar.
+
+[NOTE]
+Examples of `Real` values formatted with 6 significant digits: _12.3456_, _0.0123456_, _12345600_, _1.23456E-10_.
+
+The `format` string corresponding to `<options>` is:
+
+* For `Real`: +
+  `(if leftJustified then "-" else "") + String(minimumLength) + "." + String(signficantDigits) + "g"`
+* For `Integer`: +
+  `(if leftJustified then "-" else "") + String(minimumLength) + "d"`
+
+The ANSI-C style `format` string (which cannot be combined with any of the other named arguments) consists of a single conversion specification without the leading `%`.
+It shall not contain a length modifier, and shall not use `*` for width and/or precision.
+For both `Real` and `Integer` values, the conversion specifiers `f`, `e`, `E`, `g`, `G` are allowed.
+For `Integer` values it is also allowed to use the `d`, `i`, `o`, `x`, `X`, `u`, and `c` conversion specifiers.
+Using the `Integer` conversion specifiers for a `Real` value is a deprecated feature, where tools are expected to produce a result by either rounding the value, truncating the value, or picking one of the `Real` conversion specifiers instead.
+
+The `x`/`X` formats (hexa-decimal) and `c` (character) for `Integer` values give results that do not agree with the Modelica grammar.
+
+[example]
+====
+Example: Some situations worth a remark:
+
+* `String(4.0, format = "g")` produces _4_ which is not a valid `Real` literal. However, it is an `Integer` literal that can be used almost anywhere in Modelica code instead of the `Real` literal `4.0` (with the first argument to `String` being a notable exception here).
+* `String(4, format = ".3f")` uses the `Integer` case of `String` since no automatic type coerction takes place for the first argument. An implementation may internally convert the value to floating point and then fall back on the `Real` case implementation of `format = ".3f"`.
+* `String(4611686018427387648, format = ".0f")` (a valid `Integer` value in an implementation with 64 bit `IntegerType`) may produce _4611686018427387904_ (not equal to input value), in case internal conversion to a 64 bit `double` is applied.
+====
+--
+
+==== Event Triggering Mathematical Functions
+
+The operators listed below trigger events if used outside of a `when`-clause and outside of a clocked discrete-time partition (see <<discrete-time-and-discretized-sub-partitions>>).
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression   |Description                               |Details
+
+|`div(x, y)`  |Division with truncation toward zero      |<<div>>
+|`mod(x, y)`  |Integer modulus                           |<<mod>>
+|`rem(x, y)`  |Integer remainder                         |<<rem>>
+|`ceil(x)`    |Smallest integer `Real` not less than x   |<<ceil>>
+|`floor(x)`   |Largest integer `Real` not greater than x |<<floor>>
+|`integer(x)` |Largest `Integer` not greater than x      |<<integer>>
+|===
+
+These expression for `div`, `ceil`, `floor`, and `integer` are event generating expression.
+The event generating expression for `mod(x,y)` is `floor(x/y)`, and for `rem(x,y)` it is `div(x,y)` -- i.e., events are not generated when `mod` or `rem` changes continuously in an interval, but when they change discontinuously from one interval to the next.
+
+[NOTE]
+If this is not desired, the `noEvent` operator can be applied to them.
+E.g., `noEvent(integer(v))`.
+
+[[div,Operator div]]
+Operator div::
++
+[source,modelica]
+----
+div(x, y)
+----
++
+Algebraic quotient `x / y` with any fractional part discarded (also known as truncation toward zero).
+Result and arguments shall have type `Real` or `Integer`.
++
+[NOTE]
+This is defined for / in C99; in C89 the result for negative numbers is implementation-defined, so the standard function div must be used.
++
+Result and arguments shall have type `Real` or `Integer`.
+If either of the arguments is `Real` the result is `Real` otherwise `Integer`.
+
+[[mod,Operator mod]]
+Operator mod::
++
+[source,modelica]
+----
+mod(x, y)
+----
++
+Integer modulus of `x / y`, i.e., `mod(x, y) = x - floor(x / y) * y`.
+Result and arguments shall have type `Real` or `Integer`.
+If either of the arguments is `Real` the result is `Real` otherwise `Integer`.
++
+[NOTE]
+Note, outside of a `when`-clause state events are triggered when the return value changes discontinuously. Examples: `mod(3, 1.4) = 0.2`, `mod(-3, 1.4) = 1.2`, `mod(3, -1.4) = -1.2`.
+
+[[rem,Operator rem]]
+Operator rem::
++
+[source,modelica]
+----
+rem(x, y)
+----
++
+Integer remainder of `x / y`, such that `div(x, y) * y + rem(x, y) = x`.
+Result and arguments shall have type `Real` or `Integer`.
+If either of the arguments is `Real` the result is `Real` otherwise `Integer`.
++
+[NOTE]
+Note, outside of a when-clause state events are triggered when the return value changes discontinuously. Examples: `rem(3, 1.4) = 0.2`, `rem(-3, 1.4) = -0.2`.
+
+[[ceil,Operator ceil]]
+Operator ceil::
++
+[source,modelica]
+----
+ceil(x)
+----
++
+Smallest integer not less than `x`.
+Result and argument shall have type `Real`.
++
+[NOTE]
+Note, outside of a `when`-clause state events are triggered when the return value changes discontinuously.
+
+[[floor,Operator floor]]
+Operator floor::
++
+[source,modelica]
+----
+floor(x)
+----
++
+Largest integer not greater than `x`.
+Result and argument shall have type `Real`.
++
+[NOTE]
+Note, outside of a `when`-clause state events are triggered when the return value changes discontinuously.
+
+[[integer,Operator integer]]
+Operator integer::
++
+[source,modelica]
+----
+integer(x)
+----
++
+Largest integer not greater than `x`.
+The argument shall have type `Real`.
+The result has type `Integer`.
++
+[NOTE]
+Note, outside of a `when`-clause state events are triggered when the return value changes discontinuously.
+
+==== Elementary Mathematical Functions
+
+The functions listed below are elementary mathematical functions.
+Tools are expected to utilize well known properties of these functions (derivatives, inverses, etc) for symbolic processing of expressions and equations.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression    |Description                                         |Details
+
+|`sin(x)`      |Sine                                                |
+|`cos(x)`      |Cosine                                              |
+|`tan(x)`      |Tangent (x shall not be: ..., -π/2, π/2, 3π/2, ...) |
+|`asin(x)`     |Inverse sine (-1 ≤ x ≤ 1)                           |
+|`acos(x)`     |Inverse cosine (-1 ≤ x ≤ 1)                         |
+|`atan(x)`     |Inverse tangent                                     |
+|`atan2(y, x)` |Principal value of the arc tangent of y/x           |<<atan2>>
+|`sinh(x)`     |Hyperbolic sine                                     |
+|`cosh(x)`     |Hyperbolic cosine                                   |
+|`tanh(x)`     |Hyperbolic tangent                                  |
+|`exp(x)`      |Exponential, base e                                 |
+|`log(x)`      |Natural (base e) logarithm (x > 0)                  |
+|`log10(x)`    |Base 10 logarithm (x > 0)                           |
+|===
+
+These functions are the only ones that can also be called using the deprecated `"builtin"` external language, see <<external-function-interface>>.
+
+[NOTE]
+End user oriented information about the elementary mathematical functions can be found for the corresponding functions in the `Modelica.Math` package.
+
+[[atan2,Function atan2]]
+Function atan2::
++
+[source,modelica]
+----
+atan2(y, x)
+----
++
+Principal value of the arc tangent of latexmath:[y/x], using the signs of the two arguments to determine the quadrant of the result.
+The result latexmath:[\varphi] is in the interval latexmath:[\left[ -\pi, \pi \right\]] and satisfies:
++
+[latexmath]
+++++
+\left|(x,\, y)\right|\, \cos(\varphi) = x\\
+\left|(x,\, y)\right|\, \sin(\varphi) = y
+++++
+
+==== Derivative and Special Purpose Operators with Function Syntax
+
+The operators listed below include the derivative operator and special purpose operators with function syntax.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression                     |Description                                  |Details
+
+|`der(expr)`                    |Time derivative                              |<<operator:der>>
+|`delay(expr, ...)`             |Time delay                                   |<<operator:delay>>
+|`cardinality(c)`               |Number of occurrences in `connect`-equations |<<operator:cardinality>>
+|`homotopy(actual, simplified)` |Homotopy initialization                      |<<operator:homotopy>>
+|`semiLinear(x, k+, k-)`        |Sign-dependent slope                         |<<operator:semiLinear>>
+|`inStream(v)`                  |Stream variable flow into component          |<<operator:inStream>>
+|`actualStream(v)`              |Actual value of stream variable              |<<operator:actualStream>>
+|`spatialDistribution(...)`     |Variable-speed transport                     |<<operator:spatialDistribution>>
+|`getInstanceName()`            |Name of instance at call site                |<<operator:getInstanceName>>
+|===
+
+The special purpose operators with function syntax where the call below uses named arguments can be called with named arguments (with the specified names), or with positional arguments (the inputs of the functions are in the order given in the calls below).
+
+[[operator:der,Operator der]]
+Operator der::
++
+--
+[source,modelica]
+----
+der(expr)
+----
+The time derivative of `expr`.
+If the expression `expr` is a scalar it needs to be a subtype of `Real`.
+The expression and all its time-varying subexpressions must be continuous and semi-differentiable.
+An exception is when the operator `reinit` (see <<reinit>>) is activated, as not even states are continuous.
+If `expr` is an array, the operator is applied to all elements of the array.
+For non-scalar arguments the function is vectorized according to <<vectorized-calls-of-functions>>.
+
+[NOTE]
+For `Real` parameters and constants the result is a zero scalar or array of the same size as the variable.
+
+[example]
+====
+Example: For continuous expression we have several cases.
+
+[source,modelica]
+----
+  Real when1, x1, x2, x3, w1, y1, y2, y3;
+equation
+  when sample(1, 1) then
+    when1 = ...;
+  end when;
+  x1 = if time>=0 then 0 else time; // Continuous
+  x2 = if time<1 then 0 else time;  // Not continuous
+  x3 = x1 * x2;    // The product is continuous, despite x2
+
+  w1 = der(when1); // Explicitly illegal
+  y1 = der(x1);    // Ok
+  y2 = der(x2);    // Not ok at time=1
+  y3 = der(x3);    // Ok
+----
+
+Since it is difficult to prove whether expressions are continuous, tools can dynamically check the continuity such that `x2` only generates an error when the integration reaches the discontinuity.
+====
+
+[example]
+====
+Example: Exception for reinit:
+
+[source,modelica]
+----
+  Real x4, x5, x6;
+equation
+  when sample(1, 1) then
+    reinit(x4, 0);
+  end when;
+  der(x4) = time;
+  x5 = x4^2;
+  x6 = der(x5); // Allowed even if x5 is not continuous, since that is due to reinit
+----
+====
+--
+
+[[operator:delay,Operator delay]]
+Operator delay::
++
+[source,modelica]
+----
+delay(expr, delayTime, delayMax)
+delay(expr, delayTime)
+----
+Evaluates to `expr(time - delayTime)` for `time > time.start + delayTime` and `expr(time.start)` for `time <= time.start + delayTime`.
+The arguments, i.e., `expr`, `delayTime` and `delayMax`, need to be subtypes of `Real`.
+`delayMax` needs to be additionally a parameter expression.
+The following relation shall hold: `0 <= delayTime <= delayMax`, otherwise an error occurs.
+If `delayMax` is not supplied in the argument list, `delayTime` needs to be a parameter expression.
+For non-scalar arguments the function is vectorized according to <<vectorized-calls-of-functions>>.
+For further details, see <<>>.
+
+
+[[operator:cardinality,Operator cardinality]]
+Operator cardinality::
++
+[source,modelica]
+----
+cardinality(c)
+----
+[NOTE]
+This is a deprecated operator.
+It should no longer be used, since it will be removed in one of the next Modelica releases.
+
+Returns the number of (inside and outside) occurrences of connector instance `c` in a `connect`-equation as an `Integer` number.
+For further details, see <<operator:cardinality>>.
+
+[[operator:homotopy,Operator homotopy]]
+Operator homotopy::
++
+[source,modelica]
+----
+homotopy(actual = actual, simplified = simplified)
+----
+The scalar expressions `actual` and `simplified` are subtypes of `Real`.
+A Modelica translator should map this operator into either of the two forms:
+
+. Returns `actual` (trivial implementation).
+. In order to solve algebraic systems of equations, the operator might during the solution process return a combination of the two arguments, ending at actual.
++
+.Example
+`actual * λ + simplified * (1 - λ)`, where λ is a homotopy parameter going from 0 to 1.
++
+The solution must fulfill the equations for `homotopy` returning `actual`.
+
+For non-scalar arguments the function is vectorized according to <<automatic-vectorization>>.
+
+[[operator:semiLinear,Operator semiLinear]]
+Operator semiLinear::
++
+[source,modelica]
+----
+semiLinear(x, k+, k-)
+----
+Returns: `smooth(0, if x >= 0 then k+ * x else k- * x)`.
+The result is of type `Real`.
+For non-scalar arguments the function is vectorized according to <<vectorized-calls-of-functions>>.
+
+[[operator:inStream,Operator inStream]]
+Operator inStream::
++
+[source,modelica]
+----
+inStream(v)
+----
+`inStream(v)` is only allowed for stream variables v defined in stream connectors, and is the value of the stream variable v close to the connection point assuming that the flow is from the connection point into the component.
+This value is computed from the stream connection equations of the flow variables and of the stream variables.
+The operator is vectorizable.
+
+[[operator:actualStream,Operator actualStream]]
+Operator actualStream::
++
+[source,modelica]
+----
+actualStream(v)
+----
+`actualStream(v)` returns the actual value of the stream variable v for any flow direction.
+The operator is vectorizable.
+
+[[operator:spatialDistribution,Operator spatialDistributioner]]
+Operator spatialDistribution::
++
+[source,modelica]
+----
+spatialDistribution(
+  in0 = in0, in1 = in1, x = x,
+  positiveVelocity = ...,
+  initialPoints = ...,
+  initialValues = ...)
+----
+`spatialDistribution` allows approximation of variable-speed transport of properties.
+
+[[operator:getInstanceName,Operator getInstanceName]]
+Operator getInstanceName::
++
+[source,modelica]
+----
+getInstanceName()
+----
+Returns a string with the name of the model/block that is simulated, appended with the fully qualified name of the instance in which this function is called.
+
+===== delay
+:id: delay
+
+[NOTE]
+====
+`delay` allows a numerical sound implementation by interpolating in the (internal) integrator polynomials, as well as a more simple realization by interpolating linearly in a buffer containing past values of expression _expr_.
+Without further information, the complete time history of the delayed signals needs to be stored, because the delay time may change during simulation.
+To avoid excessive storage requirements and to enhance efficiency, the maximum allowed delay time has to be given via _delayMax_.
+This gives an upper bound on the values of the delayed signals which have to be stored.
+For real-time simulation where fixed step size integrators are used, this information is sufficient to allocate the necessary storage for the internal buffer before the simulation starts.
+For variable step size integrators, the buffer size is dynamic during integration.
+
+In principle, `delay` could break algebraic loops.
+For simplicity, this is not supported because the minimum delay time has to be given as additional argument to be fixed at compile time.
+Furthermore, the maximum step size of the integrator is limited by this minimum delay time in order to avoid extrapolation in the delay buffer.
+====
+
+===== spatialDistribution
+:id: spatialdistribution
+
+[NOTE]
+====
+Many applications involve the modelling of variable-speed transport of properties.
+One option to model this infinite-dimensional system is to approximate it by an ODE, but this requires a large number of state variables and might introduce either numerical diffusion or numerical oscillations.
+Another option is to use a built-in operator that keeps track of the spatial distribution of z(ξ, t), by suitable sampling, interpolation, and shifting of the stored distribution.
+In this case, the internal state of the operator is hidden from the ODE solver.
+====
+
+`spatialDistribution` allows the infinite-dimensional problem below to be solved efficiently with good accuracy
+
+[stem]
+++++
+\frac{\partial z(\xi, t)}{\partial t} + v(t) \frac{\partial z(\xi, t)}{\partial \xi} = 0\\
+z(0, t) = \mathrm{in}_{0}(t) \quad \text{if $v(t) \geq 0$}\\
+z(1, t) = \mathrm{in}_{1}(t) \quad \text{if $v(t) < 0$}
+++++
+
+where z(ξ, t) is the transported quantity, ξ is the normalized spatial coordinate (0 ≤ ξ ≤ 1), t is the time, v(t) is the normalized transport velocity and the boundary conditions are set at either ξ = 0 or ξ = 1, depending on the sign of the velocity.
+
+The calling syntax is:
+
+[source,modelica]
+----
+(out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
+                                   initialPoints = {0.0, 1.0},
+                                   initialValues = {0.0, 0.0});
+----
+
+where `in0`, `in1`, `out0`, `out1`, and `x` are all subtypes of `Real`, `positiveVelocity` is a `Boolean`, and `initialPoints` and `initialValues` are arrays of subtypes of `Real`.
+The position `x` is the integral of the transport velocity v, where the constant of integration does not matter.
+The arrays `initialPoints` and `initialValues` shall be parameter expressions of equal size, containing the ξ coordinates and the z values of a finite set of points describing the initial distribution of z(ξ, t₀).
+The `out0` and `out1` are given by the solutions at z(0, t) and z(1, t); and `in0` and `in1` are the boundary conditions at z(0, t) and z(1, t) (at each point in time only one of `in0` and `in1` is used).
+The `initialPoints` array shall span the entire range from 0 to 1, and must be sorted in non-descending order.
+The operator can not be vectorized according to the vectorization rules described in <<automatic-vectorization>>.
+The operator can be vectorized only with respect to the arguments `in0` and `in1` (which must have the same size), returning vectorized outputs `out0` and `out1` of the same size; the arguments `initialPoints` and `initialValues` are vectorized accordingly.
+
+The solution, z, can be described in terms of characteristics:
+
+[stem]
+++++
+z(\xi+\int_{t}^{t+\beta}\! v(\alpha) \mathrm{d}\alpha,\, t+\beta) = z(\xi, t), \quad\text{for all $\beta$ as long as staying inside the domain}
+++++
+
+This allows the direct computation of the solution based on interpolating the boundary conditions.
+
+`spatialDistribution` can be described in terms of the pseudo-code given as a block:
+
+[source,modelica]
+----
+block spatialDistribution
+  input Real in0;
+  input Real in1;
+  input Real x;
+  input Boolean positiveVelocity;
+  parameter Real initialPoints(each min=0, each max=1)[:] = {0.0, 1.0};
+  parameter Real initialValues[:] = {0.0, 0.0};
+  output Real out0;
+  output Real out1;
+protected
+  Real points[:];
+  Real values[:];
+  Real x0;
+  Integer m;
+algorithm
+  /* The notation
+   *   x <and then> y
+   * is used below as a shorthand for
+   *   if x then y else false
+   * also known as "short-circuit evaluation of x and y".
+   */
+  if positiveVelocity then
+    out1 := interpolate(points, values, 1 - (x - x0));
+    out0 := values[1]; // Similar to in0 but avoiding algebraic loop.
+  else
+    out0 := interpolate(points, values, 0 - (x - x0));
+    out1 := values[end]; // Similar to in1 but avoiding algebraic loop.
+  end if;
+  when <acceptedStep> then
+    if x > x0 then
+      m := size(points, 1);
+      while m > 0 <and then> points[m] + (x - x0) >= 1 loop
+        m := m - 1;
+      end while;
+      values := cat(1,
+                    {in0},
+                    values[1:m],
+                    {interpolate(points, values, 1 - (x - x0))});
+      points := cat(1, {0}, points[1:m] .+ (x-x0), {1});
+    elseif x < x0 then
+      m := 1;
+      while m < size(points, 1) <and then> points[m] + (x - x0) <= 0 loop
+        m := m + 1;
+      end while;
+      values := cat(1,
+                    {interpolate(points, values, 0 - (x - x0))},
+                    values[m:end],
+                    {in1});
+      points := cat(1, {0}, points[m:end] .+ (x - x0), {1});
+    end if;
+    x0 := x;
+  end when;
+initial algorithm
+  x0 := x;
+  points := initialPoints;
+  values := initialValues;
+end spatialDistribution;
+----
+
+[NOTE]
+====
+Note that the implementation has an internal state and thus cannot be described as a function in Modelica; `initialPoints` and `initialValues` are declared as parameters to indicate that they are only used during initialization.
+
+The infinite-dimensional problem stated above can then be formulated in the following way:
+
+[source,modelica]
+----
+der(x) = v;
+(out0, out1) = spatialDistribution(in0, in1, x, v >= 0,
+                                   initialPoints, initialValues);
+----
+
+Events are generated at the exact instants when the velocity changes sign -- if this is not needed, `noEvent` can be used to suppress event generation.
+
+If the velocity is known to be always positive, then `out0` can be omitted, e.g.:
+
+[source,modelica]
+----
+der(x) = v;
+(, out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
+----
+
+Technically relevant use cases for the use of `spatialDistribution` are modeling of electrical transmission lines, pipelines and pipeline networks for gas, water and district heating, sprinkler systems, impulse propagation in elongated bodies, conveyor belts, and hydraulic systems.
+Vectorization is needed for pipelines where more than one quantity is transported with velocity `v` in the example above.
+====
+
+===== cardinality (deprecated)
+:id: cardinality-deprecated
+
+[NOTE]
+====
+`cardinality` is deprecated for the following reasons and will be removed in a future release:
+
+* Reflective operator may make early type checking more difficult.
+* Almost always abused in strange ways
+* Not used for Bond graphs even though it was originally introduced for that purpose.
+====
+
+[NOTE]
+====
+`cardinality` allows the definition of connection dependent equations in a model, for example:
+
+[source,modelica]
+----
+connector Pin
+  Real v;
+  flow Real i;
+end Pin;
+model Resistor
+  Pin p, n;
+equation
+  assert(cardinality(p) > 0 and cardinality(n) > 0,
+         "Connectors p and n of Resistor must be connected");
+  // Equations of resistor
+  ...
+end Resistor;
+----
+====
+
+The cardinality is counted after removing conditional components, and shall not be applied to expandable connectors, elements in expandable connectors, or to arrays of connectors (but can be applied to the scalar elements of array of connectors).
+`cardinality` should only be used in the condition of assert and `if`-statements that do not contain `connect` and similar operators, see <<connect-equations>>.
+
+===== homotopy
+:id: homotopy
+
+[NOTE]
+====
+During the initialization phase of a dynamic simulation problem, it often happens that large nonlinear systems of equations must be solved by means of an iterative solver.
+The convergence of such solvers critically depends on the choice of initial guesses for the unknown variables.
+The process can be made more robust by providing an alternative, simplified version of the model, such that convergence is possible even without accurate initial guess values, and then by continuously transforming the simplified model into the actual model.
+This transformation can be formulated using expressions of this kind:
+
+[stem]
+++++
+\lambda\cdot\text{actual} + (1-\lambda)\cdot\text{simplified}
+++++
+
+in the formulation of the system equations, and is usually called a homotopy transformation.
+If the simplified expression is chosen carefully, the solution of the problem changes continuously with λ, so by taking small enough steps it is possible to eventually obtain the solution of the actual problem.
+
+The operator can be called with ordered arguments or preferably with named arguments for improved readability.
+
+It is recommended to perform (conceptually) one homotopy iteration over the whole model, and not several homotopy iterations over the respective non-linear algebraic equation systems.
+The reason is that the following structure can be present:
+
+[source,modelica]
+----
+w = f₁(x) // has homotopy
+0 = f₂(der(x), x, z, w)
+----
+
+Here, a non-linear equation system f₂ is present.
+`homotopy` is, however used on a variable that is an "input" to the non-linear algebraic equation system, and modifies the characteristics of the non-linear algebraic equation system.
+The only useful way is to perform the homotopy iteration over f₁ and f₂ together.
+
+The suggested approach is "conceptual", because more efficient implementations are possible, e.g., by determining the smallest iteration loop, that contains the equations of the first BLT block in which `homotopy` is present and all equations up to the last BLT block that describes a non-linear algebraic equation system.
+
+A trivial implementation of `homotopy` is obtained by defining the following function in the global scope:
+
+[source,modelica]
+----
+function homotopy
+  input Real actual;
+  input Real simplified;
+  output Real y;
+algorithm
+  y := actual;
+  annotation(Inline = true);
+end homotopy;
+----
+====
+
+[example]
+====
+Example 1: In electrical systems it is often difficult to solve non-linear algebraic equations if switches are part of the algebraic loop.
+An idealized diode model might be implemented in the following way, by starting with a "flat" diode characteristic and then move with `homotopy` to the desired "steep" characteristic:
+
+[source,modelica]
+----
+model IdealDiode
+  ...
+  parameter Real Goff = 1e-5;
+protected
+  Real Goff_flat = max(0.01, Goff);
+  Real Goff2;
+equation
+  off = s < 0;
+  Goff2 = homotopy(actual = Goff, simplified = Goff_flat);
+  u = s * (if off then 1 else Ron2) + Vknee;
+  i = s * (if off then Goff2 else 1 ) + Goff2*Vknee;
+  ...
+end IdealDiode;
+----
+====
+
+[example]
+====
+Example 2: In electrical systems it is often useful that all voltage sources start with zero voltage and all current sources with zero current, since steady state initialization with zero sources can be easily obtained.
+A typical voltage source would then be defined as:
+
+[source,modelica]
+----
+model ConstantVoltageSource
+  extends Modelica.Electrical.Analog.Interfaces.OnePort;
+  parameter Modelica.Units.SI.Voltage V;
+equation
+  v = homotopy(actual = V, simplified = 0.0);
+end ConstantVoltageSource;
+----
+====
+
+[example]
+====
+Example 3: In fluid system modelling, the pressure/flowrate relationships are highly nonlinear due to the quadratic terms and due to the dependency on fluid properties.
+A simplified linear model, tuned on the nominal operating point, can be used to make the overall model less nonlinear and thus easier to solve without accurate start values.
+Named arguments are used here in order to further improve the readability.
+
+[source,modelica]
+----
+model PressureLoss
+  import Modelica.Units.SI;
+  ...
+  parameter SI.MassFlowRate m_flow_nominal "Nominal mass flow rate";
+  parameter SI.Pressure dp_nominal "Nominal pressure drop";
+  SI.Density rho "Upstream density";
+  SI.DynamicViscosity lambda "Upstream viscosity";
+equation
+  ...
+  m_flow = homotopy(actual = turbulentFlow_dp(dp, rho, lambda),
+                    simplified = dp/dp_nominal*m_flow_nominal);
+  ...
+end PressureLoss;
+----
+====
+
+[example]
+====
+Example 4: Note that `homotopy` _shall not_ be used to combine unrelated expressions, since this can generate singular systems from combining two well-defined systems.
+
+[source,modelica]
+----
+model DoNotUse
+  Real x;
+  parameter Real x0 = 0;
+equation
+  der(x) = 1-x;
+initial equation
+  0 = homotopy(der(x), x - x0);
+end DoNotUse;
+----
+
+The initial equation is expanded into
+
+[stem]
+++++
+0 = \lambda*\mathrm{der}(x)+(1-\lambda)(x-x_0)
+++++
+
+and you can solve the two equations to give
+
+[stem]
+++++
+x = \frac{\lambda+(\lambda-1)x_0}{2\lambda-1}
+++++
+
+which has the correct value of x₀ at λ = 0 and of 1 at λ = 1, but unfortunately has a singularity at λ = 0.5.
+====
+
+===== semiLinear
+:id: semilinear
+
+(See definition of `semiLinear` in <<derivative-and-special-purpose-operators-with-function-syntax>>).
+In some situations, equations with `semiLinear` become underdetermined if the first argument (`x`) becomes zero, i.e., there are an infinite number of solutions.
+It is recommended that the following rules are used to transform the equations during the translation phase in order to select one meaningful solution in such cases:
+
+* The equations
++
+[source,modelica]
+----
+y = semiLinear(x, sa, s1);
+y = semiLinear(x, s1, s2);
+y = semiLinear(x, s2, s3);
+...
+y = semiLinear(x, sN, sb);
+...
+----
++
+may be replaced by
++
+[source,modelica]
+----
+s1 = if x >= 0 then sa else sb
+s2 = s1;
+s3 = s2;
+...
+sN = sN-1;
+y = semiLinear(x, sa, sb);
+----
+
+* The equations
++
+[source,modelica]
+----
+x = 0;
+y = 0;
+y = semiLinear(x, sa, sb);
+----
++
+may be replaced by
++
+[source,modelica]
+----
+x = 0
+y = 0;
+sa = sb;
+----
+
+[NOTE]
+====
+For symbolic transformations, the following property is useful (this follows from the definition):
+
+[source,modelica]
+----
+semiLinear(m_flow, port_h, h);
+----
+
+is identical to:
+
+[source,modelica]
+----
+-semiLinear(-m_flow, h, port_h);
+----
+
+The `semiLinear` function is designed to handle reversing flow in fluid systems, such as
+
+[source,modelica]
+----
+H_flow = semiLinear(m_flow, port.h, h);
+----
+
+i.e., the enthalpy flow rate `H_flow` is computed from the mass flow rate `m_flow` and the upstream specific enthalpy depending on the flow direction.
+====
+
+===== getInstanceName
+:id: getinstancename
+
+Returns a string with the name of the model/block that is simulated, appended with the fully qualified name of the instance in which this function is called.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+package MyLib
+  model Vehicle
+    Engine engine;
+    ...
+  end Vehicle;
+  model Engine
+    Controller controller;
+    ...
+  end Engine;
+  model Controller
+  equation
+    Modelica.Utilities.Streams.print("Info from: " + getInstanceName());
+  end Controller;
+end MyLib;
+----
+
+If `MyLib.Vehicle` is simulated, the call of `getInstanceName()` returns `"Vehicle.engine.controller"`.
+====
+
+If this function is not called inside a model or block (e.g., the function is called in a function or in a constant of a package), the return value is not specified.
+
+The simulation result should not depend on the return value of this function.
+
+==== Event-Related Operators with Function Syntax
+
+The operators listed below are event-related operators with function syntax.
+The operators `noEvent`, `pre`, `edge`, and `change`, are vectorizable according to <<automatic-vectorization>>.
+
+[cols="a,a,a",options=autowidth]
+|===
+|Expression                |Description                                       |Details
+
+|`initial()`               |Predicate for the initialization phase            |<<operator:initial>>
+|`terminal()`              |Predicate for the end of a successful analysis    |<<operator:terminal>>
+|`noEvent(expr)`           |Evaluate expr without triggering events           |<<operator:noEvent>>
+|`smooth(p, expr)`         |Treat expr as p times continuously differentiable |<<operator:smooth>>
+|`sample(start, interval)` |Periodic triggering of events                     |<<operator:sample>>
+|`pre(y)`                  |Left limit y(t-) of variable y(t)                 |<<operator:pre>>
+|`edge(b)`                 |Expands into `(b and not pre(b))`                 |<<operator:edge>>
+|`change(v)`               |Expands into `(v <> pre(v))`                      |<<operator:change>>
+|`reinit(x, expr)`         |Reinitialize x with expr                          |<<operator:reinit>>
+|===
+
+[[operator:initial,Operator initial]]
+Operator initial::
++
+--
+[source,modelica]
+----
+initial()
+----
+
+Returns `true` during the initialization phase and `false` otherwise.
+
+[NOTE]
+Hereby, `initial()` triggers a time event at the beginning of a simulation.
+--
+
+[[operator:terminal,Operator terminal]]
+Operator terminal::
++
+-- 
+[source,modelica]
+----
+terminal()
+----
+Returns `true` at the end of a successful analysis.
+
+[NOTE]
+Hereby, `terminal()` ensures an event at the end of successful simulation.
+--
+
+[[operator:noEvent,Operator noEvent]]
+Operator noEvent::
++
+-- 
+[source,modelica]
+----
+noEvent(expr)
+----
+
+`Real` elementary relations within expr are taken literally, i.e., no state or time event is triggered.
+No zero crossing functions shall be used to monitor any of the normally event-generating subexpressions inside _expr_.
+Inside functions, `noEvent` only makes a difference in combination with the function annotation `GenerateEvents = true` (see <<annotation:generate-events>>).
+See also <<operator:smooth>> and <<events-and-synchronization>>.
+--
+
+[[operator:smooth,Operator smooth]]
+Operator smooth::
++
+--
+[source,modelica]
+----
+smooth(p, expr)
+----
+
+If latexmath:[p \geq 0] `smooth(p, expr)` returns _expr_ and states that _expr_ is `p` times continuously differentiable, i.e., _expr_ is continuous in all `Real` variables appearing in the expression and all partial derivatives with respect to all appearing real variables exist and are continuous up to order `p`.
+The argument `p` should be a scalar `Integer` parameter expression.
+The only allowed types for _expr_ in `smooth` are: `Real` expressions, arrays of allowed expressions, and records containing only components of allowed expressions.
+
+`smooth` should be used instead of `noEvent` in order to avoid events for efficiency reasons.
+A tool is free to not generate events for expressions inside `smooth`.
+However, `smooth` does not guarantee that no events will be generated, and thus it can be necessary to use `noEvent` inside `smooth`.
+
+[NOTE]
+Note that `smooth` does not guarantee a smooth output if any of the occurring variables change discontinuously.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+  Real x, y, z;
+equation
+  x = if time < 1 then 2 else time - 2;
+  z = smooth(0, if time < 0 then 0 else time);
+  y = smooth(1,
+        noEvent(if x < 0 then 0 else sqrt(x) * x)); // Needs noEvent.
+----
+====
+--
+
+[[operator:sample,Operator sample]]
+Operator sample::
++
+--
+[source,modelica]
+----
+sample(start, interval)
+----
+Returns `true` and triggers time events at time instants `start + i * interval` for i = 0, 1, ... , and is only true during the first event iteration at those times.
+At event iterations after the first one at each event and during continuous integration the operator always returns `false`.
+The starting time `start` and the sample interval `interval` must be parameter expressions and need to be a subtype of `Real` or `Integer`.
+The sample interval `interval` must be a positive number.
+--
+
+[[operator:pre,Operator pre]]
+Operator pre::
++
+--
+[source,modelica]
+----
+pre(y)
+----
+
+Returns the left limit _y(t^-^)_ of variable _y(t)_ at a time instant t.
+At an event instant, _y(t^-^)_ is the value of _y_ after the last event iteration at time instant _t_ (see comment below).
+Any subscripts in the component expression _y_ must be parameter expressions.
+`pre` can be applied if the following three conditions are fulfilled simultaneously: (a) variable _y_ is either a subtype of a simple type or is a record component, (b) _y_ is a discrete-time expression (c) the operator is not applied in a `function` class.
+
+[NOTE]
+This can be applied to continuous-time variables in `when`-clauses, see <<discrete-time-expressions>> for the definition of discrete-time expression.
+
+The first value of `pre(y)` is determined in the initialization phase.
+
+A new event is triggered if there is at least for one variable `v` such that `pre(v) <> v` after the active model equations are evaluated at an event instant.
+In this case the model is at once reevaluated.
+This evaluation sequence is called *event iteration*.
+The integration is restarted once `pre(v) == v` for all `v` appearing inside `pre(...)`.
+
+[NOTE]
+====
+If `v` and `pre(v)` are only used in `when`-clauses, the translator might mask event iteration for variable `v` since `v` cannot change during event iteration.
+It is a quality of implementation to find the minimal loops for event iteration, i.e., not all parts of the model need to be reevaluated.
+
+The language allows mixed algebraic systems of equations where the unknown variables are of type `Real`, `Integer`, `Boolean`, or an enumeration.
+These systems of equations can be solved by a global fix point iteration scheme, similarly to the event iteration, by fixing the `Boolean`, `Integer`, and/or enumeration unknowns during one iteration.
+Again, it is a quality of implementation to solve these systems more efficiently, e.g., by applying the fix point iteration scheme to a subset of the model equations.
+====
+--
+
+[[operator:edge,Operator edge]]
+Operator edge::
++
+[source,modelica]
+----
+edge(b)
+----
++
+Expands into `(b and not pre(b))` for Boolean variable b.
+The same restrictions as for `pre` apply (e.g., not to be used in `function` classes).
+
+[[operator:change,Operator change]]
+Operator change::
++
+-- 
+[source,modelica]
+----
+change(v)
+----
+Expands into `(v <> pre(v))`.
+The same restrictions as for `pre` apply.
+--
+
+[[operator:reinit,Operator reinit]]
+Operator reinit::
++
+-- 
+
+[source,modelica]
+----
+reinit(x, expr)
+----
+
+In the body of a `when`-clause, reinitializes x with expr at an event instant.
+x is a scalar or array `Real` variable that is implicitly defined to have `StateSelect.always`.
+
+[NOTE]
+It is an error if the variable cannot be selected as a state.
+
+`expr` needs to be type-compatible with `x`.
+`reinit` can only be applied once for the same variable -- either as an individual variable or as part of an array of variables.
+It can only be applied in the body of a `when`-clause in an equation section.
+See also <<reinit>>.
+--
+
+=== Variability of Expressions
+
+The concept of variability of an expression indicates to what extent the expression can vary over time.
+See also <<component-variability>> regarding the concept of variability.
+
+There are four levels of variability of expressions, starting from the least variable:
+
+* constant variability
+* parameter variability
+* discrete-time variability
+* continuous-time variability
+
+While many invalid models can be rejected based on the declared variabilities of variables alone (without the concept of expression variability), the following rules both help enforcing compliance of computed solutions to declared variability, and impose additional restrictions that simplify reasoning and reporting of errors:
+
+* For an assignment `v := expr` or binding equation `v = expr`, v must be declared to be at least as variable as `expr`.
+* For multiple return assignment `(x1, ..., xn) := expr` (see <<assignments-from-called-functions-with-multiple-results>>), all of x1, ..., xn must be declared to be at least as variable as `expr`.
+* When determining whether an equation can contribute to solving for a variable v (for instance, when applying the perfect matching rule, see <<synchronous-data-flow-principle-and-single-assignment-rule>>), the equation can only be considered contributing if the resulting solution would be at most as variable as `v`.
+
+[example]
+====
+Example: The (underdetermined) model `Test` below illustrates two kinds of consequences due to variability constraints.
+First, it contains variability errors for declaration equations and assignments.
+Second, it illustrates the impact of variability on the matching of equations to variables, which can lead to violation of the perfect matching rule.
+Details of how variabilities are determined are given in the sections below.
+The discrete-valued equation variability rule mentioned in the comments below refer to the rule in <<discrete-time-expressions>> that requires both sides of the Boolean equation to be discrete-time.
+
+[source,modelica]
+----
+model Constants
+  parameter Real p1 = 1;
+  constant Real c1 = p1 + 2; // Error, not a constant expression.
+  parameter Real p2 = p1 + 2; // Fine.
+end Constants;
+model Test
+  Constants c1(p1 = 3); // Fine.
+  Constants c2(p2 = 7); // Fine, declaration equation can be modified.
+  Real x;
+  Boolean b1 = noEvent(x > 1); // Error, since b1 is a discrete-time variable
+                               // and noEvent(x > 1) is not discrete-time.
+  Boolean b2;
+  Integer i1;
+  Integer i2;
+algorithm
+  i1 := x; // Error, assignment to variable of lesser variability.
+equation
+  /* The equation below can be rejected for two reasons:
+   * 1. Discrete-valued equation variability rule requires both sides to be
+   *    discrete-time.
+   * 2. It violates the perfect matching rule, as no variable can be solved
+   *    with correct variability using this equation.
+   */
+  b2 = noEvent(x > 1); // Error, see above.
+  i2 = x;              // No variability error, and can be matched to x.
+end Test;
+----
+====
+
+==== Function Variability
+
+The variability of function calls needs to consider both the variability of arguments directly given in the function and the variability of the used default arguments, if any.
+This is especially a concern for functions given as a short class, see <<inheritance-of-functions>>.
+This has additional implications for redeclarations, see <<function-compatibility>>.
+The purity of the function, see <<pure-modelica-functions>>, does not influence the variability of the function call.
+
+[NOTE]
+The restrictions for calling functions declared as `impure` serve a similar purpose as the variability restrictions, see <<pure-modelica-functions>>, and thus it is not necessary to consider purity in the definition of variability.
+Consider a function reading an external file and returning some value from that file.
+Different uses can have the file updated before the simulation (as a parameter-expression), or during the simulation (as a discrete-time expression).
+Thus it depends on the use case and the specific file, not the function itself, and it would even be possible to update the file in continuous time (as part of an algorithm) and still use the same function.
+
+==== Constant Expressions
+
+Constant expressions are:
+
+* `Real`, `Integer`, `Boolean`, `String`, and `enumeration` literals.
+* Constant variables, see <<component-variability>>.
+* Except for the special built-in operators `initial`, `terminal`, `der`, `edge`, `change`, `sample`, and `pre`, a function or operator with constant subexpressions as argument (and no parameters defined in the function) is a constant expression.
+* Some function calls are constant expressions regardless of the arguments:
+** `ndims(A)`
+
+==== Evaluable Expressions
+
+Evaluable expressions are:
+
+* Constant expressions.
+* Evaluable parameter variables, see <<component-variability>>.
+* Input variables in functions behave as though they were evaluable expressions.
+* Except for the special built-in operators `initial`, `terminal`, `der`, `edge`, `change`, `sample`, and `pre`, a function or operator with evaluable subexpressions is an evaluable expression.
+* The sub-expression `end` used in `A[... end ...]` if `A` is a variable declared in a non-`function` class.
+* Some function calls are evaluable expressions even if the arguments are not:
+** `cardinality(c)`, see restrictions for use in <<cardinality-deprecated>>.
+** `size(A)` (including `size(A, j)` where `j` is an evaluable expression) if `A` is variable declared in a non-function class.
+** `Connections.isRoot(A.R)`
+** `Connections.rooted(A.R)`
+
+==== Parameter Expressions
+
+Parameter expressions are:
+
+* Evaluable expressions.
+* Non-evaluable parameter variables, see <<component-variability>>.
+* Except for the special built-in operators `initial`, `terminal`, `der`, `edge`, `change`, `sample`, and `pre`, a function or operator with parameter subexpressions is a parameter expression.
+* Some function calls are parameter expressions even if the arguments are not:
+** `size(A, j)` where `j` is a parameter expression, if `A` is variable declared in a non-function class.
+
+==== Discrete-Time Expressions
+
+Discrete-time expressions are:
+
+* Parameter expressions.
+
+* Discrete-time variables, see <<component-variability>>.
+
+* Function calls where all input arguments of the function are discrete-time expressions.
+
+* Expressions where all the subexpressions are discrete-time expressions.
+
+* Expressions in the body of a `when`-clause, `initial equation`, or `initial algorithm`.
+
+* Expressions in a clocked discrete-time partition, see <<discrete-time-and-discretized-sub-partitions>>.
+
+* Unless inside `noEvent`: Ordered relations (`>`, `<`, `>=`, `+<=+`) and the event generating functions `ceil`, `floor`, `div`, and `integer`, if at least one argument is non-discrete-time expression and subtype of `Real`.
++
+[NOTE]
+These will generate events, see <<events-and-synchronization>>.
+Note that `rem` and `mod` generate events but are not discrete-time expressions.
+In other words, relations inside `noEvent`, such as `noEvent(x>1)`, are not discrete-time expressions.
+
+* The functions `pre`, `edge`, and `change` result in discrete-time expressions.
+
+* Expressions in functions behave as though they were discrete-time expressions.
+
+Inside an `if`-expression, `if`-clause, `while`-statement or `for`-clause, that is controlled by a non-discrete-time (that is continuous-time, but not discrete-time) switching expression and not in the body of a `when`-clause, it is not legal to have assignments to discrete-time variables, equations between discrete-time expressions, or real elementary relations/functions that should generate events.
+
+[NOTE]
+The restriction above is necessary in order to guarantee that all equations for discrete-time variable are discrete-time expressions, and to ensure that crossing functions do not become active between events.
+
+For a scalar or array equation `expr1 = expr2` where neither expression is of base type `Real`, both expressions must be discrete-time expressions.
+For a record equation, the rule applies recursively to each of the components of the record.
+This is called the _discrete-valued equation variability rule_.
+
+[NOTE]
+====
+For a scalar equation, the rule follows from the observation that a discrete-valued equation does not provide sufficient information to solve for a continuous-valued variable.
+Hence, and according to the perfect matching rule (see <<synchronous-data-flow-principle-and-single-assignment-rule>>), such an equation must be used to solve for a discrete-valued variable.
+By the interpretation of <<eq:dae-discrete-valued>> in <<modelica-dae-representation>>, it follows that one of `expr1` and `expr2` must be the variable, and the other expression its solution.
+Since a discrete-valued variable is a discrete-time expression, it follows that its solution on the other side of the equation must have at most discrete-time variability.
+That is, both sides of the equation are discrete-time expressions.
+
+For example, this rule shows that (outside of a `when`-clause) `noEvent` cannot be applied to either side of a `Boolean`, `Integer`, `String`, or `enumeration` equation, as this would result in a non-discrete-time expression.
+
+For an array equation, note that each array can have only one element type, so if one element is `Real`, then all other entries must also be `Real`, possibly making use of standard type coercion, <<standard-type-coercion>>.
+Hence, if the base type is not `Real`, all elements of the array are discrete-valued, allowing the argument above for a scalar equation to be applied elementwise to the array equation.
+That is, all array elements on both sides of the array equation will have discrete-time variability, showing that also the entire arrays `expr1` and `expr2` are discrete-time expressions.
+
+For a record equation, the components of the record have independent types, and the equation is seen as a collection of equations for the individual components of the record.
+In order to support records with components of mixed variability, a record equation with sides given by either record variables or record constructors is conceptually split before variability is determined.
+====
+
+[example]
+====
+Example: Discrete-valued equation variability rule applied to record equations.
+In the first of the equations below, having a record constructor on both sides of the equation, the equation is conceptually split, and variabilities of `time` and `true` are considered separately.
+In the second equation, the `makeR` function call -- regardless of inlining -- means that the equation cannot be conceptually split into individual components of the record.
+The variability of the `makeR` call is continuous-time due to the `time` argument, which also becomes the variability of the `b` member of the call.
+
+[source,modelica]
+----
+record R
+  Real x;
+  Boolean b;
+end R;
+
+function makeR "Function wrapper around record constructor"
+  input Real xx;
+  input Boolean bb;
+  output R r = R(xx, bb);
+  annotation(Inline = true); // Inlining doesn't help.
+end makeR;
+
+model Test
+  R r1, r2;
+equation
+  r1 = R(time, true);     // OK: Discrete-time Boolean member.
+  r2 = makeR(time, true); // Error: Continuous-time Boolean member.
+end Test;
+----
+====
+
+==== Continuous-Time and Non-Discrete-Time Expressions
+
+All expressions are continuous-time expressions including constant, parameter and discrete-time expressions.
+The term _non-discrete-time expression_ refers to expressions that are neither constant, parameter nor discrete-time expressions.
+For example, `time` is a continuous-time built-in variable (see <<component-variability>>) and `time + 1` is a non-discrete-time expression.
+Note that plain `time` may, depending on context, refer to the continuous-time variable or the non-discrete-time expression.

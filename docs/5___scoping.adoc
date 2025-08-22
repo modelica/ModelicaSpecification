@@ -1,0 +1,580 @@
+== Scoping, Name Lookup, and Flattening
+:id: scoping-name-lookup-and-flattening
+
+This chapter describes the scope rules, and most of the name lookup and flattening of Modelica.
+
+=== Flattening Context
+
+Flattening is made in a context which consists of a modification environment (see <<modification-environment>>) and an ordered set of enclosing classes.
+
+=== Enclosing Classes
+
+The classes lexically enclosing an element form an ordered set of enclosing classes.
+A class defined inside another class definition (the enclosing class) precedes its enclosing class definition in this set.
+
+Enclosing all class definitions is an unnamed enclosing class that contains all top-level class definitions, and not-yet read classes defined externally as described in <<file-system-mapping-of-packageclass>>.
+The order of top-level class definitions in the unnamed enclosing class is undefined.
+
+During flattening, the enclosing class of an element being flattened is a partially flattened class.
+
+[NOTE]
+For example, this means that a declaration can refer to a name inherited through an `extends`-clause.
+
+.Example
+[source,modelica]
+----
+class C1 ... end C1;
+class C2 ... end C2;
+class C3
+  Real x = 3;
+  C1 y;
+  class C4
+    Real z;
+  end C4;
+end C3;
+----
+
+The unnamed enclosing class of class definition `C3` contains `C1`, `C2`, and `C3` in arbitrary order.
+When flattening class definition `C3`, the set of enclosing classes of the declaration of `x` is the partially flattened class `C3` followed by the unnamed enclosing class with `C1`, `C2`, and `C3`.
+The set of enclosing classes of `z` is `C4`, `C3` and the unnamed enclosing class in that order.
+
+=== Static Name Lookup
+
+Names are looked up at class flattening to find names of base classes, component types, etc.
+Implicitly defined names of record constructor functions and enumeration type conversion functions are ignored during type name lookup.
+Names of record classes and enumeration types are ignored during function name lookup.
+
+[NOTE]
+The reason to ignore the implicitly defined names is that a record and the implicitly created record constructor function, see <<record-constructor-functions>>, and an enumeration type and the implicitly created conversion function (<<conversion-of-integer-to-enumeration>>), have the same name.
+
+==== Simple Name Lookup
+
+A class declared with the keyword `encapsulated` (see <<class-definition>> in the grammar) is called an `encapsulated` class.
+By restricting name lookup inside a restricted class in ways defined in this chapter, the meaning of the class is made independent of where it is placed in a package hierarchy.
+
+When an element, equation, or section is flattened, any simple name (not composed using dot notation) is first looked up sequentially among iteration variables (if any; see below), and then looked up sequentially in each member of the ordered set of `instance scopes` (see <<the-class-tree>>) corresponding to lexically `enclosing classes` until a match is found or an enclosing class is encapsulated.
+In the latter case the lookup stops except for the predefined types, functions and operators defined in this specification.
+For these cases the lookup continues in the global scope, where they are defined.
+
+The iteration variables are the implicitly declared iteration variable(s) if inside the body of a `for`-loop (see <<for-equations-repetitive-equation-structures>> and <<for-statement>>), or the body of a reduction expression (see <<reduction-functions-and-operators>>).
+
+Reference to variables successfully looked up in an enclosing class is only allowed for variables declared as `constant`.
+The values of modifiers are thus resolved in the instance scope of which the modifier appears; if the use is in a modifier on a short class definition, see <<short-class-definitions>>.
+
+This lookup in each `instance` scope is performed as follows:
+
+* Among declared named elements (`class`-definition and `component-declaration`) of the class (including elements inherited from base classes).
+* Among the import names of qualified `import`-clauses in the `instance scope`.
+  The `import name` of `import A.B.C;` is `C` and the import name of `import D = A.B.C;` is `D`.
+* Among the public members of packages imported via unqualified import-clauses in the `instance` scope.
+  It is an error if this step produces matches from several unqualified imports.
+
+The `import`-clauses defined in inherited classes are ignored for the lookup, i.e., `import`-clauses are not inherited.
+
+==== Composite Name Lookup
+
+For a composite name of the form `A.B` or `A.B.C`, etc. lookup is performed as follows:
+
+* The first identifier (`A`) is looked up as defined above.
+* If the first identifier denotes a component, the rest of the name (e.g., `B` or `B.C`) is looked up among the declared named component elements of the component.
+* If not found, and if the first identifier denotes a component and the composite name is used as a function call, the lookup is also performed among the declared elements of the component, and must find a non-operator function.
+  Each leading element, including the first one, must in this case be a scalar component, or `component[j]` where `component` is an array of components and the indices `j` are evaluable expressions and `component[j]` is a scalar.
+  All identifiers of the rest of the name (e.g., `B` and `B.C`) must be classes.
+  That is, the composite name is comprised of one or more component names (optionally with indexing), followed by one or more class names.
+* If the identifier denotes a class, that class is temporarily flattened (as if instantiating a component without modifiers of this class, see <<modification-environment>> and using the enclosing classes of the denoted class).
+  The rest of the name (e.g., `B` or `B.C`) is looked up among the declared named elements of the temporary flattened class.
+  The lookup will only find the element (assuming it exists) in the following cases:
+  ** If the class is declared as `package` or `operator` (but not `operator record` or `operator function`) all elements can be found.
+  ** An element can be found if it is declared as `encapsulated`.
+  ** A deprecated case is that if the class satisfies the requirements for a `package` (without being declared as such), it is still treated as a `package`.
+  The class we look inside shall not be partial in a simulation model.
+
+[NOTE]
+The temporary class flattening performed for composite names follow the same rules as class flattening of the base class in an `extends`-clause, local classes and the type in a component-clause, except that the environment is empty.
+See also `MoistAir2` example in <<redeclaration>> for further explanations regarding looking inside partial packages.
+
+[example]
+====
+Example: Components and classes are part of the same name-space and thus a component cannot have the same name as its class or the first part of the class-name as that would prevent lookup of the class name.
+
+[source,modelica]
+----
+model A
+  M M;    // Illegal, component 'M' prevents finding class 'M'
+  P.Q P;  // Illegal, component 'P' prevents finding package 'P'
+  .R R;   // Legal, see next section
+  S.Q Q;  // Legal
+
+  Y a;    // Illegal, component 'Y' (below) prevents finding class 'Y'
+  Y.X b;  // Illegal, component 'Y' (below) prevents finding package 'Y'
+  .Y c;   // Legal, see next section
+  Real Y;
+end A;
+----
+====
+
+[NOTE]
+Note that an `operator` class may only contain declarations of functions and thus fulfills the requirements for a package (see <<specialized-classes>>).
+In practice, the non-deprecated rules imply that we can call `Complex.'-'.negate` and `Complex.'\+'` for the example in <<specialized-classes>>.
+This requires that `operator '-'` and `operator function '+'` are declared as `encapsulated` as in the example.
+
+==== Global Name Lookup
+
+For a name starting with dot, e.g., `.A` (or `.A.B`, `.A.B.C` etc.) lookup is performed as follows:
+
+* The first identifier (`A`) is looked up in the global scope.
+  This is possible even if the class is encapsulated and `import`-clauses are not used for this.
+  If there does not exist a class `A` in global scope this is an error.
+
+* If the name is simple then the class `A` is the result of lookup.
+
+* If the name is a composite name then the class `A` is temporarily flattened with an empty environment (i.e., no modifiers, see <<modification-environment>> and using the enclosing classes of the denoted class).
+  The rest of the name (e.g., `B` or `B.C`) is looked up among the declared named elements of the temporary flattened class.
+  If the class does not satisfy the requirements for a package, the lookup is restricted to encapsulated elements only.
+  The class we look inside shall not be partial.
+
+[NOTE]
+The package-restriction ensures that global name lookup of component references can only find global constants.
+
+==== Lookup of Imported Names
+
+See <<lookup-of-imported-names-2>>.
+
+=== Inner Declarations - Instance Hierarchy Name Lookup
+
+An element declared with the prefix `outer` references an element instance with the same name but using the prefix `inner` which is nearest in the enclosing instance hierarchy of the `outer` element declaration.
+
+Outer component declarations shall not have modifications (including binding equations).
+Outer class declarations should be defined using short-class definitions without modifications.
+However, see also <<simultaneous-innerouter-declarations>>.
+
+If the outer component declaration is a disabled conditional component (see <<conditional-component-declaration>>) it is also ignored for the automatic creation of inner component (neither causing it; nor influencing the type of it).
+
+An `outer` element reference in a simulation model requires that one corresponding `inner` element declaration exists or can be created in a unique way:
+
+* If there are two (or more) `outer` declarations with the same name, both lacking matching `inner` declarations, and the `outer` declarations are not of the same class it is an error.
+* If there is one (or more) `outer` declarations of a partial class it is an error.
+* In other cases, i.e., if a unique non-partial class is used for all `outer` declarations of the same name lacking a matching inner declaration, then an `inner` declaration of that class is automatically added at the top of the model and a diagnostic is given.
+* The annotations defined in <<graphical-user-interface>> does not affect this process, other than that:
+  ** `missingInnerMessage` can be used for the diagnostic (and possibly error messages)
+
+An `outer` element component may be of a partial class (but the referenced `inner` component must be of a non-partial class).
+
+[NOTE]
+`inner`/`outer` components may be used to model simple fields, where some physical quantities, such as gravity vector, environment temperature or environment pressure, are accessible from all components in a specific model hierarchy.
+Inner components are accessible throughout the model, if they are not "shadowed" by a corresponding `inner` declaration in a more deeply nested level of the model hierarchy.
+
+[example]
+====
+Simple Example:
+
+[source,modelica]
+----
+class A
+  outer Real T0;
+  ...
+end A;
+class B
+  inner Real T0=1;
+  A a1, a2; // B.T0, B.a1.T0 and B.a2.T0 will have the same value
+  A a3(T0=4); // Illegal as T0 is an outer variable.
+  ...
+end B;
+----
+
+More complicated example:
+
+[source,modelica]
+----
+class A
+  outer Real TI;
+  class B
+    Real TI;
+    class C
+      Real TI;
+      class D
+        outer Real TI;
+      end D;
+      D d;
+    end C;
+    C c;
+  end B;
+  B b;
+end A;
+
+class E
+  inner Real TI;
+  class F
+    inner Real TI;
+    class G
+      Real TI;
+      class H
+        A a;
+      end H;
+      H h;
+    end G;
+    G g;
+  end F;
+  F f;
+end E;
+
+class I
+  inner Real TI;
+  E e;
+  // e.f.g.h.a.TI, e.f.g.h.a.b.c.d.TI, and e.f.TI is the same variable
+  // But e.f.TI, e.TI and TI are different variables
+  A a; // a.TI, a.b.c.d.TI, and TI is the same variable
+end I;
+----
+====
+
+The `inner` component shall be a subtype of the corresponding `outer` component.
+
+[NOTE]
+If the two types are not identical, the type of the `inner` component defines the instance and the `outer` component references just part of the `inner` component.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+class A
+  inner Real TI;
+  class B
+    outer Integer TI; // error, since A.TI is no subtype of A.B.TI
+  end B;
+end A;
+----
+====
+
+==== Field Functions Using Inner/Outer
+
+[NOTE]
+====
+Inner declarations can be used to define field functions, such as position dependent gravity fields, e.g.:
+
+[source,modelica]
+----
+partial function A
+  input Real u;
+  output Real y;
+end A;
+
+function B // B is a subtype of A
+  extends A;
+algorithm
+  ...
+end B;
+
+class D
+  outer function fc = A;
+  ...
+equation
+  y = fc(u);
+end D;
+
+class C
+  inner function fc = B; // define function to be actually used
+  D d; // The equation is now treated as y = B(u)
+end C;
+----
+====
+
+=== Simultaneous Inner/Outer Declarations
+
+An element declared with both the prefixes `inner` and `outer` conceptually introduces two declarations with the same name: one that follows the above rules for `inner` and another that follows the rules for `outer`.
+
+[NOTE]
+Local references for elements with both the prefix `inner` and `outer` references the `outer` element.
+That in turn references the corresponding element in an enclosing scope with the prefix `inner`.
+
+Modifications of elements declared with both the prefixes `inner` and `outer` may have modifications, those modifications are only applied to the `inner` declaration.
+
+[example]
+====
+Example:
+
+[source,modelica]
+----
+class A
+  outer parameter Real p=2; // error, since modification
+end A;
+----
+
+Intent of the following example: Propagate _enabled_ through the hierarchy, and also be able to disable subsystems locally.
+
+[source,modelica]
+----
+model ConditionalIntegrator "Simple differential equation if isEnabled"
+  outer Boolean isEnabled;
+  Real x(start = 1);
+equation
+  der(x) = if isEnabled then -x else 0;
+end ConditionalIntegrator;
+
+model SubSystem "Subsystem that enables its conditional integrators"
+  Boolean enableMe = time <= 1;
+  // Set inner isEnabled to outer isEnabled and enableMe
+  inner outer Boolean isEnabled = isEnabled and enableMe;
+  ConditionalIntegrator conditionalIntegrator;
+  ConditionalIntegrator conditionalIntegrator2;
+end SubSystem;
+
+model System
+  SubSystem subSystem;
+  inner Boolean isEnabled = time >= 0.5;
+  // subSystem.conditionalIntegrator.isEnabled will be
+  // 'isEnabled and subSystem.enableMe'
+end System;
+----
+====
+
+=== Flattening Process
+
+In order to guarantee that elements can be used before they are declared and that elements do not depend on the order of their declaration (see <<declaration-order>>) in the enclosing class, the flattening proceeds in the following two major steps:
+
+. Instantiation process
+. Generation of the flat equation system
+
+The result is an equation system of all equations/algorithms, initial equations/algorithms and instances of referenced functions.
+Modifications of constants, parameters and variables are included in the form of equations.
+
+The constants, parameters and variables are defined by globally unique identifiers and all references are resolved to the identifier of the referenced variable.
+No other transformations are performed.
+
+==== Instantiation
+
+The instantiation is performed in two steps.
+First a class tree is created and then from that an instance tree for a particular model is built up.
+This forms the basis for derivation of the flat equation system.
+
+An implementation may delay and/or omit building parts of these trees, which means that the different steps can be interleaved.
+If an error occurs in a part of the tree that is not used for the model to be instantiated the corresponding diagnostics can be omitted (or be given).
+However, errors that should only be reported in a simulation model must be omitted there, since they are not part of the simulation model.
+
+===== The Class Tree
+
+All necessary libraries including the model which is to be instantiated are loaded (e.g., from a file system) and form a so called class tree.
+This tree represents the syntactic information from the class definitions.
+It contains also all modifications at their original locations in syntactic form.
+The built-in classes are put into the unnamed root of the class tree.
+
+[NOTE]
+The class tree is built up directly during parsing of the Modelica texts.
+For each class a local tree is created which is then merged into the one big tree, according to the location of the class in the class hierarchy.
+This tree can be seen as the abstract syntax tree (AST) of the loaded libraries.
+
+===== The Instance Tree
+
+The output of the instantiation process is an instance tree.
+The instance tree consists of nodes representing the elements of a class definition from the class tree.
+For a component the subtree of a particular node is created using the information from the class of the component-clause and a new modification environment as result of merging the current modification environment with the modifications from the current element declaration (see <<merging-of-modifications>>).
+
+The instance tree has the following properties:
+
+* It contains the instantiated elements of the class definitions, with redeclarations taken into account and merged modifications applied.
+* Each instance knows its source class definition from the class tree and its modification environment.
+* Each modification knows its instance scope.
+
+The instance tree is used for lookup during instantiation.
+To be prepared for that, it has to be based on the structure of the class tree with respect to the class definitions.
+The built-in classes are instantiated and put in the unnamed root prior to the instantiation of the user classes, to be able to find them.
+
+[NOTE]
+The existence of the two separate trees (instance tree and class tree) is conceptual.
+Whether they really exist or are merged into only one tree or the needed information is held completely differently is an implementation detail.
+It is also a matter of implementation to have only these classes instantiated which are needed to instantiate the class of interest.
+
+A node in the instance tree is the instance scope for the modifiers and elements syntactically defined in the class it is instantiated from.
+The instance scope is the starting point for name lookup.
+
+[NOTE]
+If the name is not found the lookup is continued in the instance scope corresponding to the lexically enclosing class.
+`extends`-clauses are treated as unnamed nodes in the instance tree -- when searching for an element in an instance scope the search also recursively examines the elements of the `extends`-clauses.
+Except that inherited `import`-clauses are ignored.
+
+===== The Instantiation Procedure
+
+The instantiation is a recursive procedure with the following inputs:
+
+* the class to be instantiated (current class)
+* the modification environment with all applicable redeclarations and merged modifications (initially empty)
+* a reference to the node of the instance tree, which the new instance should go into (parent instance)
+
+The instantiation starts with the class to be instantiated, an empty modification environment, and an unnamed root node as parent node.
+
+During instantiation all lookup is performed using the instance tree, starting from the instance scope of the current element.
+References in modifications and equations are resolved later (during generation of flat equation system) using the same lookup.
+
+===== Steps of Instantiation
+
+The element itself::
++
+A _partially instantiated_ class or component is an element that is ready to be instantiated; a partially instantiated element (i.e., class or component) is comprised of a reference to the original element (from the class tree) and the modifiers for that element (including a possible redeclaration).
++
+The possible redeclaration of the element itself takes effect.
++
+The class of a partially instantiated component is found in the instance tree (using the redeclaration if any), modifiers merged to that class forming a new partially instantiated class that is instantiated as below.
+
+The local contents of the element::
++
+For local classes and components in the current class, instance nodes are created and inserted into the current instance.
+Modifiers (including class redeclarations) are merged and associated with the instance and the element is partially instantiated.
++
+[NOTE]
+The partially instantiated elements are used later for lookup during the generation of the flat equation system and are instantiated fully, if necessary, using the stored modification environment.
++
+Equations, algorithms, and annotations of the class and the component declaration are copied to the instance without merging.
++
+[NOTE]
+The annotations can be relevant for simulations, e.g., annotations for symbolic processing (<<annotation:Evaluate>>), simulation experiments (<<annotation:experiment>>) or functions (<<derivatives-and-inverses-of-functions>> and <<external-function-interface>>).
++
+The `extends`-clauses are not looked up, but empty `extends`-clause nodes are created and inserted into the current instance (to be able to preserve the declaration order of components).
+
+[[the-inherited-contents-of-the-element]]
+The inherited contents of the element::
++
+Classes of `extends`-clauses of the current class are looked up in the instance tree, modifiers (including redeclarations) are merged, the contents of these classes are partially instantiated using the new modification environment, and are inserted into an `extends`-clause node, which is an unnamed node in the current instance that only contains the inherited contents from that base class.
++
+The classes of `extends`-clauses are looked up before and after handling `extends`-clauses; and it is an error if those lookups generate different results.
++
+At the end, the current instance is checked whether their children (including children of `extends`-clauses) with the same name are identical and only the first one of them is kept.
+It is an error if they are not identical.
++
+[NOTE]
+Only keeping the first among the children with the same name is important for function arguments where the order matters.
+
+Recursive instantiation of components::
++
+Components (local and inherited) are recursively instantiated.
++
+[example]
+====
+As an example, consider:
+
+[source,modelica]
+----
+model M
+  model B
+    A a;
+    replaceable model A = C;
+    type E = Boolean;
+  end B;
+  B b(redeclare model A = D (p=1));
+  partial model C
+    E e;
+  end C;
+
+  model D
+    extends C;
+    parameter E p;
+    type E = Integer;
+  end D;
+
+  type E = Real;
+end M;
+----
+
+To recursively instantiate `M` allowing the generation of flat equation system we have the following steps (not including checks):
+
+. Instantiate `M`, which partially instantiates `B`, `b`, `C`, `D`, and `E`.
+. Instantiate `M.b`:
+  .. First find the class `B` in `M` (the partially instantiated elements have correct name allowing lookup)
+  .. Instantiate the partially instantiated `M.B` with the modifier `redeclare model A=D(p=1)`.
+  .. Partially instantiate `M.b.a` (no modifier), and `M.b.A` (with modifier `=D(p=1)`).
+. Instantiate `M.b.a`:
+  .. First find the class `A` in `M.b` (the partially instantiated elements have correct name allowing lookup).
+  .. Instantiate the partially instantiated `M.b.A` with the modifier `=D(p=1)`.
+    ... Find the base class `=D` from the modifier.
+        This performs lookup for `D` in `M`, and finds the partially instantiated class `D`.
+    ... Instantiate the base class `M.D` with modifier `p=1`, and insert as unnamed node in `M.b.A`.
+      .... Partially instantiate the component `p` with modifier `=1`.
+      .... Find the base class `C` in `M.D`.
+        Since there is no local element called `C` the search is then continued in `M` and finds the partially instantiated class `M.C`.
+      .... Instantiate the base class `M.C` as below.
+. Instantiate the base class `M.C` inserting the result into unnamed node in `M.b.a`:
+  .. Partially instantiate `e`.
+  .. Instantiate `e` which requires finding `E`.
+    First looking for `E` in the un-named node for `extends M.C`, and, since there is no local element `E` the search is then continued in `M` (which lexically encloses `M.C`) and finds `E` class inheriting from `Real`.
+    The `e` is then instantiated using class `E` inheriting from `Real`.
+. Instantiate `M.b.a.p`:
+  .. First the class `E` in `M.b.a` finding `E` class inheriting from `Integer`.
+  .. Instantiate the `M.b.a.p` using the class `E` inheriting from `Integer` with modifier `=1`.
+  .. Instantiate the base class `Integer` with modifier `=1`, and insert as unnamed node in `M.b.a.p`.
+
+An implementation can use different heuristics to be more efficient by re-using instantiated elements as long as the resulting flat equation system is identical.
+
+Note that if `D` was consistently replaced by `A` in the example above the result would be identical (but harder to read due to two different classes called `A`).
+====
+
+==== Generation of the Flat Equation System
+
+During this process, all references by name in conditional declarations, modifications, dimension definitions, annotations, equations and algorithms are resolved to the real instance to which they are referring to, and the names are replaced by the global unique identifier of the instance.
+
+[NOTE]
+This identifier is normally constructed from the names of the instances along a path in the instance tree (and omitting the unnamed nodes of `extends`-clauses), separated by dots.
+Either the referenced instance belongs to the model to be simulated the path starts at the model itself, or if not, it starts at the unnamed root of the instance tree, e.g., in case of a constant in a package.
+
+[NOTE]
+To resolve the names, a name lookup using the instance tree is performed, starting at the instance scope (unless the name is fully qualified) of the modification, algorithm or equation.
+If it is not found locally the search is continued at the instance of the lexically enclosing class of the scope (this is normally not equal to the parent of the current instance), and then continued with their parents as described in <<static-name-lookup>>.
+If the found component is an outer declaration, the search is continued using the direct parents in the instance tree (see <<inner-declarations-instance-hierarchy-name-lookup>>).
+If the lookup has to look into a class which is not instantiated yet (or only partially instantiated), it is instantiated in place.
+
+The flat equation system consists of a list of variables with dimensions, flattened equations and algorithms, and a list of called functions which are flattened separately.
+A flattened function consists of an algorithm or `external`-clause and top-level variables (variables directly declared in the function or one of its base classes) -- which recursively can contain other variables; the list of non-top-level variables is not needed.
+
+The instance tree is recursively walked through as follows for elements of the class (if necessary a partially instantiated component is first instantiated):
+
+* At each visited component instance, the name is inserted into the variables list.
+  Then the conditional declaration expression is evaluated if applicable.
+  
+  ** The variable list is updated with the actual instance
+  
+  ** The variability information and all other properties from the declaration are attached to this variable.
+  
+  ** Dimension information from the declaration and all enclosing instances are resolved and attached to the variable to define their complete dimension.
+  
+  ** If it is of record or simple type (`Boolean`, `Integer`, enumeration, `Real`, `String`, `Clock`, `ExternalObject`):
+    
+    *** In the modifications of _value_ attribute references are resolved using the instance scope of the modification.
+    An equation is formed from a reference to the name of the instance and the resolved modification value of the instance, and included into the equation system.
+    Except if the value for an element of a record is overridden by the value for an entire record; see <<merging-of-modifications>>.
+  
+  ** If it is of simple type (`Boolean`, `Integer`, enumeration, `Real`, `String`, `Clock`, `ExternalObject`):
+    
+    *** In the modifications of _non-value_ attributes, e.g., `start`, `fixed` etc. references are resolved using the instance scope of the modification.
+    An equation is formed from a reference to the name of the instance appended by a dot and the attribute name and the resolved modification value of the instance, and included into the equation system.
+
+  ** If it is of a non-simple type the instance is recursively handled.
+
+* If there are equation or algorithm sections in the class definition of the instance, references are resolved using the instance scope of the instance and are included in the equation system.
+  Some references -- in particular to non simple, non record objects like connectors in `connect`-equations and states in `transition`-equations are not resolved yet and handled afterwards.
+
+* Instances of local classes are ignored.
+
+* The unnamed nodes corresponding to `extends`-clauses are recursively handled.
+
+* If there are function calls encountered during this process, the call is filled up with default arguments as defined in <<positional-or-named-input-arguments>>.
+  These are built from the modifications of input arguments which are resolved using their instance scope.
+  The called function itself is looked up in the instance tree.
+  All used functions are flattened and put into the list of functions.
+
+* Conditional components with false condition are removed afterwards and they are not part of the simulation model.
++
+[NOTE]
+Thus, e.g., parameters don't need values in them.
+However, type-error can be detected.
+
+* Each reference is checked, whether it is a valid reference, e.g., the referenced object belongs to or is an instance, where all existing conditional declaration expressions evaluate to true or it is a constant in a package.
++
+[NOTE]
+Conditional components can be used in `connect`-equations, and if the component is conditionally disabled the `connect`-equation is removed.
+
+This leads to a flattened equation system, except for `connect`- and `transition`-equations.
+These have to be transformed as described in <<connectors-and-connections>> and <<state-machines>>.
+This may lead to further changes in the instance tree (e.g., from expandable connectors (<<expandable-connectors>>)) and additional equations in the flattened equation system (e.g., connection equations (<<generation-of-connection-equations>>), generated equations for state machine semantics (<<semantics-summary>>)).
+
+[NOTE]
+After flattening, the resulting equation system is self contained and covers all information needed to transform it to a simulatable model, but the class and instance trees are still needed: in the transformation process, there might be the need to instantiate further functions, e.g., from `derivative` annotation or from `inverse` annotation etc., on demand.
