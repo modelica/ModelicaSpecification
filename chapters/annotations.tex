@@ -1842,8 +1842,25 @@ equation
 
 \section{Versions}\label{annotations-for-version-handling}\label{versions}
 
-A top-level package or model can specify the version of top-level classes it uses, its own version number, and if possible how to convert from previous versions.
+The annotations listed below allow a top-level package or model to specify the versions of top-level classes it uses, its own version number, and if possible, how to convert from previous versions.
 This can be used by a tool to guarantee that consistent versions are used, and if possible to upgrade usage from an earlier version to a current one.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!version! & Version of top-level package & \Cref{modelica:version}\\
+\lstinline!conversion! & Conversions to apply when upgrading & \Cref{modelica:conversion}\\
+\lstinline!uses! & Top-level package dependencies & \Cref{modelica:uses}\\
+\lstinline!versionDate! & Date of first version build & \Cref{modelica:versionDate}\\
+\lstinline!versionBuild! & Maintenance update number & \Cref{modelica:versionBuild}\\
+\lstinline!dateModified! & Date of last change & \Cref{modelica:dateModified}\\
+\lstinline!revisionId! & Version control system version information & \Cref{modelica:revisionId}\\
+\hline
+\end{tabular}
+\end{center}
+
 
 \subsection{Version Numbering}\label{version-numbering}
 
@@ -1863,34 +1880,76 @@ Version numbers are of the forms:
 The main release versions are ordered using the hierarchical numerical names, and follow the corresponding pre-release versions.
 The pre-release versions of the same main release version are internally ordered alphabetically.
 
+
 \subsection{Version Handling}\label{version-handling}
 
-In a top-level class, the version number and the dependency to earlier versions of this class are defined using one or more of the following annotations:
-% TODO: Syntax below is a mess: neither Modelica, pseudo-code record, nor grammar.
-\begin{itemize}
-\item
-  \lstinline!version = CURRENT-VERSION-NUMBER!\annotationindex{version}\\
-  Defines the version number of the model or package.
-  All classes within this top-level class have this version number.
-\item
-  \lstinline!conversion(noneFromVersion = VERSION-NUMBER)!\annotationindex{conversion}\\
-  Defines that user models using the \lstinline!VERSION-NUMBER! can be upgraded to the \lstinline!CURRENT-VERSION-NUMBER! of the current class without any changes.
-\item
-  \lstinline!conversion(from(version = Versions, [to=VERSION-NUMBER,] Convert))!\\
-  where \emph{Versions} is \lstinline!VERSION-NUMBER! \textbar{} \lstinline!{VERSION-NUMBER, VERSION-NUMBER, $\ldots$}! and \lstinline!Convert! is \lstinline!script="$\ldots$"! \textbar{} \lstinline!change={conversionRule(), $\ldots$, conversionRule()}!\\*[.5ex]
-  Defines that user models using the \lstinline!VERSION-NUMBER! or any of the given \lstinline!VERSION-NUMBER! can be upgraded to the given \lstinline!VERSION-NUMBER! (if the to-tag is missing this is the \lstinline!CURRENT-VERSION-NUMBER!) of the current class by applying the given conversion rules.
-  The script consists of an unordered sequence of \lstinline!conversionRule();! (and optionally Modelica comments).
-  The \lstinline!conversionRule! functions are defined in \cref{conversion-rules}.
+In a top-level class, the version number and the dependency to earlier versions of this class are defined using one or more of the annotations described in this section.
 
-  \begin{nonnormative}
-  The to-tag is added for clarity and optionally allows a tool to convert in multiple steps.
-  \end{nonnormative}
-\item
-  \lstinline!uses(IDENT (version = VERSION-NUMBER [, versionBuild=INTEGER] [, dateModified=STRING] ) )!\annotationindex{uses}\\
-  Defines that classes within this top-level class use version \lstinline!VERSION-NUMBER! of classes within the top-level class \lstinline!IDENT!.
-\end{itemize}
+\begin{annotationdefinition}[version]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String version
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!version = $\mathit{currentVersion}$! where is a \lstinline[language=grammar]!PACKAGE-VERSION-STRING! defines the version number of the model or package.
+All classes within this top-level class have this version number.
+\end{semantics}
+\end{annotationdefinition}
 
-The annotations \lstinline!uses! and \lstinline!conversion! may contain several different sub-entries.
+\begin{annotationdefinition}[conversion]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"conversion" "=" "(" [ conversion { "," conversion } ] ")"
+
+conversion : conversion-none | conversion-with-rules
+
+conversion-none : "noneFromVersion" "=" PACKAGE-VERSION-STRING
+
+conversion-with-rules :
+   "from" "("
+      "version" = package-versions
+      [ "," "to" "=" PACKAGE-VERSION-STRING ]
+      "," conversion-rules
+  ")"
+
+conversion-rules :
+   "script" "=" STRING
+   | "change" "(" [ conversion-rule { "," conversion-rule } ] ")"
+
+conversion-rule : STRING
+
+package-versions :
+   PACKAGE-VERSION-STRING
+   | "{" PACKAGE-VERSION-STRING { "," PACKAGE-VERSION-STRING } "}"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!conversion(noneFromVersion = $\mathit{fromVersion}$)! defines that models and packages using the $\mathit{fromVersion}$ can be upgraded to the $\mathit{currentVersion}$ of the current class without any changes.
+
+\lstinline!conversion(from(version = $\mathit{fromVersions}$, to = $\mathit{toVersion}$, $\mathit{conversionRules}$))! defines that models and packages using any of the $\mathit{fromVersions}$ can be upgraded to the $\mathit{toVersion}$ (if the $\mathit{toVersion}$ is omitted, this is the $\mathit{currentVersion}$) of the current class by applying the $\mathit{conversionRules}$.
+When $\mathit{conversionRules}$ is given as \lstinline!script = $\mathit{conversionScript}$!, the $\mathit{conversionScript}$ is the name of a file consisting of an unordered sequence of \lstinline[language=grammar]!conversion-rule ";"! and Modelica comments, where any comments should be ignored by tools.
+A \lstinline[language=grammar]!conversion-rule! has the form of a function call, where the functions are defined in \cref{conversion-rules}.
+
+\begin{nonnormative}
+The \lstinline!to! version is added for clarity and optionally allows a tool to convert in multiple steps.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[uses]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"uses" "(" [ used-package { "," used-package } ] ")"
+
+used-package :
+  IDENT "("
+    "version" "=" PACKAGE-VERSION-STRING
+    [ "," "versionBuild" "=" UNSIGNED-INTEGER ]
+    [ "," "dateModified" "=" STRING ]
+  ")"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!uses($\mathit{otherPackage}$(version = $\mathit{otherPackageVersion}$))! defines that classes within this top-level class use the $\mathit{otherPackageVersion}$ of classes within the top-level class $\mathit{otherPackage}$.
+
+See \cref{version-date-and-build-information} regarding the use of \lstinline!versionBuild! and \lstinline!dateModified!.
+\end{semantics}
+\end{annotationdefinition}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1904,24 +1963,28 @@ package Modelica
       from(version = {"2.1", "2.2", "2.2.1"},
            script = "convertTo3.mos"),
       from(version = "1.5",
-           script = "convertFromModelica1_5.mos")));
+           script = "convertFromModelica1_5.mos")
+  ));
 end Modelica;
 
 model A
   $\ldots$
   annotation(
     version = "1.0",
-    uses(Modelica(version = "1.5")));
+    uses(Modelica(version = "1.5"))
+  );
 end A;
 
 model B
   $\ldots$
   annotation(
-    uses(Modelica(version = "3.1 Beta 1")));
+    uses(Modelica(version = "3.1 Beta 1"))
+  );
 end B;
 \end{lstlisting}
 In this example the model \lstinline!A! uses an older version of the Modelica library and can be upgraded using the given script, and model \lstinline!B! uses an older version of the Modelica library but no changes are required when upgrading.
 \end{example}
+
 
 \subsubsection{Conversion Rules}\label{conversion-rules}
 
@@ -2141,6 +2204,7 @@ This is useful if there is no possibility to convert a specific parameter (or ot
 If the parameter had no impact on the model it can be removed using \lstinline!convertModifiers!, see \cref{convertmodifiers}.
 \end{nonnormative}
 
+
 \subsection{Versions in the File System}\label{mapping-of-versions-to-file-system}\label{versions-in-the-File-System}
 
 A top-level class, \lstinline!IDENT!, with version \lstinline!VERSION-NUMBER! can be stored in one of the following ways in a directory given in the \lstinline!MODELICAPATH!:
@@ -2161,24 +2225,72 @@ A top-level class, \lstinline!IDENT!, with version \lstinline!VERSION-NUMBER! ca
 
 This allows a tool to access multiple versions of the same package.
 
+
 \subsection{Version Date and Build Information}\label{version-date-and-build-information}
 
-Besides version information, a top-level class can have additionally the following top-level annotations to specify associated information to the version number:%
-\begin{lstlisting}[language=modelica]
+This section describes annotations that a top-level class can have to specify information associated to the version number.
+
+The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also be specified in the \lstinline!uses! annotation (together with the version number).
+
+\begin{nonnormative}
+It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
+\end{nonnormative}
+
+\begin{annotationdefinition}[versionDate]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String versionDate
-   "UTC date of first version build (in format: YYYY-MM-DD)";
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!versionDate! is the date when the library was released.
+This string is updated by the library author to correspond with the version number.
+
+The date shall be given as UTC according to ISO 8601: YYYY-MM-DD
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[versionBuild]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Integer versionBuild
-   "Larger number is a more recent maintenance update";
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!versionBuild! is the optional build number of the library.
+When a new version is released \lstinline!versionBuild! should be omitted or \lstinline!versionBuild = 1!.
+There might be bug fixes to the library that do not justify a new library version.
+Such maintenance changes are called a \emph{build} release of the library.
+For every new maintenance change, the \lstinline!versionBuild! number is increased.
+A \lstinline!versionBuild! number $A$ that is higher than \lstinline!versionBuild! number $B$, is a newer release of the library.
+There are no conversions between the same versions with different build numbers.
+
+Two releases of a library with the same \lstinline!version! but different \lstinline!versionBuild! are in general assumed to be compatible.
+In special cases, the \lstinline!uses!-clause of a model may specify \lstinline!versionBuild! and/or \lstinline!dateModified!.
+In such a case the tool is expected to give a warning if there is a mismatch between library and model.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[dateModified]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String dateModified
-   "UTC date and time of the latest change to the package
-    in the following format (with one space between date
-    and time): YYYY-MM-DD hh:mm:ssZ";
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!dateModified! is the date and time of the last modification of the package.
+
+The date and time shall given as UTC according to ISO 8601 (with one space between date and time): YYYY-MM-DD hh:mm:ssZ
+
+\begin{nonnormative}
+The intention is that a Modelica tool updates this annotation whenever the package or part of it was modified and is saved on persistent storage (like file or database system).
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[revisionId]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String revisionId
-   "Revision identifier of the version management system used
-    to manage this library. It marks the latest submitted
-    change to any file belonging to the package";
-\end{lstlisting}%
-\annotationindex{versionDate}\annotationindex{versionBuild}\annotationindex{dateModified}\annotationindex{revisionId}
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!revisionId! is a tool specific revision identifier possibly generated by a source code management system (e.g., Subversion or CVS).
+This information exactly identifies the library source code in the source code management system.
+\end{semantics}
+\end{annotationdefinition}
 
 \begin{example}
 \begin{lstlisting}[language=modelica,mathescape=false,escapechar=!]
@@ -2203,42 +2315,6 @@ model M2
 end M2
 \end{lstlisting}
 \end{example}
-
-The meanings of these annotations are:
-\begin{itemize}
-\item
-  \lstinline!version! is the version number of the released library, see \cref{version-handling}.
-\item
-  \lstinline!versionDate! is the date in UTC format (according to ISO 8601) when the library was released.
-  This string is updated by the library author to correspond with the version number.
-\item
-  \lstinline!versionBuild! is the optional build number of the library.
-  When a new version is released \lstinline!versionBuild! should be omitted or \lstinline!versionBuild = 1!.
-  There might be bug fixes to the library that do not justify a new library version.
-  Such maintenance changes are called a \emph{build} release of the library.
-  For every new maintenance change, the \lstinline!versionBuild! number is increased.
-  A \lstinline!versionBuild! number $A$ that is higher than \lstinline!versionBuild! number $B$, is a newer release of the library.
-  There are no conversions between the same versions with different build numbers.
-
-  Two releases of a library with the same \lstinline!version! but different \lstinline!versionBuild! are in general assumed to be compatible.
-  In special cases, the \lstinline!uses!-clause of a model may specify \lstinline!versionBuild! and/or \lstinline!dateModified!.
-  In such a case the tool is expected to give a warning if there is a mismatch between library and model.
-\item
-  \lstinline!dateModified! is the UTC date and time (according to ISO 8601) of the last modification of the package.
-
-  \begin{nonnormative}
-  The intention is that a Modelica tool updates this annotation whenever the package or part of it was modified and is saved on persistent storage (like file or database system).
-  \end{nonnormative}
-\item
-  \lstinline!revisionId! is a tool specific revision identifier possibly generated by a source code management system (e.g., Subversion or CVS).
-  This information exactly identifies the library source code in the source code management system.
-\end{itemize}
-
-The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also be specified in the \lstinline!uses! annotation (together with the version number).
-
-\begin{nonnormative}
-It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
-\end{nonnormative}
 
 
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
