@@ -1077,8 +1077,30 @@ The following additional constraints apply to redeclarations (after prefixes are
 
 \subsection{Annotations for Redeclaration and Modification}\label{annotation-choices-for-suggested-redeclarations-and-modifications}
 
-A declaration can have an annotation \fmtannotationindex{choices} containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
-This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comments on the \lstinline!choice! modifiers can be used as textual explanations of the choices.
+The annotations listed below are used to suggest certain redeclarations and modifications that should be made conveniently available in tools.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!choices! & List suggested redeclarations and modifications & \Cref{modelica:choices}\\
+\lstinline!choicesAllMatching! & Automatically generated list of redeclarations & \Cref{modelica:choicesAllMatching}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[choices]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"choices" "(" [ choices-argument { "," choice } ] ")"
+
+choices-argument :
+   "choice" modification
+   | "checkBox" "=" true
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+A declaration can have a \lstinline!choices! annotation containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclaration, where the string comments on the \lstinline!choice! modifiers can be used as textual explanations of the choices.
 The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
 
 The string comments for the \lstinline!choice! modifiers shall not automatically be copied to the modifier.
@@ -1097,8 +1119,65 @@ It is allowed to include choices that are invalid in some contexts, e.g., a valu
 (Options for tools encountering such choices include not showing them, marking them as invalid, or detecting the violations later.)
 
 For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the annotation \lstinline!checkBox = true!\annotationindex{checkBox}, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
+\end{semantics}
+\end{annotationdefinition}
 
-The annotation \lstinline!choicesAllMatching = true!\annotationindex{choicesAllMatching} on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
+\begin{example}
+Using \lstinline!choices! to suggest suitable redeclarations:
+\begin{lstlisting}[language=modelica]
+replaceable model MyResistor = Resistor
+  annotation(choices(
+    choice(redeclare model MyResistor = lib2.Resistor(a = {2}) "$\ldots$"),
+    choice(redeclare model MyResistor = lib2.Resistor2 "$\ldots$")
+  ));
+
+replaceable Resistor Load(R = 2) constrainedby TwoPin
+  annotation(choices(
+    choice(redeclare lib2.Resistor Load(a = {2}) "$\ldots$"),
+    choice(redeclare Capacitor Load(L = 3) "$\ldots$")
+  ));
+
+replaceable FrictionFunction a(func = exp) constrainedby Friction
+  annotation(choices(
+    choice(redeclare ConstantFriction a(c = 1) "$\ldots$"),
+    choice(redeclare TableFriction a(table = "$\ldots$") "$\ldots$"),
+    choice(redeclare FunctionFriction a(func = exp) "$\ldots$")
+  ));
+\end{lstlisting}
+\end{example}
+
+\begin{example}
+Using \lstinline!choices! to suggest suitable value modifications for a non-replaceable declaration:
+\begin{lstlisting}[language=modelica]
+type KindOfController = Integer(min = 1, max = 3)
+  annotation(choices(
+    choice = 1 "P",
+    choice = 2 "PI",
+    choice = 3 "PID"
+  ));
+
+model A
+  parameter KindOfController x;
+end A;
+
+A a(x = 3);
+\end{lstlisting}
+Note that \lstinline!"PID"! was not copied here.
+\end{example}
+
+\begin{example}
+Using \lstinline!choices! to request that a checkbox is used to select modification for a \lstinline!Boolean! variable:
+\begin{lstlisting}[language=modelica]
+parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
+\end{lstlisting}
+\end{example}
+
+\begin{annotationdefinition}[choicesAllMatching]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean choicesAllMatching
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The annotation \lstinline!choicesAllMatching = true! on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
 \begin{itemize}
 \item For a replaceable element the included elements should be usable for replacing it.
 Exact criteria for inclusion in such a menu are not defined, but there shall be a a way to at least get a selection of classes, \lstinline!A.B.$\ldots$.X.Z!, that are either directly or indirectly derived by inheritance from the constraining class of the declaration, where \lstinline!A! to \lstinline!X! are non-partial packages, and \lstinline!Z! is non-partial.
@@ -1106,31 +1185,17 @@ Exact criteria for inclusion in such a menu are not defined, but there shall be 
 \end{itemize}
 
 This menu can be disabled using annotation \lstinline!choicesAllMatching = false!.
-It is possible to combine the two annotations for one declaration, and tools may avoid generating duplicate menu entries in that case.
+It is possible for a single declaration to combine \lstinline!choicesAllMatching! with the \lstinline!choices! annotation, and tools may avoid generating duplicate menu entries in that case.
 \begin{nonnormative}
 When \lstinline!choicesAllMatching! is not specified the following behavior is recommended for replaceable elements.
 A tool could ideally present (at least) the same choices as for \lstinline!choicesAllMatching = true!, but if it takes (too long) time to present the list it might be better to use the \lstinline!choicesAllMatching = false! behavior instead.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
 \begin{example}
-Demonstrating the \lstinline!choices! and  \lstinline!choicesAllMatching = true! annotations applied to replaceable elements.
+Using \lstinline!choicesAllMatching! for a replaceable element:
 \begin{lstlisting}[language=modelica]
-replaceable model MyResistor = Resistor
-  annotation(choices(
-               choice(redeclare model MyResistor=lib2.Resistor(a={2}) "$\ldots$"),
-               choice(redeclare model MyResistor=lib2.Resistor2 "$\ldots$")));
-
-replaceable Resistor Load(R = 2) constrainedby TwoPin
-  annotation(choices(
-               choice(redeclare lib2.Resistor Load(a={2}) "$\ldots$"),
-               choice(redeclare Capacitor Load(L=3) "$\ldots$")));
-
-replaceable FrictionFunction a(func = exp) constrainedby Friction
-  annotation(choices(
-               choice(redeclare ConstantFriction a(c=1) "$\ldots$"),
-               choice(redeclare TableFriction a(table="$\ldots$") "$\ldots$"),
-               choice(redeclare FunctionFriction a(func=exp) "$\ldots$")));
-
 replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
   constrainedby Modelica.Media.Interfaces.PartialMedium
   annotation(choicesAllMatching = true);
@@ -1138,7 +1203,7 @@ replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
 \end{example}
 
 \begin{example}
-Demonstrating the \lstinline!choicesAllMatching = true! annotation for parameter records.
+Demonstrating \lstinline!choicesAllMatching! for parameter records.
 \begin{lstlisting}[language=modelica]
 record Medium
   parameter SI.Density rho "Density";
@@ -1154,28 +1219,6 @@ end OpenTank;
 \end{lstlisting}
 The choices for \lstinline!medium! shall include \lstinline!Medium()!, \lstinline!Air_30degC()!, and \lstinline!MyAir!.
 If \lstinline!Medium()! is chosen it is necessary to also set its \lstinline!rho!-parameter.
-\end{example}
-
-\begin{example}
-Applying the \lstinline!choices! annotation to nonreplaceable declarations, e.g., to describe enumerations.
-\begin{lstlisting}[language=modelica]
-type KindOfController = Integer(min = 1, max = 3)
-  annotation(choices(
-              choice = 1 "P",
-              choice = 2 "PI",
-              choice = 3 "PID"));
-
-model A
-  parameter KindOfController x;
-end A;
-A a(x = 3);
-\end{lstlisting}
-Note that \lstinline!"PID"! was not copied here.
-
-The \lstinline!choices! annotation can also be applied to \lstinline!Boolean! variables to define a check box.
-\begin{lstlisting}[language=modelica]
-parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
-\end{lstlisting}
 \end{example}
 
 
