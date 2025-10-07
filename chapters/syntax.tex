@@ -258,7 +258,7 @@ short-class-definition :
 
 
 \subsection{Equations}\label{equations1}
-
+See below for how to rewrite two rules for recursive descent parsers.
 \begin{lstlisting}[language=grammar]
 equation-section :
    [ initial ] equation { some-equation ";" }
@@ -267,17 +267,20 @@ algorithm-section :
    [ initial ] algorithm { statement ";" }
 
 some-equation :
-   ( simple-expression "=" expression
+   ( equation-or-procedure
      | if-equation
      | for-equation
      | connect-equation
      | when-equation
-     | component-reference function-call-args
    )
    description
 
+equation-or-procedure :
+  simple-expression "=" expression
+  | component-reference function-call-args
+
 statement :
-   ( component-reference ( ":=" expression | function-call-args )
+   ( statement-or-procedure
      | "(" output-expression-list ")" ":="
        component-reference function-call-args
      | break
@@ -288,6 +291,10 @@ statement :
      | when-statement
    )
    description
+
+statement-or-procedure :
+  component-reference ":=" expression function-call-args
+  | component-reference function-call-args
 
 if-equation :
    if expression then
@@ -350,6 +357,16 @@ when-statement :
 
 connect-equation :
    connect "(" component-reference "," component-reference ")"
+\end{lstlisting}
+The given constructs equation-or-procedure and statement-or-procedure are not suitable for recursive descent parsers.
+
+A work-around is to use the following syntax with semantic checks to ensure that only the grammar above is accepted.
+\begin{lstlisting}[language=grammar]
+equation-or-procedure :
+  simple-expression ( "=" expression | function-call-args )
+
+statement-or-procedure :
+  component-reference ( ":=" expression | function-call-args )
 \end{lstlisting}
 
 \subsection{Expressions}\label{expressions1}
