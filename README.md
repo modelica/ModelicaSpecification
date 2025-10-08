@@ -10,6 +10,8 @@ Development is organized within the [Modelica Association Project Language (MAP-
 Modelica® is a language for modeling of cyber-physical systems, supporting acausal connection of components governed by mathematical equations to facilitate modeling from first principles.
 It provides object-oriented constructs that facilitate reuse of models, and can be used conveniently for modeling complex systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
 
+To get started there's a [tutorial for the language](Tutorial.md).
+
 ## Releases
 
 Version | Link                                                              | Published | Changes |
