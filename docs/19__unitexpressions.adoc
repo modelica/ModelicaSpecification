@@ -1,0 +1,112 @@
+== Unit Expressions
+:id: unit-expressions
+
+Unless otherwise stated, the syntax and semantics of unit expressions in Modelica (for example, see <<real-type>> or <<axis-properties>>) conform with the international standards _International System of Units (SI)_ by BIPM superseding parts of ISO 31/0-1992 _General principles concerning quantities, units and symbols_ and ISO 1000-1992 _SI units and recommendations for the use of their multiples and of certain other units_.
+Unfortunately, these standards do not define a formal syntax for unit expressions.
+There are recommendations and Modelica exploits them.
+
+Note that this document uses the American spelling _meter_, whereas the SI specification from BIPM uses the British spelling _metre_.
+
+Examples for the syntax of unit expressions used in Modelica: `"N.m"`, `"kg.m/s2"`, `"kg.m.s-2"`, `"1/rad"`, `"mm/s"`.
+
+=== The Syntax of Unit Expressions
+
+The Modelica unit string syntax allows neither comments nor white-space, and a unit string shall match the `unit-expression` rule:
+
+[source,grammar]
+----
+unit-expression :
+   unit-numerator [ "/" unit-denominator ]
+
+unit-numerator :
+   "1" | unit-factors | "(" unit-expression ")"
+
+unit-denominator:
+   unit-factor | "(" unit-expression ")"
+----
+
+The unit of measure of a dimension free quantity is denoted by `"1"`.
+The SI standard does not define any precedence between multiplications and divisions.
+The SI standard does not allow multiple units to the right of the division-symbol (`/`) since the result is ambiguous; either the divisor shall be enclosed in parentheses, or negative exponents used instead of division, for example, `"J/(kg.K)"` may be written as `"J.kg-1.K-1"`.
+
+[source,grammar]
+----
+unit-factors :
+   unit-factor [ "." unit-factors ]
+----
+
+The SI standard specifies that a multiplication operator symbol is written as space or as a dot.
+The SI standard requires that this _dot_ is a bit above the base line: `·`, which is not part of ASCII.
+The ISO standard also prefers `·`, but Modelica supports the ISO alternative `.`, which is an ordinary _dot_ on the base line.
+
+For example, Modelica does not support `"Nm"` for newton-meter, but requires it to be written as `"N.m"`.
+
+[source,grammar]
+----
+unit-factor :
+  unit-operand [ unit-exponent ]
+
+unit-exponent :
+   [ "+" | "-" ] ( UNSIGNED-INTEGER | "(" UNSIGNED-INTEGER "/" UNSIGNED-INTEGER ")" )
+----
+
+The SI standard uses super-script for the exponentation, and does thus not define any operator symbol for exponentiation.
+A `unit-factor` consists of a `unit-operand` possibly suffixed by a possibly signed integer or rational number, which is interpreted as an exponent.
+There must be no spacing between the `unit-operand` and a possible `unit-exponent`.
+It is recommended to use the simplest representation of exponents, meaning that the explicit `+` sign should be avoided, that leading zeros should be avoided, that rational exponents are reduced to not have common factors in the numerator and denominator, that rational exponents with denominator 1 should be avoided in favor of plain integer exponents, that the exponent 1 is omitted, and that entire factors with exponent 0 are omitted.
+
+[source,grammar]
+----
+unit-operand :
+   unit-symbol | unit-prefix unit-symbol
+
+unit-prefix :
+   "Q" | "R" | "Y" | "Z" | "E" | "P" | "T" | "G" | "M" | "k" | "h" | "da"
+   | "d" | "c" | "m" | "u" | "n" | "p" | "f" | "a" | "z" | "y" | "r" | "q"
+
+unit-symbol :
+   unit-char { unit-char }
+
+unit-char :
+   NON-DIGIT
+----
+
+The units required to be recognized are the basic and derived units of the SI system, as well as some units compatible with the SI system listed below, but tools are allowed to additionally support user-defined unit symbols.
+The required unit symbols do not make use of Greek letters, but a unit such as Ω is spelled out as `"Ohm"`.
+Similarly degree is spelled out as `"deg"`, both on its own (for angles) and as part of `"degC"`, `"degF"` and `"degRk"` for temperatures (Celsius, Fahrenheit and Rankine).
+
+It is recommended that non-SI units are only used for the `displayUnit` attribute in order to reduce impact of unrecognized unit symbols when using another Modelica tool.
+
+The following are the units required to be recognized in addition to the SI system:
+
+* minute `"min"` (1 minute = 60 s)
+* hour `"h"` (1 hour = 3600 s)
+* day `"d"` (1 day = 86400 s)
+* liter `"l"` and `"L"` (1 liter = 1 dm³)
+* electronvolt `"eV"` (1 electronvolt = 1.602176634e-19 J)
+* degree `"deg"` (1 degree = π/180 rad)
+* debye `"debye"` (1 debye = 1e-21 / 299792458 Cm)
+
+The first 7 are listed in the SI standard as non-SI units that are acceptable to use with the SI system.
+
+A `unit-operand` should first be interpreted as a `unit-symbol` and only if not successful the second alternative assuming a prefixed operand should be exploited.
+There must be no spacing between the `unit-symbol` and a possible `unit-prefix`.
+The values of the prefixes are according to the ISO standard.
+The letter `u` is used as a symbol for the prefix _micro_.
+
+[NOTE]
+A tool may present `"Ohm"` as Ω and the prefix `"u"` as μ.
+Exponents such as `"m2"` may be presented as m².
+Degrees may be presented as °, both for `"deg"` on its own (for angles) and for temperatures -- e.g., `"degC"` can be presented as °C.
+Note that BIPM have specific recommendations for formatting using these symbols.
+
+[example]
+====
+Example: The unit expression `"m"` means meter and not milli (10⁻³), since prefixes cannot be used in isolation.
+For millimeter use `"mm"` and for square meter, m², write `"m2"`.
+
+The expression `"mm2"` means (10⁻³m)² = 10⁻⁶m².
+Note that exponentiation includes the prefix.
+
+The unit expression `"T"` means tesla, but note that the letter `T` is also the symbol for the prefix tera which has a multiplier value of 10¹².
+====
