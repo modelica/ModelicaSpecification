@@ -355,8 +355,8 @@ can be modified by using the \lstinline!subSample!, \lstinline!superSample!, \ls
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
-  // first clock tick: previous(nextInterval) = 2
-  Integer nextInterval(start = 2);
+  // first clock tick: previous(intervalCounter) = 2
+  Integer intervalCounter(start = 2);
   Real y1(start = 0);
   Real y2(start = 0);
 equation
@@ -365,15 +365,15 @@ equation
     y1 = previous(y1) + 1;
   end when;
 
-  when Clock(nextInterval, 1000) then
+  when Clock(intervalCounter, 1000) then
     // interval clock that ticks at 0, 0.003, 0.007, 0.012, $\ldots$
-    nextInterval = previous(nextInterval) + 1;
+    intervalCounter = previous(intervalCounter) + 1;
     y2 = previous(y2) + 1;
   end when;
 \end{lstlisting}
 \end{example}
 
-Note that operator \lstinline!interval(c)! of \lstinline!Clock c = Clock(nextInterval, $\mathit{resolution}$)! returns:\newline
+Note that operator \lstinline!interval(c)! of \lstinline!Clock c = Clock(intervalCounter, $\mathit{resolution}$)! returns:\newline
 \lstinline!previous($\mathit{intervalCounter}$) / $\mathit{resolution}$! (in seconds)
 \end{semantics}
 \end{operatordefinition*}
@@ -388,17 +388,29 @@ The input argument, $\mathit{interval}$, is a clocked component expression (\cre
 The $\mathit{interval}$ must be strictly positive ($\mathit{interval} > 0$) of type \lstinline!Real! with \lstinline!unit = "s"!.
 The result is of base type \lstinline!Clock! that ticks when \lstinline!time! becomes $t_{\mathrm{start}}$, $t_{\mathrm{start}} + \mathit{interval}_{1}$, $t_{\mathit{start}} + \mathit{interval}_{1} + \mathit{interval}_{2}$, \@\ldots{}
 The clock starts at the start of the simulation $t_{\mathrm{start}}$ or when the controller is switched on.
-Here the next clock tick is scheduled at $\mathit{interval}_{1}$ = \lstinline!previous($\mathit{interval}$)! = \lstinline!$\mathit{interval}$.start!.
-At the second clock tick at time $t_{\mathrm{start}} + \mathit{interval}_{1}$, the next clock tick is scheduled at $\mathit{interval}_{2}$ = \lstinline!previous($\mathit{interval}$)!, and so on.
+Here the next clock tick is scheduled at $\mathit{interval}_{1}$ = \lstinline!$\mathit{interval}$!.
+At the second clock tick at time $t_{\mathrm{start}} + \mathit{interval}_{1}$, the next clock tick is scheduled $\mathit{interval}_{2}$ = \lstinline!$\mathit{interval}$! into the future, and so on.
 If $\mathit{interval}$ is a parameter expression, the clock defines a periodic clock.
 
 \begin{nonnormative}
-Note, the clock is defined with \lstinline!previous($\mathit{interval}$)!.
-Therefore, for sorting the input argument is treated as known.
 The given interval and time shift can be modified by using the \lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample! and \lstinline!backSample! operators on the returned clock, see \cref{sub-clock-conversion-operators}.
 There are restrictions where this operator can be used, see \lstinline!Clock! expressions below.
 Note that $\mathit{interval}$ does not have to an evaluable expression, since different real interval clocks are never compared.
 \end{nonnormative}
+
+\begin{example}
+\begin{lstlisting}[language=modelica]
+  // first clock tick: previous(nextInterval) = 0.002
+  Real nextInterval(start = 0.002);
+  Real y(start = 0);
+equation
+  when Clock(nextInterval) then
+    // Real interval clock that ticks at 0, 0.003, 0.007, 0.012, $\ldots$
+    nextInterval = previous(nextInterval) + 1e-3;
+    y = previous(y) + 1;
+  end when;
+\end{lstlisting}
+\end{example}
 \end{semantics}
 \end{operatordefinition*}
 
