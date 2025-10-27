@@ -2333,7 +2333,21 @@ end M2
 
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
 
-This section presents annotations to define the protection and the licensing of packages.
+The annotations listed below define the protection and licensing of packages.
+They are all sub-annotations of the \fmtannotationindex{Protection} annotation.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!Protection.access!} & Access control for decrypted content & \Cref{modelica:Protection.access}\\
+{\lstinline!Protection.features!} & Required license features & \Cref{modelica:Protection.features}\\
+{\lstinline!Protection.License!} & User license file & \Cref{modelica:Protection.License}\\
+\hline
+\end{tabular}
+\end{center}
+
 The goal is to unify basic mechanisms to control the access to a package in order to protect the intellectual property contained in it.
 This information is used to encrypt a package and bind it optionally to a particular target machine, and/or restrict the usage for a particular period of time.
 
@@ -2350,7 +2364,7 @@ The intent of this section is to enable a library vendor to maintain one source 
 The following definitions relate to access control.
 
 \begin{definition}[Protection]\index{protection!access control}
-Define what parts of a class are visible.
+Define which parts of a class that are visible.
 \end{definition}
 
 \begin{definition}[Obfuscation]\index{obfuscation!access control}
@@ -2366,29 +2380,39 @@ An encrypted package that has the \lstinline!Protection! annotation is read-only
 Restrict the use of an encrypted package for particular users for a specified period of time.
 \end{definition}
 
-In this section annotations are defined for protection and licensing.
+The \lstinline!Protection! annotation defines protection and licensing.
 Obfuscation and encryption are not standardized.
 
-Protection and licensing are both defined inside the \fmtannotationindex{Protection} annotation:
-\begin{lstlisting}[language=modelica]
-annotation(Protection($\ldots$));
-\end{lstlisting}
 
 \subsection{Protection of Classes}\label{protection-of-classes}
 
-A class may have the following annotations to define what parts of a class are visible, and only the parts explicitly listed as visible below can be accessed (if a class is encrypted and no \lstinline!Protection! annotation is defined, the access annotation has the default value \lstinline!Access.documentation!):
-\begin{lstlisting}[language=modelica]
-record Protection
-  /*literal*/ constant Access access;
-  $\ldots$
-end Protection;
-type Access = enumeration(hide, icon, documentation, diagram,
+This section describes the part of the \lstinline!Protection! annotation used to define protection.
+
+\begin{annotationdefinition*}[access]\label{modelica:Protection.access}\annotationindex{access}\index{Protection@\robustinline{Protection}!\robustinline{access} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Access Protection.access;
+
+type Access =
+  enumeration(hide, icon, documentation, diagram,
               nonPackageText, nonPackageDuplicate,
               packageText, packageDuplicate);
-\end{lstlisting}
-The other members of this record are given in \cref{licensing}.
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
+The \lstinline!access! annotation defines which parts of a class that are visible.
+If a class is encrypted and no \lstinline!Protection! annotation is provided, the default is \lstinline!Access.documentation!.
 
-The items of the \fmtannotationindex{Access} enumeration have the following meanings:
+The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
+Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
+
+\begin{example}
+If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
+\end{example}
+
+Classes should not use other classes in ways that contradict this protection.
+Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
+
+The items of the \fmtannotationindex{Access} enumeration have the following meanings (only parts explicitly listed as visible below can be accessed):
 \begin{enumerate}
 \item
   \lstinline!Access.hide!\\
@@ -2418,19 +2442,11 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
   \lstinline!Access.packageDuplicate!\\
   Same as \lstinline!Access.packageText! and additionally the class, or part of the class, can be copied.
 \end{enumerate}
-
-The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
-Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
-
-\begin{example}
-If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
-\end{example}
-
-Classes should not use other classes in ways that contradict this protection.
-Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
+\end{semantics}
+\end{annotationdefinition*}
 
 \begin{example}
-For instance a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
+For instance, a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
 
 Consider the following invalid use of a class with \lstinline!Access.hide!:
 \begin{lstlisting}[language=modelica]
@@ -2526,30 +2542,20 @@ end CommercialFluid;
 \end{lstlisting}
 \end{nonnormative}
 
+
 \subsection{Licensing}\label{licensing}
 
-In this section annotations within the \lstinline!Protection! annotation are defined to restrict the usage of the encrypted package:
-\begin{lstlisting}[language=modelica]
-record Protection
-  /*literal*/ constant Access access;
-  /*literal*/ constant String features[:] "Required license features";
-  /*literal*/ constant UserLicense License;
-end Protection;
+This section describes the part of the \lstinline!Protection! annotation used to define licensing.
 
-record UserLicense "Internal class name, do not use"
-  /*literal*/ constant String libraryKey;
-  /*literal*/ constant String licenseFile = "" "Default mapping if empty";
-end UserLicense;
-\end{lstlisting}
-See \cref{protection-of-classes} for a description of \lstinline!access!.
-The \fmtannotationindex{License} annotation has only an effect on the top of an encrypted class and is then valid for the whole class hierarchy.
-(Usually the licensed class is a package.)
-The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
-
+\begin{annotationdefinition*}[features]\label{modelica:Protection.features}\annotationindex{features}\index{Protection@\robustinline{Protection}!\robustinline{features} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String features[:];
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 The \lstinline!features! annotation defines the required license options.
-If the features vector in the library has one or more elements, then at least a license feature according to one of the elements must be present in the authorization file.
-If the features vector in the library is empty or not provided there is no need for a license feature in the authorization file.
-As with the other annotations, the \lstinline!features! annotation holds for the respective class and for all classes that are hierarchically on a lower level, unless further restricted by a corresponding annotation.
+If the \lstinline!features! array in the library has one or more elements, then at least a license feature according to one of the elements must be present in the authorization file.
+If the \lstinline!features! array in the library is empty or not provided there is no need for a license feature in the authorization file.
+Similar to the \lstinline!access! annotation, the \lstinline!features! annotation holds for the respective class and for all classes that are hierarchically on a lower level, unless further restricted by a corresponding annotation.
 If no license according to the \lstinline!features! annotation is provided in the authorization file, the corresponding classes are not visible and cannot be used, not even internally in the package.
 
 \begin{example}
@@ -2568,6 +2574,23 @@ annotation(Protection(
 ));
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition*}
+
+\begin{annotationdefinition*}[License]\label{modelica:Protection.License}\annotationindex{License}\index{Protection@\robustinline{Protection}!\robustinline{License} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant UserLicense License;
+
+record UserLicense "Internal class name, do not use"
+  /*literal*/ constant String libraryKey;
+  /*literal*/ constant String licenseFile = "" "Default mapping if empty";
+end UserLicense;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The \fmtannotationindex{License} annotation only has an effect at the top of an encrypted class and is then valid for the whole class hierarchy.
+(Usually the licensed class is a package.)
+
+The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
 
 In order that the protected class can be used either a tool specific license manager, or an authorization file (called \lstinline!licenseFile!) must be present.
 The authorization file is standardized.
@@ -2617,10 +2640,12 @@ Additional tool-specific names can also be used.
 To protect the \lstinline!libraryKey! and the target definitions, the authorization file must be encrypted and must never show the \lstinline!libraryKey!.
 
 \begin{nonnormative}
-All other information, especially licensor and license should be visible, in order that the user can get information about the license.
+All other information, especially \lstinline!licensor! and \lstinline!license! should be visible, in order that the user can get information about the license.
 It is useful to include the name of the tool in the authorization file name with which it was encrypted.
-Note, it is not useful to store this information in the annotation, because only the tool that encrypted the \lstinline!Authorization! package can also decrypt it.
+Note that it is not useful to store this information in the annotation, because only the tool that encrypted the \lstinline!Authorization! package can also decrypt it.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition*}
 
 \begin{example}
 (Before encryption:)
