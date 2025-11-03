@@ -38,6 +38,8 @@ annotation(Dialog());
 An annotation such as \lstinline!annotation(Dialog)! is also meaningless, but deprecated according to \cref{semantic-restrictions-of-annotation-syntax}.
 \end{example}
 
+The allowed annotations for a short class definition is the union of the allowed annotations in classes and on \lstinline!extends!-clauses.
+
 
 \section{Semantic Restrictions of Annotation Syntax}\label{semantic-restrictions-of-annotation-syntax}
 
@@ -781,47 +783,69 @@ end MultiPort;
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
-A graphical representation of a class consists of two abstraction layers, icon layer and diagram layer showing graphical objects, component icons, connectors and connection lines.
-The icon representation typically visualizes the component by hiding hierarchical details.
-The hierarchical decomposition is described in the diagram layer showing icons of subcomponents and connections between these.
+The annotations listed below define the graphical representation of a class.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!Icon!} & Icon view of a class & \Cref{modelica:Icon}\\
+{\lstinline!Diagram!} & Diagram view of a class & \Cref{modelica:Diagram}\\
+{\lstinline!Placement!} & Instance placement in icon or diagram & \Cref{modelica:Placement}\\
+\hline
+\end{tabular}
+\end{center}
 
-Graphical annotations described in this chapter ties into the Modelica grammar as follows.
-\begin{lstlisting}[language=grammar]
-graphical-annotations :
-  annotation "(" [ layer-annotations ] ")"
+The graphical representation of a class consists of two abstraction layers: an icon layer and a diagram layer.
+The icon typically visualizes the component by hiding hierarchical details, while the diagram layer typically shows the hierarchical decomposition using icons of subcomponents and lines representing connections.
 
-layer-annotations :
-  ( icon-layer | diagram-layer ) [ "," layer-annotations ]
-\end{lstlisting}
-Layer descriptions (start of syntactic description):
-\begin{lstlisting}[language=grammar]
-icon-layer :
-  "Icon" "(" [ coordsys-specification "," ] graphics ")"
+\begin{annotationdefinition}[Icon]
+\begin{synopsis}\begin{lstlisting}
+record Icon
+  CoordinateSystem coordinateSystem;
+  GraphicItem[:] graphics;
+end Icon;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
+The \lstinline{Icon} annotation defines the icon view of the class.
 
-diagram-layer :
-  "Diagram" "(" [ coordsys-specification "," ] graphics ")"
-\end{lstlisting}%
-\annotationindex{Icon}\annotationindex{Diagram}
-
-\begin{example}
-\begin{lstlisting}[language=modelica]
-annotation(
-   Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}),
-        graphics = {Rectangle(extent = {{-100, -100}, {100, 100}}),
-                    Text(extent = {{-100, -100}, {100, 100}},
-                         textString = "Icon")}));
-\end{lstlisting}
-\end{example}
-
-The graphics is specified as an ordered sequence of graphical primitives described below.
+The \lstinline!graphics! is specified as an ordered sequence of graphical primitives described in \cref{common-definitions}.
 Base class contents are drawn behind the graphical primitives of the current class, with base classes ordered from back to front according to the order of the \lstinline!extends!-clauses, and graphical primitives according to order of appearance in the annotation.
 
 \begin{nonnormative}
 Note that the ordered sequence is syntactically a valid Modelica annotation, although there is no mechanism for defining an array of heterogeneous objects in Modelica.
 \end{nonnormative}
 
-These \lstinline!Icon!, \lstinline!Diagram!, and \lstinline!Documentation! annotations are only allowed directly in classes (e.g., not on components or connections).
-The allowed annotations for a short class definition is the union of the allowed annotations in classes and on \lstinline!extends!-clauses.
+\begin{example}
+A simple icon for a class:
+\begin{lstlisting}[language=modelica]
+annotation(
+  Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}),
+       graphics = {Rectangle(extent = {{-100, -100}, {100, 100}}),
+                   Text(extent = {{-100, -100}, {100, 100}},
+                        textString = "Icon")}));
+\end{lstlisting}
+\end{example}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[Diagram]
+\begin{synopsis}\begin{lstlisting}
+record Diagram
+  CoordinateSystem coordinateSystem;
+  GraphicItem[:] graphics;
+end Diagram;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
+The \lstinline{Diagram} annotation defines the icon view of the class.
+
+The \lstinline{coordinateSystem} and \lstinline{graphics} serve the same purpose as in the \lstinline!Icon! annotation, see \cref{modelica:Icon}.
+\end{semantics}
+\end{annotationdefinition}
+
 
 \subsection{Common Definitions}\label{common-definitions}
 
@@ -976,9 +1000,54 @@ The extent/points of the filled shape describe the theoretical zero-thickness fi
 
 \subsection{Component Instance}\label{component-instance}
 
-A component instance can be placed within a diagram or icon layer.
-It has an annotation with a \lstinline!Placement! modifier to describe the placement.
-Placements are defined in terms of coordinate system transformations:
+For connectors, the icon layer is used to represent a connector when it is shown in the icon layer of the enclosing class.
+The diagram layer of the connector is used to represent it when shown in the diagram layer of the enclosing class.
+Protected connectors are only shown in the diagram layer.
+Public connectors are shown in both the diagram layer and the icon layer.
+Sub-connectors in a hierarchical connector are only shown when they can be connected to.
+Non-connector components are only shown in the diagram layer.
+Visibility and placement can be controlled using the \lstinline!Placement! annotation.
+
+\begin{annotationdefinition}[Placement]
+\begin{synopsis}\begin{lstlisting}
+record Placement
+  Boolean visible = true;
+  Transformation transformation;
+  Boolean iconVisible;
+  Transformation iconTransformation;
+end Placement;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for component declarations.
+The \lstinline{Placement} annotation defines the placement of the component's graphics as part of the graphics of the enclosing class.
+
+The visibility of the component in the diagram layer of the enclosing class is defined by \lstinline!visible!.
+For a connector component, the component's diagram layer defines the content to be displayed, while the icon layer is used for other component kinds.
+
+\begin{nonnormative}
+The use of a connector's diagram layer facilitates opening up a hierarchical connector to allow connections to its internal subconnectors.
+\end{nonnormative}
+
+The \lstinline!transformation! defines the placement in the diagram layer of the enclosing class.
+The \lstinline!Transformation! type is defined below.
+
+The \lstinline!iconVisible! only applies to public connector components, and defines the visibility of the component in the icon layer of the enclosing class.
+The connector's icon layer defined the content to be displayed.
+The default for \lstinline!iconVisible! is to be the same as \lstinline!visible!.
+
+The \lstinline!iconTransformation! only applies to public connector components, and defines the placement of the \lstinline!Icon! annotation graphics in the icon layer of the enclosing class.
+The default for \lstinline!iconTransformation! is to be the same as \lstinline!transformation!.
+\end{semantics}
+\end{annotationdefinition}
+
+%\begin{nonnormative}
+%A connector can be shown in both an icon layer and a diagram layer of a class.
+%Since the coordinate systems typically are different, placement information needs to be given using two different coordinate systems.
+%More flexibility than just using scaling and translation is needed since the abstraction views might need different visual placement of the connectors.
+%The attribute \lstinline!transformation! gives the placement in the diagram layer and \lstinline!iconTransformation! gives the placement in the icon layer.
+%\end{nonnormative}
+
+The \lstinline!transformation! and \lstinline!iconTransformation! of the \lstinline!Placement! annotation have the following type:
 \begin{lstlisting}[language=modelica]
 record Transformation
   Extent extent;
@@ -987,6 +1056,11 @@ record Transformation
 end Transformation;
 \end{lstlisting}%
 \annotationindex{Transformation}
+
+A component instance can be placed within a diagram or icon layer.
+It has an annotation with a \lstinline!Placement! modifier to describe the placement.
+Placements are defined in terms of coordinate system transformations:
+
 The attributes are applied in the order \lstinline!extent!, \lstinline!rotation!, \lstinline!origin!, as follows:
 \begin{enumerate}
 \item
@@ -997,36 +1071,9 @@ The attributes are applied in the order \lstinline!extent!, \lstinline!rotation!
   The \lstinline!origin! specifies a shift (moving \lstinline!{0, 0}! to \lstinline!origin!).
 \end{enumerate}
 
-\begin{lstlisting}[language=modelica]
-record Placement
-  Boolean visible = true;
-  Transformation transformation "Placement in the diagram layer";
-  Boolean iconVisible "Visible in icon layer; for public connector";
-  Transformation iconTransformation
-    "Placement in the icon layer; for public connector";
-end Placement;
-\end{lstlisting}%
-\annotationindex{Placement}
-A component with \lstinline!visible = false! shall not be shown.
-If no \lstinline!iconTransformation! is given the \lstinline!transformation! is also used for placement in the icon layer.
-If no \lstinline!iconVisible! is given for a public connector the \lstinline!visible! is also used for visibility in the icon layer.
-
-\begin{nonnormative}
-A connector can be shown in both an icon layer and a diagram layer of a class.
-Since the coordinate systems typically are different, placement information needs to be given using two different coordinate systems.
-More flexibility than just using scaling and translation is needed since the abstraction views might need different visual placement of the connectors.
-The attribute \lstinline!transformation! gives the placement in the diagram layer and \lstinline!iconTransformation! gives the placement in the icon layer.
-When a connector is shown in a diagram layer, its diagram layer is shown to facilitate opening up a hierarchical connector to allow connections to its internal subconnectors.
-\end{nonnormative}
-
-For connectors, the icon layer is used to represent a connector when it is shown in the icon layer of the enclosing model.
-The diagram layer of the connector is used to represent it when shown in the diagram layer of the enclosing model.
-Protected connectors are only shown in the diagram layer.
-Public connectors are shown in both the diagram layer and the icon layer.
-Sub-connectors in a hierarchical connector are only shown when they can be connected to.
-Non-connector components are only shown in the diagram layer.
 
 \subsubsection{Default Outline for Missing Graphics}\label{default-outline-for-missing-graphics}
+
 If the icon of a component placed in a diagram layer does not contain any graphical primitives (including inherited ones, and regardless of \lstinline!visible!-attributes; but excluding connectors), tools shall show a tool-dependent rudimentary outline of the component's transformed \lstinline!extent!.
 
 \begin{nonnormative}
