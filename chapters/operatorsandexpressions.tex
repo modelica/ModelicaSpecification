@@ -824,9 +824,9 @@ delay($\mathit{expr}$, $\mathit{delayTime}$)
 \begin{semantics}
 Evaluates to \lstinline!$\mathit{expr}$(time - $\mathit{delayTime}$)! for $\text{\lstinline!time!} > \text{\lstinline!time.start!} + \mathit{delayTime}$ and \lstinline!$\mathit{expr}$(time.start)! for $\text{\lstinline!time!} \leq \text{\lstinline!time.start!} + \mathit{delayTime}$.
 The arguments, i.e., $\mathit{expr}$, $\mathit{delayTime}$ and $\mathit{delayMax}$, need to be subtypes of \lstinline!Real!.
-$\mathit{delayMax}$ needs to be additionally a parameter expression.
-The following relation shall hold: $0 \leq \mathit{delayTime} \leq \mathit{delayMax}$, otherwise an error occurs.
-If $\mathit{delayMax}$ is not supplied in the argument list, $\mathit{delayTime}$ needs to be a parameter expression.
+$\mathit{delayMax}$ shall be a parameter expression.
+If $\mathit{delayMax}$ is not supplied in the argument list, $\mathit{delayTime}$ is required to be a parameter expression.
+It is required that $0 \leq \mathit{delayTime} \leq \mathit{delayMax}$, with $0 = \mathit{delayTime}$ only being allowed if $\mathit{delayTime}$ is evaluable and would evaluate to $0$.
 The operator is not allowed inside \lstinline!function! classes.
 For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
 For further details, see \cref{delay}.
@@ -943,9 +943,10 @@ This gives an upper bound on the values of the delayed signals which have to be 
 For real-time simulation where fixed step size integrators are used, this information is sufficient to allocate the necessary storage for the internal buffer before the simulation starts.
 For variable step size integrators, the buffer size is dynamic during integration.
 
-In principle, \lstinline!delay! could break algebraic loops.
-For simplicity, this is not supported because the minimum delay time has to be given as additional argument to be fixed at compile time.
-Furthermore, the maximum step size of the integrator is limited by this minimum delay time in order to avoid extrapolation in the delay buffer.
+In order to avoid extrapolation in the delay buffer, the maximum step size of the integrator is limited by the delay time, making delay times close to zero a potential source of poor simulation performance.
+
+It is a quality of implementation to avoid evaluating $\mathit{delayTime}$ when possible.
+A pragmatic approach is to only evaluate $\mathit{delayTime}$ in case the value would be zero, and to check at runtime that it is positive in case it was not evaluated.
 \end{nonnormative}
 
 \subsubsection{spatialDistribution}\label{spatialdistribution}
