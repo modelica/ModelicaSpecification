@@ -225,16 +225,25 @@ The declaration of functions follow these rules:
 \item
   Functions defined in Modelica (non-external) are \emph{normally} assumed to be pure (the exception is the deprecated case below), if they are impure they shall be marked with the \lstinline!impure! keyword.
   They can be explicitly marked as \lstinline!pure!\indexinline{pure}.
-  \begin{nonnormative}
-  However, since functions as default are pure it is not recommended to explicitly declare them as \lstinline!pure!.
-  \end{nonnormative}
-\item
-  External functions must be explicitly declared with \lstinline!pure! or \lstinline!impure!.
 \item
   If a function is declared as \lstinline!impure! any function extending from it shall be declared as \lstinline!impure!.
 \item
-  A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be impure, but without any restriction on calling them.
-  Except for the function \lstinline!Modelica.Utilities.Streams.print!, a diagnostic must be given if called in a simulation model.
+  External functions not explicitly declared with \lstinline!pure! or \lstinline!impure! is deprecated.
+\item
+  For a function without explicit purity, it is deprecated to call any function declared \lstinline!impure!, except when wrapped in \lstinline!pure($\ldots$)!.
+\item
+  For a function not declared \lstinline!impure!, it is deprecated to call an external function not declared \lstinline!pure!, except when wrapped in \lstinline!pure($\ldots$)!.
+\end{itemize}
+
+For purposes of symbolic transformations and optimizations, the deprecated semantics above imply that not only the functions explicitly declared \lstinline!impure! are the ones which cannot be treated as pure.
+Instead, a function shall be treated as impure in the following cases (applied recursively):
+\begin{itemize}
+\item
+  It is declared \lstinline!impure!.
+\item
+  It is an external function without explicit purity.
+\item
+  It calls another function treated as impure, except when wrapped in \lstinline!pure($\ldots$)!.
 \end{itemize}
 
 Calls of pure functions used inside expression may be skipped if the resulting expression will not depend on the possible returned value; ignoring the possibility of the function generating an error.
