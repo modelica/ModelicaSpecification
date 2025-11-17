@@ -99,6 +99,54 @@ In future minor versions of Base Modelica 1, we could improve the language by in
 Big changes that don't make sense to even consider for a minor release of version 1 are listed here.  Being listed here shall not be interpreted as even being likely to ever happen; this is just a collection of all the ideas that don't fit in the more realistic roadmap for version 1.
 - [ ] Allowing some simple form of `model` that makes it possible to preserve structure of the equations that will allow more efficient symbolic processing and production of executables of much smaller size.
 
+## Prototype Development and Testing
+### Deliverables
+- [ ] Feature list
+- [ ] Example models from MSL mapped against feature list
+- [ ] Library of open source unit test models matching the feature list
+- [ ] Flat Modelica v0.1: md documents ready for prototype development
+- [ ] Flat Modelica v0.2: md documents ready for preliminary feedback of the language group
+- [ ] Flat Modelica v0.3: Feedback of the language group addressed in md documents
+- [ ] MCP0031 RC: Modelica specification changes  defined in the LaTeX sources based on Flat Modelica v1.0
+- [ ] MCP0031 RC+: Ready for evaluation including the feedback of three reviews
+- [ ] MCP0031 v1: Evaluated and formally accepted by the language group
+### Plan of action
+Iteratively extend the scope to be covered following these steps:
+* Select the next non-working example ("lowest hanging fruit") from MSL, or hand craft one as needed.
+* Enhance export of Flat Modelica code (functionality provided by at least one tool).
+* Enhance import of Flat Modelica code (functionality provided by all tools).
+* Map example model to roadmap items.
+* Identify newly covered language features derived from roadmap items.
+* Create unit tests for newly identified features.
+* Support newly created unit tests.
+* Capture language issues or ambiguities as they occur.
+
+The captured issues shall then be resolved by the revised Flat Modelica specification v0.2 or considered as roadmap item for later versions.
+
+### Milestones for reaching Flat Modelica v0.2
+Prerequisite is that Flat Modelica v0.1 has been finalized.
+
+* MS1: Initial example working
+* MS2: 50% of MSL examples working
+* MS3: 80% of MSL examples working
+* MS4: 95% of MSL examples working
+* MS5: ~100% of MSL examples working
+* MS6: All features covered by examples/unit tests and working
+* MS7: Flat Modelica specification v0.2 defined
+
+### Timeline
+|Time|EQ4-2022|EQ1-2023|EQ2-2023|EQ3-2023|EQ4-2023|EQ1-2024|
+|--- |-------|-------|-------|-------|-------|-------|
+|MS1 |       |   x   |        |       |       |         |        |
+|MS2 |       |        |   x   |       |       |         |        |
+|MS3 |       |        |        |   x   |       |         |        |
+|MS4 |       |        |        |       |   x   |         |        |
+|MS5 |       |        |        |       |       |   x   |       |
+|MS6 |       |        |        |       |       |       |   x   |
+|MS7 |       |        |        |       |       |       |   x   |
+
+EQn: End of Quarter n
+
 ## Revisions
 | Date | Description |
 | --- | --- |
