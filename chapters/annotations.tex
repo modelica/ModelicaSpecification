@@ -163,10 +163,10 @@ Inside the \lstinline!Documentation! annotation, the \lstinline!info! annotation
 The \lstinline!revisions! documentation may be omitted in printed documentation.
 \end{nonnormative}
 
-If the string starts with the tag \lstinline!<html>! or \lstinline!<HTML>! the entire string is HTML encoded (and is assumed to end with \lstinline!</html>! or \lstinline!</HTML>! and shall be rendered as HTML even if the end-tags are missing), otherwise the entire string is rendered as is.
-The HTML encoded content may contain links.
-For external links, see \cref{external-resources}.
-Links to Modelica classes may be defined with the HTML link command using scheme \lstinline!Modelica! (using its lower case form in the URI, see \cref{external-resources}), e.g.,
+If the string starts with the tag \lstinline!<html>! or \lstinline!<HTML>!, the entire string is HTML encoded (assumed to end with \lstinline!</html>! or \lstinline!</HTML>!, but to be rendered as HTML even if the end-tag is missing).
+Otherwise, the entire string is rendered as is.
+HTML encoded content may contain links.
+Modelica URIs may be used to refer to external resources (see \cref{external-resources}), as well as to refer to Modelica classes, e.g.,
 \begin{lstlisting}[language=modelica]
 <a href="modelica:/MultiBody.Tutorial">MultiBody.Tutorial</a>
 \end{lstlisting}
@@ -1257,7 +1257,7 @@ There are a number of common macros that can be used in the text, and they shoul
 \item
   \%class replaced by the name of the class (only the last part of the hierarchical name).
 \item
-  \%\emph{par} and \%\{\emph{par}\} replaced by the value of the parameter \lstinline!par!.
+  \%\emph{par} and \%\{\emph{par}\} replaced by the value of the parameter or variable with a binding or modifier setting the value \lstinline!par!.
   If the value is numeric, tools shall display the value with \lstinline!displayUnit!, formatted according to the BIPM specification.
   E.g., for
 \begin{lstlisting}[language=modelica]
@@ -1533,9 +1533,11 @@ The default is a tool-specific diagnostic message.
 \begin{lstlisting}[language=modelica]
 model World
   $\ldots$
-  annotation(defaultComponentName = "world",
-  defaultComponentPrefixes = "inner replaceable",
-  missingInnerMessage = "The World object is missing");
+  annotation(
+    defaultComponentName = "world",
+    defaultComponentPrefixes = "inner replaceable",
+    missingInnerMessage = "The World object is missing"
+  );
 end World;
 \end{lstlisting}
 When an instance of model \lstinline!World! is dragged in to the diagram layer, the following declaration is generated:
@@ -1622,11 +1624,11 @@ connector Frame "Frame of a mechanical system"
   $\ldots$
   flow Modelica.Units.SI.Force f[3]
   annotation(unassignedMessage =
-      "All Forces cannot be uniquely calculated. The reason could be that the
-     mechanism contains a planar loop or that joints constrain the same motion.
-     For planar loops, use in one revolute joint per loop the option
-     PlanarCutJoint=true in the Advanced menu.
-     ");
+    "All Forces cannot be uniquely calculated.
+The reason could be that the mechanism contains a planar loop
+or that joints constrain the same motion.
+For planar loops, use one RevolutePlanarLoopConstraint per loop."
+  );
 end Frame;
 \end{lstlisting}
 \end{example}
@@ -1731,17 +1733,17 @@ When clicking on an instance of model \lstinline!DialogDemo!, a dialog is shown 
 This section describes the \lstinline!connectorSizing! annotation inside a \lstinline!Dialog! annotation.
 The value of \lstinline!connectorSizing! must be a literal \lstinline!false! or \lstinline!true!.
 If \lstinline!connectorSizing = false!, this annotation has no effect.
-If \lstinline!connectorSizing = true!, the corresponding variable must be declared with the \lstinline!parameter! prefix, must be a subtype of a scalar \lstinline!Integer! and must have a literal default value of zero.
+A variable with \lstinline!connectorSizing = true! must be declared with the \lstinline!parameter! or \lstinline!constant! prefix, must be a subtype of a scalar \lstinline!Integer! and must have a literal default value of \lstinline!0!.
 
 \begin{nonnormative}
 The reason why \lstinline!connectorSizing! must be given a literal value is that if the value is an expression, the \lstinline!connectorSizing! functionality is conditional and this will then lead easily to wrong models.
 
-The default value of the variable must be zero since this annotation is designed for a parameter that is used as vector dimension, and the dimension of the vector should be zero when the component is dragged or redeclared.
+The default value of the variable must be zero since this annotation is designed for a variable that is used as vector dimension, and the dimension of the vector should be zero when the component is dragged or redeclared.
 Furthermore, when a tool does not support the \lstinline!connectorSizing! annotation, dragging will still result in a correct model.
 \end{nonnormative}
 
-If \lstinline!connectorSizing = true!, a tool may set the parameter value in a modifier automatically, if used as dimension size of a vector of connectors.
-In that case the parameter should not be modified by the user, and a tool may choose to not display that parameter in the dialog or display it with disabled input field.
+If \lstinline!connectorSizing = true!, a tool may set the variable value in a modifier automatically, if used as dimension size of a vector of connectors.
+In that case the value modifier should not be edited directly by the user, and a tool may choose to not display that variable in the dialog or display it with disabled input field.
 
 \begin{nonnormative}
 The \lstinline!connectorSizing! annotation is used in cases where connections to a vector of connectors shall be made and a new connection requires to resize the vector and to connect to the new index (unary connections).
@@ -1842,55 +1844,123 @@ equation
 
 \section{Versions}\label{annotations-for-version-handling}\label{versions}
 
-A top-level package or model can specify the version of top-level classes it uses, its own version number, and if possible how to convert from previous versions.
+The annotations listed below allow a top-level package or model to specify the versions of top-level classes it uses, its own version number, and if possible, how to convert from previous versions.
 This can be used by a tool to guarantee that consistent versions are used, and if possible to upgrade usage from an earlier version to a current one.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!version! & Version of top-level package & \Cref{modelica:version}\\
+\lstinline!conversion! & Conversions to apply when upgrading & \Cref{modelica:conversion}\\
+\lstinline!uses! & Top-level package dependencies & \Cref{modelica:uses}\\
+\lstinline!versionDate! & Date of first version build & \Cref{modelica:versionDate}\\
+\lstinline!versionBuild! & Maintenance update number & \Cref{modelica:versionBuild}\\
+\lstinline!dateModified! & Date of last change & \Cref{modelica:dateModified}\\
+\lstinline!revisionId! & Version control system version information & \Cref{modelica:revisionId}\\
+\hline
+\end{tabular}
+\end{center}
+
 
 \subsection{Version Numbering}\label{version-numbering}
 
-Version numbers are of the forms:
+Version number strings can be in one of several forms:
+\begin{lstlisting}[language=grammar]
+PACKAGE-VERSION = MAIN-VERSION | PRE-RELEASE-VERSION | UNORDERED-VERSION
+
+MAIN-VERSION = UNSIGNED-INTEGER { "." UNSIGNED-INTEGER }
+
+PRE-RELEASE-VERSION = MAIN-VERSION " " { S-CHAR }
+
+UNORDERED-VERSION = NON-DIGIT { S-CHAR }
+\end{lstlisting}
+
+Examples:
 \begin{itemize}
 \item
-  Main release versions: \lstinline[language=grammar]!""" UNSIGNED-INTEGER { "." UNSIGNED-INTEGER } """!\\
-  Example: \lstinline!"2.1"!
+  Main release version: \lstinline!"2.1"!
 \item
-  Pre-release versions: \lstinline[language=grammar]!""" UNSIGNED-INTEGER { "." UNSIGNED-INTEGER } " " {S-CHAR} """!\\
-  Example: \lstinline!"2.1 Beta 1"!
+  Pre-release version: \lstinline!"2.1 Beta 1"!
 \item
-  Un-ordered versions: \lstinline[language=grammar]!""" NON-DIGIT {S-CHAR} """!\\
-  Example: \lstinline!"Test 1"!
+  Unordered version: \lstinline!"Test 1"!
 \end{itemize}
 
 The main release versions are ordered using the hierarchical numerical names, and follow the corresponding pre-release versions.
 The pre-release versions of the same main release version are internally ordered alphabetically.
 
+
 \subsection{Version Handling}\label{version-handling}
 
-In a top-level class, the version number and the dependency to earlier versions of this class are defined using one or more of the following annotations:
-% TODO: Syntax below is a mess: neither Modelica, pseudo-code record, nor grammar.
-\begin{itemize}
-\item
-  \lstinline!version = CURRENT-VERSION-NUMBER!\annotationindex{version}\\
-  Defines the version number of the model or package.
-  All classes within this top-level class have this version number.
-\item
-  \lstinline!conversion(noneFromVersion = VERSION-NUMBER)!\annotationindex{conversion}\\
-  Defines that user models using the \lstinline!VERSION-NUMBER! can be upgraded to the \lstinline!CURRENT-VERSION-NUMBER! of the current class without any changes.
-\item
-  \lstinline!conversion(from(version = Versions, [to=VERSION-NUMBER,] Convert))!\\
-  where \emph{Versions} is \lstinline!VERSION-NUMBER! \textbar{} \lstinline!{VERSION-NUMBER, VERSION-NUMBER, $\ldots$}! and \lstinline!Convert! is \lstinline!script="$\ldots$"! \textbar{} \lstinline!change={conversionRule(), $\ldots$, conversionRule()}!\\*[.5ex]
-  Defines that user models using the \lstinline!VERSION-NUMBER! or any of the given \lstinline!VERSION-NUMBER! can be upgraded to the given \lstinline!VERSION-NUMBER! (if the to-tag is missing this is the \lstinline!CURRENT-VERSION-NUMBER!) of the current class by applying the given conversion rules.
-  The script consists of an unordered sequence of \lstinline!conversionRule();! (and optionally Modelica comments).
-  The \lstinline!conversionRule! functions are defined in \cref{conversion-rules}.
+In a top-level class, the version number and the dependency to earlier versions of this class are defined using one or more of the annotations described in this section.
 
-  \begin{nonnormative}
-  The to-tag is added for clarity and optionally allows a tool to convert in multiple steps.
-  \end{nonnormative}
-\item
-  \lstinline!uses(IDENT (version = VERSION-NUMBER [, versionBuild=INTEGER] [, dateModified=STRING] ) )!\annotationindex{uses}\\
-  Defines that classes within this top-level class use version \lstinline!VERSION-NUMBER! of classes within the top-level class \lstinline!IDENT!.
-\end{itemize}
+\begin{annotationdefinition}[version]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String version;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!version = $\mathit{currentVersion}$! defines the version number of the model or package.
+The $\mathit{currentVersion}$ shall be a \lstinline[language=grammar]!PACKAGE-VERSION!.
+All classes within this top-level class have this version number.
+\end{semantics}
+\end{annotationdefinition}
 
-The annotations \lstinline!uses! and \lstinline!conversion! may contain several different sub-entries.
+\begin{annotationdefinition}[conversion]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"conversion" "=" "(" [ conversion { "," conversion } ] ")"
+
+conversion : conversion-none | conversion-with-rules
+
+conversion-none : "noneFromVersion" "=" PACKAGE-VERSION
+
+conversion-with-rules :
+   "from" "("
+      "version" = package-versions
+      [ "," "to" "=" PACKAGE-VERSION ]
+      "," conversion-rules
+  ")"
+
+conversion-rules :
+   "script" "=" STRING
+   | "change" "(" [ conversion-rule { "," conversion-rule } ] ")"
+
+conversion-rule : IDENT function-call-args
+
+package-versions :
+   PACKAGE-VERSION
+   | "{" PACKAGE-VERSION { "," PACKAGE-VERSION } "}"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!conversion(noneFromVersion = $\mathit{fromVersion}$)! defines that models and packages using the $\mathit{fromVersion}$ can be upgraded to the $\mathit{currentVersion}$ of the current class without any changes.
+
+\lstinline!conversion(from(version = $\mathit{fromVersions}$, to = $\mathit{toVersion}$, $\mathit{conversionRules}$))! defines that models and packages using any of the $\mathit{fromVersions}$ can be upgraded to the $\mathit{toVersion}$ (if the $\mathit{toVersion}$ is omitted, this is the $\mathit{currentVersion}$) of the current class by applying the $\mathit{conversionRules}$.
+When $\mathit{conversionRules}$ is given as \lstinline!script = $\mathit{conversionScript}$!, the $\mathit{conversionScript}$ is the name of a file consisting of an unordered sequence of \lstinline[language=grammar]!conversion-rule ";"! and Modelica comments, where any comments should be ignored by tools.
+A \lstinline[language=grammar]!conversion-rule! has the form of a function call, where the functions are defined in \cref{conversion-rules}.
+
+\begin{nonnormative}
+The \lstinline!to! version is added for clarity and optionally allows a tool to convert in multiple steps.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[uses]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"uses" "(" [ used-package { "," used-package } ] ")"
+
+used-package :
+  IDENT "("
+    "version" "=" PACKAGE-VERSION
+    [ "," "versionBuild" "=" UNSIGNED-INTEGER ]
+    [ "," "dateModified" "=" STRING ]
+  ")"
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!uses($\mathit{otherPackage}$(version = $\mathit{otherPackageVersion}$))! defines that classes within this top-level class use the $\mathit{otherPackageVersion}$ of classes within the top-level class $\mathit{otherPackage}$.
+
+See \cref{version-date-and-build-information} regarding the use of \lstinline!versionBuild! and \lstinline!dateModified!.
+\end{semantics}
+\end{annotationdefinition}
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1904,24 +1974,28 @@ package Modelica
       from(version = {"2.1", "2.2", "2.2.1"},
            script = "convertTo3.mos"),
       from(version = "1.5",
-           script = "convertFromModelica1_5.mos")));
+           script = "convertFromModelica1_5.mos")
+  ));
 end Modelica;
 
 model A
   $\ldots$
   annotation(
     version = "1.0",
-    uses(Modelica(version = "1.5")));
+    uses(Modelica(version = "1.5"))
+  );
 end A;
 
 model B
   $\ldots$
   annotation(
-    uses(Modelica(version = "3.1 Beta 1")));
+    uses(Modelica(version = "3.1 Beta 1"))
+  );
 end B;
 \end{lstlisting}
 In this example the model \lstinline!A! uses an older version of the Modelica library and can be upgraded using the given script, and model \lstinline!B! uses an older version of the Modelica library but no changes are required when upgrading.
 \end{example}
+
 
 \subsubsection{Conversion Rules}\label{conversion-rules}
 
@@ -2141,44 +2215,93 @@ This is useful if there is no possibility to convert a specific parameter (or ot
 If the parameter had no impact on the model it can be removed using \lstinline!convertModifiers!, see \cref{convertmodifiers}.
 \end{nonnormative}
 
+
 \subsection{Versions in the File System}\label{mapping-of-versions-to-file-system}\label{versions-in-the-File-System}
 
-A top-level class, \lstinline!IDENT!, with version \lstinline!VERSION-NUMBER! can be stored in one of the following ways in a directory given in the \lstinline!MODELICAPATH!:
+The top-level class $\mathit{packageName}$ with version $\mathit{packageVersion}$ (matching \lstinline[language=grammar]!PACKAGE-VERSION! defined in \cref{version-numbering}) can be stored in one of the following ways in a directory given in the \lstinline!MODELICAPATH! (\cref{the-modelica-library-path-modelicapath}):
 \begin{itemize}
 \item
-  The file \lstinline!IDENT ".mo"!\\
+  The file $\mathit{packageName}$\filename{.mo}\\
   Example: \filename{Modelica.mo}
 \item
-  The file \lstinline!IDENT " " VERSION-NUMBER ".mo"!\\
+  The file $\mathit{packageName}$\filename{\ }$\mathit{packageVersion}$\filename{.mo} (one space character separating $\mathit{packageName}$ from $\mathit{packageVersion}$)\\
   Example: \filename{Modelica 2.1.mo}
 \item
-  The directory \lstinline!IDENT! with the file \filename{package.mo} directly inside it\\
+  The directory $\mathit{packageName}$ with the file \filename{package.mo} directly inside it\\
   Example: \filename{Modelica/package.mo}
 \item
-  The directory \lstinline!IDENT " " VERSION-NUMBER! with the file \filename{package.mo} directly inside it\\
+  The directory $\mathit{packageName}$\filename{\ }$\mathit{packageVersion}$ with the file \filename{package.mo} directly inside it (one space character separating $\mathit{packageName}$ from $\mathit{packageVersion}$)\\
   Example: \filename{Modelica 2.1/package.mo}
 \end{itemize}
 
 This allows a tool to access multiple versions of the same package.
 
+
 \subsection{Version Date and Build Information}\label{version-date-and-build-information}
 
-Besides version information, a top-level class can have additionally the following top-level annotations to specify associated information to the version number:%
-\begin{lstlisting}[language=modelica]
+This section describes annotations that a top-level class can have to specify information associated to the version number.
+
+The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also be specified in the \lstinline!uses! annotation (together with the version number).
+
+\begin{nonnormative}
+It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
+\end{nonnormative}
+
+\begin{annotationdefinition}[versionDate]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String versionDate
-   "UTC date of first version build (in format: YYYY-MM-DD)";
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!versionDate! is the date when the library was released.
+This string is updated by the library author to correspond with the version number.
+
+The date shall be given as UTC according to ISO 8601: YYYY-MM-DD
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[versionBuild]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant Integer versionBuild
-   "Larger number is a more recent maintenance update";
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!versionBuild! is the optional build number of the library.
+When a new version is released \lstinline!versionBuild! should be omitted or \lstinline!versionBuild = 1!.
+There might be bug fixes to the library that do not justify a new library version.
+Such maintenance changes are called a \emph{build} release of the library.
+For every new maintenance change, the \lstinline!versionBuild! number is increased.
+A \lstinline!versionBuild! number $A$ that is higher than \lstinline!versionBuild! number $B$, is a newer release of the library.
+There are no conversions between the same versions with different build numbers.
+
+Two releases of a library with the same \lstinline!version! but different \lstinline!versionBuild! are in general assumed to be compatible.
+In special cases, the \lstinline!uses!-clause of a model may specify \lstinline!versionBuild! and/or \lstinline!dateModified!.
+In such a case the tool is expected to give a warning if there is a mismatch between library and model.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[dateModified]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String dateModified
-   "UTC date and time of the latest change to the package
-    in the following format (with one space between date
-    and time): YYYY-MM-DD hh:mm:ssZ";
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!dateModified! is the date and time of the last modification of the package.
+
+The date and time shall given as UTC according to ISO 8601 (with one space between date and time): YYYY-MM-DD hh:mm:ssZ
+
+\begin{nonnormative}
+The intention is that a Modelica tool updates this annotation whenever the package or part of it was modified and is saved on persistent storage (like file or database system).
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[revisionId]
+\begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String revisionId
-   "Revision identifier of the version management system used
-    to manage this library. It marks the latest submitted
-    change to any file belonging to the package";
-\end{lstlisting}%
-\annotationindex{versionDate}\annotationindex{versionBuild}\annotationindex{dateModified}\annotationindex{revisionId}
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!revisionId! is a tool specific revision identifier possibly generated by a source code management system (e.g., Subversion or CVS).
+This information exactly identifies the library source code in the source code management system.
+\end{semantics}
+\end{annotationdefinition}
 
 \begin{example}
 \begin{lstlisting}[language=modelica,mathescape=false,escapechar=!]
@@ -2189,56 +2312,23 @@ package Modelica
     versionDate = "2008-04-10",
     versionBuild = 4,
     dateModified = "2009-02-15 16:33:14Z",
-    revisionId = "$Id:: package.mo 2566 2009-05-26 13:25:54Z #$");
+    revisionId = "$Id:: package.mo 2566 2009-05-26 13:25:54Z #$"
+  );
 end Modelica;
 
 model M1
   annotation(
-    uses(Modelica(version = "3.0.1"))); // Common case
+    uses(Modelica(version = "3.0.1")) // Common case
+  );
 end M1
 
 model M2
   annotation(
-    uses(Modelica(version = "3.0.1", versionBuild = 4)));
+    uses(Modelica(version = "3.0.1", versionBuild = 4))
+  );
 end M2
 \end{lstlisting}
 \end{example}
-
-The meanings of these annotations are:
-\begin{itemize}
-\item
-  \lstinline!version! is the version number of the released library, see \cref{version-handling}.
-\item
-  \lstinline!versionDate! is the date in UTC format (according to ISO 8601) when the library was released.
-  This string is updated by the library author to correspond with the version number.
-\item
-  \lstinline!versionBuild! is the optional build number of the library.
-  When a new version is released \lstinline!versionBuild! should be omitted or \lstinline!versionBuild = 1!.
-  There might be bug fixes to the library that do not justify a new library version.
-  Such maintenance changes are called a \emph{build} release of the library.
-  For every new maintenance change, the \lstinline!versionBuild! number is increased.
-  A \lstinline!versionBuild! number $A$ that is higher than \lstinline!versionBuild! number $B$, is a newer release of the library.
-  There are no conversions between the same versions with different build numbers.
-
-  Two releases of a library with the same \lstinline!version! but different \lstinline!versionBuild! are in general assumed to be compatible.
-  In special cases, the \lstinline!uses!-clause of a model may specify \lstinline!versionBuild! and/or \lstinline!dateModified!.
-  In such a case the tool is expected to give a warning if there is a mismatch between library and model.
-\item
-  \lstinline!dateModified! is the UTC date and time (according to ISO 8601) of the last modification of the package.
-
-  \begin{nonnormative}
-  The intention is that a Modelica tool updates this annotation whenever the package or part of it was modified and is saved on persistent storage (like file or database system).
-  \end{nonnormative}
-\item
-  \lstinline!revisionId! is a tool specific revision identifier possibly generated by a source code management system (e.g., Subversion or CVS).
-  This information exactly identifies the library source code in the source code management system.
-\end{itemize}
-
-The \lstinline!versionBuild! and \lstinline!dateModified! annotations can also be specified in the \lstinline!uses! annotation (together with the version number).
-
-\begin{nonnormative}
-It is recommended that tools do not automatically store \lstinline!versionBuild! and \lstinline!dateModified! in the \lstinline!uses! annotation.
-\end{nonnormative}
 
 
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
@@ -2470,8 +2560,12 @@ annotation(Protection(features={"LicenseOption"}));
 // Requires license features "LicenseOption1" or "LicenseOption2"
 annotation(Protection(features={"LicenseOption1", "LicenseOption2"}));
 
-// Requires license features ("LicenseOption1" and "LicenseOption2") or "LicenseOption3"
-annotation(Protection(features={"LicenseOption1 LicenseOption2", "LicenseOption3"}));
+// Requires license features:
+//    ("LicenseOption1" and "LicenseOption2")
+//    or "LicenseOption3"
+annotation(Protection(
+  features = {"LicenseOption1 LicenseOption2", "LicenseOption3"}
+));
 \end{lstlisting}
 \end{example}
 
@@ -2480,21 +2574,30 @@ The authorization file is standardized.
 It is a Modelica package without classes that has an \lstinline!Authorization! annotation of the following form which specifies a sequence of target records, which makes it natural to define start/end dates for different sets of targets individually:
 \begin{lstlisting}[language=modelica]
 record Authorization
-  /*literal*/ constant String licensor = "" "Information about the licensor";
-  /*literal*/ constant String libraryKey "Matching the key in the class. Must be encrypted and not visible";
-  /*literal*/ constant License license[:] "Definition of the license options and of the access rights";
+  /*literal*/ constant String licensor = ""
+    "Information about the licensor";
+  /*literal*/ constant String libraryKey
+    "Matching the key in the class. Must be encrypted and not visible";
+  /*literal*/ constant License license[:]
+    "Definition of the license options and of the access rights";
 end Authorization;
 \end{lstlisting}%
 \index{Authorization@\robustinline{Authorization}!authorization file}\index{License@\robustinline{License}!authorization file}
 using the following definition:
 \begin{lstlisting}[language=modelica]
 record License
-  /*literal*/ constant String licensee = "" "Information about the licensee";
-  /*literal*/ constant String id[:] "Unique machine identifications, e.g., MAC addresses";
-  /*literal*/ constant String features[:] "Activated library license features";
-  /*literal*/ constant String startDate = "" "Start date in UTCformat YYYY-MM-DD";
-  /*literal*/ constant String expirationDate = "" "Expiration date in UTCformat YYYY-MM-DD";
-  /*literal*/ constant String operations[:] "Library usage conditions";
+  /*literal*/ constant String licensee = ""
+    "Information about the licensee";
+  /*literal*/ constant String id[:]
+    "Unique machine identifications, e.g., MAC addresses";
+  /*literal*/ constant String features[:]
+    "Activated library license features";
+  /*literal*/ constant String startDate = ""
+    "Start date in UTCformat YYYY-MM-DD";
+  /*literal*/ constant String expirationDate = ""
+    "Expiration date in UTCformat YYYY-MM-DD";
+  /*literal*/ constant String operations[:]
+    "Library usage conditions";
 end License;
 \end{lstlisting}
 
@@ -2524,25 +2627,32 @@ Note, it is not useful to store this information in the annotation, because only
 \begin{lstlisting}[language=modelica]
 // File MyLibrary\package.mo
 package MyLibrary
-  annotation(Protection(License(libraryKey="15783-A39323-498222-444ckk4ll",
-  licenseFile="MyLibraryAuthorization_Tool.mo_lic"), $\ldots$));
+  annotation(Protection(License(
+    libraryKey = "15783-A39323-498222-444ckk4ll",
+    licenseFile = "MyLibraryAuthorization_Tool.mo_lic"
+  )));
 end MyLibrary;
 
 // File MyLibrary\MyLibraryAuthorization_Tool.mo\
 // (authorization file before encryption)
 package MyLibraryAuthorization_Tool
   annotation(Authorization(
-  libraryKey="15783-A39323-498222-444ckk4ll",
-  licensor ="Organization A\nRoad, Country",
- license={
-  License(licensee="Organization B, Mr.X",
-    id ={"lic:1269"}), // tool license number
-  License(licensee="Organization C, Mr. Y",
-    id ={"lic:511"}, expirationDate="2010-06-30",
-   operations={"ExportBinary"}),
-  License(licensee="Organization D, Mr. Z",
-    id ={"mac:0019d2c9bfe7"}) // MAC address
-  }));
+    libraryKey = "15783-A39323-498222-444ckk4ll",
+    licensor = "Organization A\nRoad, Country",
+    license = {
+      License(
+        licensee = "Organization B, Mr.X",
+        id = {"lic:1269"}), // tool license number
+      License(
+        licensee = "Organization C, Mr. Y",
+        id = {"lic:511"},
+        expirationDate="2010-06-30",
+        operations = {"ExportBinary"}),
+      License(
+        licensee="Organization D, Mr. Z",
+        id = {"mac:0019d2c9bfe7"}) // MAC address
+    }
+  ));
 end MyLibraryAuthorization_Tool;
 \end{lstlisting}
 \end{example}
@@ -2550,15 +2660,34 @@ end MyLibraryAuthorization_Tool;
 
 \section{License Texts}\label{license-texts}
 
-For a top-level class the {\lstinline!annotation(License="modelica:/ModelicaLibraryName/Resources/Licenses/MyLicense.txt")!}\annotationindex{License}, gives a license text file for the class.
+The annotation listed below allows a top-level class to specify license conditions.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!License!} & License files & \Cref{modelica:top-License}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition*}[License]\label{modelica:top-License}\index{License@\robustinline{License}!top-level class annotation}
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String License
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+For a top-level class the {\lstinline!annotation(License="modelica:/TopPackage/Resources/Licenses/MyLicense.txt")!}\annotationindex{License}, gives a license text file for the class.
 The annotation may give a scalar string or an array of strings, where each string is a URI referencing a license text file, see \cref{external-resources}.
 The license text files are human-readable files containing the license conditions.
 If the annotation specifies an array of license text files the conditions in all of them must be satisfied (i.e., it is not intended for dual-licensing).
-External functions may also contain this annotation (with similar content), see \cref{annotations-for-external-libraries-and-include-files}.
+External functions may also contain this annotation (with similar content), see \cref{modelica:extfun-License}.
 
 When generating a distributable version for a translated model the license text files for used functions and top-level classes should be included.
 Exceptions could be that licenses will be distributed in another way, or that there is an agreement to include different licenses (e.g., for internal libraries).
 Note that the \lstinline!License! annotation only allows the library developer and tool to assist the user in doing what is legally required; in the end it is a user responsibility to ensure that required license text files accompany distributable versions of models.
+\end{semantics}
+\end{annotationdefinition*}
 
 
 \section{Functions}\label{annotations-for-functions}

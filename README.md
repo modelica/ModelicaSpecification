@@ -10,6 +10,8 @@ Development is organized within the [Modelica Association Project Language (MAP-
 Modelica® is a language for modeling of cyber-physical systems, supporting acausal connection of components governed by mathematical equations to facilitate modeling from first principles.
 It provides object-oriented constructs that facilitate reuse of models, and can be used conveniently for modeling complex systems containing, e.g., mechanical, electrical, electronic, magnetic, hydraulic, thermal, control, electric power or process-oriented subcomponents.
 
+To get started there's a [tutorial for the language](Tutorial.md).
+
 ## Releases
 
 Version | Link                                                              | Published | Changes |
@@ -46,12 +48,12 @@ CLA: Contributor's license agreement. (Details to follow.)
 
 How to edit and generate final documents
 * Read the [style guide](styleguide.md).
-* For online editing you can use www.overleaf.com (details to follow)
+* For online editing with [Overleaf](https://www.overleaf.com/), read the [overleaf guide](overleaf_guide.md).
 * The pdf-documents are generated with pdflatex, which is part of most LaTeX installations, we used http://miktex.org/download
 * The HTML-documents are generated with LaTeXML. That is more complicated to install - and can optionally be skipped:
-1. First you need perl, we used http://strawberryperl.com/
-2. And then the official LaTeXML package (0.8.5 or later): http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
-3. The exact commands are in the Makefile
+  1. First you need perl, we used http://strawberryperl.com/
+  2. And then the official LaTeXML package (0.8.5 or later): http://dlmf.nist.gov/LaTeXML/get.html#SS4.SSS0.Px1 or https://github.com/brucemiller/LaTeXML
+  3. The exact commands are in the [Makefile](./Makefile)
 
 It is also possible to get a preview in the pull request.
 There will be a link to the [status check](https://test.openmodelica.org/jenkins/job/ModelicaAssociation/job/ModelicaSpecification/view/change-requests/), which checks that the documents can be generated and gives you an option to download them.

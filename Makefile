@@ -22,8 +22,10 @@ MLS.pdf: *.tex chapters/*.tex
 
 # Seems to be some issue with graphicpath, so set path here as well
 # Not using %.html since nmake does not support it (instead using old-style suffix rules)
+# The --preload flag is a workaround proposed in the following LaTeXML issue:
+# - https://github.com/brucemiller/LaTeXML/issues/2553 -- fixed on 'master' as of 2025-05-07
 index.html: MLS.tex chapters/*.tex
-	$(LATEXMLPREFIX)latexml MLS.tex --includestyles --path=media --dest MLS.xml
+	$(LATEXMLPREFIX)latexml MLS.tex --preload=[nobreakuntex]latexml.sty --includestyles --path=media --dest MLS.xml
 	$(LATEXMLPREFIX)latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest $@
 	.scripts/patch-viewport.sh
 	.scripts/patch-body-ios-hover.sh
