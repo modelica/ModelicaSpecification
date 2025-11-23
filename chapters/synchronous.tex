@@ -1130,6 +1130,8 @@ This is achieved by solving the continuous-time equations with a defined integra
 With this feature, it is for example possible to invert the nonlinear dynamic model of a plant, see \textcite{ThummelEtAl2005InverseModels}, and use it in a feedforward path of an advanced control system that is associated with a clock.
 
 This feature also allows defining multi-rate systems: Different parts of the continuous-time model are associated to different clocks and are solved with different integration methods between clock ticks, e.g., a very fast sub-system with an implicit solver with a small step-size and a slow sub-system with an explicit solver with a large step-size.
+
+There is also a special handling for determining states according to measurements instead of the normal integration method, \cref{setting-states}.
 \end{nonnormative}
 
 With the language elements defined in this section, continuous-time equations can be used in clocked partitions.
@@ -1190,6 +1192,7 @@ Especially neither relations, nor any of the built-in operators of \cref{event-t
 
 A sub-partition can have an integration method, directly associated (\cref{associating-a-solver-to-a-partition}) or inferred from other sub-partitions (\cref{inferencing-of-solvermethod}).
 A predefined type \lstinline!ModelicaServices.Types.SolverMethod! defines the methods supported by the respective tool by using the \lstinline!choices! annotation.
+See also \cref{setting-states}.
 
 \begin{nonnormative}
 The \lstinline!ModelicaServices! package contains tool specific definitions.
@@ -1340,6 +1343,53 @@ For details see \textcite{ElmqvistOtterCellier1995InlineIntegration}.
 It might be necessary to associate additional data for an implicit integration method, e.g., the relative tolerance to solve the non-linear algebraic equation systems, or the maximum number of iterations in case of hard realtime requirements.
 This data is tool specific and is typically either defined with a vendor annotation or is given in the simulation environment.
 \end{nonnormative}
+
+\subsection{Setting states}\label{setting-states}
+In model-based control systems, a natural way of incorporating measurements can be to update discretized model states based on the measurements, see \textcite{OlssonEtAl2017ModelBased}.
+Note that \lstinline!reinit! also has another definition, see \cref{reinit}.
+
+A declaration equation can have the form \lstinline!Real x = reinit(expr)!.
+The restrictions are that:
+\begin{itemize}
+\item It is only legal in a discretized sub-partition.
+\item The variable (i.e.,\ \lstinline!x!) must be a scalar or array variable that is a subtype of \lstinline!Real!.
+\item The right-hand-side must consist solely of a call to \lstinline!reinit!.
+\item The argument to \lstinline!reinit! (i.e,\ \lstinline!expr!) must be compatible with the variable.
+\end{itemize}
+
+The semantics are:
+\begin{itemize}
+\item The variable implicitly has \lstinline!StateSelect.always!.
+\item The variable participates in the usual index reduction and state selection (where it must be selected as a state).
+\item The discretization of the state is equal to the new value \lstinline!expr! during the entire step, instead of using the discretization method in \cref{solver-methods}.
+\item This declaration equation is ignored for the equation count, see \cref{local-equation-size}.
+\end{itemize}
+
+\begin{example}
+This example shortly demonstrates the semantics; for realistic use-cases, see \textcite{OlssonEtAl2017ModelBased}.
+\begin{lstlisting}[language=modelica]
+model DiscretizedWithReinit
+  Real u = sample(time, Clock(Clock(1, 10), "ExplicitEuler"));
+  Real x = reinit(u);
+  Real y = 2 * x;
+equation
+  der(y) = u - y;
+end DiscretizedWithReinit;
+\end{lstlisting}
+This is similar to the following equations:
+\begin{lstlisting}[language=modelica]
+when sample(0.1) then
+  u = time;
+  x = u; // Discretization - just using input!
+  y = 2 * x;
+  der_y = time - y;
+  der_x = 0.5 * der_y;
+\end{lstlisting}
+Here we see that \lstinline!x! was selected as a state in favor of \lstinline!y!, despite the latter being differentiated.
+Without the \lstinline!reinit!-call the equation for \lstinline!x! would be \lstinline!pre(x) + 0.1 * pre(der_x)!.
+Note that replacing the discretization for \lstinline!x! does not change the equations for \lstinline!der_y! and \lstinline!der_x! compared to solver method discretization.
+\end{example}
+
 
 \subsection{Associating a Solver to a Sub-Partition}\label{associating-a-solver-to-a-partition}
 
