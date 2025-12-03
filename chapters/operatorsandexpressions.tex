@@ -594,12 +594,14 @@ The operators listed below trigger events unless explicitly or implicitly inhibi
 {\lstinline!ceil($x$)!} & Smallest integer {\lstinline!Real!} not less than $x$ & \Cref{modelica:ceil} \\
 {\lstinline!floor($x$)!} & Largest integer {\lstinline!Real!} not greater than $x$ & \Cref{modelica:floor} \\
 {\lstinline!integer($x$)!} & Largest {\lstinline!Integer!} not greater than $x$ & \Cref{modelica:integer} \\
+{\lstinline!delay($\ldots$)!} & Time delay & \Cref{modelica:delay} \\
 \hline
 \end{tabular}
 \end{center}
 
 Except for the \lstinline!noEvent!-case the expressions \lstinline!div!, \lstinline!ceil!, \lstinline!floor!, and \lstinline!integer! can only change values at events, and will trigger events as needed.
 The event triggering expressions for \lstinline!mod(x,y)! is \lstinline!floor(x/y)!, and for \lstinline!rem(x,y)! it is \lstinline!div(x,y)! -- i.e., the expressions \lstinline!mod! and \lstinline!rem! do not only change values at events, but events are triggered at the points of discontinuous change.
+The event triggering expression for \lstinline!delay! is the time remaining until the next discontinuity in the operator value.
 
 \begin{nonnormative}
 If this is not desired, the \lstinline!noEvent! operator can be applied to them.
@@ -690,6 +692,53 @@ Note, outside of a \lstinline!when!-clause state events are triggered when the r
 \end{semantics}
 \end{operatordefinition}
 
+\begin{operatordefinition}[delay]
+\begin{synopsis}\begin{lstlisting}
+delay($\mathit{expr}$, $\mathit{delayTime}$, $\mathit{delayMax}$)
+delay($\mathit{expr}$, $\mathit{delayTime}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Evaluates to:
+\begin{equation*}
+\begin{cases}
+\mathit{expr}(\text{\lstinline!time.start!}) & \text{\lstinline!time!} - \mathit{delayTime} \leq \text{\lstinline!time.start!}\\
+\mathit{expr}(\text{\lstinline!time!} - \mathit{delayTime}) & \text{otherwise}
+\end{cases}
+\end{equation*}
+
+When a \lstinline!delay!-expression is discrete-time (see \cref{discrete-time-expressions}), events will be generated in order to allow the value to change at the correct points in time.
+Further, when a \lstinline!delay!-expression is non-discrete-time and event generation is enabled (not appearing inside \lstinline!noEvent!), events may also be generated in order to preserve discontinuities in $\mathit{expr}$.
+It is a quality of implementation to avoid excessive generation of events by only preserving significant discontinuities.
+
+The expression $\mathit{expr}$ shall be a subtype of \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, or an enumeration type.
+The time arguments, $\mathit{delayTime}$ and $\mathit{delayMax}$, shall be subtypes of \lstinline!Real!.
+The type of the result is the same as the type of $\mathit{expr}$.
+
+When provided, $\mathit{delayMax}$ shall be a parameter expression, and it shall hold that $0 \leq \mathit{delayTime} \leq \mathit{delayMax}$.
+When $\mathit{delayMax}$ is not provided, $\mathit{delayTime} \geq 0$ shall be a parameter expression.
+The operator is not allowed inside \lstinline!function! classes.
+For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
+For further details, see \cref{delay}.
+\end{semantics}
+\end{operatordefinition}
+
+
+\subsubsection{delay}\label{delay}
+
+\begin{nonnormative}
+\lstinline!delay! allows a numerical sound implementation by interpolating in the (internal) integrator polynomials, as well as a more simple realization by interpolating linearly in a buffer containing past values of expression $\mathit{expr}$.
+Without further information, the complete time history of the delayed signals needs to be stored, because the delay time may change during simulation.
+To avoid excessive storage requirements and to enhance efficiency, the maximum allowed delay time has to be given via $\mathit{delayMax}$.
+This gives an upper bound on the values of the delayed signals which have to be stored.
+For real-time simulation where fixed step size integrators are used, this information is sufficient to allocate the necessary storage for the internal buffer before the simulation starts.
+For variable step size integrators, the buffer size is dynamic during integration.
+
+In principle, \lstinline!delay! could break algebraic loops.
+For simplicity, this is not supported because the minimum delay time has to be given as additional argument to be fixed at compile time.
+Furthermore, the maximum step size of the integrator is limited by this minimum delay time in order to avoid extrapolation in the delay buffer.
+\end{nonnormative}
+
+
 \subsection{Elementary Mathematical Functions}\label{built-in-mathematical-functions-and-external-built-in-functions}
 
 The functions listed below are elementary mathematical functions.
@@ -749,7 +798,6 @@ The operators listed below include the derivative operator and special purpose o
 \hline
 \hline
 {\lstinline!der($\mathit{expr}$)!} & Time derivative & \Cref{modelica:der} \\
-{\lstinline!delay($\mathit{expr}$, $\ldots$)!} & Time delay & \Cref{modelica:delay} \\
 {\lstinline!cardinality($c$)!} & Number of occurrences in {\lstinline!connect!}-equations & \Cref{modelica:cardinality} \\
 {\lstinline!homotopy($\mathit{actual}$, $\mathit{simplified}$)!} & Homotopy initialization & \Cref{modelica:homotopy} \\
 {\lstinline!semiLinear($x$, $k^{+}$, $k^{-}$)!} & Sign-dependent slope & \Cref{modelica:semiLinear} \\
@@ -813,23 +861,6 @@ equation
 \end{lstlisting}
 \end{example}
 
-\end{semantics}
-\end{operatordefinition}
-
-\begin{operatordefinition}[delay]
-\begin{synopsis}\begin{lstlisting}
-delay($\mathit{expr}$, $\mathit{delayTime}$, $\mathit{delayMax}$)
-delay($\mathit{expr}$, $\mathit{delayTime}$)
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-Evaluates to \lstinline!$\mathit{expr}$(time - $\mathit{delayTime}$)! for $\text{\lstinline!time!} > \text{\lstinline!time.start!} + \mathit{delayTime}$ and \lstinline!$\mathit{expr}$(time.start)! for $\text{\lstinline!time!} \leq \text{\lstinline!time.start!} + \mathit{delayTime}$.
-The arguments, i.e., $\mathit{expr}$, $\mathit{delayTime}$ and $\mathit{delayMax}$, need to be subtypes of \lstinline!Real!.
-$\mathit{delayMax}$ needs to be additionally a parameter expression.
-The following relation shall hold: $0 \leq \mathit{delayTime} \leq \mathit{delayMax}$, otherwise an error occurs.
-If $\mathit{delayMax}$ is not supplied in the argument list, $\mathit{delayTime}$ needs to be a parameter expression.
-The operator is not allowed inside \lstinline!function! classes.
-For non-scalar arguments the function is vectorized according to \cref{vectorized-calls-of-functions}.
-For further details, see \cref{delay}.
 \end{semantics}
 \end{operatordefinition}
 
@@ -932,21 +963,6 @@ For further details, see \cref{getinstancename}.
 \end{operatordefinition}
 
 A few of these operators are described in more detail in the following.
-
-\subsubsection{delay}\label{delay}
-
-\begin{nonnormative}
-\lstinline!delay! allows a numerical sound implementation by interpolating in the (internal) integrator polynomials, as well as a more simple realization by interpolating linearly in a buffer containing past values of expression $\mathit{expr}$.
-Without further information, the complete time history of the delayed signals needs to be stored, because the delay time may change during simulation.
-To avoid excessive storage requirements and to enhance efficiency, the maximum allowed delay time has to be given via $\mathit{delayMax}$.
-This gives an upper bound on the values of the delayed signals which have to be stored.
-For real-time simulation where fixed step size integrators are used, this information is sufficient to allocate the necessary storage for the internal buffer before the simulation starts.
-For variable step size integrators, the buffer size is dynamic during integration.
-
-In principle, \lstinline!delay! could break algebraic loops.
-For simplicity, this is not supported because the minimum delay time has to be given as additional argument to be fixed at compile time.
-Furthermore, the maximum step size of the integrator is limited by this minimum delay time in order to avoid extrapolation in the delay buffer.
-\end{nonnormative}
 
 \subsubsection{spatialDistribution}\label{spatialdistribution}
 
@@ -1575,6 +1591,12 @@ Constant expressions\index{constant!expression}\index{expression variability!con
   \item
     \lstinline!ndims(A)!
   \end{itemize}
+\item
+  Some function calls are constant expressions even if one or more arguments are not:
+  \begin{itemize}
+  \item
+    \lstinline!delay($x$, $\ldots$)! where $x$ is a constant expression.
+  \end{itemize}
 \end{itemize}
 
 \subsection{Evaluable Expressions}\label{evaluable-expressions}
@@ -1592,16 +1614,18 @@ Evaluable expressions\index{evaluable expression}\index{expression variability!e
 \item
   The sub-expression \lstinline!end! used in \lstinline!A[$\ldots$ end $\ldots$]! if \lstinline!A! is a variable declared in a non-\lstinline!function! class.
 \item
-  Some function calls are evaluable expressions even if the arguments are not:
+  Some function calls are evaluable expressions even if one or more arguments are not:
   \begin{itemize}
   \item
-    \lstinline!cardinality(c)!, see restrictions for use in \cref{cardinality-deprecated}.
+    \lstinline!size(A)! (including \lstinline!size(A, j)! where \lstinline!j! is an evaluable expression) if \lstinline!A! is variable declared in a non-function class.
   \item
-    \lstinline!size(A)! (including \lstinline!size(A, j)! where \lstinline!j! is an evaluable expression) if \lstinline!A! is variable declared in a non-function class).
+    \lstinline!delay($x$, $\ldots$)! where $x$ is an evaluable expression.
   \item
     \lstinline!Connections.isRoot(A.R)!
   \item
     \lstinline!Connections.rooted(A.R)!
+  \item
+    \lstinline!cardinality(c)!, see restrictions for use in \cref{cardinality-deprecated}.
   \end{itemize}
 \end{itemize}
 
@@ -1616,10 +1640,12 @@ Parameter expressions\index{parameter!expression}\index{expression variability!p
 \item
   Except for the special built-in operators \lstinline!initial!, \lstinline!terminal!, \lstinline!der!, \lstinline!edge!, \lstinline!change!, \lstinline!sample!, and \lstinline!pre!, a function or operator with parameter subexpressions is a parameter expression.
 \item
-  Some function calls are parameter expressions even if the arguments are not:
+  Some function calls are parameter expressions even if one or more arguments are not:
   \begin{itemize}
   \item
     \lstinline!size(A, j)! where \lstinline!j! is a parameter expression, if \lstinline!A! is variable declared in a non-function class.
+  \item
+    \lstinline!delay($x$, $\ldots$)! where $x$ is a parameter expression.
   \end{itemize}
 \end{itemize}
 
@@ -1646,6 +1672,8 @@ Discrete-time expressions\index{discrete-time!expression}\index{expression varia
   Note that \lstinline!rem! and \lstinline!mod! generate events but are not discrete-time expressions.
   In other words, relations inside \lstinline!noEvent!, such as \lstinline!noEvent(x>1)!, are not discrete-time expressions.
   \end{nonnormative}
+\item
+  Unless inside \lstinline!noEvent!: \lstinline!delay($x$, $\ldots$)!, if $x$ is a discrete-time expression.
 \item
   Unless inside \lstinline!noEvent!: Function calls where the function has annotation \lstinline!GenerateEvents = true! (\cref{modelica:GenerateEvents}), the output does not contain a subtype of \lstinline!Real!, and any non-\lstinline!Real! inputs have discrete-time variability.
   For a function call returning multiple return values (see \cref{output-formal-parameters-of-functions}) the variability is decided separately for each output.
