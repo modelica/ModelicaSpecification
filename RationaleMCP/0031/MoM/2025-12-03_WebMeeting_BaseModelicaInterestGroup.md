@@ -1,4 +1,4 @@
-# BaseModelica Interest Group web meeting May 22, 2025
+# BaseModelica Interest Group web meeting Dec. 03, 2025
 
 ## Agenda
 
@@ -9,7 +9,7 @@
 
 * [x] Oliver Lenord (Bosch)
 * [x] Fabian Jarmolowitz (Bosch)
-* [x] Christoff Bürger (Dassault Systemes)
+* [ ] Christoff Bürger (Dassault Systemes)
 * [ ] Gerd Kurzbach (ESI)
 * [ ] Erik Danielsson (COMSOL)
 * [ ] Jeff Hiller (COMSOL)
@@ -21,158 +21,86 @@
 * [ ] Johannes Ruess (DIgSILENT)
 * [ ] Chris Rackauckas (JuliaHub)
 * [x] Jadon Clugston (JuliaHub)
-* [ ] Joel Andersson (CasADi)
+* [x] Joel Andersson (CasADi)
 * [ ] James Goppert (Purdue University)
 * [x] Micah Condie (Purdue University)
 
 ## Meeting notes
 
+### Base Modelica being a pure subset of Modelica
+
+Francesco:
+
+There are many things that can be simplified by the compiler, like function inlining, ... , that enable using very simple parsers to process the output, like MARCO.
+
+The same model can be rendered in Base Modelica in various ways, depending on the level of flattening that is applied.
+
+Henrik:
+
+On can develop a tool that supports only a part, but the standard should describe all that is possible in a concise way, avoiding variants.
+
+At Wolfram we have now started to have a shared part that can be extended depending on whether it is Modelica or Base Modelica.
+It turned out that it's much easier from a developer perspective to ignore Modelica-only features.
+
 ### Testing OpenModelica to BaseModelica.jl
 
 Francesco:
 
-Test infrastructure has been setup to automate cross checking
-- Base Modelica output from OpenModelica
-- Import into BaseModelica.jl
+- Test infrastructure has been setup to automate cross checking
+- Reported blockers to Jadon
+- Jadon worked on fixes
+- Improved from 0 to 10 (much better, but still only 2% of MSL)
+- Modelica.Electrical.Analog caused many models to fail due to arrays.
+ - configured OpenModelica to avoid arrays
+ - StateSelect not recognized
+- Other issues related to if equations 
 
-MSL models currently too complex.
-
-Hand code works.
-
-Possible simplifications
-- avoid hybrid (discrete/continuous)
-
-Jadon:
-
-Current status
-- Recently added support for conditional equations and if-expressions
-- modifiers ignored
-- assert ignored
-- CauerLowPass can be parsed, results not checked
-- Other examples never finalized parsing, probably due to incomplete grammar
- 
-Francesco:
-- Could be that the Base Modelica is not error free.
-
-
-### OpenModelica/MARCO
-
-First working industry grade example using Base Modelica to integrate with PYOMO.
-
-High interest to get Base Modelica standardized to push more into this direction.
-
-### Wolfram
-
-Henrik:
-We have some functionality, but as a commercial tool we need to avoid the situation of users starting to use is before there is an official standard.
-
-Currently prefer to exchange examples to test the language.
-https://github.com/modelica/BaseModelica_CrossCheck
-
-At the moment Base Modelica is generated after flattening, but this is not as interesting.
-Export Base Modelica before requires more work to restructure the code.
-This work in progress.
-
-### Standardization of Base Modelica
-
-Fabian:
-Is there a Grammar available for Base Modelica.
-
-Henrik:
-Yes, there is the Grammar as a diff to the full Modelica.
-https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/grammar.md
-
-Idea was to highlight what the simplifications are about and how different it is.
-
-Jadon:
-A bit difficult to interpret as non-Modelica user.
-
-Francesco:
-Having a very fist limited version 1 is crucial to not loose momentum and break the chicken and egg problem of having no users without tools and no tools without users.
-FMI1 was a first shot and has been forgotten by now, but it was the crucial first step to later success.
-
-Henrik:
-We had a lot of momentum on the technical side 2 years ago.
-But this was based on the assumption that Base Modelica is __not__ a pure subset of Modelica.
-
-Oliver:
-When we decided to not yet work on the Base Modelica standard, the rational was to first proof to management:
-- feasibility
-- benefits for the users and developers
-- get feedback from the community
-
-Benefits have been demonstrated, e.g., https://github.com/looms-polimi/SOFCPoliMi Modelica models of Solid Oxyde Fuel Cells developed at Politecnico di Milano, or at least could be show cased, e.g., if we had first examples running in ModelingToolkit. Wolfram experienced that their tool structure can be improved.
- 
-Proof of feasibility has made significant progress.
-
-Towards the general concern of Base Modelica being a pure subset this not only a technical but also a political question.
-
-Henrik:
-We should ask Jadon, whether or not the new Base Modelica constructs make his live easier?
+Hence, Modelica is complicated and Base Modelica still is.
 
 Jadon:
 
-Models with only variables, parameters and equations have been straight forward to implement.
+Wasn't prepared for arrays and similar.
 
-Biggest issues have been related to:
-- records
-- functions
+To name the biggest hurdles I'd have to dig into the errors.
 
-Oliver:
-How about initialization?
-Like the explicit guess values.
+- Modification is a big thing.
+- Parameters being defined by an expression depending on other parameters
 
-Jadon:
+Francesco: 
 
-Well, ModelingToolkit can handle that.
+Dependencies are required to be acyclic, but the compiler can be instructed to evaluate parameters, which should avoid this challenge for many examples.
 
-Francesco:
-I can compile a set of examples using these language features.
-
-Christoff:
-
-From tool vendor perspective there are a couple of reasons why a pure subset is crucial:
-- for internal communication within DS, to not give the impression we develop a new language,
-- also for educational reasons, to avoid confusion among users,
-- avoid the risk of having to deal with two languages when integrating models into an existing structure
+Jadon: That would be helpful for the time being.
 
 Henrik:
-Getting a full Modelica model from a Base Modelica model should be easy and lead to a simpler model.
+
+Could be that local type definitions, e.g., enumerations are over looked.
 
 Francesco:
 
-Problematic are Modelica models with records and functions.
-
-Modelica functions could be expresses as external functions.
-
-Regarding going back and forth between Modelica and Base Modelica: Would it be possible to tansform one into the other in both directions?
+We can share the produced Base Modelica files for all of MSL.
+These can be processed all the way to simulation, though some 10 model that fail during simulation.
+All this goes through Base Modelica, but can currently not verify that it is proper Base Modelica.
 
 Henrik:
-I expect AI tooling to have a good chance to produce good results.
 
-Jadon mentioned that he has thrown away the modifiers.
-Until he got to the point of understanding this complexity in Modelica he will not be able to appreciate the simplifications we have in Base Modelica.
+I could invest a bit of time to move the rules from our grammar file into the parser to check imported Base Modelica.
 
+We could also enforce more restrictive variability rules.
+This is easily missed. 
 
-### rumoca/CasADi
-
-Micah:
-Haven't really started looking into Base Modelica, but for the next meeting we could see how far we get and give a status update.
-
-What we discovered is that we'd like to preserve some structural information like what is a rigid body.
-We could also give an overview of this type of things we'd like to see
-
-Oliver:
-This would be really interesting.
-Probably too much for one meeting together with the other points we have, but surely something for future meetings.
 
 ## Topics for next meeting
 
-- [ ] Prepare few minimal examples highlighting the Base Modelica simplifying language features.
-- [ ] Feedback from Jadon how valuable he considers theses features.
-- [ ] Consider the risks of Base Modelica not being a pure subset seen by Christoff
+- Apply compiler settings that will lead to the discussed simplified Base Modelica [Francesco] 
+- Prepare few minimal examples highlighting the Base Modelica simplifying language features. [Francesco, Henrik]
+- Feedback from Jadon how valuable he considers theses features.
+- Consider the risks of Base Modelica not being a pure subset seen by Christoff
+
 
 ## Next Meeting
+
+Wed. Feb 28, 2026, 16.00-17.00 CET 
 
 Wed. Dec. 3, 2025 16:00-17:00
 Meeting invite has been sent out.
