@@ -579,7 +579,7 @@ Some situations worth a remark:
 \end{operatordefinition*}
 
 
-\subsection{Event Triggering Mathematical Functions}\label{event-triggering-mathematical-functions}
+\subsection{Event-Triggering Mathematical Functions}\label{event-triggering-mathematical-functions}
 
 The operators listed below trigger events unless explicitly or implicitly inhibited by \lstinline!noEvent! (see \cref{events-and-synchronization}).
 \begin{center}
@@ -595,13 +595,15 @@ The operators listed below trigger events unless explicitly or implicitly inhibi
 {\lstinline!floor($x$)!} & Largest integer {\lstinline!Real!} not greater than $x$ & \Cref{modelica:floor} \\
 {\lstinline!integer($x$)!} & Largest {\lstinline!Integer!} not greater than $x$ & \Cref{modelica:integer} \\
 {\lstinline!delay($\ldots$)!} & Time delay & \Cref{modelica:delay} \\
+{\lstinline!spatialDistribution($\ldots$)!} & Variable-speed transport & \Cref{modelica:spatialDistribution} \\
 \hline
 \end{tabular}
 \end{center}
 
 Except for the \lstinline!noEvent!-case the expressions \lstinline!div!, \lstinline!ceil!, \lstinline!floor!, and \lstinline!integer! can only change values at events, and will trigger events as needed.
-The event triggering expressions for \lstinline!mod(x,y)! is \lstinline!floor(x/y)!, and for \lstinline!rem(x,y)! it is \lstinline!div(x,y)! -- i.e., the expressions \lstinline!mod! and \lstinline!rem! do not only change values at events, but events are triggered at the points of discontinuous change.
-The event triggering expression for \lstinline!delay! is the time remaining until the next discontinuity in the operator value.
+The event-triggering expressions for \lstinline!mod(x,y)! is \lstinline!floor(x/y)!, and for \lstinline!rem(x,y)! it is \lstinline!div(x,y)! -- i.e., the expressions \lstinline!mod! and \lstinline!rem! do not only change values at events, but events are triggered at the points of discontinuous change.
+The event-triggering expression for \lstinline!delay! is the time remaining until the next discontinuity in the operator value.
+The event-triggering expression for \lstinline!spatialDistribution! is the shortest distance from a discontinuity in the stored distribution to one of the boundaries of the distribution (where the discontinuity would reach one of the operator values).
 
 \begin{nonnormative}
 If this is not desired, the \lstinline!noEvent! operator can be applied to them.
@@ -722,6 +724,23 @@ For further details, see \cref{delay}.
 \end{semantics}
 \end{operatordefinition}
 
+\begin{operatordefinition}[spatialDistribution]
+\begin{synopsis}\begin{lstlisting}
+spatialDistribution(
+  in0 = $\mathit{in0}$, in1 = $\mathit{in1}$, x = $x$,
+  positiveVelocity = $\ldots$,
+  initialPoints = $\ldots$,
+  initialValues = $\ldots$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+\lstinline!spatialDistribution! allows approximation of variable-speed transport of properties.
+The operator is not allowed inside \lstinline!function! classes.
+For further details, see \cref{spatialdistribution}.
+\end{semantics}
+\end{operatordefinition}
+
+A few of these operators are described in more detail in the following.
+
 
 \subsubsection{delay}\label{delay}
 
@@ -736,6 +755,130 @@ For variable step size integrators, the buffer size is dynamic during integratio
 In principle, \lstinline!delay! could break algebraic loops.
 For simplicity, this is not supported because the minimum delay time has to be given as additional argument to be fixed at compile time.
 Furthermore, the maximum step size of the integrator is limited by this minimum delay time in order to avoid extrapolation in the delay buffer.
+\end{nonnormative}
+
+
+\subsubsection{spatialDistribution}\label{spatialdistribution}
+
+\begin{nonnormative}
+Many applications involve the modelling of variable-speed transport of properties.
+One option to model this infinite-dimensional system is to approximate it by an ODE, but this requires a large number of state variables and might introduce either numerical diffusion or numerical oscillations.
+Another option is to use a built-in operator that keeps track of the spatial distribution of $z(\xi, t)$, by suitable sampling, interpolation, and shifting of the stored distribution.
+In this case, the internal state of the operator is hidden from the ODE solver.
+\end{nonnormative}
+
+\lstinline!spatialDistribution! allows the infinite-dimensional problem below to be solved efficiently with good accuracy:
+\begin{align*}
+\frac{\partial z(\xi, t)}{\partial t} + v(t) \frac{\partial z(\xi, t)}{\partial \xi} &= 0\\
+z(0, t) &= \mathrm{in}_{0}(t) \quad \text{if $v(t) \geq 0$}\\
+z(1, t) &= \mathrm{in}_{1}(t) \quad \text{if $v(t) < 0$}
+\end{align*}
+where $z(\xi, t)$ is the transported quantity, $\xi$ is the normalized spatial coordinate ($0 \le \xi \le 1$), $t$ is the time, $v(t)$ is the normalized transport velocity and the boundary conditions are set at either $\xi = 0$ or $\xi = 1$, depending on the sign of the velocity.
+(When discontinuities are present, the differentiation operators above need to be understood in a distributive sense.)
+
+The calling syntax is:
+\begin{lstlisting}[language=modelica]
+(out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
+                                   initialPoints = {0.0, 1.0},
+                                   initialValues = {0.0, 0.0});
+\end{lstlisting}
+where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, and \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real!.
+The position \lstinline!x! is the integral of the transport velocity $v$, where the constant of integration does not matter.
+The arrays \lstinline!initialPoints! and \lstinline!initialValues! shall be parameter expressions of equal size, containing the $\xi$ coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(\xi, t_{0})$.
+The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0, t)$ and $z(1, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0, t)$ and $z(1, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
+The \lstinline!initialPoints! array shall span the entire range from 0 to 1, and must be sorted in non-descending order.
+The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.
+The operator can be vectorized only with respect to the arguments \lstinline!in0! and \lstinline!in1! (which must have the same size), returning vectorized outputs \lstinline!out0! and \lstinline!out1! of the same size; the arguments \lstinline!initialPoints! and \lstinline!initialValues! are vectorized accordingly.
+
+The solution, $z$, can be described in terms of characteristics:
+\begin{equation*}
+z(\xi+\int_{t}^{t+\beta}\! v(\alpha) \mathrm{d}\alpha,\, t+\beta) = z(\xi, t), \quad\text{for all $\beta$ as long as staying inside the domain}
+\end{equation*}
+This allows the direct computation of the solution based on interpolating the boundary conditions.
+
+Except when used inside \lstinline!noEvent!, discontinuities in \lstinline!in0! and \lstinline!in1! are preserved in the distribution $z$, and trigger events when appearing in any of the operator outputs.
+
+Disregarding the event-triggering handling of discontinuities, \lstinline!spatialDistribution! can be described in terms of the pseudo-code given as a block:
+\begin{lstlisting}[language=modelica]
+block spatialDistribution
+  input Real in0;
+  input Real in1;
+  input Real x;
+  input Boolean positiveVelocity;
+  parameter Real initialPoints(each min=0, each max=1)[:] = {0.0, 1.0};
+  parameter Real initialValues[:] = {0.0, 0.0};
+  output Real out0;
+  output Real out1;
+protected
+  Real points[:];
+  Real values[:];
+  Real x0;
+  Integer m;
+algorithm
+  /* The notation
+   *   x <and then> y
+   * is used below as a shorthand for
+   *   if x then y else false
+   * also known as "short-circuit evaluation of x and y".
+   */
+  if positiveVelocity then
+    out1 := interpolate(points, values, 1 - (x - x0));
+    out0 := values[1]; // Similar to in0 but avoiding algebraic loop.
+  else
+    out0 := interpolate(points, values, 0 - (x - x0));
+    out1 := values[end]; // Similar to in1 but avoiding algebraic loop.
+  end if;
+  when <acceptedStep> then
+    if x > x0 then
+      m := size(points, 1);
+      while m > 0 <and then> points[m] + (x - x0) >= 1 loop
+        m := m - 1;
+      end while;
+      values := cat(1,
+                    {in0},
+                    values[1:m],
+                    {interpolate(points, values, 1 - (x - x0))});
+      points := cat(1, {0}, points[1:m] .+ (x-x0), {1});
+    elseif x < x0 then
+      m := 1;
+      while m < size(points, 1) <and then> points[m] + (x - x0) <= 0 loop
+        m := m + 1;
+      end while;
+      values := cat(1,
+                    {interpolate(points, values, 0 - (x - x0))},
+                    values[m:end],
+                    {in1});
+      points := cat(1, {0}, points[m:end] .+ (x - x0), {1});
+    end if;
+    x0 := x;
+  end when;
+initial algorithm
+  x0 := x;
+  points := initialPoints;
+  values := initialValues;
+end spatialDistribution;
+\end{lstlisting}
+
+\begin{nonnormative}
+Note that the implementation has an internal state and thus cannot be described as a function in Modelica; \lstinline!initialPoints! and \lstinline!initialValues! are declared as parameters to indicate that they are only used during initialization.
+
+The infinite-dimensional problem stated above can then be formulated in the following way:
+\begin{lstlisting}[language=modelica]
+der(x) = v;
+(out0, out1) = spatialDistribution(in0, in1, x, v >= 0,
+                                   initialPoints, initialValues);
+\end{lstlisting}
+
+Events are generated at the exact instants when the velocity changes sign -- if this is not needed, \lstinline!noEvent! can be used to suppress event generation.
+(Not to be confused with the events triggered when a discontinuity reaches one of the \lstinline!spatialDistribution! outputs.)
+
+If the velocity is known to be always positive, then \lstinline!out0! can be omitted, e.g.:
+\begin{lstlisting}[language=modelica]
+der(x) = v;
+(, out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
+\end{lstlisting}
+Technically relevant use cases for the use of \lstinline!spatialDistribution! are modeling of electrical transmission lines, pipelines and pipeline networks for gas, water and district heating, sprinkler systems, impulse propagation in elongated bodies, conveyor belts, and hydraulic systems.
+Vectorization is needed for pipelines where more than one quantity is transported with velocity \lstinline!v! in the example above.
 \end{nonnormative}
 
 
@@ -788,6 +931,7 @@ The result $\varphi$ is in the interval $\left[-\pi,\, \pi\right]$ and satisfies
 \end{semantics}
 \end{functiondefinition}
 
+
 \subsection{Derivative and Special Purpose Operators with Function Syntax}\label{derivative-and-special-purpose-operators-with-function-syntax}
 
 The operators listed below include the derivative operator and special purpose operators with function syntax.
@@ -803,7 +947,6 @@ The operators listed below include the derivative operator and special purpose o
 {\lstinline!semiLinear($x$, $k^{+}$, $k^{-}$)!} & Sign-dependent slope & \Cref{modelica:semiLinear} \\
 {\lstinline!inStream($v$)!} & Stream variable flow into component & \Cref{modelica:inStream} \\
 {\lstinline!actualStream($v$)!} & Actual value of stream variable & \Cref{modelica:actualStream} \\
-{\lstinline!spatialDistribution($\ldots$)!} & Variable-speed transport & \Cref{modelica:spatialDistribution} \\
 {\lstinline!getInstanceName()!} & Name of instance at call site & \Cref{modelica:getInstanceName} \\
 \hline
 \end{tabular}
@@ -937,21 +1080,6 @@ For further details, see \cref{stream-operator-actualstream}.
 \end{semantics}
 \end{operatordefinition}
 
-\begin{operatordefinition}[spatialDistribution]
-\begin{synopsis}\begin{lstlisting}
-spatialDistribution(
-  in0 = $\mathit{in0}$, in1 = $\mathit{in1}$, x = $x$,
-  positiveVelocity = $\ldots$,
-  initialPoints = $\ldots$,
-  initialValues = $\ldots$)
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-\lstinline!spatialDistribution! allows approximation of variable-speed transport of properties.
-The operator is not allowed inside \lstinline!function! classes.
-For further details, see \cref{spatialdistribution}.
-\end{semantics}
-\end{operatordefinition}
-
 \begin{operatordefinition}[getInstanceName]
 \begin{synopsis}\begin{lstlisting}
 getInstanceName()
@@ -964,125 +1092,6 @@ For further details, see \cref{getinstancename}.
 
 A few of these operators are described in more detail in the following.
 
-\subsubsection{spatialDistribution}\label{spatialdistribution}
-
-\begin{nonnormative}
-Many applications involve the modelling of variable-speed transport of properties.
-One option to model this infinite-dimensional system is to approximate it by an ODE, but this requires a large number of state variables and might introduce either numerical diffusion or numerical oscillations.
-Another option is to use a built-in operator that keeps track of the spatial distribution of $z(\xi, t)$, by suitable sampling, interpolation, and shifting of the stored distribution.
-In this case, the internal state of the operator is hidden from the ODE solver.
-\end{nonnormative}
-
-\lstinline!spatialDistribution! allows the infinite-dimensional problem below to be solved efficiently with good accuracy
-\begin{align*}
-\frac{\partial z(\xi, t)}{\partial t} + v(t) \frac{\partial z(\xi, t)}{\partial \xi} &= 0\\
-z(0, t) &= \mathrm{in}_{0}(t) \quad \text{if $v(t) \geq 0$}\\
-z(1, t) &= \mathrm{in}_{1}(t) \quad \text{if $v(t) < 0$}
-\end{align*}
-where $z(\xi, t)$ is the transported quantity, $\xi$ is the normalized spatial coordinate ($0 \le \xi \le 1$), $t$ is the time, $v(t)$ is the normalized transport velocity and the boundary conditions are set at either $\xi = 0$ or $\xi = 1$, depending on the sign of the velocity.
-
-The calling syntax is:
-\begin{lstlisting}[language=modelica]
-(out0, out1) = spatialDistribution(in0, in1, x, positiveVelocity,
-                                   initialPoints = {0.0, 1.0},
-                                   initialValues = {0.0, 0.0});
-\end{lstlisting}
-where \lstinline!in0!, \lstinline!in1!, \lstinline!out0!, \lstinline!out1!, and \lstinline!x! are all subtypes of \lstinline!Real!, \lstinline!positiveVelocity! is a \lstinline!Boolean!, and \lstinline!initialPoints! and \lstinline!initialValues! are arrays of subtypes of \lstinline!Real!.
-The position \lstinline!x! is the integral of the transport velocity $v$, where the constant of integration does not matter.
-The arrays \lstinline!initialPoints! and \lstinline!initialValues! shall be parameter expressions of equal size, containing the $\xi$ coordinates and the $z$ values of a finite set of points describing the initial distribution of $z(\xi, t_{0})$.
-The \lstinline!out0! and \lstinline!out1! are given by the solutions at $z(0, t)$ and $z(1, t)$; and \lstinline!in0! and \lstinline!in1! are the boundary conditions at $z(0, t)$ and $z(1, t)$ (at each point in time only one of \lstinline!in0! and \lstinline!in1! is used).
-The \lstinline!initialPoints! array shall span the entire range from 0 to 1, and must be sorted in non-descending order.
-The operator can not be vectorized according to the vectorization rules described in \cref{scalar-functions-applied-to-array-arguments}.
-The operator can be vectorized only with respect to the arguments \lstinline!in0! and \lstinline!in1! (which must have the same size), returning vectorized outputs \lstinline!out0! and \lstinline!out1! of the same size; the arguments \lstinline!initialPoints! and \lstinline!initialValues! are vectorized accordingly.
-
-The solution, $z$, can be described in terms of characteristics:
-\begin{equation*}
-z(\xi+\int_{t}^{t+\beta}\! v(\alpha) \mathrm{d}\alpha,\, t+\beta) = z(\xi, t), \quad\text{for all $\beta$ as long as staying inside the domain}
-\end{equation*}
-
-This allows the direct computation of the solution based on interpolating the boundary conditions.
-
-\lstinline!spatialDistribution! can be described in terms of the pseudo-code given as a block:
-\begin{lstlisting}[language=modelica]
-block spatialDistribution
-  input Real in0;
-  input Real in1;
-  input Real x;
-  input Boolean positiveVelocity;
-  parameter Real initialPoints(each min=0, each max=1)[:] = {0.0, 1.0};
-  parameter Real initialValues[:] = {0.0, 0.0};
-  output Real out0;
-  output Real out1;
-protected
-  Real points[:];
-  Real values[:];
-  Real x0;
-  Integer m;
-algorithm
-  /* The notation
-   *   x <and then> y
-   * is used below as a shorthand for
-   *   if x then y else false
-   * also known as "short-circuit evaluation of x and y".
-   */
-  if positiveVelocity then
-    out1 := interpolate(points, values, 1 - (x - x0));
-    out0 := values[1]; // Similar to in0 but avoiding algebraic loop.
-  else
-    out0 := interpolate(points, values, 0 - (x - x0));
-    out1 := values[end]; // Similar to in1 but avoiding algebraic loop.
-  end if;
-  when <acceptedStep> then
-    if x > x0 then
-      m := size(points, 1);
-      while m > 0 <and then> points[m] + (x - x0) >= 1 loop
-        m := m - 1;
-      end while;
-      values := cat(1,
-                    {in0},
-                    values[1:m],
-                    {interpolate(points, values, 1 - (x - x0))});
-      points := cat(1, {0}, points[1:m] .+ (x-x0), {1});
-    elseif x < x0 then
-      m := 1;
-      while m < size(points, 1) <and then> points[m] + (x - x0) <= 0 loop
-        m := m + 1;
-      end while;
-      values := cat(1,
-                    {interpolate(points, values, 0 - (x - x0))},
-                    values[m:end],
-                    {in1});
-      points := cat(1, {0}, points[m:end] .+ (x - x0), {1});
-    end if;
-    x0 := x;
-  end when;
-initial algorithm
-  x0 := x;
-  points := initialPoints;
-  values := initialValues;
-end spatialDistribution;
-\end{lstlisting}
-
-\begin{nonnormative}
-Note that the implementation has an internal state and thus cannot be described as a function in Modelica; \lstinline!initialPoints! and \lstinline!initialValues! are declared as parameters to indicate that they are only used during initialization.
-
-The infinite-dimensional problem stated above can then be formulated in the following way:
-\begin{lstlisting}[language=modelica]
-der(x) = v;
-(out0, out1) = spatialDistribution(in0, in1, x, v >= 0,
-                                   initialPoints, initialValues);
-\end{lstlisting}
-
-Events are generated at the exact instants when the velocity changes sign -- if this is not needed, \lstinline!noEvent! can be used to suppress event generation.
-
-If the velocity is known to be always positive, then \lstinline!out0! can be omitted, e.g.:
-\begin{lstlisting}[language=modelica]
-der(x) = v;
-(, out1) = spatialDistribution(in0, 0, x, true, initialPoints, initialValues);
-\end{lstlisting}
-Technically relevant use cases for the use of \lstinline!spatialDistribution! are modeling of electrical transmission lines, pipelines and pipeline networks for gas, water and district heating, sprinkler systems, impulse propagation in elongated bodies, conveyor belts, and hydraulic systems.
-Vectorization is needed for pipelines where more than one quantity is transported with velocity \lstinline!v! in the example above.
-\end{nonnormative}
 
 \subsubsection{cardinality (deprecated)}\label{cardinality-deprecated}
 
@@ -1119,6 +1128,7 @@ end Resistor;
 The cardinality is counted after removing conditional components, and shall not be applied to expandable connectors, elements in expandable connectors, or to arrays of connectors (but can be applied to the scalar elements of array of connectors).
 \lstinline!cardinality! should only be used in the condition of assert and \lstinline!if!-statements that do not contain \lstinline!connect! and similar operators, see \cref{connect-equations}).
 The operator is not allowed inside \lstinline!function! classes.
+
 
 \subsubsection{homotopy}\label{homotopy}
 
