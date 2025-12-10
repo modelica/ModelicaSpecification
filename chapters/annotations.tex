@@ -376,7 +376,7 @@ end Log;
 
 The \lstinline!base! of a \lstinline!Log! scale determines preferred positions of major axis ticks.
 It is not required that the presentation of axis tick labels reflect the \lstinline!base! setting.
-For example, when \lstinline!base! is 10, major axis ticks should preferrably be placed at integer powers of 10, and natural alternatives that a tool may use for major axis tick labels could look like $0.001$ or $10^{-3}$.
+For example, when \lstinline!base! is 10, major axis ticks should preferably be placed at integer powers of 10, and natural alternatives that a tool may use for major axis tick labels could look like $0.001$ or $10^{-3}$.
 Under some circumstances, such as when the axis range does not span even a single order of magnitude, a tool may disregard the preference in order to get useful axis ticks.
 
 \begin{example}
@@ -1361,7 +1361,7 @@ There are a number of common macros that can be used in the text, and they shoul
 \item
   \%class replaced by the name of the class (only the last part of the hierarchical name).
 \item
-  \%\emph{par} and \%\{\emph{par}\} replaced by the value of the parameter \lstinline!par!.
+  \%\emph{par} and \%\{\emph{par}\} replaced by the value of the parameter or variable with a binding or modifier setting the value \lstinline!par!.
   If the value is numeric, tools shall display the value with \lstinline!displayUnit!, formatted according to the BIPM specification.
   E.g., for
 \begin{lstlisting}[language=modelica]
@@ -1837,7 +1837,7 @@ When clicking on an instance of model \lstinline!DialogDemo!, a dialog is shown 
 This section describes the \lstinline!connectorSizing! annotation inside a \lstinline!Dialog! annotation.
 The value of \lstinline!connectorSizing! must be a literal \lstinline!false! or \lstinline!true!.
 If \lstinline!connectorSizing = false!, this annotation has no effect.
-If \lstinline!connectorSizing = true!, the corresponding variable must be declared with the \lstinline!parameter! or \lstinline!constant! prefix, must be a subtype of a scalar \lstinline!Integer! and must have a literal default value of zero.
+A variable with \lstinline!connectorSizing = true! must be declared with the \lstinline!parameter! or \lstinline!constant! prefix, must be a subtype of a scalar \lstinline!Integer! and must have a literal default value of \lstinline!0!.
 
 \begin{nonnormative}
 The reason why \lstinline!connectorSizing! must be given a literal value is that if the value is an expression, the \lstinline!connectorSizing! functionality is conditional and this will then lead easily to wrong models.
@@ -1848,11 +1848,17 @@ Furthermore, when a tool does not support the \lstinline!connectorSizing! annota
 
 If \lstinline!connectorSizing = true!, a tool may set the variable value in a modifier automatically, if used as dimension size of a vector of connectors.
 In that case the value modifier should not be edited directly by the user, and a tool may choose to not display that variable in the dialog or display it with disabled input field.
+There shall be exactly one vector of connectors using the dimension size \lstinline!n! for each variable \lstinline!n! with \lstinline!connectorSizing = true!.
+Other vectors of connectors that need to have the same size may use a different expression with the same value, such as \lstinline!n + 0!, to avoid that multiple vectors become associated with the \lstinline!connectorSizing! automatic updating of \lstinline!n!.
+(Note that non-connector vectors may have size \lstinline!n! without becoming associated.)
 
 \begin{nonnormative}
 The \lstinline!connectorSizing! annotation is used in cases where connections to a vector of connectors shall be made and a new connection requires to resize the vector and to connect to the new index (unary connections).
 The annotation allows a tool to perform these two actions in many cases automatically.
 This is, e.g., very useful for state machines and for certain components of fluid libraries.
+
+If a variable \lstinline!n! with \lstinline!connectorSizing = true! would have multiple associated vectors of connectors, some of the graphical operations described below would not work reliably.
+If there is no associated vector of connectors, the user may choose to address this by removing the \lstinline!connectorSizing! annotation or the entire variable.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -2036,7 +2042,7 @@ package-versions :
    | "{" PACKAGE-VERSION { "," PACKAGE-VERSION } "}"
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-\lstinline!conversion(noneFromVersion = $\mathit{fromVersion}$)! defines that models and packages using the $\mathit{fromVersion}$ can be upgraded to the $\mathit{currentVersion}$ of the current class without any changes.
+\lstinline!conversion(noneFromVersion = $\mathit{fromVersion}$)!\annotationindex{noneFromVersion} defines that models and packages using the $\mathit{fromVersion}$ can be upgraded to the $\mathit{currentVersion}$ of the current class without any changes.
 
 \lstinline!conversion(from(version = $\mathit{fromVersions}$, to = $\mathit{toVersion}$, $\mathit{conversionRules}$))! defines that models and packages using any of the $\mathit{fromVersions}$ can be upgraded to the $\mathit{toVersion}$ (if the $\mathit{toVersion}$ is omitted, this is the $\mathit{currentVersion}$) of the current class by applying the $\mathit{conversionRules}$.
 When $\mathit{conversionRules}$ is given as \lstinline!script = $\mathit{conversionScript}$!, the $\mathit{conversionScript}$ is the name of a file consisting of an unordered sequence of \lstinline[language=grammar]!conversion-rule ";"! and Modelica comments, where any comments should be ignored by tools.

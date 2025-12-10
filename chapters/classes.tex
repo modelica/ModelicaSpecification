@@ -601,6 +601,11 @@ The variable assigned in a \lstinline!when!-clause shall not be defined in a sub
 A \lstinline!Real! variable assigned in a \lstinline!when!-clause is a discrete-time variable, even though it was not declared with the prefix \lstinline!discrete!.
 A \lstinline!Real! variable not assigned in any \lstinline!when!-clause and without any type prefix is a continuous-time variable.
 
+The determination of whether a variable is assigned in \lstinline!when!-clause requires evaluating the controlling conditions of any enclosing \lstinline!if!-equations and \lstinline!for!-equations, \cref{where-a-when-equation-may-occur}.
+\begin{nonnormative}
+It is a quality of implementation to check that a variable declared as \lstinline!discrete! is assigned in a \lstinline!when!-clause also for other valid values of controlling conditions.
+\end{nonnormative}
+
 The default variability for \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or \lstinline!enumeration! variables is discrete-time, and it is not possible to declare continuous-time \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, or \lstinline!enumeration! variables.
 
 \begin{nonnormative}
@@ -1034,6 +1039,7 @@ The local number of unknowns of a \lstinline!model! or \lstinline!block! class i
   For each declared component of specialized class \lstinline!connector! component, it is the number of unknown variables inside it (i.e., excluding parameters and constants and counting the elements after expanding all records and arrays to a set of scalars of primitive types).
 \item
   For each declared component of specialized class \lstinline!block! or \lstinline!model!, it is the sum of the number of inputs and flow variables in the (top level) public connector components of these components (and counting the elements after expanding all records and arrays to a set of scalars of primitive types).
+  If these public connector components contain overdetermined connectors each instance of an overdetermined type or record in that connector is assumed to be a separate root.
 \end{itemize}
 \end{definition}
 
@@ -1130,11 +1136,13 @@ Flange support(phi=phi, tau=torque1+torque2) if use_support;
 \end{example}
 \item
   In a declarations of a component of a \lstinline!model! or \lstinline!block! class, modifiers shall only contain redeclarations of replaceable elements and binding equations.
-  The binding equations in modifiers for components may in these cases only be for parameters, constants, inputs and variables having a default binding equation.
+  The binding equations in modifiers for components may in these cases only be for parameters, constants, non-connector inputs and variables having a default binding equation.
   For the latter case of variables having a default binding equation the modifier may not remove the binding equation using \lstinline!break!, see \cref{removing-modifiers-break}.
 \item
   Modifiers of base-classes (on extends and short class definitions) shall only contain redeclarations of replaceable elements and binding equations.
   The binding equations follow the corresponding rules above, as if they were applied to the inherited component.
+\item
+  The arguments of \lstinline!Connections.branch!, \lstinline!Connections.root!, and \lstinline!Connections.potentialRoot! are part of outside connectors, to fulfil the requirement in \cref{connect-equations}.
 \item
   All non-partial \lstinline!model! and \lstinline!block! classes must be locally balanced.
   \begin{nonnormative}

@@ -343,10 +343,8 @@ If $\mathit{intervalCounter}$ is an evaluable expression greater than zero, the 
 If $\mathit{intervalCounter}$ is a clocked component expression it must be greater than zero.
 The result is of base type \lstinline!Clock! that ticks when \lstinline!time! becomes $t_{\mathrm{start}}$, $t_{\mathrm{start}} + \mathit{interval}_{1}$, $t_{\mathrm{start}} + \mathit{interval}_{1} + \mathit{interval}_{2}$, \@\ldots{}
 The clock starts at the start of the simulation $t_{\mathrm{start}}$ or when the controller is switched on.
-At the start of the simulation, \lstinline!previous($\mathit{intervalCounter}$)! = \lstinline!$\mathit{intervalCounter}$.start! and the clocks ticks the first time.
-At the first clock tick $\mathit{intervalCounter}$ must be computed and the second clock tick is then triggered at $\mathit{interval}_{1} = \mathit{intervalCounter}/\mathit{resolution}$.
-At the second clock tick at time $t_{\mathrm{start}} + \mathit{interval}_{1}$, a new value for $\mathit{intervalCounter}$ must be computed and the next clock tick is scheduled at $\mathit{interval}_{2} = \mathit{intervalCounter}/\mathit{resolution}$, and so on.
-
+At the first clock tick, $\mathit{intervalCounter}$ must be computed and the second clock tick is scheduled $\mathit{interval}_{1} = \mathit{intervalCounter}/\mathit{resolution}$ into the future.
+At the second clock tick at time $t_{\mathrm{start}} + \mathit{interval}_{1}$, a new value for $\mathit{intervalCounter}$ must be computed and the next clock tick is scheduled $\mathit{interval}_{2} = \mathit{intervalCounter}/\mathit{resolution}$ into the future, and so on.
 
 \begin{nonnormative}
 The given interval and time shift % What given "interval" and "time shift"?
@@ -371,10 +369,10 @@ equation
     y2 = previous(y2) + 1;
   end when;
 \end{lstlisting}
-\end{example}
 
 Note that operator \lstinline!interval(c)! of \lstinline!Clock c = Clock(intervalCounter, $\mathit{resolution}$)! returns:\newline
 \lstinline!previous($\mathit{intervalCounter}$) / $\mathit{resolution}$! (in seconds)
+\end{example}
 \end{semantics}
 \end{operatordefinition*}
 
@@ -388,7 +386,7 @@ The input argument, $\mathit{interval}$, is a clocked component expression (\cre
 The $\mathit{interval}$ must be strictly positive ($\mathit{interval} > 0$) of type \lstinline!Real! with \lstinline!unit = "s"!.
 The result is of base type \lstinline!Clock! that ticks when \lstinline!time! becomes $t_{\mathrm{start}}$, $t_{\mathrm{start}} + \mathit{interval}_{1}$, $t_{\mathit{start}} + \mathit{interval}_{1} + \mathit{interval}_{2}$, \@\ldots{}
 The clock starts at the start of the simulation $t_{\mathrm{start}}$ or when the controller is switched on.
-Here the next clock tick is scheduled at $\mathit{interval}_{1}$ = \lstinline!$\mathit{interval}$!.
+Here the second clock tick is scheduled $\mathit{interval}_{1}$ = \lstinline!$\mathit{interval}$! into the future.
 At the second clock tick at time $t_{\mathrm{start}} + \mathit{interval}_{1}$, the next clock tick is scheduled $\mathit{interval}_{2}$ = \lstinline!$\mathit{interval}$! into the future, and so on.
 If $\mathit{interval}$ is a parameter expression, the clock defines a periodic clock.
 
@@ -445,7 +443,6 @@ Demonstrating the subtle effect of the additional \lstinline!pre!:
 The first tick of \lstinline!c! (the clock of \lstinline!b2!) is at \lstinline!0.5! where \lstinline!b2! is \lstinline!true!.
 This is because both the event clock and sample introduce a delay of one event iteration, keeping them synchronized.
 \end{example}
-
 
 \begin{nonnormative}
 The implicitly given interval and time shift can be modified by using the \lstinline!subSample!, \lstinline!superSample!, \lstinline!shiftSample! and \lstinline!backSample! operators on the returned clock, see \cref{sub-clock-conversion-operators}, provided the base interval is not smaller than the implicitly given interval.
@@ -1165,7 +1162,7 @@ If an expression is present in a base-partition that is not an unclocked base-pa
 
 After sub-clock inferencing, see \cref{sub-clock-inferencing}, every sub-partition that is associated with a clock has to be categorized as \willintroduce{discrete-time} or \willintroduce{discretized}.
 \begin{nonnormative}
-Previously, discrete-time sub-partition was refered to as \emph{clocked discrete-time partition}, and discretized sub-partition as \emph{clocked discretized continuous-time partition}.
+Previously, discrete-time sub-partition was referred to as \emph{clocked discrete-time partition}, and discretized sub-partition as \emph{clocked discretized continuous-time partition}.
 \end{nonnormative}
 
 If a clocked sub-partition contains any of the operators \lstinline!der!, \lstinline!delay!, \lstinline!spatialDistribution!, or event related operators from \cref{event-related-operators-with-function-syntax} (with exception of \lstinline!noEvent! and \lstinline!smooth!), or contains a \lstinline!when!-clause with a \lstinline!Boolean! condition, it is a \firstuse[discretized!sub-partition]{discretized}\index{sub-partition!discretized} sub-partition.
@@ -1463,11 +1460,11 @@ interval($u$)
 This operator returns the interval between the previous and present tick of the clock of the expression, in which this operator is called.
 The optional argument $u$ is only used for clock inference, see \cref{clock-partitioning}.
 At the first tick of the clock the following is returned:
-\begin{enumerate}
-\item If the specified clock interval is a parameter expression, this value is returned.
-\item Otherwise the start value of the variable specifying the interval is returned.
-\item For an event clock the additional \lstinline!startInterval! argument to the event clock constructor is returned.
-\end{enumerate}
+\begin{itemize}
+\item For a rational interval clock (\cref{modelica:clock-rational}): $\text{\lstinline!previous(!}\mathit{intervalCounter}\text{\lstinline!)!} / \mathit{resolution}$
+\item For a real interval clock (\cref{modelica:clock-interval}): \lstinline!previous($\mathit{interval}$)!
+\item For an event clock (\cref{modelica:clock-event}): $\mathit{startInterval}$
+\end{itemize}
 The return value of \lstinline!interval! is a scalar \lstinline!Real! number.
 \end{semantics}
 \end{operatordefinition}
