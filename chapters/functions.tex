@@ -173,7 +173,7 @@ Modelica functions have the following restrictions compared to a general Modelic
 \item
   For initialization of local variables of a function see \cref{initialization-and-binding-equations-of-components-in-functions}).
 \item
-  Components of a function will inside the function behave as though they had discrete-time variability.
+  Components of a function follow special variability rules where the \lstinline!GenerateEvents! annotation plays a central role, see \cref{discrete-time-expressions} for details.
 \end{itemize}
 
 Modelica functions have the following enhancements compared to a general Modelica \lstinline!class!:
@@ -225,16 +225,25 @@ The declaration of functions follow these rules:
 \item
   Functions defined in Modelica (non-external) are \emph{normally} assumed to be pure (the exception is the deprecated case below), if they are impure they shall be marked with the \lstinline!impure! keyword.
   They can be explicitly marked as \lstinline!pure!\indexinline{pure}.
-  \begin{nonnormative}
-  However, since functions as default are pure it is not recommended to explicitly declare them as \lstinline!pure!.
-  \end{nonnormative}
-\item
-  External functions must be explicitly declared with \lstinline!pure! or \lstinline!impure!.
 \item
   If a function is declared as \lstinline!impure! any function extending from it shall be declared as \lstinline!impure!.
 \item
-  A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be impure, but without any restriction on calling them.
-  Except for the function \lstinline!Modelica.Utilities.Streams.print!, a diagnostic must be given if called in a simulation model.
+  External functions not explicitly declared with \lstinline!pure! or \lstinline!impure! is deprecated.
+\item
+  For a function without explicit purity, it is deprecated to call any function declared \lstinline!impure!, except when wrapped in \lstinline!pure($\ldots$)!.
+\item
+  For a function not declared \lstinline!impure!, it is deprecated to call an external function not declared \lstinline!pure!, except when wrapped in \lstinline!pure($\ldots$)!.
+\end{itemize}
+
+For purposes of symbolic transformations and optimizations, the deprecated semantics above imply that not only the functions explicitly declared \lstinline!impure! are the ones which cannot be treated as pure.
+Instead, a function shall be treated as impure in the following cases (applied recursively):
+\begin{itemize}
+\item
+  It is declared \lstinline!impure!.
+\item
+  It is an external function without explicit purity.
+\item
+  It calls another function treated as impure, except when wrapped in \lstinline!pure($\ldots$)!.
 \end{itemize}
 
 Calls of pure functions used inside expression may be skipped if the resulting expression will not depend on the possible returned value; ignoring the possibility of the function generating an error.
@@ -399,7 +408,7 @@ Assume a function \lstinline!RealToString! is defined as follows to convert a \l
 \begin{lstlisting}[language=modelica]
 function RealToString
   input Real number;
-  input Real precision = 6 "number of significantdigits";
+  input Real precision = 6 "number of significant digits";
   input Real length = 0 "minimum length of field";
   output String string "number as string";
   $\ldots$
@@ -1472,18 +1481,23 @@ Therefore {\lstinline!h!} indirectly includes the derivative with respect to {\l
 \end{nonnormative}
 
 
-\subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}
+\subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}\index{partial derivative}\index{der@\robustinline{der}!partial derivative}
 
-A class defined as:
+A function class defined as follows is a partial derivative of another function:
 \begin{lstlisting}[language=grammar]
 IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
 \end{lstlisting}
-is the partial derivative of a function, and may only be used as declarations of functions.
 
-The semantics is that a function (and only a function) can be specified in this form, defining that it is the partial derivative of the function to the right of the equal sign (looked up in the same way as a short class definition, and the looked up name must be a function), and partially differentiated with respect to each {\lstinline!IDENT!} in order (starting from the first one).
-Each {\lstinline!IDENT!} must be a scalar {\lstinline!Real!} input to the function.
+In \lstinline!$f$ = der($g$, $u_{1}, \ldots$)!, the function being defined is named $f$, and the function being differentiated is $g$.
+The name $g$ is looked up in the same way as a in short class definition, and the referenced class must be a function.
+Each $u_{i}$ must be a scalar {\lstinline!Real!} input to the function, and corresponds mathematically to prepending $\frac{\partial}{\partial u_{i}}$ to the function call.
+The $u_{i}$ are applied in increasing order of $i$ (although the partial derivatives commute for a broad class of functions).
 
-The comment allows a user to comment the function (in the info-layer and as one-line description, and as icon).
+\begin{nonnormative}
+In mathematical notation, the order of partial differentiation is reversed compared to the function definition; \lstinline!der($g$, $x$, $y$)! means $\frac{\partial}{\partial y}\frac{\partial}{\partial x}g$.
+\end{nonnormative}
+
+The \lstinline[language=grammar]!comment! has the same semantics as in a short class definition, for instance allowing the function to be given a description string, as well as \lstinline!Documentation! and \lstinline!Icon! annotations.
 
 \begin{example}
 The specific enthalpy can be computed from a Gibbs-function as follows:
@@ -1502,8 +1516,8 @@ algorithm
   h := Gibbs(p, T) - T * Gibbs_T(p, T);
 end specificEnthalpy;
 \end{lstlisting}
+Thus \lstinline!der(Gibbs, T)! corresponds to $\frac{\partial \text{\lstinline!Gibbs(p, T)!}}{\partial \text{\lstinline!T!}} = \frac{\partial}{\partial \text{\lstinline!T!}}\text{\lstinline!Gibbs!}$.
 \end{example}
-
 
 \subsection{Using the Inverse Annotation}\label{using-the-inverse-annotation}
 
@@ -1644,7 +1658,7 @@ equation
   annotation(experiment(StopTime = 10.0));
 end NotSurjective;
 \end{lstlisting}
-As the value of {\lstinline!x!} varies over the interval $[-1,\, 1]$, but the range of {\lstinline!cbrtPos!} is only $(0, \infty)$, the informal codomain of {\lstinline!cbrtPos!} cannot be restricted such that the surjectiveness is fulfilled.
+As the value of {\lstinline!x!} varies over the interval $[-0.5,\, 1.5]$, but the range of {\lstinline!cbrtPos!} is only $(0, \infty)$, the informal codomain of {\lstinline!cbrtPos!} cannot be restricted such that the surjectiveness is fulfilled.
 A valid solution to the equation in {\lstinline!x!} and {\lstinline!y!} must satisfy $\text{{\lstinline!y!}} > 0$, and when no {\lstinline!inverse!} annotation is given, a violation will be detected by a nonlinear solver applied directly to the equation.
 When the (invalid) inverse provided by the {\lstinline!inverse!} annotation is used, however, the equation gets transformed into
 \begin{lstlisting}[language=modelica]
@@ -1746,15 +1760,97 @@ This annotation cannot be combined with annotations {\lstinline!Inline!} and {\l
 \begin{semantics}
 Has only an effect within a function declaration.
 
-By default, {\lstinline!GenerateEvents = false!} and expressions in the function body that would normally be event-generating shall not generate events, similar to inlining the function body while wrapping all expressions in {\lstinline!noEvent!}, see \cref{modelica:noEvent}.
+By default, {\lstinline!GenerateEvents = false!} and expressions in the function body that would normally be event generating shall not generate events, similar to inlining the function body while wrapping all expressions in {\lstinline!noEvent!}, see \cref{modelica:noEvent}.
 By specifying {\lstinline!GenerateEvents = true!}, event-generating expressions in the function body shall generate events as normal, similar to inlining the function body without wrapping all expressions in {\lstinline!noEvent!}.
 Having {\lstinline!GenerateEvents = true!} implies {\lstinline!Inline = true!} unless overridden by specifying one of the inlining annotations with value {\lstinline!true!} (in particular, {\lstinline!GenerateEvents = true!} cannot be combined with {\lstinline!Inline = false!}).
+
+A function with \lstinline!GenerateEvents = true! should be considered event generating for purposes of determining where the function may be called, regardless of whether the function body contains any expressions which could actually generate events.
 
 \begin{nonnormative}
 In case a given inlining annotation proposes to inline at a stage when the tool cannot process {\lstinline!GenerateEvents = true!}, it is recommended to give a diagnostic and instead perform inlining of the function at the nearest stage where {\lstinline!GenerateEvents = true!} can still be respected.
 
 If the function is called in a context where events will not be generated (e.g., inside another function without {\lstinline!GenerateEvents = true!}) no special action is needed.
 \end{nonnormative}
+\begin{example}
+\lstinline!GenerateEvents! impacts variability according to \cref{variability-of-expressions}.
+The benefit of treating functions with \lstinline!GenerateEvents = true! in this way is that it makes it possible to construct functions behaving like the built-in event generating operators.
+E.g., it allows constructing a variant of \lstinline!integer()! that rounds towards closest \lstinline!Integer! instead of towards $-\inf$ that is usable in the same way as \lstinline!integer()!.
+\begin{lstlisting}[language=modelica]
+function nearestInteger
+  input Real r;
+  output Integer i;
+algorithm
+  i :=if (r > 0) then integer(floor(r + 0.5)) else integer(ceil(r - 0.5));
+end nearestInteger;
+\end{lstlisting}
+
+The following is an illustration of some trivial cases.
+\begin{lstlisting}[language=modelica]
+function greaterEqual
+  input Real x1;
+  input Real x2;
+  output Boolean b;
+algorithm
+  b := x1 >= x2;
+  annotation(GenerateEvents=true, LateInline=true);
+end greaterEqual;
+
+function greaterEqualWO
+  input Real x1;
+  input Real x2;
+  output Boolean b;
+algorithm
+  b := x1 >= x2;
+  annotation(LateInline=true);
+end greaterEqualWO;
+
+model M
+  Boolean b1 = greaterEqual(time, 1);
+  Boolean b2 = greaterEqualWO(time, 1) "Illegal";
+  Boolean b3 = noEvent(greaterEqual(time, 1)) "Illegal";
+  Boolean b4 = greaterEqualWO(if b1 then 2 else 0, 1);
+  Real z = if greaterEqualWO(time, 1) then 2 else 1;
+end M;
+
+function bad
+  input Real x1;
+  output Integer i;
+algorithm
+  i := greaterEqualWO(x1, 1) then 2 else 1;
+  annotation(GenerateEvents=true, LateInline=true);
+end bad;
+\end{lstlisting}
+
+In \lstinline!M!, there will be an event when \lstinline!time! becomes greater or equal to \lstinline!1!, and thus the discrete-time variable \lstinline!b1! can be bound to this function call even though it involves the non-discrete time variable \lstinline!time!.
+Both \lstinline!b2! and \lstinline!b3! are illegal, since the right hand sides have non-discrete-time variability.
+The variable \lstinline!z! is legal, since a \lstinline!Real! variable can have non-discrete time variability.
+The variable \lstinline!b4! is legal, since the function inputs have discrete-time variability.
+The function \lstinline!bad! demonstrates that similar restrictions (as for \lstinline!b2! and \lstinline!b3!) apply inside functions with {\lstinline!GenerateEvents = true!}.
+\begin{lstlisting}[language=modelica]
+function saturatedSquare
+  input Real x2;
+  output Real y;
+algorithm
+  if x2 > 1 then
+    y := 1;
+  else
+    y := x2^2;
+  end if;
+end saturatedSquare;
+
+function isBelowSat
+  input Real x1, x2;
+  output Boolean b;
+algorithm
+  b : = x1 < saturatedSquare(x2);
+  annotation (GenerateEvents=true, LateInline=true);
+end isBelowSat;
+\end{lstlisting}
+The function \lstinline!isBelowSat! demonstrates that it is possible to call functions that do not generate events (like \lstinline!saturatedSquare!) inside functions with {\lstinline!GenerateEvents = true!}.
+Combined, the last two examples demonstrate that {\lstinline!GenerateEvents = true!} does not propagate to called functions.
+
+The annotation \lstinline!LateInline=true! is not needed, but makes the issue more obvious in tools that normally inline function before checking variability.
+\end{example}
 \end{semantics}
 \end{annotationdefinition}
 
@@ -2204,7 +2300,7 @@ They should occur on the {\lstinline!external!}-clause, and no other standard an
 {\lstinline!LibraryDirectory!} & Directories containing libraries & \Cref{modelica:LibraryDirectory}\\
 {\lstinline!IncludeDirectory!} & Directories containing header files & \Cref{modelica:IncludeDirectory}\\
 {\lstinline!SourceDirectory!} & Directories containing source code & \Cref{modelica:SourceDirectory}\\
-{\lstinline!License!} & License files & \Cref{modelica:License}\\
+{\lstinline!License!} & License files & \Cref{modelica:extfun-License}\\
 \hline
 \end{tabular}
 \end{center}
@@ -2334,15 +2430,15 @@ It is not specified how they are built.
 \end{semantics}
 \end{annotationdefinition}
 
-\begin{annotationdefinition}[License]
+\begin{annotationdefinition*}[License]\label{modelica:extfun-License}\index{License@\robustinline{License}!external function annotation}
 \begin{synopsis}\begin{lstlisting}
 /*literal*/ constant String License
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 The {\lstinline!annotation(License="modelica:/TopPackage/Resources/Licenses/MyLicense.txt")!}, gives the license text file for the function.
-It is analogous to the \lstinline!License! annotation for a top-level class, see \cref{license-texts}.
+It is analogous to the \lstinline!License! annotation for a top-level class, see \cref{modelica:top-License}.
 \end{semantics}
-\end{annotationdefinition}
+\end{annotationdefinition*}
 
 
 \subsection{Examples}\label{examples1}
