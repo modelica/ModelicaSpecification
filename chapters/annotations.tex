@@ -38,6 +38,8 @@ annotation(Dialog());
 An annotation such as \lstinline!annotation(Dialog)! is also meaningless, but deprecated according to \cref{semantic-restrictions-of-annotation-syntax}.
 \end{example}
 
+The allowed annotations for a short class definition is the union of the allowed annotations in classes and on \lstinline!extends!-clauses.
+
 
 \section{Semantic Restrictions of Annotation Syntax}\label{semantic-restrictions-of-annotation-syntax}
 
@@ -141,27 +143,38 @@ This introduces a new attribute \lstinline!__NameOfVendor_shadow! for the \lstin
 
 \section{Documentation}\label{annotations-for-documentation}\label{documentation}
 
-The \fmtannotationindex{Documentation} annotation has the following contents, where the \lstinline!info! and \lstinline!revisions! annotations are described in \cref{annotation-info-revisions}, and the \lstinline!figures! annotation is described in \cref{annotations-for-figures}:
-\begin{lstlisting}[language=modelica]
-record Documentation
-  /*literal*/ constant String info = "" "Description of the class";
-  /*literal*/ constant String revisions = "" "Revision history";
-  Figure[:] figures "Simulation result figures";
-  /*literal*/ constant String[:] styleSheets "Style sheets for documentation";
-end Documentation;
-\end{lstlisting}
-
-The \lstinline!styleSheets! may also be given as a single string, see \cref{style-sheets}.
+The annotations listed below define various forms of documentation for a class.
+They are all sub-annotations of the \fmtannotationindex{Documentation} annotation.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!Documentation.info!} & Class presentation & \Cref{modelica:Documentation.info}\\
+{\lstinline!Documentation.revisions!} & Class revision history & \Cref{modelica:Documentation.revisions}\\
+{\lstinline!Documentation.styleSheets!} & Style sheets for documentation & \Cref{modelica:Documentation.styleSheets}\\
+{\lstinline!Documentation.figures!} & Simulation result figures & \Cref{modelica:Documentation.figures}\\
+\hline
+\end{tabular}
+\end{center}
 
 How the tool interprets the information in \lstinline!Documentation! is unspecified.
 
+
 \subsection{Class Description and Revision History}\label{annotation-info-revisions}
 
-Inside the \lstinline!Documentation! annotation, the \lstinline!info! annotation gives a textual description of the class, and the \lstinline!revisions! annotation gives a revision history.
+This section describes some of the sub-annotations of the \lstinline!Documentation! annotation.
 
-\begin{nonnormative}
-The \lstinline!revisions! documentation may be omitted in printed documentation.
-\end{nonnormative}
+\begin{annotationdefinition*}[info]\label{modelica:Documentation.info}\annotationindex{info}\index{Documentation@\robustinline{Documentation}!\robustinline{info} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+record Documentation
+  /*literal*/ constant String info = "";
+  $\ldots$
+end Documentation;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The \lstinline!info! annotation gives a textual description of the class.
 
 If the string starts with the tag \lstinline!<html>! or \lstinline!<HTML>!, the entire string is HTML encoded (assumed to end with \lstinline!</html>! or \lstinline!</HTML>!, but to be rendered as HTML even if the end-tag is missing).
 Otherwise, the entire string is rendered as is.
@@ -177,14 +190,42 @@ Example:
 \begin{lstlisting}[language=modelica]
 <a href="modelica:/MultiBody.Joints.Revolute#info">Revolute</a>
 \end{lstlisting}
+\end{semantics}
+\end{annotationdefinition*}
 
-\subsubsection{Style Sheets}\label{style-sheets}
+\begin{annotationdefinition*}[revisions]\label{modelica:Documentation.revisions}\annotationindex{revisions}\index{Documentation@\robustinline{Documentation}!\robustinline{revisions} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+record Documentation
+  /*literal*/ constant String revisions = "";
+  $\ldots$
+end Documentation;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The \lstinline!revisions! annotation gives a revision history of the class.
 
-Inside the \lstinline!Documentation! annotation, each element of the \lstinline!styleSheets! annotation array specifies a cascading style sheet.
-The style sheets are used when displaying the \lstinline!info! and \lstinline!revisions! annotations found in the \lstinline!Documentation! annotations of the package.
-The \lstinline!styleSheets! annotation is only considered for top-level packages, and applies to the entire package.
-The style sheets will be cascaded in the given order.
+The string is interpreted in the same way as in the \lstinline!info! annotation, see \cref{modelica:Documentation.info}.
+
+\begin{nonnormative}
+The \lstinline!revisions! documentation may be omitted in printed documentation.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition*}
+
+\begin{annotationdefinition*}[styleSheets]\label{modelica:Documentation.styleSheets}\annotationindex{styleSheets}\index{Documentation@\robustinline{Documentation}!\robustinline{styleSheets} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+record Documentation
+  /*literal*/ constant String[:] styleSheets;
+  $\ldots$
+end Documentation;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Only considered for top-level packages, and applies to the entire package.
 Specifying just a string for \lstinline!styleSheets! has the same meaning as specifying a singleton array containing the string.
+
+Each element of the \lstinline!styleSheets! annotation array specifies a cascading style sheet.
+The style sheets are used when displaying the \lstinline!info! and \lstinline!revisions! annotations found in the \lstinline!Documentation! annotations of the package.
+The style sheets will be cascaded in the given order.
+
 \begin{nonnormative}
 It is recommended to use \lstinline[language=CSS]!class! and \lstinline[language=CSS]!id! selectors with a \lstinline[language=CSS]!$NameOfLibrary$-! prefix to avoid collisions when the content is included in a larger context.
 \end{nonnormative}
@@ -193,10 +234,31 @@ The style sheet rules should not use type or universal selectors, due to possibl
 Vendors should use a \lstinline[language=CSS]!$NameOfVendor$-! prefix to style vendor generated HTML content surrounding the user provided documentation.
 If tools want to give users (of that tool) the possibility to override the tool-specific CSS they can document that.
 The prefix is used to avoid this happening by accident.
+\end{semantics}
+\end{annotationdefinition*}
+
 
 \subsection{Figures}\label{annotations-for-figures}\label{figures}
 
-Inside the \lstinline!Documentation! annotation, each element of the \lstinline!figures! annotation array has the following content:
+This section describes the \lstinline!figures! sub-annotation of the \lstinline!Documentation! annotation.
+
+\begin{annotationdefinition*}[figures]\label{modelica:Documentation.figures}\annotationindex{figures}\index{Documentation@\robustinline{Documentation}!\robustinline{figures} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+record Documentation
+  Figure[:] figures;
+  $\ldots$
+end Documentation;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Each element of the \lstinline!figures! annotation array defines a simulation result figure.
+A figure is a graphical container that can contain several plots.
+Details about the \lstinline!Figure! record are given in \cref{figure-plot-properties}.
+\end{semantics}
+\end{annotationdefinition*}
+
+\subsubsection{Figure and Plot Properties}\label{figure-plot-properties}
+
+Each figure in the \lstinline!figures! annotation is described by a \fmtannotationindex{Figure}:
 \begin{lstlisting}[language=modelica]
 record Figure
   /*literal*/ constant String title = "" "Title meant for display";
@@ -208,7 +270,7 @@ record Figure
 end Figure;
 \end{lstlisting}
 
-A \fmtannotationindex{Figure} is a graphical container that can contain several \lstinline!plots! described by \fmtannotationindex{Plot} annotations:
+A plot inside a \lstinline!Figure! is described by a \fmtannotationindex{Plot}:
 \begin{lstlisting}[language=modelica]
 record Plot
   /*literal*/ constant String title "Title meant for display";
@@ -781,47 +843,69 @@ end MultiPort;
 
 \section{Graphical Objects}\label{annotations-for-graphical-objects}\label{graphical-objects}
 
-A graphical representation of a class consists of two abstraction layers, icon layer and diagram layer showing graphical objects, component icons, connectors and connection lines.
-The icon representation typically visualizes the component by hiding hierarchical details.
-The hierarchical decomposition is described in the diagram layer showing icons of subcomponents and connections between these.
+The annotations listed below define the graphical representation of a class.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!Icon!} & Icon view of a class & \Cref{modelica:Icon}\\
+{\lstinline!Diagram!} & Diagram view of a class & \Cref{modelica:Diagram}\\
+{\lstinline!Placement!} & Instance placement in icon or diagram & \Cref{modelica:Placement}\\
+\hline
+\end{tabular}
+\end{center}
 
-Graphical annotations described in this chapter ties into the Modelica grammar as follows.
-\begin{lstlisting}[language=grammar]
-graphical-annotations :
-  annotation "(" [ layer-annotations ] ")"
+The graphical representation of a class consists of two abstraction layers: an icon layer and a diagram layer.
+The icon typically visualizes the component by hiding hierarchical details, while the diagram layer typically shows the hierarchical decomposition using icons of subcomponents and lines representing connections.
 
-layer-annotations :
-  ( icon-layer | diagram-layer ) [ "," layer-annotations ]
-\end{lstlisting}
-Layer descriptions (start of syntactic description):
-\begin{lstlisting}[language=grammar]
-icon-layer :
-  "Icon" "(" [ coordsys-specification "," ] graphics ")"
+\begin{annotationdefinition}[Icon]
+\begin{synopsis}\begin{lstlisting}
+record Icon
+  CoordinateSystem coordinateSystem;
+  GraphicItem[:] graphics;
+end Icon;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
+The \lstinline{Icon} annotation defines the icon view of the class.
 
-diagram-layer :
-  "Diagram" "(" [ coordsys-specification "," ] graphics ")"
-\end{lstlisting}%
-\annotationindex{Icon}\annotationindex{Diagram}
-
-\begin{example}
-\begin{lstlisting}[language=modelica]
-annotation(
-   Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}),
-        graphics = {Rectangle(extent = {{-100, -100}, {100, 100}}),
-                    Text(extent = {{-100, -100}, {100, 100}},
-                         textString = "Icon")}));
-\end{lstlisting}
-\end{example}
-
-The graphics is specified as an ordered sequence of graphical primitives described below.
+The \lstinline!graphics! is specified as an ordered sequence of graphical primitives described in \cref{common-definitions}.
 Base class contents are drawn behind the graphical primitives of the current class, with base classes ordered from back to front according to the order of the \lstinline!extends!-clauses, and graphical primitives according to order of appearance in the annotation.
 
 \begin{nonnormative}
 Note that the ordered sequence is syntactically a valid Modelica annotation, although there is no mechanism for defining an array of heterogeneous objects in Modelica.
 \end{nonnormative}
 
-These \lstinline!Icon!, \lstinline!Diagram!, and \lstinline!Documentation! annotations are only allowed directly in classes (e.g., not on components or connections).
-The allowed annotations for a short class definition is the union of the allowed annotations in classes and on \lstinline!extends!-clauses.
+\begin{example}
+A simple icon for a class:
+\begin{lstlisting}[language=modelica]
+annotation(
+  Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}),
+       graphics = {Rectangle(extent = {{-100, -100}, {100, 100}}),
+                   Text(extent = {{-100, -100}, {100, 100}},
+                        textString = "Icon")}));
+\end{lstlisting}
+\end{example}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[Diagram]
+\begin{synopsis}\begin{lstlisting}
+record Diagram
+  CoordinateSystem coordinateSystem;
+  GraphicItem[:] graphics;
+end Diagram;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
+The \lstinline{Diagram} annotation defines the icon view of the class.
+
+The \lstinline{coordinateSystem} and \lstinline{graphics} serve the same purpose as in the \lstinline!Icon! annotation, see \cref{modelica:Icon}.
+\end{semantics}
+\end{annotationdefinition}
+
 
 \subsection{Common Definitions}\label{common-definitions}
 
@@ -976,9 +1060,49 @@ The extent/points of the filled shape describe the theoretical zero-thickness fi
 
 \subsection{Component Instance}\label{component-instance}
 
-A component instance can be placed within a diagram or icon layer.
-It has an annotation with a \lstinline!Placement! modifier to describe the placement.
-Placements are defined in terms of coordinate system transformations:
+A component instance can be represented within the diagram and/or icon layer of the enclosing class.
+Visibility and placement is controlled using the \lstinline!Placement! annotation.
+
+\begin{annotationdefinition}[Placement]
+\begin{synopsis}\begin{lstlisting}
+record Placement
+  Boolean visible = true;
+  Transformation transformation;
+  Boolean iconVisible;
+  Transformation iconTransformation;
+end Placement;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for component declarations.
+The \lstinline{Placement} annotation defines the placement of the component's graphics as part of the graphics of the enclosing class.
+
+The visibility of the component in the diagram layer of the enclosing class is defined by \lstinline!visible!.
+For a connector component, the component's diagram layer defines the content to be displayed, while the icon layer is used for other component kinds.
+
+\begin{nonnormative}
+The use of a connector's diagram layer facilitates opening up a hierarchical connector to allow connections to its internal subconnectors.
+\end{nonnormative}
+
+The \lstinline!transformation! defines the placement in the diagram layer of the enclosing class.
+The \lstinline!Transformation! type is defined below.
+
+The \lstinline!iconVisible! only applies to public connector components, and defines the visibility of the component in the icon layer of the enclosing class (protected connectors are never visible in icons).
+Sub-connectors in a hierarchical connector are only visible if they can be connected to.
+The connector's icon layer defines the content to be displayed.
+The default for \lstinline!iconVisible! is to be the same as \lstinline!visible!.
+
+The \lstinline!iconTransformation! only applies to public connector components, and defines the placement of the \lstinline!Icon! annotation graphics in the icon layer of the enclosing class.
+The default for \lstinline!iconTransformation! is to be the same as \lstinline!transformation!.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{nonnormative}
+While it is possible to have independent placements of a connector in the icon and diagram layers, this freedom should be used with care.
+A user who wants to find out what hides behind the icon of a component by opening up the component's diagram view will benefit if the relative positioning of connectors are similar between icon and diagram.
+This way, intuitive understanding of the diagram layer is enabled without the need to pay attention to connector names.
+\end{nonnormative}
+
+The \lstinline!transformation! and \lstinline!iconTransformation! of the \lstinline!Placement! annotation have the following type:
 \begin{lstlisting}[language=modelica]
 record Transformation
   Extent extent;
@@ -987,7 +1111,8 @@ record Transformation
 end Transformation;
 \end{lstlisting}%
 \annotationindex{Transformation}
-The attributes are applied in the order \lstinline!extent!, \lstinline!rotation!, \lstinline!origin!, as follows:
+
+It defines a coordinate system transformation by applying the attributes in the order \lstinline!extent!, \lstinline!rotation!, \lstinline!origin!, as follows:
 \begin{enumerate}
 \item
   The \lstinline!extent! of the component icon is mapped to the \lstinline!extent! rectangle (possibly shifting, scaling, and flipping contents).
@@ -997,36 +1122,9 @@ The attributes are applied in the order \lstinline!extent!, \lstinline!rotation!
   The \lstinline!origin! specifies a shift (moving \lstinline!{0, 0}! to \lstinline!origin!).
 \end{enumerate}
 
-\begin{lstlisting}[language=modelica]
-record Placement
-  Boolean visible = true;
-  Transformation transformation "Placement in the diagram layer";
-  Boolean iconVisible "Visible in icon layer; for public connector";
-  Transformation iconTransformation
-    "Placement in the icon layer; for public connector";
-end Placement;
-\end{lstlisting}%
-\annotationindex{Placement}
-A component with \lstinline!visible = false! shall not be shown.
-If no \lstinline!iconTransformation! is given the \lstinline!transformation! is also used for placement in the icon layer.
-If no \lstinline!iconVisible! is given for a public connector the \lstinline!visible! is also used for visibility in the icon layer.
-
-\begin{nonnormative}
-A connector can be shown in both an icon layer and a diagram layer of a class.
-Since the coordinate systems typically are different, placement information needs to be given using two different coordinate systems.
-More flexibility than just using scaling and translation is needed since the abstraction views might need different visual placement of the connectors.
-The attribute \lstinline!transformation! gives the placement in the diagram layer and \lstinline!iconTransformation! gives the placement in the icon layer.
-When a connector is shown in a diagram layer, its diagram layer is shown to facilitate opening up a hierarchical connector to allow connections to its internal subconnectors.
-\end{nonnormative}
-
-For connectors, the icon layer is used to represent a connector when it is shown in the icon layer of the enclosing model.
-The diagram layer of the connector is used to represent it when shown in the diagram layer of the enclosing model.
-Protected connectors are only shown in the diagram layer.
-Public connectors are shown in both the diagram layer and the icon layer.
-Sub-connectors in a hierarchical connector are only shown when they can be connected to.
-Non-connector components are only shown in the diagram layer.
 
 \subsubsection{Default Outline for Missing Graphics}\label{default-outline-for-missing-graphics}
+
 If the icon of a component placed in a diagram layer does not contain any graphical primitives (including inherited ones, and regardless of \lstinline!visible!-attributes; but excluding connectors), tools shall show a tool-dependent rudimentary outline of the component's transformed \lstinline!extent!.
 
 \begin{nonnormative}
@@ -1466,7 +1564,7 @@ The annotations listed below define properties for use in graphical user interfa
 /*literal*/ constant String preferredView;
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-The \fmtannotationindex{preferredView} annotation defines the default view when selecting the class.
+The \lstinline{preferredView} annotation defines the default view when selecting the class.
 The value \lstinline!"info"! means class documentation (``information''), \lstinline!"diagram"! means diagram view, \lstinline!"icon"! means icon view, and \lstinline!"text"! means Modelica source code (``text'').
 If not specified the default view is tool-specific.
 \end{semantics}
@@ -2339,7 +2437,21 @@ end M2
 
 \section{Access Control to Protect Intellectual Property}\label{annotations-for-access-control-to-protect-intellectual-property}\label{access-control-to-protect-intellectual-property}
 
-This section presents annotations to define the protection and the licensing of packages.
+The annotations listed below define the protection and licensing of packages.
+They are all sub-annotations of the \fmtannotationindex{Protection} annotation.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!Protection.access!} & Access control for decrypted content & \Cref{modelica:Protection.access}\\
+{\lstinline!Protection.features!} & Required license features & \Cref{modelica:Protection.features}\\
+{\lstinline!Protection.License!} & User license file & \Cref{modelica:Protection.License}\\
+\hline
+\end{tabular}
+\end{center}
+
 The goal is to unify basic mechanisms to control the access to a package in order to protect the intellectual property contained in it.
 This information is used to encrypt a package and bind it optionally to a particular target machine, and/or restrict the usage for a particular period of time.
 
@@ -2356,7 +2468,7 @@ The intent of this section is to enable a library vendor to maintain one source 
 The following definitions relate to access control.
 
 \begin{definition}[Protection]\index{protection!access control}
-Define what parts of a class are visible.
+Define which parts of a class that are visible.
 \end{definition}
 
 \begin{definition}[Obfuscation]\index{obfuscation!access control}
@@ -2372,29 +2484,42 @@ An encrypted package that has the \lstinline!Protection! annotation is read-only
 Restrict the use of an encrypted package for particular users for a specified period of time.
 \end{definition}
 
-In this section annotations are defined for protection and licensing.
+The \lstinline!Protection! annotation defines protection and licensing.
 Obfuscation and encryption are not standardized.
 
-Protection and licensing are both defined inside the \fmtannotationindex{Protection} annotation:
-\begin{lstlisting}[language=modelica]
-annotation(Protection($\ldots$));
-\end{lstlisting}
 
 \subsection{Protection of Classes}\label{protection-of-classes}
 
-A class may have the following annotations to define what parts of a class are visible, and only the parts explicitly listed as visible below can be accessed (if a class is encrypted and no \lstinline!Protection! annotation is defined, the access annotation has the default value \lstinline!Access.documentation!):
-\begin{lstlisting}[language=modelica]
+This section describes the part of the \lstinline!Protection! annotation used to define protection.
+
+\begin{annotationdefinition*}[access]\label{modelica:Protection.access}\annotationindex{access}\index{Protection@\robustinline{Protection}!\robustinline{access} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
 record Protection
   /*literal*/ constant Access access;
   $\ldots$
 end Protection;
-type Access = enumeration(hide, icon, documentation, diagram,
+
+type Access =
+  enumeration(hide, icon, documentation, diagram,
               nonPackageText, nonPackageDuplicate,
               packageText, packageDuplicate);
-\end{lstlisting}
-The other members of this record are given in \cref{licensing}.
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Allowed for class annotations.
+The \lstinline!access! annotation defines which parts of a class that are visible.
+If a class is encrypted and no \lstinline!Protection! annotation is provided, the default is \lstinline!Access.documentation!.
 
-The items of the \fmtannotationindex{Access} enumeration have the following meanings:
+The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
+Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
+
+\begin{example}
+If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
+\end{example}
+
+Classes should not use other classes in ways that contradict this protection.
+Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
+
+The items of the \fmtannotationindex{Access} enumeration have the following meanings (only parts explicitly listed as visible below can be accessed):
 \begin{enumerate}
 \item
   \lstinline!Access.hide!\\
@@ -2424,19 +2549,11 @@ The items of the \fmtannotationindex{Access} enumeration have the following mean
   \lstinline!Access.packageDuplicate!\\
   Same as \lstinline!Access.packageText! and additionally the class, or part of the class, can be copied.
 \end{enumerate}
-
-The \lstinline!access! annotation holds for the respective class and all classes that are hierarchically on a lower level, unless overridden by a \lstinline!Protection! annotation with \lstinline!access!.
-Overriding \lstinline!access=Access.hide! or \lstinline!access=Access.packageDuplicate! has no effect.
-
-\begin{example}
-If the annotation is given on the top level of a package and at no other class in this package, then the \lstinline!access! annotation holds for all classes in this package.
-\end{example}
-
-Classes should not use other classes in ways that contradict this protection.
-Tools must ensure that protected contents are not shown, even if classes do not meet this requirement.
+\end{semantics}
+\end{annotationdefinition*}
 
 \begin{example}
-For instance a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
+For instance, a class with \lstinline!Access.hide! should not be used in the diagram layer of a class with \lstinline!Access.diagram!, and there should not be hyperlinks to classes with \lstinline!Access.icon! (from classes with visible documentation).
 
 Consider the following invalid use of a class with \lstinline!Access.hide!:
 \begin{lstlisting}[language=modelica]
@@ -2532,30 +2649,23 @@ end CommercialFluid;
 \end{lstlisting}
 \end{nonnormative}
 
+
 \subsection{Licensing}\label{licensing}
 
-In this section annotations within the \lstinline!Protection! annotation are defined to restrict the usage of the encrypted package:
-\begin{lstlisting}[language=modelica]
+This section describes the part of the \lstinline!Protection! annotation used to define licensing.
+
+\begin{annotationdefinition*}[features]\label{modelica:Protection.features}\annotationindex{features}\index{Protection@\robustinline{Protection}!\robustinline{features} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
 record Protection
-  /*literal*/ constant Access access;
-  /*literal*/ constant String features[:] "Required license features";
-  /*literal*/ constant UserLicense License;
+  /*literal*/ constant String features[:];
+  $\ldots$
 end Protection;
-
-record UserLicense "Internal class name, do not use"
-  /*literal*/ constant String libraryKey;
-  /*literal*/ constant String licenseFile = "" "Default mapping if empty";
-end UserLicense;
-\end{lstlisting}
-See \cref{protection-of-classes} for a description of \lstinline!access!.
-The \fmtannotationindex{License} annotation has only an effect on the top of an encrypted class and is then valid for the whole class hierarchy.
-(Usually the licensed class is a package.)
-The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
-
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
 The \lstinline!features! annotation defines the required license options.
-If the features vector in the library has one or more elements, then at least a license feature according to one of the elements must be present in the authorization file.
-If the features vector in the library is empty or not provided there is no need for a license feature in the authorization file.
-As with the other annotations, the \lstinline!features! annotation holds for the respective class and for all classes that are hierarchically on a lower level, unless further restricted by a corresponding annotation.
+If the \lstinline!features! array in the library has one or more elements, then at least a license feature according to one of the elements must be present in the authorization file.
+If the \lstinline!features! array in the library is empty or not provided there is no need for a license feature in the authorization file.
+Similar to the \lstinline!access! annotation, the \lstinline!features! annotation holds for the respective class and for all classes that are hierarchically on a lower level, unless further restricted by a corresponding annotation.
 If no license according to the \lstinline!features! annotation is provided in the authorization file, the corresponding classes are not visible and cannot be used, not even internally in the package.
 
 \begin{example}
@@ -2574,6 +2684,26 @@ annotation(Protection(
 ));
 \end{lstlisting}
 \end{example}
+\end{semantics}
+\end{annotationdefinition*}
+
+\begin{annotationdefinition*}[License]\label{modelica:Protection.License}\annotationindex{License}\index{Protection@\robustinline{Protection}!\robustinline{License} sub-annotation}
+\begin{synopsis}\begin{lstlisting}
+record Protection
+  /*literal*/ constant UserLicense License;
+  $\ldots$
+end Protection;
+
+record UserLicense "Internal class name, do not use"
+  /*literal*/ constant String libraryKey;
+  /*literal*/ constant String licenseFile = "" "Default mapping if empty";
+end UserLicense;
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The \fmtannotationindex{License} annotation only has an effect at the top of an encrypted class and is then valid for the whole class hierarchy.
+(Usually the licensed class is a package.)
+
+The \lstinline!libraryKey! is a secret string from the library vendor and is the protection mechanism so that a user cannot generate his/her own authorization file since the \lstinline!libraryKey! is unknown to him/her.
 
 In order that the protected class can be used either a tool specific license manager, or an authorization file (called \lstinline!licenseFile!) must be present.
 The authorization file is standardized.
@@ -2623,10 +2753,12 @@ Additional tool-specific names can also be used.
 To protect the \lstinline!libraryKey! and the target definitions, the authorization file must be encrypted and must never show the \lstinline!libraryKey!.
 
 \begin{nonnormative}
-All other information, especially licensor and license should be visible, in order that the user can get information about the license.
+All other information, especially \lstinline!licensor! and \lstinline!license! should be visible, in order that the user can get information about the license.
 It is useful to include the name of the tool in the authorization file name with which it was encrypted.
-Note, it is not useful to store this information in the annotation, because only the tool that encrypted the \lstinline!Authorization! package can also decrypt it.
+Note that it is not useful to store this information in the annotation, because only the tool that encrypted the \lstinline!Authorization! package can also decrypt it.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition*}
 
 \begin{example}
 (Before encryption:)
