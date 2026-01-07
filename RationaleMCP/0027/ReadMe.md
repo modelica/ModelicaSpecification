@@ -12,6 +12,7 @@ The problem with undefined unit is that it gets in the way of carrying out check
 | --- | --- |
 | 2022-10-04 | Henrik Tidefelt. Filling this document with initial content. |
 | 2025-12-18 | Hans Olsson, simple proposal https://github.com/modelica/ModelicaSpecification/issues/2127#issuecomment-349162852 |
+| 2026-01-07 | Hans Olsson, improved - based on feedback |
 
 ## Contributor License Agreement
 All authors of this MCP or their organizations have signed the "Modelica Contributor License Agreement".
@@ -44,58 +45,8 @@ E.g., the buildings library uses a large number of multiplicative literals witho
 ## Required Patents
 To the best of our knowledge, there are no patents that would conflict with the incorporation of this MCP.
 
-## References
-https://doi.org/10.3384/ecp21817 and its references.
+## Details
 
-## Detailed rules
+[Design details](design.md)
 
-Unit restrictions for variables
-- Each scalar variable and array element may only have one unit during the simulation.
-- Arrays may have heterogenous units. Notes:
-  - This is for each instance of the variable, so different component instances and function calls (of the same model/function) may have different units.
-  - This applies after evaluating evaluable parameters.
-  - The s-parametrization needed for diodes and friction requires special work-arounds in models.
-
-General rules
-
-- Expressions (including equations, binding equations, and start values) must be unit consistent, except for listed exceptions, and can be used to infer units.
-- If a variable has a non-empty unit-attribute that is the unit of the variable. The unit-attributes should preferable be in base SI-units.
-- Variables that are declared without (non-empty) unit-attribute have unspecified unit, which may be inferred if there is a unique unit that makes the expressions unit consistent.
-
-Detailed default rules:
-
-- Literals without unit and zeros() are treated as empty unit except in multiplicative context (multiplication and division operators) where it has multiplicative-unit with the following rules:
-  - If both operands have multiplicative-unit the result has multiplicative-unit.
-  - If one operand has multiplicative-unit and the other not, the multiplicative-unit decays to unit `"1"`.
-- If a constant is declared without unit, and with a binding equation that lacks units (even after inference) the constant is treated as empty unit. (This is primarily for package constants, where we don't want to infer a unit for `pi` and use it at unrelated places; but that also applies in models.)
-- An expression having empty unit will match any constraint, and inference will not give it a unit.
-- The rules for operands are fairly logical, but see appendix A in https://doi.org/10.3384/ecp21817 for the details.
-
-## Notes
-
-These are just rules for models, and doesn't require tools to diagnose all issues in models.
-
-Arrays with heterogenous units are somewhat rare but needed for state-space forms etc, and for some connectors in the electrical library.
-
-The rules are compatible with:
-- The traditional unit inference in Dymola (Mattsson&Elmqvist https://modelica.org/events/conference2008/sessions/session1a2.pdf )
-- Hindley-Milner for scalars (https://github.com/modelica/ModelicaSpecification/pull/3491)
-- The advanced combination(s) thereof in https://doi.org/10.3384/ecp21817
-
-They are seen as different quality-of-implementations, but we could recommend a minimum for tools.
-
-It says:
-- "default rules" to allow allow stricter or less strict variants, e.g., as described in https://github.com/modelica/ModelicaSpecification/issues/3690
-- "except for the listed exceptions" to allow exceptions for specific equations etc https://github.com/modelica/ModelicaSpecification/issues/3690#issuecomment-2866443687
-- "multiplicative context", but it is for both multiplication and division (the division explains why the multiplicative-unit decays to `"1"` instead of just using the other one).
-
-Treating the empty unit-attribute as unspecified is needed, since it is the default - but it normally doesn't make sense to explicitly give it for a variable declaration.
-
-Specific exceptions for equations, and libraries, should preferably be added to the proposal.
-
-The restriction that variables only having one unit could be violated in different ways in models:
-- Temporaries in algorithms in functions (and even models) may be re-used to store expressions with different units.
-- The s-parametrization is an example of a variable that switches e.g., from voltage to current.
-
-For s-parametrization one solution is to divide out the unit and generate an expression with unit `"1"` and store that.
 
