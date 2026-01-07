@@ -62,7 +62,7 @@ E.g., a simple state-space system without direct terms:
 In text books those zeros are often omitted, but that is not allowed in Modelica.
 
 Basically the zeros are seen as structural zeros and one would expand it as `y=C*x` (not `y=C*x+zeros(...)*u`), imposing no unit-constraint between `u` and `y`.
-In contrast for `f1+f2=0*f1` it seems natural to have unit `"1"` for the literal.
+In contrast for `f1+f2=0*f1` it seems natural to have unit `"1"` for the literal, even if it is unlikely that someone makes a mistake for that equation.
 And if one writes `[der(x);y]=[A,B;C,1]*[x;u]` then `u` and `y` should be scalars (or vectors of length 1) that both have the same unit.
 
 This also apply to the literal zeros in `diagonal()` and `skew()`, they are seen as having empty unit - not impacting the result.
