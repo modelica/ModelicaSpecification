@@ -27,6 +27,9 @@ In order to handle connectors in a good way, `zeros(n)` is treated the same as l
 The rationale for only giving the rules for variables instead of providing a specific implementation is to make the expectation clear for library authors.
 And at the same time allow tool vendors to implement the rules to varying degrees (there is sufficient experience with the prototypes to ensure that it will work).
 
+The rationale for considering implementing the rules to varying degrees, and even considering rules beyond the proposed ones is to ensure that they are consistent.
+That means that rules are designed such that a model unit-consistent with the most restrictive rules will also be unit-consistent with less restrictive rules with a consistent subset of inferred units.
+
 Many libraries, including the Modelica Standard Library already largely follow this rule.
 
 ## Backwards Compatibility
