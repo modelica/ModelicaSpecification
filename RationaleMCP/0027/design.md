@@ -45,7 +45,7 @@ It is included in this document, because there are some non-trivial issues if to
 Based on the experience with existing models it will likely infer units for a number of variables, but find few, if any, new errors.
 
 One considerations is whether the arrays are just arrays or have more structure.
-Many (likely most) arrays are used as vectors, matrices, etc in the linear algebra sense, but not all.
+Many (likely most) arrays are used as vectors, matrices, etc in the linear algebra sense, but not all. 
 E.g., Modelica.Blocks.Tables.CombiTable2Ds has a table where the first row and column effectively has different units from the rest of the table.
 It seems that tools could identify whether a 2d-array is used as a matrix (or even bilinear form) based on the equations, i.e. `A*x` imply that `A` is a matrix, and `x*A*x` that it is a bilinear form.
 
@@ -70,19 +70,31 @@ This also apply to the literal zeros in `diagonal()` and `skew()`, they are seen
 ## Evaluable parameter
 
 The reason it applies for each value of the evaluable parameters is to make it sufficiently general to handle even models where evaluable parameters switch between different unit-configurations.
-If the evaluable parameter has been evaluated this is fairly unproblematic.
+In practice the handling will depend on whether the parameter has been evaluated or not.
 
-The issue is if it has not been evaluated.
+### Evaluated evaluable parameter
+
+This is the simpler case, but still requires care, since expanding and evaluating expressions is normally mixed in tools.
+For practical reasons one wants to perform the unit check on the original non-expanded expressions, where the evaluable parameters were not yet evaluated.
+
+This can be handled in various ways:
+- Simplifying the original expressions based on the values of evaluable parameters. (In some sense this will be a form of double-work.)
+- Having conditional constraints as in https://github.com/modelica/ModelicaSpecification/pull/3491.
+
+### Non-evaluated evaluable parameter
+
+This is a particular concern.
 Tools should avoid having the unit-handling (except for the unit-attribute) cause evaluation of evaluable parameters.
+Note that it doesn't suffice to separate parameters in evaluated and non-evaluated as different tools may evaluate different evaluable parameters with different result for unit consistency.
 
-In many cases it does not matter, e.g., an evaluable mass-parameter will have unit `"kg"` regardless of its value.
+However, in many cases it does not matter, e.g., an evaluable mass-parameter will have unit `"kg"` regardless of its value, and many boolean evaluable conditions don't influence the units.
 
 When it does matter (in particular for boolean conditions) it's a quality-of-implementation issue for tools to handle it in a good way, and possibilities include:
-- Ignore those constraints. (Not good.)
+- Ignore the unit-constraints in such expressions. (Not good.)
 - Temporarily evaluate the evaluable parameters, without impacting the translation. (This will only check the model for one set of values.)
-- Treat them as conditional constraint in some advanced way. (Should check conditional constraint in https://github.com/modelica/ModelicaSpecification/pull/3491 )
+- Treat them as conditional constraint in some advanced way. (This is more advanced that the conditional constraints in https://github.com/modelica/ModelicaSpecification/pull/3491 )
 
-## Notes
+## Varying quality-of-implementation
 
 These are just rules for models, and doesn't require tools to diagnose all issues in models.
 
@@ -93,12 +105,21 @@ The rules are compatible with:
 
 They are seen as different quality-of-implementations, but we could recommend a minimum for tools.
 
+The unit-handling doesn't prioritize different operands (in contrast to selecting initial conditions and states), since that might give different results for the different levels for unit-consistent models.
+For unit-inconsistent models it *possible* that using different set of rules will infer different units without detecting errors; the solution is to improve the quality-of-implementation to detect the underlying error in that case.
+Additionally, this only occurs the different rules are not sub-sets of each other, so having a common understanding of hieararchy of the rules may reduce this risk.
+
+## Notes
+
+The rules for literals break the substitution principles for equality, so even if `A=[1,2;3,4]` it doesn't follow that `A` and `[1,2;3,4]` behave the same in terms of units.
+
 It says:
 - "default rules" to allow allow stricter or less strict variants, e.g., as described in https://github.com/modelica/ModelicaSpecification/issues/3690
 - "except for the listed exceptions" to allow exceptions for specific equations etc https://github.com/modelica/ModelicaSpecification/issues/3690#issuecomment-2866443687
 - "multiplicative context", but it is for both multiplication and division (the division explains why the multiplicative-unit decays to `"1"` instead of just using the other one).
 
 Treating the empty unit-attribute as unspecified is needed, since it is the default - but it normally doesn't make sense to explicitly give `unit=""` for a variable declaration.
+If the goal is just to remove an existing unit an alternative is `unit=break`.
 
 Specific exceptions for equations, and libraries, should preferably be added to the proposal.
 
