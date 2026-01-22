@@ -1025,31 +1025,44 @@ In fact, it is guaranteed that a redeclaration cannot lead to an unbalanced mode
 The restrictions below apply after flattening -- i.e., inherited components are included -- possibly modified.
 The corresponding restrictions on connectors and connections are in \cref{restrictions-of-connections-and-connectors}.
 
+\begin{definition}[Scalar type class]\index{scalar type class}
+A \emph{scalar type class} refers to an equivalence class of equation-compatible scalar types.
+
+\textbf{TODO: Define equation-compatible, or use one of the existing compatibility definitions!}
+
+Note that each of the predefined variable types (\cref{predefined-types-and-classes}) corresponds to a scalar type class.
+The remaining scalar type classes correspond to enumeration types, with each class being identified with its ordered list of enumeration literals.
+\end{definition}
+
 \begin{definition}[Local number of unknowns]\index{local number of unknowns}
-The local number of unknowns of a \lstinline!model! or \lstinline!block! class is the sum based on the components:
+Let $T$ be a scalar type class.
+The local number of $T$ unknowns of a \lstinline!model! or \lstinline!block! class is the sum based on the components:
 \begin{itemize}
 \item
-  For each declared component of specialized class \lstinline!type! (\lstinline!Real!, \lstinline!Integer!, \lstinline!String!, \lstinline!Boolean!, enumeration and arrays of those, etc.) or \lstinline!record!, or \lstinline!operator record! not declared as \lstinline!outer!, it is the number of unknown variables inside it (i.e., excluding parameters and constants and counting the elements after expanding all records, operator record, and arrays to a set of scalars of primitive types).
-\item
-  Each declared component of specialized class \lstinline!type! or \lstinline!record! declared as \lstinline!outer! is ignored.
+  For each component declared as \lstinline!outer!, it is zero.
   \begin{nonnormative}
   I.e., all variables inside the component are treated as known.
   \end{nonnormative}
 \item
-  For each declared component of specialized class \lstinline!connector! component, it is the number of unknown variables inside it (i.e., excluding parameters and constants and counting the elements after expanding all records and arrays to a set of scalars of primitive types).
+  For each component declared with a subtype of $T$, it is zero if the component is declared as \lstinline!constant! or \lstinline!parameter!, and the number of scalar variables it contains (i.e., the product of any array dimensions) otherwise.
 \item
-  For each declared component of specialized class \lstinline!block! or \lstinline!model!, it is the sum of the number of inputs and flow variables in the (top level) public connector components of these components (and counting the elements after expanding all records and arrays to a set of scalars of primitive types).
-  If these public connector components contain overdetermined connectors each instance of an overdetermined type or record in that connector is assumed to be a separate root.
+  For each declared \lstinline!record! or \lstinline!operator record! component, it is the number of unknown $T$ variables inside it (i.e., counting the elements which are subtypes of $T$ after expanding all records, operator record, and arrays to a set of scalars of primitive types).
+\item
+  For each declared component of specialized class \lstinline!connector!, it is the number of unknown $T$ variables inside it (i.e., excluding parameters and constants, and counting the elements after expanding all records and arrays to a set of scalars of primitive types).
+\item
+  For each declared component of specialized class \lstinline!block! or \lstinline!model!, it is the sum of the number of $T$ inputs and $T$ flow variables in the (top level) public connector components of these components (and counting the elements after expanding all records and arrays to a set of scalars of primitive types).
+  If these public connector components contain overdetermined connectors, each instance of an overdetermined type or record in that connector is assumed to be a separate root.
 \end{itemize}
 \end{definition}
 
 \begin{definition}[Local equation size]\index{local equation size}\label{local-equation-size}
-The local equation size of a \lstinline!model! or \lstinline!block! class is the sum of the following numbers:
+Let $T$ be a scalar type class.
+The local $T$ equation size of a \lstinline!model! or \lstinline!block! class is the sum of the following numbers:
 \begin{itemize}
 \item
-  The number of equations defined locally (i.e., not in any \lstinline!model! or \lstinline!block! component), including binding equations, and equations generated from \lstinline!connect!-equations.
+  The number of $T$ equations defined locally (i.e., not in any \lstinline!model! or \lstinline!block! component), including binding equations, and equations generated from \lstinline!connect!-equations.
   Similar to variable counting, the counting is done after expanding to scalars of primitive types.
-  For calls of functions with multiple outputs, \cref{output-formal-parameters-of-functions} the number of equations is the total number of scalar primitive elements of the component references in the left hand side.
+  For calls of functions with multiple outputs, \cref{output-formal-parameters-of-functions} the number of $T$ equations is the total number of scalar primitive elements of type $T$ among the component references in the left-hand side.
   For \lstinline!assert! and other empty functions calls \cref{empty-function-calls} the size is zero.
   \begin{nonnormative}
   This includes the proper count for \lstinline!when!-clauses (see \cref{when-equations}), and algorithms (see \cref{algorithm-sections}), and is also used for the flat Hybrid DAE formulation (see \cref{modelica-dae-representation}).
@@ -1089,7 +1102,7 @@ In the equation count, it is assumed that an equation for \lstinline!u! is suppl
 \end{nonnormative}
 
 \begin{definition}[Locally balanced]\index{locally balanced}\index{balanced!locally}
-A \lstinline!model! or \lstinline!block! class is locally balanced if the \emph{local number of unknowns} is identical to the \emph{local equation size} for all legal values of constants and parameters.
+A \lstinline!model! or \lstinline!block! class is locally balanced if for each scalar type class $T$, the \emph{local number of $T$ unknowns} is identical to the \emph{local $T$ equation size} for all legal values of constants and parameters.
 \end{definition}
 
 \begin{nonnormative}
@@ -1100,15 +1113,15 @@ It is a quality of implementation for a tool to verify this property in general,
 
 \begin{definition}[Globally balanced]\index{globally balanced}\index{balanced!globally}
 Similarly to locally balanced, but including all unknowns and equations from all components.
-The global number of unknowns is computed by expanding all unknowns (i.e., excluding parameters and constants) into a set of scalars of primitive types.
-This should match the global equation size defined as:
+The global number of $T$ unknowns is computed by expanding all unknowns (i.e., excluding parameters and constants) into a set of scalars of primitive types.
+This should match the global $T$ equation size defined as:
 \begin{itemize}
 \item
-  The number of equations defined (included in any \lstinline!model! or \lstinline!block! component), including equations generated from \lstinline!connect!-equations.
+  The number of $T$ equations defined (included in any \lstinline!model! or \lstinline!block! component), including equations generated from \lstinline!connect!-equations.
 \item
-  The number of input and flow variables present in each (top-level) public connector component.
+  The number of $T$ input and flow variables present in each (top-level) public connector component.
 \item
-  The number of (top-level) public input variables that neither are connectors nor have binding equations.
+  The number of $T$ (top-level) public input variables that neither are connectors nor have binding equations.
   \begin{nonnormative}
   I.e., top-level inputs are treated as known variables.
   \end{nonnormative}
@@ -1145,9 +1158,9 @@ Flange support(phi=phi, tau=torque1+torque2) if use_support;
   The arguments of \lstinline!Connections.branch!, \lstinline!Connections.root!, and \lstinline!Connections.potentialRoot! are part of outside connectors, to fulfil the requirement in \cref{connect-equations}.
 \item
   All non-partial \lstinline!model! and \lstinline!block! classes must be locally balanced.
-  \begin{nonnormative}
-  This means that the local number of unknowns equals the local equation size.
-  \end{nonnormative}
+% \begin{nonnormative}
+% That is, for each primitive variable type $T$, the local number of $T$ unknowns equals the local $T$ equation size.
+% \end{nonnormative}
 \end{itemize}
 
 Based on these restrictions, the following strong guarantee can be given:
@@ -1178,9 +1191,10 @@ equation
 end Capacitor;
 \end{lstlisting}
 
-Model \lstinline!Capacitor! is a locally balanced model according to the following analysis:
+Model \lstinline!Capacitor! is a locally balanced model according to the following analysis.
+In this model, the only present scalar type class is \lstinline!Real!, so checking local balance comes down to comparing the local number of \lstinline!Real! unknowns to the local \lstinline!Real! equation size, and in the following ``\lstinline!Real!'' is omitted for brevity.
 
-Locally unknown variables: \lstinline!p.i!, \lstinline!p.v!, \lstinline!n.i!, \lstinline!n.v!, \lstinline!u!
+Local unknown variables: \lstinline!p.i!, \lstinline!p.v!, \lstinline!n.i!, \lstinline!n.v!, \lstinline!u!
 
 %TODO-FORMAT Should this be verbatim code instead?
 Local equations:
@@ -1191,7 +1205,7 @@ C \cdot \text{der}(u) &= p.i;
 \end{align*}
 and 2 equations corresponding to the 2 flow variables \lstinline!p.i! and \lstinline!n.i!.
 
-These are 5 equations in 5 unknowns (locally balanced model).
+These are 5 equations in 5 unknowns (locally balanced in \lstinline!Real!).
 A more detailed analysis would reveal that this is structurally non-singular, i.e., that the hybrid DAE will not contain a singularity independent of actual values.
 
 If the equation \lstinline!u = p.v - n.v! would be missing in the \lstinline!Capacitor! model, there would be 4 equations in 5 unknowns and the model would be locally unbalanced and thus simulation models in which this model is used would be usually structurally singular and thus not solvable.
@@ -1234,7 +1248,8 @@ end Circuit;
 
 Since \lstinline!t! is partial we cannot check whether this is a globally balanced model, but we can check that \lstinline!Circuit! is locally balanced.
 
-Counting on model \lstinline!Circuit! results in the following balance sheet:
+Counting on model \lstinline!Circuit! results in the following balance sheet.
+Again, the only present scalar type class is \lstinline!Real!, so checking local balance comes down to comparing the local number of \lstinline!Real! unknowns to the local \lstinline!Real! equation size, and in the following ``\lstinline!Real!'' is omitted for brevity.
 
 Locally unknown variables (8): \lstinline!p.i!, \lstinline!p.v!, \lstinline!n.i!, \lstinline!n.v!, and 2 flow variables for \lstinline!t! (\lstinline!t.p.i!, \lstinline!t.n.i!), and 2 flow variables for \lstinline!c! (\lstinline!c.p.i!, \lstinline!c.n.i!).
 
@@ -1302,7 +1317,8 @@ equation
 end SimpleAir;
 \end{lstlisting}
 
-The local number of unknowns in model \lstinline!SimpleAir! (after flattening) is:
+The only present scalar type class (excluding parameters and constants, which don't contribute to local balance counts) in \lstinline!SimpleAir! is \lstinline!Real!, so checking local balance comes down to comparing the local number of \lstinline!Real! unknowns to the local \lstinline!Real! equation size, and in the following ``\lstinline!Real!'' is omitted for brevity.
+The local number of unknowns (after flattening) is:
 \begin{itemize}
 \item
   $3$ (\lstinline!T!, \lstinline!d!, \lstinline!u!: variables defined in
@@ -1358,7 +1374,8 @@ equation
 end DynamicVolume;
 \end{lstlisting}
 
-The local number of unknowns of \lstinline!DynamicVolume! is:
+The only present scalar type class (excluding parameters and constants) in \lstinline!DynamicVolume! is \lstinline!Real!.
+The local number of unknowns is:
 \begin{itemize}
 \item
   $4 + 2 \cdot \text{\lstinline!nXi!}$ (inside the \lstinline!port! connector), plus
@@ -1403,7 +1420,8 @@ equation
 end FixedBoundary_pTX;
 \end{lstlisting}
 
-The number of local variables in \lstinline!FixedBoundary_pTX! is:
+The only present scalar type class (excluding parameters and constants) in \lstinline!FixedBoundary_pTX! is \lstinline!Real!.
+The number of local variables is:
 \begin{itemize}
 \item
   $4 + 2 \cdot \text{\lstinline!nXi!}$ (inside the \lstinline!port! connector), plus
