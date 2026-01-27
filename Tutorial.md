@@ -311,7 +311,7 @@ model ModifiedFiltersInSeries
   FiltersInSeries F34(F1.T=6, F2.T=11, F2.k=2); // alternative 2
 end ModifiedFiltersInSeries;
 ```
-The class concept is similar as in programming languages.
+The class concept is similar to classes in many other programming languages.
 It is used for many purposes in Modelica, such as model components, connection mechanisms, parameter sets, input-output blocks and functions.
 In order to make Modelica classes easier to read and to maintain, special keywords have been introduced for such special uses, model, connector, record, block, function, type and package.
 It should be noted though that the use of these keywords only apply certain restrictions, like records are not allowed to contain equations.
@@ -1234,7 +1234,7 @@ algorithm
 ```
 (In this case an equation would likely be preferable.)
 Here, the condition `h1 < hmax` has higher priority than the condition `pushbutton`, if both conditions become true at the same event instant.
-Similarly as for when-clauses in equation sections, the precise meaning of this when-clause in an algorithm can be expressed as:
+Similarly to when-clauses in equation sections, the precise meaning of this when-clause in an algorithm can be expressed as:
 ```Modelica
   Boolean open(start = false);
   Boolean b1 (start = h1.start < hmax);
