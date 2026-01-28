@@ -732,6 +732,7 @@ If $\mathit{factor}$ is not provided or is equal to zero, it is inferred, see \c
 If an event clock is associated to a base-partition, all its sub-partitions must have resulting clocks that are sub-sampled with an \lstinline!Integer! factor with respect to this base-clock.
 
 \begin{example}
+Restrictions on super-sampling of event clocks:
 \begin{lstlisting}[language=modelica]
 Clock u = Clock(x > 0);
 Clock y1 = subSample(u, 4);
@@ -739,6 +740,17 @@ Clock y2 = superSample(y1, 2); // fine; y2 = subSample(u, 2)
 Clock y3 = superSample(u, 2);  // error
 Clock y4 = superSample(y1, 5); // error
 \end{lstlisting}
+\end{example}
+
+\begin{example}
+Valid use of \lstinline!superSample! for clocked expressions:
+\begin{lstlisting}[language=modelica]
+  Integer y = integer(sample(time+0.5, Clock(1))); // Rounded
+  Integer ySub = subSample(y, 4);
+  Integer ySubSuper = superSample(ySub, 5);
+\end{lstlisting}
+Here \lstinline!y! has the value 0 at time 0.0, 1 at 1.0, etc, and \lstinline!ySub! has the value 0 at time 0.0, 4 at 4.0, 8 at 8.0 etc.
+The super-sampled signal \lstinline!ySubSuper! has the value 0 for 5 samples starting at time 0.0, the value 4 for 5 samples starting at time 4.0, etc.
 \end{example}
 \end{semantics}
 \end{operatordefinition}
@@ -788,6 +800,15 @@ First you \lstinline!superSample! to split each sampling interval in two equal p
 Then the simple \lstinline!shiftSample! removes the first three ticks giving 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0.
 And finally every other point is removed by \lstinline!subSample!, and \lstinline!s1! ticks at 2.5, 3.5, 4.5, 5.5.
 \end{nonnormative}
+\begin{example}
+The effect of the \lstinline!shiftSample! $\mathit{resolution}$ explained in terms of \lstinline!superSample! and \lstinline!subSample!:
+\begin{lstlisting}[language=modelica]
+  Integer y = integer(sample(time+0.5, Clock(1))); // Rounded
+  Integer yShift = shiftSample(y, 1, 5);
+  Integer yShift2 = subSample(shiftSample(superSample(y, 5), 1), 5);
+\end{lstlisting}
+Here, \lstinline!yShift! and \lstinline!yShift2! are identical, with value 0 at time 0.2, 1 at 1.2, etc.
+\end{example}
 \end{semantics}
 \end{operatordefinition}
 
@@ -821,18 +842,6 @@ Clock y2 = backSample(y1, 2);     // ticks: 1.0, 2.0, $\ldots$
 \end{lstlisting}
 \end{example}
 \end{semantics}
-\end{operatordefinition}
-
-\begin{operatordefinition}[noClock]
-\begin{synopsis}\begin{lstlisting}
-noClock($u$)
-\end{lstlisting}\end{synopsis}
-\begin{semantics}
-The clock of \lstinline!y = noClock($u$)! is always inferred, and $u$ must be part of the same base-clock as \lstinline!y!.
-At every tick of the clock of \lstinline!y!, the operator returns the value of $u$ from the last tick of the clock of $u$.
-If \lstinline!noClock($u$)! is called before the first tick of the clock of $u$, the start value of $u$ is returned.
-\end{semantics}
-\end{operatordefinition}
 
 \begin{nonnormative}
 Clarification of \lstinline!backSample!:
@@ -848,7 +857,30 @@ Then when \lstinline!ys! exists, also \lstinline!yb! exists and \lstinline!ys = 
 The variable \lstinline!yb! exists for the above parameterization with \lstinline!a < b! one clock tick before \lstinline!ys!.
 Therefore, \lstinline!backSample! is basically a \lstinline!shiftSample! with a different parameterization and the clock of \lstinline!backSample.y! ticks before the clock of \lstinline!u!.
 Before the clock of \lstinline!u! ticks, \lstinline!yb = u.start!.
+\begin{example}
+Time is shifted in the same direction when using \lstinline!backSample! as when using \lstinline!shiftSample!, but by a different amount:
+\begin{lstlisting}[language=modelica]
+  Integer y = integer(sample(time+0.5, Clock(1))); // Rounded
+  Integer yShift(start=10) = shiftSample(y, 1, 5);
+  Integer yBack = backSample(yShift, 1, 5);
+  Integer yShift2 = shiftSample(yShift, 4, 5);
+\end{lstlisting}
+Here \lstinline!yBack! has the value 10 (the start value of \lstinline!yShift!) at time 0.0, 0 at 1.0, 1 at 2.0 etc.
+The only difference between \lstinline!yBack! and \lstinline!yShift2! is that \lstinline!yShift2! does not have a value at time 0.0, i.e., it begins with the value 0 at time 1.0.
+\end{example}
 \end{nonnormative}
+\end{operatordefinition}
+
+\begin{operatordefinition}[noClock]
+\begin{synopsis}\begin{lstlisting}
+noClock($u$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The clock of \lstinline!y = noClock($u$)! is always inferred, and $u$ must be part of the same base-clock as \lstinline!y!.
+At every tick of the clock of \lstinline!y!, the operator returns the value of $u$ from the last tick of the clock of $u$.
+If \lstinline!noClock($u$)! is called before the first tick of the clock of $u$, the start value of $u$ is returned.
+\end{semantics}
+\end{operatordefinition}
 
 \begin{nonnormative}
 Clarification of \lstinline!noClock! operator:
