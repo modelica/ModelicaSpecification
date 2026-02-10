@@ -1,4 +1,4 @@
-FROM ubuntu:numbat
+FROM ubuntu:noble
 
 ENV PATH="/usr/local/texlive/bin/x86_64-linux:${PATH}"
 
@@ -10,7 +10,7 @@ RUN sed -i s,http://archive.ubuntu.com/ubuntu/,mirror://mirrors.ubuntu.com/mirro
  && REMOTE="http://mirror.ctan.org/systems/texlive/tlnet" \
  && INSTALL="/tmp/install-texlive" \
  && mkdir -p $INSTALL \
- && echo "export PATH=$PATH:/usr/local/texlive/2022/bin" >> /etc/environment \
+ && echo "export PATH=$PATH:/usr/local/texlive/2025/bin" >> /etc/environment \
  && curl -sSL $REMOTE/install-tl-unx.tar.gz | tar -xzv -C $INSTALL --strip-components=1 \
  && echo selected_scheme scheme-basic > texlive.profile \
  && echo TEXDIR /usr/local/texlive/ >> texlive.profile \
