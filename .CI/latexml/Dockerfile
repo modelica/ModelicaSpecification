@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:numbat
 
 ENV PATH="/usr/local/texlive/bin/x86_64-linux:${PATH}"
 
