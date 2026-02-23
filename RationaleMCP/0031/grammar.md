@@ -203,7 +203,7 @@ Note that there is no optional byte order mark, in agreement with the use of byt
 ## B24 Component clause
 > _component-clause_ → _type-prefix_ _type-specifier_ ~~_array-subscripts_?~~ _component-list_
 
-> _global-constant_ → **constant** _type-specifier_ _array-subscripts_? _declaration_ _comment_
+> _global-constant_ → **constant** _type-specifier_ _declaration_ _comment_
 
 > _type-prefix_ →\
 > &emsp; ~~( **flow** | **stream** )?~~\
