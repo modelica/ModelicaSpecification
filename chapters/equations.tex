@@ -588,8 +588,9 @@ If computation or communication time has to be simulated, this property has to b
 An \firstuse{event} is something that occurs instantaneously at a specific time or when a specific condition occurs.
 Events are for example defined by the condition occurring in a \lstinline!when!-clause, \lstinline!if!-equation, or \lstinline!if!-expression.
 
-The integration is halted and an event occurs whenever an event generation expression, e.g., \lstinline!x > 2! or \lstinline!floor(x)!, changes its value.
+The integration is halted and an event occurs whenever an event generating expression, e.g., \lstinline!x > 2! or \lstinline!floor(x)!, changes its value.
 An event generating expression has an internal buffer, and the value of the expression can only be changed at event instants.
+In an algorithm in a model or block each expression is compared to the previous value when executing the corresponding statement, where each iteration of statements inside for-loops are seen as different statements.
 If the evaluated expression is inconsistent with the buffer, that will trigger an event and the buffer will be updated with a new value at the event instant.
 During continuous integration event generation expression has the constant value of the expression from the last event instant.
 
@@ -608,6 +609,46 @@ At the event instant, the correct \lstinline!if!-branch is selected and the inte
 
 Numerical integration methods of order $n$ ($n \geq 1$) require continuous model equations which are differentiable up to order $n$.
 This requirement can be fulfilled if \lstinline!Real! elementary relations are not treated literally but as defined above, because discontinuous changes can only occur at event instants and no longer during continuous integration.
+\end{example}
+
+\begin{example}
+Event generation inside algorithms.
+\begin{lstlisting}[language=modelica]
+model AlgorithmEvent1
+  Real x;
+  Integer i;
+algorithm
+  i := 0;
+  x := sin(time);
+  if x < 0 then  // <-- relation 1
+    x := 0;
+    i := 1;
+  end if;
+  x := cos(time);
+  if x < 0 then  // <-- relation 2
+    x := 0;
+    i := i+2;
+  end if;
+  x := 3.5;
+  annotation(experiment(StopTime=10));
+end AlgorithmEvent1;
+\end{lstlisting}
+This example works as if the first \lstinline!x < 0! was replaced by \lstinline!sin(time) < 0! and the second by \lstinline!cos(time) < 0!.
+
+\begin{lstlisting}[language=modelica]
+model AlgorithmEvent2
+  Real x[n](start = 2:4);
+  parameter Integer n = 3 annotation(Evaluate=true);
+  Boolean b[n];
+equation
+  der(x) = -2*x;
+algorithm
+  for i in 1:n loop
+    b[i] := x[i] > 1;
+  end for;
+end AlgorithmEvent2;
+\end{lstlisting}
+Here we get one crossing function for each element of \lstinline!x!, three in total.
 \end{example}
 
 \begin{nonnormative}
