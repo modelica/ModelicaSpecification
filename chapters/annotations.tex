@@ -1048,7 +1048,7 @@ The values of the \lstinline!EllipseClosure! enumeration specify if and how the 
 \begin{lstlisting}[language=modelica]
 type Arrow = enumeration(None, Open, Filled, Half);
 type TextStyle = enumeration(Bold, Italic, UnderLine);
-type TextAlignment = enumeration(Left, Center, Right);
+type TextAlignment = enumeration(Left, Center, Right, Automatic);
 \end{lstlisting}%
 \annotationindex{Arrow}\annotationindex{TextStyle}\annotationindex{TextAlignment}
 
@@ -1278,21 +1278,19 @@ record Text
   String fontName;
   TextStyle textStyle[:];
   Color textColor = Black;
-  TextAlignment horizontalAlignment =
-    if index < 0 then TextAlignment.Right else TextAligment.Left;
+  TextAlignment horizontalAlignment = TextAlignment.Automatic;
     // Different default compared to other Text
 end Text;
 \end{lstlisting}
 
 The \lstinline!index! is one of the points of the \lstinline!Line! (numbered 1, 2, 3, \ldots{}, where negative numbers count from the end, thus -1 indicates the last one).
+The \lstinline!origin! (used to interpret \lstinline!extent! and \lstinline!rotation!) is specified relative to the this point on the \lstinline!Line!.
+
 The \lstinline!string! may use the special symbols \lstinline!"%first"! and \lstinline!"%second"! to indicate the connectors in the \lstinline!connect!-equation.
 
-The \lstinline!extent! and \lstinline!rotation! (inherited from \lstinline!GraphicItem!) are relative to the \lstinline!origin! (default \lstinline!{0, 0}!, inherited from \lstinline!GraphicItem!) and the \lstinline!origin! is relative to the point on the \lstinline!Line!.
-Having a zero size for the \lstinline!extent! is deprecated and is handled as if upper part is moved up an appropriate amount.
+The meanings of \lstinline!extent! and \lstinline!rotation! (inherited from \lstinline!GraphicItem!), as well as \lstinline!fontSize!, \lstinline!fontName! \lstinline!textStyle!, and \lstinline!textColor! are the same as for the other \lstinline!Text! annotation in \cref{text}.
 
-The \lstinline!textColor! defines the color of the text.
-The text is drawn with transparent background and no border around the text (and without outline).
-The default value for \lstinline!horizontalAlignment! is deprecated.
+When \lstinline!horizontalAlignment! is \lstinline!TextAlignment.Automatic!, the tool automatically determines the alignment to reduce collisions with other graphical items.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -1451,6 +1449,7 @@ Otherwise, the size specifies the absolute size.
 The text is vertically centered in the extent.
 
 If the \lstinline!extent! specifies a box with zero width and positive height the height is used as height for the text (unless \lstinline!fontSize! attribute is non-zero -- which specifies the absolute size), and the text is not truncated (the \lstinline!horizontalAlignment! is still used in this case).
+The \lstinline!horizontalAlignment = TextAlignment.Automatic! is not allowed within this \lstinline!Text! annotation (compare \cref{connections1}).
 
 \begin{nonnormative}
 A zero-width \lstinline!extent! is convenient for handling texts where the width is unknown.
