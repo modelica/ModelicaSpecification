@@ -29,4 +29,3 @@ We could actually do the same for all non-Modelica constructs of the current Bas
 Eventually:
 - The same parser could be used for Modelica and Base Modelica.
 - A Base Modelica model will be accepted by Modelica compilers, which will ignore the special annotations (e.g. for clocked partitions) and re-determine the corresponding information internally.
-- 
