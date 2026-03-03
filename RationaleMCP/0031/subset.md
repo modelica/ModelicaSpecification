@@ -19,3 +19,14 @@ This document summarizes the parts of Base Modelica which are not Modelica, as a
 4. [pure constant](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/differences.md#pure-modelica-functions) functions,
    a further restriction of pure functions.
 5. [Subscripting of parenthesized general expressions](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/differences.md#pure-modelica-functions) which is needed to represent the result of certain flattening operations, e.g., the inlining of function calls.
+
+## Proposal
+
+The current specification of Base Modelica already allows some syntactic sugars to handle guess values, to help the end user recognize familiar syntactic patterns. But that is optional. We could make this sugar compulsory to avoid the need of a special parser, and only use the de-sugarized syntax internally in the importing tools.
+
+We could actually do the same for all non-Modelica constructs of the current Base Modelica spec, possibly by slightly abusing annotations (e.g. to identify partitions, declare pure functions as pure function constants, etc.).
+
+Eventually:
+- The same parser could be used for Modelica and Base Modelica.
+- A Base Modelica model will be accepted by Modelica compilers, which will ignore the special annotations (e.g. for clocked partitions) and re-determine the corresponding information internally.
+- 
