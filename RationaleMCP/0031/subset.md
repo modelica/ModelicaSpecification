@@ -4,7 +4,7 @@ Base Modelica was mostly defined by subtraction, removing features from the Mode
 and language features were also added. This is seen as problematic by some working group members, whose requirement is for Base Modelica
 to be a strict subset of Modelica, to avoid the need of having two separate parsers, etc. 
 
-This document summarizes the parts of Base Modelica which are not Modelica, as a basis for discussion.
+This (editable!) document summarizes the parts of Base Modelica which are not Modelica, as a basis for discussion in the working group an in ticket [#3539](https://github.com/modelica/ModelicaSpecification/issues/3569).
 
 ## References:
 - [Base Modelica grammar](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/grammar.md) defined starting
