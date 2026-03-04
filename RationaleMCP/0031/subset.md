@@ -4,7 +4,7 @@ Base Modelica was mostly defined by subtraction, removing features from the Mode
 and language features were also added. This is seen as problematic by some working group members, whose requirement is for Base Modelica
 to be a strict subset of Modelica, to avoid the need of having two separate parsers, etc. 
 
-This (editable!) document summarizes the parts of Base Modelica which are not Modelica, as a basis for discussion in the working group an in ticket [#3539](https://github.com/modelica/ModelicaSpecification/issues/3569).
+This (editable!) document summarizes the parts of Base Modelica which are not Modelica, as a basis for discussion in the working group and in ticket [#3539](https://github.com/modelica/ModelicaSpecification/issues/3569).
 
 ## References:
 - [Base Modelica grammar](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/grammar.md) defined starting
@@ -20,13 +20,3 @@ This (editable!) document summarizes the parts of Base Modelica which are not Mo
    a further restriction of pure functions.
 5. [Subscripting of parenthesized general expressions](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/differences.md#pure-modelica-functions) which is needed to represent the result of certain flattening operations, e.g., the inlining of function calls. In fact, this has already been addressed in the draft MSL 3.7, [Section 10.5](https://specification.modelica.org/master/arrays.html#array-indexing) and [PR #3395](https://github.com/modelica/ModelicaSpecification/pull/3395), so this is already part of Modelica.
 6. [No protected section in function declarations](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/differences.md#protected). Base Modelica doesn't have a protected section for non-input, non-output variables in functions, since anything that is not input or output is assumed to be a local variable. In fact, the protected keyword was outright removed from the [grammar](https://github.com/modelica/ModelicaSpecification/blob/MCP/0031/RationaleMCP/0031/grammar.md). Hence, Base Modelica functions with non-input, non-output variables are invalid in Modelica, because those variables are not explicitly declared as protected.
-
-## Proposal
-
-The current specification of Base Modelica already allows some syntactic sugars to handle guess values, to help the end user recognize familiar syntactic patterns. But that is optional. We could make this sugar compulsory to avoid the need of a special parser, and only use the de-sugarized syntax internally in the importing tools.
-
-We could actually do the same for all non-Modelica constructs of the current Base Modelica spec, possibly by slightly abusing annotations (e.g. to identify partitions, declare pure functions as pure function constants, etc.).
-
-Eventually:
-- The same parser could be used for Modelica and Base Modelica.
-- A Base Modelica model will be accepted by Modelica compilers, which will ignore the special annotations (e.g. for clocked partitions) and re-determine the corresponding information internally.
