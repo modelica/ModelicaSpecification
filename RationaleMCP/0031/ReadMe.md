@@ -42,6 +42,8 @@ From the use cases above, some implicit requirements follow:
 ## Roadmap
 Due to the large size of this MCP, it has been necessary to break it down into smaller subtopics.  Some of these may will be complicated enough to require their own discussion threads (in the form of pull requeststs to the MCP branch), while other may be resolved more easily during meetings and be implemented directly on the MCP branch.
 
+When reading the proposal for the first time, it is suggested to start from the [grammar](grammar.md), which starts from the Modelica language grammar and shows clearly what was removed from it and what was added to it. Then, the [differences](differences.md) document describes the semantical differences between Base Modelica and Modelica that are not immediately obvious from the grammar. The other .md files in this proposal get deeper into specific technical issues.
+
 ### Base Modelica 0.1 (this MCP)
 These are subtopics that are considered necessary to resolve for a first version of Base Modelica.  By keeping this list short, increase chances of ever getting to the release of a first version.
 - [x] Base Modelica identifier naming scheme.
