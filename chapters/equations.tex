@@ -806,15 +806,6 @@ In the case a parameter has both a binding equation and \lstinline!fixed = false
 
 Continuous-time \lstinline!Real! variables \lstinline!vc! have exactly one initialization value since the rules above assure that during initialization \lstinline!vc = pre(vc) = vc.startExpression! (if \lstinline!fixed = true!).
 
-Before the start of the integration, it must be guaranteed that for all variables \lstinline!v!, \lstinline!v = pre(v)!.
-If this is not the case for some variables \lstinline!vi!, \lstinline!pre(vi) := vi! must be set and an event iteration at the initial time must follow, so the model is re-evaluated, until this condition is fulfilled.
-In detail this means that during initialization initial equations and normal equations are solved with \lstinline!v! and \lstinline!pre(v)! as unknowns without any event iterations.
-Then only the normal equations are solved repeatedly (each time after \lstinline!v! is copied to \lstinline!pre(v)!) until \lstinline!v = pre(v)!.
-
-\begin{nonnormative}
-Tools may optimize initialization by not computing unnecessary \lstinline!pre(v)!, and only performing the event iteration if necessary.
-\end{nonnormative}
-
 A Modelica translator may first transform the continuous equations of a model, at least conceptually, to state space form.
 This may require to differentiate equations for index reduction, i.e., additional equations and, in some cases, additional unknown variables are introduced.
 This whole set of equations, together with the additional constraints defined above, should lead to an algebraic system of equations where the number of equations and the number of all variables (including \lstinline!der! and \lstinline!pre! variables) is equal.
@@ -834,6 +825,13 @@ For example, variables assigned in a \lstinline!when!-clause which are not acces
 
 \begin{nonnormative}
 The goal is to be able to initialize the model, while satisfying the initial equations and fixed start values.
+\end{nonnormative}
+
+After the initialization problem has been solved, the transient analysis begins by performing an event iteration (see \cref{modelica:pre}).
+Note that the event iteration belongs to the transient analysis, and does not solve the initial equations again.
+
+\begin{nonnormative}
+Tools may optimize initialization by not computing unnecessary \lstinline!pre(v)!, and only performing the event iteration if necessary.
 \end{nonnormative}
 
 \begin{example}
@@ -935,6 +933,22 @@ During initialization this gives the following equations
   end if;
 \end{lstlisting}
 if \lstinline!steadyState! had not been an evaluable expression, both of those equations would have been illegal according to the restrictions in \cref{if-equations}.
+\end{example}
+
+\begin{example}
+A \lstinline!when!-clause triggering during initial event iteration:
+\begin{lstlisting}[language=modelica]
+  Boolean b = not initial();
+  Real x(start = 0.0, fixed = true);
+equation
+  der(x) = 0;
+  when b then
+    reinit(x, 5);
+  end when;
+\end{lstlisting}
+After solving the initialization problem, both \lstinline!b! and \lstinline!pre(b)! are false.
+During transient analysis, \lstinline!initial()! is false, so \lstinline!b! changes from falso to true during the first round of the initial event iteration.
+This triggers the \lstinline!when!-clause, and \lstinline!x! gets reinitialized.
 \end{example}
 
 \subsection{Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}\label{equations-needed-for-initialization}
