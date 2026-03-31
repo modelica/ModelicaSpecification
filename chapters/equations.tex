@@ -30,39 +30,20 @@ A flattened equation is identical to the corresponding nonflattened equation.
 
 Names in an equation shall be found by looking up in the partially flattened enclosing class of the equation.
 
+
 \section{Equations in Equation Sections}\label{equations-in-equation-sections}
 
 An equation section is comprised of the keyword \lstinline!equation!\index{equation@\robustinline{equation}} followed by a sequence of equations.
-The formal syntax is as follows:
-\begin{lstlisting}[language=grammar]
-equation-section :
-   [ initial ] equation { some-equation ";" }
-\end{lstlisting}
+The syntax is given by \productionref{equation-section} in the grammar, and the different kinds of equatins that may occur within are given by \productionref{some-equation}.
+No statements are allowed in equation sections, including the assignment statement using the \lstinline!:=! operator.
 
-The following kinds of equations may occur in equation sections.
-The syntax is defined as follows:
-\begin{lstlisting}[language=grammar]
-some-equation :
-   ( simple-expression "=" expression
-     | if-equation
-     | for-equation
-     | connect-equation
-     | when-equation
-     | component-reference function-call-args
-   )
-   description
-\end{lstlisting}
-No statements are allowed in equation sections, including the assignment statement using the := operator.
 
 \subsection{Simple Equality Equations}\label{simple-equality-equations}
 
 Simple equality equations are the traditional kinds of equations known from mathematics that express an equality relation between two expressions.
-There are two syntactic forms of such equations in Modelica.
-The first form below is \emph{equality} equations between two expressions, whereas the second form is used when calling a function with \emph{several} results.
-The syntax for simple equality equations is as follows:
-\begin{lstlisting}[language=grammar]
-simple-expression "=" expression
-\end{lstlisting}
+The syntax is given by \productionref{simple-equation} in the grammar, and can be divided into two cases depending on the form of the left-hand side \productionref{simple-expression}.
+If the left-hand side is a parenthesized \productionref{output-expression-list}, the equation expresses equalities between the expressions in the left-hand side list and the corresponding results of calling a function with several outputs.
+Otherwise, the equation expresses a single equality between the left-hand side and right-hand side expressions.
 The types of the left-hand-side and the right-hand-side of an equation need to be compatible in the same way as two arguments of binary operators (\cref{type-compatible-expressions}).
 
 Three examples:
@@ -77,28 +58,13 @@ Note: According to the grammar the if-then-else expression in the second example
 Also compare with \cref{assignments-from-called-functions-with-multiple-results} about calling functions with several results in assignment statements.
 \end{nonnormative}
 
+
 \subsection{For-Equations -- Repetitive Equation Structures}\label{for-equations-repetitive-equation-structures}
 
-The syntax of a \lstinline!for!-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation@\robustinline{for}-equation} is as follows:
-\begin{lstlisting}[language=grammar]
-for for-indices loop
-  { some-equation ";" }
-end for ";"
-\end{lstlisting}
+The syntax of a \lstinline!for!-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation@\robustinline{for}-equation} is given by \productionref{for-equation} in the grammar.
 
-A \lstinline!for!-equation may optionally use several iterators (\lstinline[language=grammar]!for-indices!)\index{in@\robustinline{in}!for-equation@\robustinline{for}-equation}, see \cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information:
-\begin{lstlisting}[language=grammar]
-for-indices:
-   for-index { "," for-index }
+A \lstinline!for!-equation may optionally use several iterators (\productionref{for-indices})\index{in@\robustinline{in}!for-equation@\robustinline{for}-equation}, see \cref{nested-for-loops-and-reduction-expressions-with-multiple-iterators} for more information.
 
-for-index:
-   IDENT [ in expression ]
-\end{lstlisting}
-
-The following is one example of a prefix of a \lstinline!for!-equation:
-\begin{lstlisting}[language=grammar]
-for IDENT in expression loop
-\end{lstlisting}
 
 \subsubsection{Explicit Iteration Ranges of For-Equations}\label{explicit-iteration-ranges-of-for-equations}
 
@@ -146,35 +112,21 @@ equation
 \end{lstlisting}
 \end{example}
 
+
 \subsection{Connect-Equations}\label{connect-equations}
 
-A \lstinline!connect!-equation has the following syntax:
-\begin{lstlisting}[language=grammar]
-connect "(" component-reference "," component-reference ")" ";"
-\end{lstlisting}
-
+The syntax of a \lstinline!connect!-equation is given by \productionref{connect-equation} in the grammar.
 These can be placed inside \lstinline!for!-equations and \lstinline!if!-equations; provided the indices of the \lstinline!for!-loop and conditions of the \lstinline!if!-equation are evaluable expressions that do not depend on \lstinline!cardinality!, \lstinline!rooted!, \lstinline!Connections.rooted!, or \lstinline!Connections.isRoot!.
 The \lstinline!for!-equations/\lstinline!if!-equations are expanded.
 \lstinline!connect!-equations are described in detail in \cref{connect-equations-and-connectors}.
 
 The same restrictions apply to \lstinline!Connections.branch!, \lstinline!Connections.root!, and \lstinline!Connections.potentialRoot!; which after expansion are handled according to \cref{equation-operators-for-overconstrained-connection-based-equation-systems1}.
 
+
 \subsection{If-Equations}\label{if-equations}
 
-The \lstinline!if!-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} have the following syntax:
-\begin{lstlisting}[language=grammar]
-if expression then
-  { some-equation ";" }
-{ elseif expression then
-  { some-equation ";" }
-}
-[ else
-  { some-equation ";" }
-]
-end if ";"
-\end{lstlisting}
-
-The \lstinline!expression! of an \lstinline!if!- or \lstinline!elseif!-clause must be a scalar \lstinline!Boolean! expression.
+The syntax of an \lstinline!if!-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} is given by \productionref{if-equation} in the grammar.
+Here, each \productionref{expression} in the grammar (representing the condition of an \lstinline!if!- or \lstinline!elseif!-clause) must be a scalar \lstinline!Boolean! expression.
 One \lstinline!if!-clause, and zero or more \lstinline!elseif!-clauses, and an optional \lstinline!else!-clause together form a list of branches.
 One or zero of the bodies of these \lstinline!if!-, \lstinline!elseif!- and \lstinline!else!-clauses is selected, by evaluating the conditions of the \lstinline!if!- and \lstinline!elseif!-clauses sequentially until a condition that evaluates to true is found.
 If none of the conditions evaluate to true the body of the \lstinline!else!-clause is selected (if an \lstinline!else!-clause exists, otherwise no body is selected).
@@ -199,19 +151,11 @@ If the first condition is violated, the single assignment rule would not hold, b
 The second condition provides the generalization of \eqref{eq:dae-discrete-valued} to \lstinline!if!-equations.
 \end{nonnormative}
 
+
 \subsection{When-Equations}\label{when-equations}
 
-The \lstinline!when!-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation@\robustinline{when}-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation@\robustinline{when}-equation} have the following syntax:
-\begin{lstlisting}[language=grammar]
-when expression then
-  { some-equation ";" }
-{ elsewhen expression then
-  { some-equation ";" }
-}
-end when ";"
-\end{lstlisting}
-
-The \lstinline!expression! of a \lstinline!when!-equation shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
+The syntax of a \lstinline!when!-equations\index{when@\robustinline{when}!equation}\index{then@\robustinline{then}!when-equation@\robustinline{when}-equation}\index{elsewhen@\robustinline{elsewhen}!when-equation@\robustinline{when}-equation} is given by \productionref{when-equation} in the grammar.
+Here, each \productionref{expression} in the grammar (representing one or more triggering conditions of a branch) shall be a discrete-time \lstinline!Boolean! scalar or vector expression.
 If \lstinline!expression! is a clocked expression, the equation is referred to as a \emph{clocked \lstinline!when!-clause} (\cref{clocked-when-clause}) rather than a \lstinline!when!-equation, and is handled differently.
 The equations within a \lstinline!when!-equation are activated only at the instant when the scalar expression or any of the elements of the vector expression becomes true.
 
@@ -228,6 +172,7 @@ equation
   y2 = sin(y1);
 \end{lstlisting}
 \end{example}
+
 
 \subsubsection{Defining When-Equations by If-Expressions in Equality Equations}\label{defining-when-equations-by-if-expressions-in-equality-equations}
 
@@ -271,6 +216,7 @@ However, \lstinline!pre(u)! is legal within the \lstinline!when!-clause, since t
 The start values of the introduced \lstinline!Boolean! variables are defined by the taking the start value of the when-condition, as above where \lstinline!b! is a parameter variable.
 The start value of the special functions \lstinline!initial!, \lstinline!terminal!, and \lstinline!sample! is \lstinline!false!.
 
+
 \subsubsection{Where a When-Equation May Occur}\label{restrictions-on-where-a-when-equation-may-occur}\label{where-a-when-equation-may-occur}
 
 \begin{itemize}
@@ -292,6 +238,7 @@ when x > 2 then
 end when;
 \end{lstlisting}
 \end{example}
+
 
 \subsubsection{Equations within When-Equations}\label{restrictions-on-equations-within-when-equations}\label{equations-within-when-equations}
 
@@ -381,6 +328,7 @@ equation
 \end{lstlisting}
 \end{example}
 
+
 \subsubsection{Single Assignment Rule Applied to When-Equations}\label{application-of-the-single-assignment-rule-to-when-equations}\label{single-assignment-rule-applied-to-when-equations}
 
 The Modelica single-assignment rule (\cref{synchronous-data-flow-principle-and-single-assignment-rule}) has implications for \lstinline!when!-equations:
@@ -448,6 +396,7 @@ end WhenPriorityAlg;
 \end{nonnormative}
 \end{itemize}
 
+
 \subsection{reinit}\label{reinit}
 
 \lstinline!reinit! can only be used in the body of a \lstinline!when!-equation.
@@ -480,6 +429,7 @@ when h < 0 then
 end when
 \end{lstlisting}
 \end{example}
+
 
 \subsection{assert}\label{assert}
 
@@ -537,6 +487,7 @@ It is recommended that asserts have a simple message as above, formulated with t
 Writing \lstinline!assert(T<500, "Temperature = "+String(T)+" was above 500")! is thus not recommended, and is likely to lead to duplicated information.
 \end{nonnormative}
 
+
 \subsection{terminate}\label{terminate}
 
 The \lstinline!terminate!\index{terminate@\robustinline{terminate}!equation@\robustinline{equation}}-equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also \cref{assert}.
@@ -562,9 +513,11 @@ end ThrowingBall;
 \end{lstlisting}
 \end{example}
 
+
 \subsection{Equation Operators for Overconstrained Connection-Based Equation Systems}\label{equation-operators-for-overconstrained-connection-based-equation-systems}
 
 See \cref{equation-operators-for-overconstrained-connection-based-equation-systems1} for a description of this topic.
+
 
 \section{Synchronous Data-Flow Principle and Single Assignment Rule}\label{synchronous-data-flow-principle-and-single-assignment-rule}
 
@@ -584,6 +537,7 @@ If computation or communication time has to be simulated, this property has to b
 \item There must exist a perfect matching of variables to equations after flattening, where a variable can only be matched to equations that can contribute to solving for the variable
 (\firstuse{perfect matching rule} -- previously called \emph{single assignment rule}\index{single assignment rule|see{perfect matching rule}}); see also globally balanced \cref{balanced-models}.
 \end{enumerate}
+
 
 \section{Events and Synchronization}\label{events-and-synchronization}
 
@@ -980,6 +934,7 @@ During initialization this gives the following equations
 if \lstinline!steadyState! had not been an evaluable expression, both of those equations would have been illegal according to the restrictions in \cref{if-equations}.
 \end{example}
 
+
 \subsection{Equations Needed for Initialization}\label{the-number-of-equations-needed-for-initialization}\label{equations-needed-for-initialization}
 
 \begin{nonnormative}
@@ -1005,6 +960,7 @@ Regarding DAEs, only that at most $n$ additional equations are needed to arrive 
 The reason is that in a higher index DAE problem the number of dynamic continuous-time state variables might be less than the number of state variables $n$.
 As noted in \cref{initialization-initial-equation-and-initial-algorithm} a tool may add/remove initial equations to fulfill this requirement, if appropriate diagnostics are given.
 \end{example}
+
 
 \subsection{Start Value Recommended Priority}\label{recommended-selection-of-start-values}\label{start-value-recommended-priority}
 

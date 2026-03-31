@@ -96,38 +96,12 @@ Special kinds of components are scalar, array, and attribute.
 
 \subsection{Syntax}\label{component-declaration-syntax}\label{syntax-and-examples-of-component-declarations}
 
-The formal syntax of a component declaration clause is given by the following syntactic rules:
-\begin{lstlisting}[language=grammar]
-component-clause :
-  type-prefix type-specifier [ array-subscripts ] component-list
-
-type-prefix :
-  [ flow | stream ]
-  [ discrete | parameter | constant ]
-  [ input | output ]
-
-type-specifier :
-  ["."] name
-
-component-list :
-  component-declaration { "," component-declaration }
-
-component-declaration :
-  declaration [ condition-attribute ] description
-
-condition-attribute :
-  if expression
-
-declaration :
-  IDENT [ array-subscripts ] [ modification ]
-\end{lstlisting}
+A component declaration states the type, access, variability, data flow, and other properties of the declared component or components.
+The formal syntax of is given by \productionref{component-clause} in the grammar.
 
 \begin{nonnormative}
-The declaration of a component states the type, access, variability, data flow, and other properties of the component.
-A \lstinline[language=grammar]!component-clause!, i.e., the whole declaration, contains type prefixes followed by a \lstinline[language=grammar]!type-specifier! with optional \lstinline[language=grammar]!array-subscripts! followed by a \lstinline[language=grammar]!component-list!.
-
 There is no semantic difference between variables declared in a single declaration or in multiple declarations.
-For example, regard the following single declaration (\lstinline[language=grammar]!component-clause!) of two matrix variables:
+For example, regard the following single declaration (\productionref{component-clause}) of two matrix variables:
 \begin{lstlisting}[language=modelica]
 Real[2,2] A, B;
 \end{lstlisting}
@@ -149,14 +123,14 @@ Real a, B[2,2];
 
 \subsection{Static Semantics}\label{component-declaration-static-semantics}
 
-If the \lstinline[language=grammar]!type-specifier! of the component declaration denotes a built-in type (\lstinline!RealType!, \lstinline!IntegerType!, etc.), the flattened or instantiated component has the same type.
+If the \productionref{type-specifier} of the component declaration denotes a built-in type (\lstinline!RealType!, \lstinline!IntegerType!, etc.), the flattened or instantiated component has the same type.
 
 % Seems sufficient to just have \indexinline variant of 'partial' in index.
-A class defined with \lstinline!partial!\indexinline{partial} in the \lstinline[language=grammar]!class-prefixes! is called a \firstuse[---]{partial} class.
+A class defined with \lstinline!partial!\indexinline{partial} in the \productionref{class-prefixes} is called a \firstuse[---]{partial} class.
 Such a class is allowed to be incomplete, and cannot be instantiated in a simulation model; useful, e.g., as a base class.
 See \cref{short-class-definitions} regarding short class definition semantics of propagating \lstinline!partial!.
 
-If the \lstinline[language=grammar]!type-specifier! of the component does not denote a built-in type, the name of the type is looked up (\cref{static-name-lookup}).
+If the \productionref{type-specifier} of the component does not denote a built-in type, the name of the type is looked up (\cref{static-name-lookup}).
 The found type is flattened with a new environment and the partially flattened enclosing class of the component.
 It is an error if the type is partial in a simulation model, or if a simulation model itself is partial.
 The new environment is the result of merging
@@ -677,54 +651,9 @@ end ClassName;
 
 The following is the formal syntax of class definitions, including the special variants described in later sections.
 
-An \firstuse{element} is part of a class definition, and is one of: class definition, component declaration, or \lstinline!extends!-clause.
+An \firstuse{element} is part of a class definition (see \productionref{class-definition} in the grammar), and is one of: class definition, component declaration, or \lstinline!extends!-clause (see \productionref{element} in the grammar).
 Component declarations and class definitions are called \firstuse[named element]{named elements}.
 An element is either inherited from a base class or local.
-
-\begin{lstlisting}[language=grammar]
-class-definition :
-  [ encapsulated ] class-prefixes class-specifier
-
-class-prefixes :
-  [ partial ]
-  ( class | model | [ operator ] record | block | [ expandable ] connector | type |
-  package | [ ( pure | impure ) ] [ operator ] function | operator )
-
-class-specifier :
-  long-class-specifier | short-class-specifier | der-class-specifier
-
-long-class-specifier :
-  IDENT description-string composition end IDENT
-  | extends IDENT [ class-modification ] description-string composition
-    end IDENT
-
-short-class-specifier :
-  IDENT "=" base-prefix type-specifier [ array-subscripts ]
-  [ class-modification ] description
-  | IDENT "=" enumeration "(" ( [enum-list] | ":" ) ")" description
-
-der-class-specifier :
-  IDENT "=" der "(" type-specifier "," IDENT { "," IDENT } ")" description
-
-base-prefix :
-  [ input | output ]
-
-enum-list : enumeration-literal { "," enumeration-literal}
-
-enumeration-literal : IDENT description
-
-composition :
-  element-list
-  { public element-list |
-    protected element-list |
-    equation-section |
-    algorithm-section
-  }
-  [ external [ language-specification ]
-    [ external-function-call ] [ annotation-clause ] ";"
-  ]
-  [ annotation-clause ";" ]
-\end{lstlisting}
 
 \subsection{Short Class Definitions}\label{short-class-definitions}
 
@@ -802,7 +731,7 @@ Load R; // Error unless Load is redeclared since TwoPin is a partial class.
 
 If a short class definition does not specify any specialized class the new class definition will inherit the specialized class (this rule applies iteratively and also for redeclare).
 
-A \lstinline[language=grammar]!base-prefix! applied in the \lstinline[language=grammar]!short-class-definition! does not influence its type, but is applied to components declared of this type or types derived from it; see also \cref{restriction-on-combining-base-classes-and-other-elements}.
+A \productionref{base-prefix} applied in the \productionref{short-class-definition} does not influence its type, but is applied to components declared of this type or types derived from it; see also \cref{restriction-on-combining-base-classes-and-other-elements}.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -822,7 +751,7 @@ Real x[:]=foo(time);
 
 \subsection{Combining Base Classes and Other Elements}\label{restriction-on-combining-base-classes-and-other-elements}\label{combining-base-classes-and-other-elements}
 
-It is not legal to combine equations, algorithms, components, non-empty base classes (see below), or protected elements with an extends from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \lstinline[language=grammar]!base-prefix!, or a simple type.
+It is not legal to combine equations, algorithms, components, non-empty base classes (see below), or protected elements with an extends from an array class, a class with non-empty \productionref{base-prefix}, a \firstuse{simple type} (\lstinline!Real!, \lstinline!Boolean!, \lstinline!Integer!, \lstinline!String! and enumeration types), or any class transitively extending from an array class, a class with non-empty \productionref{base-prefix}, or a simple type.
 
 \begin{definition}[Empty class]\index{empty class}\label{empty-class}
 A class without equations, algorithms, or components, and where any base-classes are themselves empty.
@@ -1546,7 +1475,7 @@ The following attributes shall be evaluable: \lstinline!quantity!, \lstinline!un
 
 The \lstinline!quantity!-attribute is used to impose a constraint on connection sets, see \cref{connect-set-quantity-rule}.
 
-The \lstinline!unit!- and \lstinline!displayUnit!-attributes may be either the empty string or a string matching \lstinline[language=grammar]!unit-expression! in \cref{unit-expressions}.
+The \lstinline!unit!- and \lstinline!displayUnit!-attributes may be either the empty string or a string matching \productionref{unit-expression} in \cref{unit-expressions}.
 The meaning of the empty string depends on the context.
 For the input and output components of a function, the empty string allows different units to be used in different calls to the function.
 For a non-function component, the empty string allows the unit (or display unit) to be inferred by the tool.
