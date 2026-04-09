@@ -1451,14 +1451,19 @@ This can be applied to continuous-time variables in \lstinline!when!-clauses, se
 \end{nonnormative}
 The first value of \lstinline!pre($y$)! is determined in the initialization phase.
 
-A new event is triggered if there is at least for one variable \lstinline!v! such that \lstinline!pre(v) <> v! after the active model equations are evaluated at an event instant.
-In this case the model is at once reevaluated.
+After the model equations have been evaluated at an event instant, another round of model equation evaluation is triggered as long as there is at least one variable \lstinline!v! appearing inside \lstinline!pre($\ldots$)! and such that \lstinline!pre(v) <> v!.
+Before each new round of model evaluation, each \lstinline!pre(v)! is assigned the value of \lstinline!v!.
 This evaluation sequence is called \emph{event iteration}.
-The integration is restarted once \lstinline!pre(v) == v! for all \lstinline!v! appearing inside \lstinline!pre($\ldots$)!.
+When no more round of model equation evaluation is triggered, the processing of the event is completed and the transient analysis may proceed forward in time.
+
+For purposes of event iteration, each scalar expression in a \lstinline!when!-clause condition is treated as an implicit variable \lstinline!v!.
+Since the \lstinline!when!-clause is triggered when \lstinline!v and not pre(v)!, the implicit variable is considered wrapped in \lstinline!pre($\ldots$)! and becomes part of the event iteration convergence criterion.
 
 \begin{nonnormative}
 If \lstinline!v! and \lstinline!pre(v)! are only used in \lstinline!when!-clauses, the translator might mask event iteration for variable \lstinline!v! since \lstinline!v! cannot change during event iteration.
 It is a quality of implementation to find the minimal loops for event iteration, i.e., not all parts of the model need to be reevaluated.
+
+A consequence of the implicit \lstinline!when!-clause condition variables is that every time a \lstinline!when!-clause is triggered, there is a variable with \lstinline!v <> pre(v)!, meaning that another round of the iteration is triggered.
 
 The language allows mixed algebraic systems of equations where the unknown variables are of type \lstinline!Real!, \lstinline!Integer!, \lstinline!Boolean!, or an enumeration.
 These systems of equations can be solved by a global fix point iteration scheme, similarly to the event iteration, by fixing the \lstinline!Boolean!, \lstinline!Integer!, and/or enumeration unknowns during one iteration.
