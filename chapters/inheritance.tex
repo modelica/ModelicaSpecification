@@ -14,23 +14,18 @@ The converse relation is then expressed as \lstinline!B! being a \firstuse{deriv
 This relation is specified by an \lstinline!extends!-clause in \lstinline!B! or in one of \lstinline!B!'s base classes.
 A class inherits all elements from its base classes, and may modify all non-final elements inherited from base classes, as explained below.
 
-The \lstinline!extends!-clause is used to specify inheritance from a base class into an (enclosing) class containing the \lstinline!extends!-clause.
+The \lstinline!extends!-clause\indexinline{extends} is used to specify inheritance from a base class into an (enclosing) class containing the \lstinline!extends!-clause.
 It is an unnamed element of a class definition that uses a name and an optional modification to specify a base class of the class defined using the class definition.
-The syntax of the \lstinline!extends!-clause is as follows:
-\begin{lstlisting}[language=grammar]
-extends-clause :
-   extends name [ class-or-inheritance-modification ] [ annotation-clause ]
-\end{lstlisting}%
-\indexinline{extends}
 The name of the base class is looked up in the partially flattened enclosing class (\cref{enclosing-classes}) of the \lstinline!extends!-clause.
-If the optional \lstinline[language=grammar]!class-or-inheritance-modification! contains any \lstinline[language=grammar]!inheritance-modification! the base class is then modified as described in \cref{selective-model-extension}.
+The syntax of the \lstinline!extends!-clause is given by \productionref{extends-clause} in the grammar.
+If the optional \productionref{class-or-inheritance-modification} contains any \productionref{inheritance-modification} the base class is then modified as described in \cref{selective-model-extension}.
 The possibly modified found base class is flattened with a new environment and the partially flattened enclosing class of the \lstinline!extends!-clause.
 The new environment is the result of merging
 \begin{itemize}
 \item
   arguments of all enclosing class environments that match names in the flattened base class
 \item
-  a \lstinline[language=grammar]!class-modification! constructed from all \lstinline!argument! of the \lstinline[language=grammar]!inheritance-modification!
+  a \productionref{class-modification} constructed from all \lstinline!argument! of the \productionref{inheritance-modification}
 \end{itemize}
 in that order.
 
@@ -221,14 +216,14 @@ end ModelB;
 \subsection{Require Transitively Non-Replaceable}\label{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}\label{require-transitively-non-replaceable}
 
 The class name used after \lstinline!extends! for base classes and for constraining classes must use a class reference considered transitively non-replaceable, see definition in \cref{transitively-non-replaceable}.
-For a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! the class must use a class reference considered transitively non-replaceable.
+For a replaceable component declaration without \productionref{constraining-clause} the class must use a class reference considered transitively non-replaceable.
 
 \begin{nonnormative}
 The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e., \lstinline!redeclare model extends M $\ldots$! where \lstinline!M! must be an inherited replaceable class.
 \end{nonnormative}
 
 \begin{nonnormative}
-The rule for a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! implies that constraining classes are always transitively non-replaceable -- both if explicitly given or implicitly by the declaration.
+The rule for a replaceable component declaration without \productionref{constraining-clause} implies that constraining classes are always transitively non-replaceable -- both if explicitly given or implicitly by the declaration.
 \end{nonnormative}
 
 
@@ -696,7 +691,7 @@ A \lstinline!redeclare!\indexinline{redeclare} construct in a modifier replaces 
 A \lstinline!redeclare! construct as an element replaces the declaration of a local class or component with another declaration.
 Both \lstinline!redeclare! constructs work in the same way.
 The \lstinline!redeclare! construct as an element requires that the element is inherited, and cannot be combined with a modifier of the same element in the \lstinline!extends!-clause.
-For modifiers, the redeclare of classes uses the \lstinline[language=grammar]!short-class-definition! construct, which is a special case of normal class definitions and semantically behaves as the corresponding \lstinline[language=grammar]!class-definition!.
+For modifiers, the redeclare of classes uses the \productionref{short-class-definition} construct, which is a special case of normal class definitions and semantically behaves as the corresponding \productionref{class-definition}.
 
 A modifier with the keyword \lstinline!replaceable!\indexinline{replaceable} is automatically seen as being a \lstinline!redeclare!.
 
@@ -780,33 +775,11 @@ Since the rule about applying the optional class-modification implies that all d
 For \lstinline!redeclare class extends B($\ldots$)! the inherited class is subject to the same restrictions as a redeclare of the inherited element, and the original class \lstinline!B! should be \firstuse{replaceable}, and the new element is only replaceable if the new definition is replaceable.
 In contrast to normal extends it is not subject to the restriction that \lstinline!B! should be transitively non-replaceable (since \lstinline!B! should be replaceable).
 
-The syntax rule for \lstinline!class extends! construct is in the definition of the \lstinline!class-specifier! nonterminal (see also class declarations in \cref{class-declarations}):
-\begin{lstlisting}[language=grammar]
-class-definition :
-   [ encapsulated ] class-prefixes
-   class-specifier
+The syntax of the \lstinline!class extends! construct is part of \productionref{long-class-specifier} in the grammar (see also class declarations in \cref{class-declarations}), where \productionref{long-class-specifier} is reached from \productionref{class-definition}.
+The \lstinline!redeclare! before the \productionref{class-definition} comes from \productionref{element} in the grammar.
 
-class-specifier : long-class-specifier | $\ldots$
-
-long-class-specifier : $\ldots$
-    | extends IDENT [ class-modification ] description-string
-      composition end IDENT
-\end{lstlisting}
-The nonterminal \lstinline!class-definition! is referenced in several places in the grammar, including the following case which is used in some examples below, including \lstinline!package extends! and \lstinline!model extends!:
-\begin{lstlisting}[language=grammar]
-element :
-   import-clause |
-   extends-clause |
-   [ redeclare ]
-   [ final ]
-   [ inner ] [ outer ]
-   ( ( class-definition | component-clause) |
-      replaceable ( class-definition | component-clause)
-        [constraining-clause comment])
-\end{lstlisting}
-
-\begin{nonnormative}
-Example to extend from existing packages:
+\begin{example}
+Extending from existing packages.
 \begin{lstlisting}[language=modelica]
 package PowerTrain // library from someone else
   replaceable package GearBoxes
@@ -821,8 +794,10 @@ package MyPowerTrain
   end GearBoxes;
 end MyPowerTrain;
 \end{lstlisting}
+\end{example}
 
-Example for an advanced type of package structuring with constraining types:
+\begin{example}
+Advanced type of package structuring with constraining types.
 \begin{lstlisting}[language=modelica]
 partial package PartialMedium "Generic medium interface"
   constant Integer nX "number of substances";
@@ -896,28 +871,22 @@ With this construction, all constant definitions have to be repeated whenever th
 For larger models this is not practical and therefore the only practically useful definition is the complicated construction in the previous example with \lstinline!redeclare model extends BaseProperties!.
 
 To detect this issue the rule on lookup of composite names (\cref{composite-name-lookup}) ensures that \lstinline!PartialMedium.dynamicViscosity! is incorrect in a simulation model.
-\end{nonnormative}
+\end{example}
 
 
 \subsection{Constraining Type}\label{constraining-type}
 
-In a replaceable declaration the optional \lstinline[language=grammar]!constraining-clause! defines a constraining type.
+In a replaceable declaration, the optional \productionref{constraining-clause}\indexinline{constrainedby} in the grammar defines a constraining type.
 Any modifications following the constraining type name are applied both for the purpose of defining the actual constraining type and they are automatically applied in the declaration and in any subsequent redeclaration.
 The precedence order is that declaration modifiers override constraining type modifiers.
 
-If the \lstinline[language=grammar]!constraining-clause! is not present in the original declaration (i.e., the non-redeclared declaration):
+If the \productionref{constraining-clause} is not present in the original declaration (i.e., the non-redeclared declaration):
 \begin{itemize}
 \item
   The type of the declaration is also used as a constraining type.
 \item
   If modifiers are present in the original declaration, they also become modifiers on the constraining type.
 \end{itemize}
-
-The syntax of a \lstinline[language=grammar]!constraining-clause!\indexinline{constrainedby} is as follows:
-\begin{lstlisting}[language=grammar]
-constraining-clause :
-   constrainedby name [ class-modification ]
-\end{lstlisting}
 
 \begin{example}
 Merging of modifiers:
@@ -1025,7 +994,7 @@ Thus if \lstinline!T2! is a scalar type (e.g., \lstinline!type T2 = Real!) then 
 
 \subsubsection{Constraining-Clause Annotations}\label{constraining-clause-annotations}
 
-Description and annotations on the \lstinline[language=grammar]!constraining-clause! are applied to the entire declaration, and it is an error if they also appear on the definition.
+Description and annotations on the \productionref{constraining-clause} are applied to the entire declaration, and it is an error if they also appear on the definition.
 
 \begin{nonnormative}
 The intent is that the description and/or annotation are at the end of the declaration, but it is not straightforward to specify this in the grammar.
@@ -1229,7 +1198,7 @@ The goal of selective model extension is to enable unforeseen structural variabi
 This is done by deselecting specific elements from a base class, described here, combined with adding elements as normal.
 \end{nonnormative}
 
-Selective model extension is activated by using one (or more) \lstinline[language=grammar]!inheritance-modification! in the optional \lstinline[language=grammar]!class-or-inheritance-modification! of an \lstinline!extends!-clause.
+Selective model extension is activated by using one (or more) \productionref{inheritance-modification} in the optional \productionref{class-or-inheritance-modification} of an \lstinline!extends!-clause.
 
 \begin{nonnormative}
 There is no corresponding mechanism for component modifications, short class definitions, or constrainedby.
