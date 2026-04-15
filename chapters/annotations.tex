@@ -923,7 +923,8 @@ All graphical entities have a visible attribute which indicates if the entity sh
 partial record GraphicItem
   Boolean visible = true;
   Point origin = {0, 0};
-  Real rotation(quantity="angle", unit="deg")=0;
+  Real rotation(quantity="angle", unit="deg") = 0;
+  InteractionItem[:] interaction;
 end GraphicItem;
 \end{lstlisting}%
 \annotationindex{GraphicItem}
@@ -932,6 +933,8 @@ The origin is used to define the geometric information of the item and for all t
 All geometric information is given relative the \lstinline!origin! attribute, which by default is \lstinline!{0, 0}!.
 
 The \lstinline!rotation! attribute specifies the rotation of the graphical item counter-clockwise around the point defined by the \lstinline!origin! attribute.
+
+The \lstinline!interaction! attribue specifies ineractive features, see \cref{user-input}.
 
 \subsubsection{Coordinate Systems}\label{coordinate-systems}
 
@@ -1516,18 +1519,40 @@ annotation(Icon(graphics = {
 
 \subsection{User Input}\label{user-input}
 
-It is possible to interactively modify variables during a simulation.
-The variables may either be parameters, discrete-time variables or states.
-New numeric values can be given, a mouse click can change a \lstinline!Boolean! variable or a mouse movement can change a \lstinline!Real! variable.
-Input fields may be associated with a \lstinline!GraphicItem! or a component as an array named \lstinline!interaction!.
-The \lstinline!interaction! array may occur as an attribute of a graphic primitive, an attribute of a component annotation or as an attribute of the layer annotation of a class.
+The annotations in this section define features for using the diagram layer to interact with a running simulation.
+
+\begin{annotationdefinition}[interaction]
+\begin{synopsis}\begin{lstlisting}
+InteractionItem[:] interaction;
+
+partial record InteractionItem
+end InteractionItem;
+\end{lstlisting}%
+\annotationindex{InteractionItem}%
+\end{synopsis}
+\begin{semantics}
+Allowed for components and class annotations, and also as an attribute of a \lstinline!GraphicItem!.
+
+Each element of the \lstinline!interaction! array specifies how some variable should be modified.
+Similar to tunable parameters (see \cref{parameters}), the actions of modifying variables through these annotations deviate from the mathematical formalism given in \cref{modelica-dae-representation}.
+Also, the critera for allowing a variable to be modified, as well as the semantics of the modification, are tool-depndent.
+
+\begin{nonnormative}
+Examples of variables that might be possible to modify include states, variables assigned in \lstinline!when!-clauses, and the so-called tunable parameters.
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+The various item definitions extending from \lstinline!InteractionItem! are defined below.
+In all cases, the variable to be modified is given by an attribute of the appropriate type for the value modification in question.
+These attribute modifications must have the form of a component reference.
 
 \subsubsection{Mouse Input}\label{mouse-input}
 
 A \lstinline!Boolean! variable can be changed when the cursor is held over a graphical item or component and the selection button is pressed if the interaction annotation contains \fmtannotationindex{OnMouseDownSetBoolean}:
 \begin{lstlisting}[language=modelica]
-record OnMouseDownSetBoolean
-  Boolean variable "Name of variable to change when mouse button pressed";
+record OnMouseDownSetBoolean extends InteractionItem
+  Boolean variable "Variable to change when mouse button pressed";
   Boolean value "Assigned value";
 end OnMouseDownSetBoolean;
 \end{lstlisting}
@@ -1545,8 +1570,8 @@ annotation(Icon(
 
 In a similar way, a variable can be changed when the mouse button is \emph{released}:
 \begin{lstlisting}[language=modelica]
-record OnMouseUpSetBoolean
-  Boolean variable "Name of variable to change when mouse button released";
+record OnMouseUpSetBoolean extends InteractionItem
+  Boolean variable "Variable to change when mouse button released";
   Boolean value "Assigned value";
 end OnMouseUpSetBoolean;
 \end{lstlisting}%
@@ -1562,8 +1587,8 @@ interaction = {OnMouseDownSetBoolean(on, true),
 
 The \fmtannotationindex{OnMouseMoveXSetReal} interaction object sets the variable to the position of the cursor in X direction in the local coordinate system mapped to the interval defined by the \lstinline!minValue! and \lstinline!maxValue! attributes.
 \begin{lstlisting}[language=modelica]
-record OnMouseMoveXSetReal
-  Real xVariable "Name of variable to change when cursor moved in x direction";
+record OnMouseMoveXSetReal extends InteractionItem
+  Real xVariable "Variable to change when cursor moved in x direction";
   Real minValue;
   Real maxValue;
 end OnMouseMoveXSetReal;
@@ -1571,8 +1596,8 @@ end OnMouseMoveXSetReal;
 
 The \fmtannotationindex{OnMouseMoveYSetReal} interaction object works in a corresponding way as the \lstinline!OnMouseMoveXSetReal! object but in the Y direction.
 \begin{lstlisting}[language=modelica]
-record OnMouseMoveYSetReal
-  Real yVariable "Name of variable to change when cursor moved in y direction";
+record OnMouseMoveYSetReal extends InteractionItem
+  Real yVariable "Variable to change when cursor moved in y direction";
   Real minValue;
   Real maxValue;
 end OnMouseMoveYSetReal;
@@ -1584,8 +1609,8 @@ The \fmtannotationindex{OnMouseDownEditInteger} interaction object presents an i
 The field shows the actual value of the variable and allows changing the value.
 If a too small or too large value according to the \lstinline!min! and \lstinline!max! parameter values of the variable is given, the input is rejected.
 \begin{lstlisting}[language=modelica]
-record OnMouseDownEditInteger
-  Integer variable "Name of variable to change";
+record OnMouseDownEditInteger extends InteractionItem
+  Integer variable "Variable to change";
 end OnMouseDownEditInteger;
 \end{lstlisting}
 
@@ -1593,16 +1618,16 @@ The \fmtannotationindex{OnMouseDownEditReal} interaction object presents an inpu
 The field shows the actual value of the variable and allows changing the value.
 If a too small or too large value according to the \lstinline!min! and \lstinline!max! parameter values of the variable is given, the input is rejected.
 \begin{lstlisting}[language=modelica]
-record OnMouseDownEditReal
-  Real variable "Name of variable to change";
+record OnMouseDownEditReal extends InteractionItem
+  Real variable "Variable to change";
 end OnMouseDownEditReal;
 \end{lstlisting}
 
 The \fmtannotationindex{OnMouseDownEditString} interaction object presents an input field when the graphical item or component is clicked on.
 The field shows the actual value of the variable and allows changing the value.
 \begin{lstlisting}[language=modelica]
-record OnMouseDownEditString
-  String variable "Name of variable to change";
+record OnMouseDownEditString extends InteractionItem
+  String variable "Variable to change";
 end OnMouseDownEditString;
 \end{lstlisting}
 
