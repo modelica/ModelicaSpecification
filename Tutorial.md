@@ -1,5 +1,5 @@
 # Modelica® Tutorial
-**A Unified Object-Oriented Language for Physical Systems Modeling**
+**A Unified Object-Oriented Language for Systems Modeling**
 
 ## Abstract:
 
