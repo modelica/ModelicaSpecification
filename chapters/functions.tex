@@ -82,23 +82,23 @@ return;
 \end{lstlisting}
 
 \begin{example}
-(Note that this could alternatively use \lstinline!break!:)
+Using \lstinline!return! to terminate evaluation of a function algorithm:
 \begin{lstlisting}[language=modelica]
-function findValue "Returns position of val or 0 if not found"
+function findValue "Find position of value in array, or 0 if not found"
   input Integer x[:];
-  input Integer val;
+  input Integer value;
   output Integer index;
 algorithm
-  for i in 1:size(x,1) loop
-    if x[i] == val then
+  for i loop
+    if x[i] == value then
       index := i;
       return;
     end if;
   end for;
   index := 0;
-  return;
 end findValue;
 \end{lstlisting}
+The same result could be obtained using \lstinline!break!, provided that \lstinline!index := 0! is moved to the start of the algorithm.
 \end{example}
 
 \subsection{Inheritance of Functions}\label{inheritance-of-functions}
@@ -110,7 +110,7 @@ For example, it is possible to modify and extend a \lstinline!function! class to
 \end{nonnormative}
 
 A special case is defining a \lstinline!function! as a short-class definition with modifiers for inputs inside a model.
-These default values, unless overridden in the function call, will then be considered for variability similarly as if they were given in the function call, see \cref{function-variability}.
+These default values, unless overridden in the function call, will then be considered for variability as if they were given in the function call, see \cref{function-variability}.
 
 \begin{example}
 Demonstrating the variability implications.
@@ -151,6 +151,7 @@ Modelica functions have the following restrictions compared to a general Modelic
   A function shall \emph{not be used in connections}, shall not have \emph{equations}, shall not have \emph{initial algorithms}.
 \item
   A function can have at most \emph{one algorithm} section or \emph{one external function interface} (not both), which, if present, is the body of the function.
+  The body of the function shall not contain \lstinline!when!-statements, see \cref{where-a-when-statement-may-occur}.
 \item
   A function may only contain components of the specialized classes \lstinline!type!, \lstinline!record!, \lstinline!operator record!, and \lstinline!function!; and it must not contain, e.g., \lstinline!model!, \lstinline!block!, \lstinline!operator! or \lstinline!connector! components.
 \item
@@ -165,13 +166,14 @@ Modelica functions have the following restrictions compared to a general Modelic
   \begin{nonnormative}
   It is a quality of implementation how much analysis a tool performs in order to determine if the output variables are computed.
   \end{nonnormative}
-  A function \emph{cannot contain} calls to the Modelica \emph{built-in operators} \lstinline!der!, \lstinline!initial!, \lstinline!terminal!, \lstinline!sample!, \lstinline!pre!, \lstinline!edge!, \lstinline!change!, \lstinline!reinit!, \lstinline!delay!, \lstinline!cardinality!, \lstinline!inStream!, \lstinline!actualStream!, to the operators of the built-in package \lstinline!Connections!, to the operators defined in \cref{synchronous-language-elements} and \cref{state-machines}, and is not allowed to contain \lstinline!when!-statements.
+\item
+  There are many Modelica built-in operators that are not allowed to be used in functions, including \lstinline!der!, \lstinline!initial!, \lstinline!terminal!, \lstinline!sample!, \lstinline!pre!, \lstinline!edge!, \lstinline!change!, \lstinline!reinit!, \lstinline!delay!, \lstinline!cardinality!, \lstinline!inStream!, \lstinline!actualStream!, the operators of the built-in package \lstinline!Connections!, the operators defined in \cref{synchronous-language-elements} and \cref{state-machines}.
 \item
   The dimension \emph{sizes} not declared with colon (\lstinline!:!) of each array result or array local variable (i.e., a non-input component) of a function must be either given by the input formal parameters, or given by constant or parameter expressions, or by expressions containing combinations of those (\cref{initialization-and-binding-equations-of-components-in-functions}).
 \item
   For initialization of local variables of a function see \cref{initialization-and-binding-equations-of-components-in-functions}).
 \item
-  Components of a function will inside the function behave as though they had discrete-time variability.
+  Components of a function follow special variability rules where the \lstinline!GenerateEvents! annotation plays a central role, see \cref{discrete-time-expressions} for details.
 \end{itemize}
 
 Modelica functions have the following enhancements compared to a general Modelica \lstinline!class!:
@@ -223,16 +225,25 @@ The declaration of functions follow these rules:
 \item
   Functions defined in Modelica (non-external) are \emph{normally} assumed to be pure (the exception is the deprecated case below), if they are impure they shall be marked with the \lstinline!impure! keyword.
   They can be explicitly marked as \lstinline!pure!\indexinline{pure}.
-  \begin{nonnormative}
-  However, since functions as default are pure it is not recommended to explicitly declare them as \lstinline!pure!.
-  \end{nonnormative}
-\item
-  External functions must be explicitly declared with \lstinline!pure! or \lstinline!impure!.
 \item
   If a function is declared as \lstinline!impure! any function extending from it shall be declared as \lstinline!impure!.
 \item
-  A deprecated semantics is that external functions (and functions defined in Modelica directly or indirectly calling them) without \lstinline!pure! or \lstinline!impure! keyword are assumed to be impure, but without any restriction on calling them.
-  Except for the function \lstinline!Modelica.Utilities.Streams.print!, a diagnostic must be given if called in a simulation model.
+  External functions not explicitly declared with \lstinline!pure! or \lstinline!impure! is deprecated.
+\item
+  For a function without explicit purity, it is deprecated to call any function declared \lstinline!impure!, except when wrapped in \lstinline!pure($\ldots$)!.
+\item
+  For a function not declared \lstinline!impure!, it is deprecated to call an external function not declared \lstinline!pure!, except when wrapped in \lstinline!pure($\ldots$)!.
+\end{itemize}
+
+For purposes of symbolic transformations and optimizations, the deprecated semantics above imply that not only the functions explicitly declared \lstinline!impure! are the ones which cannot be treated as pure.
+Instead, a function shall be treated as impure in the following cases (applied recursively):
+\begin{itemize}
+\item
+  It is declared \lstinline!impure!.
+\item
+  It is an external function without explicit purity.
+\item
+  It calls another function treated as impure, except when wrapped in \lstinline!pure($\ldots$)!.
 \end{itemize}
 
 Calls of pure functions used inside expression may be skipped if the resulting expression will not depend on the possible returned value; ignoring the possibility of the function generating an error.
@@ -241,7 +252,7 @@ A call to a function with no declared outputs is assumed to have desired side-ef
 
 \begin{nonnormative}
 A tool shall thus not remove such function calls, with exception of non-triggered assert calls.
-A pure function, used in an expression or used with a non-empty left hand side, need not be called if the output from the function call do not mathematically influence the simulation result, even if errors would be generated if it were called.
+A pure function, used in an expression or used with a non-empty left-hand side, need not be called if the output from the function call do not mathematically influence the simulation result, even if errors would be generated if it were called.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -273,8 +284,7 @@ With the prefix keyword \lstinline!impure!\indexinline{impure} it is stated that
 \item
   Binding equations for components declared as parameter -- which is seen as syntactic sugar for having a parameter with \lstinline!fixed=false! and the binding as an initial equation.
   \begin{nonnormative}
-  Thus, evaluation of the same function call at a later time during simulation is not guaranteed to result in the same value as when the parameter
-  was initialized, seemingly breaking the declaration equation.
+  Thus, evaluation of the same function call at a later time during simulation is not guaranteed to result in the same value as when the parameter was initialized, seemingly breaking the declaration equation.
   \end{nonnormative}
 \item
   Binding equations for external objects.
@@ -290,10 +300,7 @@ Specifically, the number of calls with external side-effects is unspecified.
 However, for impure functions where the outputs only depend on the inputs the system of equations should be solved correctly.
 
 \begin{nonnormative}
-A tool is not allowed to perform any optimizations on function
-calls to an impure function, e.g., reordering calls from different
-statements in an algorithm or common subexpression elimination is not
-allowed.
+A tool is not allowed to perform any optimizations on function calls to an impure function, e.g., reordering calls from different statements in an algorithm or common subexpression elimination is not allowed.
 \end{nonnormative}
 
 By \cref{function-compatibility-or-function-subtyping-for-functions}, it follows that an impure function can only be passed as argument to a function formal parameter of impure type.
@@ -353,37 +360,15 @@ algorithm
 
 \section{Function Call}\label{function-call}
 
-Function classes and record constructors (\cref{record-constructor-functions}) and enumeration type
-conversions (\cref{type-conversion-of-integer-to-enumeration-values}) can be called as described in this section.
+Function classes and record constructors (\cref{record-constructor-functions}) and enumeration type conversions (\cref{type-conversion-of-integer-to-enumeration-values}) can be called as described in this section.
 
 \subsection{Positional or Named Input Arguments}\label{positional-or-named-input-arguments-of-functions}
 
-A function call has optional positional arguments followed by zero, one
-or more named arguments, such as
-
+A function call has optional positional arguments followed by zero, one or more named arguments, such as:
 \begin{lstlisting}[language=modelica]
 f(3.5, 5.76, arg3=5, arg6=8.3);
 \end{lstlisting}
-
-The formal syntax of a function call (simplified by removing reduction
-expression, \cref{reduction-expressions}):
-\begin{lstlisting}[language=grammar]
-primary :
-   component-reference function-call-args
-
-function-call-args :
-   "(" [ function-arguments ] ")"
-
-function-arguments :
-   function-argument [ "," function-arguments]
-   | named-arguments
-
-named-arguments: named-argument [ "," named-arguments ]
-
-named-argument: IDENT "=" function-argument
-
-function-argument : function-partial-application | expression
-\end{lstlisting}
+The formal syntax is given by \productionref{function-call} in the grammar, and is shared by the reduction expressions in \cref{reduction-expressions}.
 
 The interpretation of a function call is as follows: First, a list of unfilled slots is created for all formal input parameters.
 If there are $N$ positional arguments, they are placed in the first $N$ slots, where the order of the parameters is given by the order of the component declarations in the function definition.
@@ -404,7 +389,7 @@ Assume a function \lstinline!RealToString! is defined as follows to convert a \l
 \begin{lstlisting}[language=modelica]
 function RealToString
   input Real number;
-  input Real precision = 6 "number of significantdigits";
+  input Real precision = 6 "number of significant digits";
   input Real length = 0 "minimum length of field";
   output String string "number as string";
   $\ldots$
@@ -539,8 +524,7 @@ area :=
 \end{example}
 
 \begin{example}
-Function types are matching after removing the bound arguments \lstinline!A! and \lstinline!w! in a function partial
-application:
+Function types are matching after removing the bound arguments \lstinline!A! and \lstinline!w! in a function partial application:
 \begin{lstlisting}[language=modelica]
 function Sine2 "y = Sine2(A, w, x)"
   input Real A;
@@ -595,8 +579,8 @@ end surfaceQuadrature;
 \subsection{Output Formal Parameters}\label{output-formal-parameters-of-functions}
 
 A function may have more than one output component, corresponding to multiple return values.
-The only way to use more than the first return value of such a function is to make the function call the right hand side of an equation or assignment.
-In this case, the left hand side of the equation or assignment shall contain a list of component references within parentheses:
+The only way to use more than the first return value of such a function is to make the function call the right-hand side of an equation or assignment.
+In this case, the left-hand side of the equation or assignment shall contain a list of component references within parentheses:
 
 \lstinline!(out1, out2, out3) = f($\ldots$);!
 
@@ -606,7 +590,7 @@ The type of each component reference in the list must agree with the type of the
 
 A function application may be used as expression whose value and type is given by the value and type of the first output component, if at least one return result is provided.
 
-It is possible to omit left hand side component references and/or truncate the left hand side list in order to discard outputs from a function call.
+It is possible to omit left-hand side component references and/or truncate the left-hand side list in order to discard outputs from a function call.
 
 \begin{nonnormative}
 Optimizations to avoid computation of unused output results can be automatically deduced by an optimizing compiler.
@@ -640,7 +624,7 @@ end eigen;
 \end{lstlisting}
 \end{example}
 
-The only permissible use of an expression in the form of a list of expressions in parentheses, is when it is used as the left hand side of an equation or assignment where the right hand side is an application of a function.
+The only permissible use of an expression in the form of a list of expressions in parentheses, is when it is used as the left-hand side of an equation or assignment where the right-hand side is an application of a function.
 
 \begin{example}
 The following are illegal:
@@ -661,8 +645,7 @@ Components in a function can be divided into three groups:
 \item
   Public components which are output formal parameters.
 \item
-  Protected components which are local variables, parameters, or
-  constants.
+  Protected components which are local variables, parameters, or constants.
 \end{itemize}
 
 When a function is called, components of the function do not have \lstinline!start!-attributes.
@@ -679,20 +662,17 @@ Binding equations for input formal parameters are interpreted as default argumen
 \cref{positional-or-named-input-arguments-of-functions}.
 
 \begin{nonnormative}
-It is recommended to check for use of uninitialized variables statically -- if this is not possible a warning is recommended
-combined with a run-time check.
+It is recommended to check for use of uninitialized variables statically -- if this is not possible a warning is recommended combined with a run-time check.
 \end{nonnormative}
 
 \begin{nonnormative}
-The properties of components in functions described in this
-section are also briefly described in \cref{function-as-a-specialized-class}.
+The properties of components in functions described in this section are also briefly described in \cref{function-as-a-specialized-class}.
 \end{nonnormative}
 
 \subsection{Flexible Array Sizes and Resizing of Arrays}\label{flexible-array-sizes-and-resizing-of-arrays-in-functions}
 
 \begin{nonnormative}
-Flexible setting of array dimension sizes of arrays in
-functions is also briefly described in \cref{function-as-a-specialized-class}.
+Flexible setting of array dimension sizes of arrays in functions is also briefly described in \cref{function-as-a-specialized-class}.
 \end{nonnormative}
 
 A dimension size not specified with colon (\lstinline!:!) for a non-input array component of a function must be given by the inputs or be constant.
@@ -716,8 +696,7 @@ A non-input array component declared in a function with a dimension size specifi
   The entire array (without any subscripts) may be assigned with a corresponding array with arbitrary dimension size (the array variable is re-sized).
 \end{itemize}
 
-These rules also apply if the array component is an element of a record
-component in a function.
+These rules also apply if the array component is an element of a record component in a function.
 
 \begin{example}
 A function to collect the positive elements in a vector:
@@ -802,8 +781,7 @@ For built-in operators one can do this with \lstinline!1 .+ [1,2,3]! but not wit
 An \emph{empty} function call is a call that does not return any results.
 
 \begin{nonnormative}
-An empty call is of limited use in Modelica since a function call without results does not contribute to the simulation,
-but it is useful to check assertions and in certain cases for desired side-effects, see \cref{pure-modelica-functions}.
+An empty call is of limited use in Modelica since a function call without results does not contribute to the simulation, but it is useful to check assertions and in certain cases for desired side-effects, see \cref{pure-modelica-functions}.
 \end{nonnormative}
 
 An empty call can occur either as a kind of ``null equation'' or ``null statement''.
@@ -825,16 +803,13 @@ There are basically four groups of built-in functions in Modelica:
 \item
   Intrinsic mathematical and conversion functions, see \cref{numeric-functions-and-conversion-functions}.
 \item
-  Derivative and special operators with function syntax,
-  see \cref{derivative-and-special-purpose-operators-with-function-syntax}.
+  Derivative and special operators with function syntax, see \cref{derivative-and-special-purpose-operators-with-function-syntax}.
 \item
   Event-related operators with function syntax, see \cref{event-related-operators-with-function-syntax}.
 \item
   Built-in array functions, see \cref{built-in-array-functions}.
 
-  Note that when the specification references a function having the name
-  of a built-in function it references the built-in function, not a
-  user-defined function having the same name.
+  Note that when the specification references a function having the name of a built-in function it references the built-in function, not a user-defined function having the same name.
 \end{itemize}
 
 \section{Record Constructor Functions}\label{record-constructor-functions}
@@ -1108,6 +1083,9 @@ This annotation has only an effect within a function declaration.
 
 \begin{nonnormative}
 This means that the function is at least C\textsuperscript{smoothOrder}.
+
+While it cannot be expressed that a function is infinitely differentiable, something like \lstinline!smoothOrder=100! gives tools sufficient guarantees about smoothness for virtually all practical purposes.
+It is recommended to specifically use 100 to make it easy to recognize.
 
 When a tool computes the derivative of a function, e.g., for index reduction or to compute an analytic Jacobian, each differentiation of a function reduces the \lstinline!smoothOrder! by 1.
 The \lstinline!smoothOrder! information can then be used to infer continuity of the resulting differentiated function calls, provided the input arguments are continuous.
@@ -1440,6 +1418,7 @@ In the example above {\lstinline!zeroDerivative=y!} and {\lstinline!zeroDerivati
 The derivative of $\mathit{inputVar}_{1}$ is excluded from the argument list of the derivative-function.
 This relies on assumptions on the arguments to the function; and the function should document these assumptions (it is not always straightforward to verify them).
 In many cases even the undifferentiated function will only behave correctly under these assumptions.
+If {\lstinline!zeroDerivative!} can be used, that is preferable over {\lstinline!noDerivative!} as the assumptions are clearly stated and checked.
 
 The inputs excluded using {\lstinline!zeroDerivative!} or {\lstinline!noDerivative!} may be of any type (including types not containing reals).
 
@@ -1487,18 +1466,19 @@ Therefore {\lstinline!h!} indirectly includes the derivative with respect to {\l
 \end{nonnormative}
 
 
-\subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}
+\subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}\index{partial derivative}\index{der@\robustinline{der}!partial derivative}
 
-A class defined as:
-\begin{lstlisting}[language=grammar]
-IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
-\end{lstlisting}
-is the partial derivative of a function, and may only be used as declarations of functions.
+A function class defined using \productionref{der-class-specifier} in the grammar is a partial derivative of another function.
+In \lstinline!$f$ = der($g$, $u_{1}, \ldots$)!, the function being defined is named $f$, and the function being differentiated is $g$.
+The name $g$ is looked up in the same way as a in short class definition, and the referenced class must be a function.
+Each $u_{i}$ must be a scalar {\lstinline!Real!} input to the function, and corresponds mathematically to prepending $\frac{\partial}{\partial u_{i}}$ to the function call.
+The $u_{i}$ are applied in increasing order of $i$ (although the partial derivatives commute for a broad class of functions).
 
-The semantics is that a function (and only a function) can be specified in this form, defining that it is the partial derivative of the function to the right of the equal sign (looked up in the same way as a short class definition, and the looked up name must be a function), and partially differentiated with respect to each {\lstinline!IDENT!} in order (starting from the first one).
-Each {\lstinline!IDENT!} must be a scalar {\lstinline!Real!} input to the function.
+\begin{nonnormative}
+In mathematical notation, the order of partial differentiation is reversed compared to the function definition; \lstinline!der($g$, $x$, $y$)! means $\frac{\partial}{\partial y}\frac{\partial}{\partial x}g$.
+\end{nonnormative}
 
-The comment allows a user to comment the function (in the info-layer and as one-line description, and as icon).
+The \productionref{description} has the same semantics as in a short class definition, for instance allowing the function to be given a description string, as well as \lstinline!Documentation! and \lstinline!Icon! annotations.
 
 \begin{example}
 The specific enthalpy can be computed from a Gibbs-function as follows:
@@ -1517,8 +1497,8 @@ algorithm
   h := Gibbs(p, T) - T * Gibbs_T(p, T);
 end specificEnthalpy;
 \end{lstlisting}
+Thus \lstinline!der(Gibbs, T)! corresponds to $\frac{\partial \text{\lstinline!Gibbs(p, T)!}}{\partial \text{\lstinline!T!}} = \frac{\partial}{\partial \text{\lstinline!T!}}\text{\lstinline!Gibbs!}$.
 \end{example}
-
 
 \subsection{Using the Inverse Annotation}\label{using-the-inverse-annotation}
 
@@ -1537,7 +1517,7 @@ function $f_1$
   output $T_2$ $y$;
 algorithm
   $\ldots$
-  annotation(inverse($u_k$ = $f_2$($\ldots$, $y$, $\ldots$));
+  annotation(inverse($u_k$ = $f_2$($\ldots$, $y$, $\ldots$)));
 end $f_1$;
 \end{lstlisting}
 
@@ -1659,7 +1639,7 @@ equation
   annotation(experiment(StopTime = 10.0));
 end NotSurjective;
 \end{lstlisting}
-As the value of {\lstinline!x!} varies over the interval $[-1,\, 1]$, but the range of {\lstinline!cbrtPos!} is only $(0, \infty)$, the informal codomain of {\lstinline!cbrtPos!} cannot be restricted such that the surjectiveness is fulfilled.
+As the value of {\lstinline!x!} varies over the interval $[-0.5,\, 1.5]$, but the range of {\lstinline!cbrtPos!} is only $(0, \infty)$, the informal codomain of {\lstinline!cbrtPos!} cannot be restricted such that the surjectiveness is fulfilled.
 A valid solution to the equation in {\lstinline!x!} and {\lstinline!y!} must satisfy $\text{{\lstinline!y!}} > 0$, and when no {\lstinline!inverse!} annotation is given, a violation will be detected by a nonlinear solver applied directly to the equation.
 When the (invalid) inverse provided by the {\lstinline!inverse!} annotation is used, however, the equation gets transformed into
 \begin{lstlisting}[language=modelica]
@@ -1701,7 +1681,7 @@ This means, that the body of the function is included at all places where the fu
 
 If {\lstinline!Inline = false!}, the model developer proposes to not inline the function.
 
-The default for inlining is tool-specific.
+The default for inlining is tool specific.
 
 \begin{nonnormative}
 {\lstinline!Inline = true!} is for example used in {\lstinline!Modelica.Mechanics.MultiBody.Frames!} and in functions of {\lstinline!Modelica.Media!} to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
@@ -1724,7 +1704,7 @@ Late inlining is especially useful for differentiation and inversion of function
 
 If {\lstinline!LateInline = false!}, the model developer proposes to not inline the function after symbolic transformations have been performed.
 
-The default for late inlining is tool-specific.
+The default for late inlining is tool specific.
 In particular, tools may automatically delay inlining in order to take advantage of function annotations for derivatives and inverses.
 
 {\lstinline!Inline = true, LateInline = false!} is identical to {\lstinline!Inline = true!}.
@@ -1761,15 +1741,97 @@ This annotation cannot be combined with annotations {\lstinline!Inline!} and {\l
 \begin{semantics}
 Has only an effect within a function declaration.
 
-By default, {\lstinline!GenerateEvents = false!} and expressions in the function body that would normally be event-generating shall not generate events, similar to inlining the function body while wrapping all expressions in {\lstinline!noEvent!}, see \cref{modelica:noEvent}.
+By default, {\lstinline!GenerateEvents = false!} and expressions in the function body that would normally be event generating shall not generate events, similar to inlining the function body while wrapping all expressions in {\lstinline!noEvent!}, see \cref{modelica:noEvent}.
 By specifying {\lstinline!GenerateEvents = true!}, event-generating expressions in the function body shall generate events as normal, similar to inlining the function body without wrapping all expressions in {\lstinline!noEvent!}.
 Having {\lstinline!GenerateEvents = true!} implies {\lstinline!Inline = true!} unless overridden by specifying one of the inlining annotations with value {\lstinline!true!} (in particular, {\lstinline!GenerateEvents = true!} cannot be combined with {\lstinline!Inline = false!}).
+
+A function with \lstinline!GenerateEvents = true! should be considered event generating for purposes of determining where the function may be called, regardless of whether the function body contains any expressions which could actually generate events.
 
 \begin{nonnormative}
 In case a given inlining annotation proposes to inline at a stage when the tool cannot process {\lstinline!GenerateEvents = true!}, it is recommended to give a diagnostic and instead perform inlining of the function at the nearest stage where {\lstinline!GenerateEvents = true!} can still be respected.
 
 If the function is called in a context where events will not be generated (e.g., inside another function without {\lstinline!GenerateEvents = true!}) no special action is needed.
 \end{nonnormative}
+\begin{example}
+\lstinline!GenerateEvents! impacts variability according to \cref{variability-of-expressions}.
+The benefit of treating functions with \lstinline!GenerateEvents = true! in this way is that it makes it possible to construct functions behaving like the built-in event generating operators.
+E.g., it allows constructing a variant of \lstinline!integer()! that rounds towards closest \lstinline!Integer! instead of towards $-\inf$ that is usable in the same way as \lstinline!integer()!.
+\begin{lstlisting}[language=modelica]
+function nearestInteger
+  input Real r;
+  output Integer i;
+algorithm
+  i :=if (r > 0) then integer(floor(r + 0.5)) else integer(ceil(r - 0.5));
+end nearestInteger;
+\end{lstlisting}
+
+The following is an illustration of some trivial cases.
+\begin{lstlisting}[language=modelica]
+function greaterEqual
+  input Real x1;
+  input Real x2;
+  output Boolean b;
+algorithm
+  b := x1 >= x2;
+  annotation(GenerateEvents=true, LateInline=true);
+end greaterEqual;
+
+function greaterEqualWO
+  input Real x1;
+  input Real x2;
+  output Boolean b;
+algorithm
+  b := x1 >= x2;
+  annotation(LateInline=true);
+end greaterEqualWO;
+
+model M
+  Boolean b1 = greaterEqual(time, 1);
+  Boolean b2 = greaterEqualWO(time, 1) "Illegal";
+  Boolean b3 = noEvent(greaterEqual(time, 1)) "Illegal";
+  Boolean b4 = greaterEqualWO(if b1 then 2 else 0, 1);
+  Real z = if greaterEqualWO(time, 1) then 2 else 1;
+end M;
+
+function bad
+  input Real x1;
+  output Integer i;
+algorithm
+  i := greaterEqualWO(x1, 1) then 2 else 1;
+  annotation(GenerateEvents=true, LateInline=true);
+end bad;
+\end{lstlisting}
+
+In \lstinline!M!, there will be an event when \lstinline!time! becomes greater or equal to \lstinline!1!, and thus the discrete-time variable \lstinline!b1! can be bound to this function call even though it involves the non-discrete time variable \lstinline!time!.
+Both \lstinline!b2! and \lstinline!b3! are illegal, since the right-hand sides have non-discrete-time variability.
+The variable \lstinline!z! is legal, since a \lstinline!Real! variable can have non-discrete time variability.
+The variable \lstinline!b4! is legal, since the function inputs have discrete-time variability.
+The function \lstinline!bad! demonstrates that similar restrictions (as for \lstinline!b2! and \lstinline!b3!) apply inside functions with {\lstinline!GenerateEvents = true!}.
+\begin{lstlisting}[language=modelica]
+function saturatedSquare
+  input Real x2;
+  output Real y;
+algorithm
+  if x2 > 1 then
+    y := 1;
+  else
+    y := x2^2;
+  end if;
+end saturatedSquare;
+
+function isBelowSat
+  input Real x1, x2;
+  output Boolean b;
+algorithm
+  b : = x1 < saturatedSquare(x2);
+  annotation (GenerateEvents=true, LateInline=true);
+end isBelowSat;
+\end{lstlisting}
+The function \lstinline!isBelowSat! demonstrates that it is possible to call functions that do not generate events (like \lstinline!saturatedSquare!) inside functions with {\lstinline!GenerateEvents = true!}.
+Combined, the last two examples demonstrate that {\lstinline!GenerateEvents = true!} does not propagate to called functions.
+
+The annotation \lstinline!LateInline=true! is not needed, but makes the issue more obvious in tools that normally inline function before checking variability.
+\end{example}
 \end{semantics}
 \end{annotationdefinition}
 
@@ -1783,8 +1845,7 @@ The Modelica external function call interface provides the following:
   Support for external functions written in C (specifically C89) and FORTRAN~77.
   Other languages, e.g., C++ and Fortran 90, may be supported in the future, and provided the function is link-compatible with C89 or FORTRAN~77 it can be written in any language.
 \item
-  Mapping of argument types from Modelica to the target language and
-  back.
+  Mapping of argument types from Modelica to the target language and back.
 \item
   Natural type conversion rules in the sense that there is a mapping from Modelica to standard libraries of the target language.
 \item
@@ -1798,25 +1859,13 @@ The Modelica external function call interface provides the following:
   \end{nonnormative}
 \end{itemize}
 
-The format of an external function declaration is as follows.
-\begin{lstlisting}[language=grammar]
-function IDENT description-string
-  { component-clause ";" }
-  [ protected { component-clause ";" } ]
-external [ language-specification ]
-  [ external-function-call ]
-    [ annotation-clause ] ";"
-  [ annotation-clause ";" ]
-end IDENT;
-\end{lstlisting}%
-\indexinline{external}
-
+The syntax for declaring an external function is a function declaration where the optional \productionref{external-function-call}\indexinline{external} of \productionref{composition} in the grammar is present.
 Just as for any other function, components in the public part of an external function declaration shall be declared either as {\lstinline!input!} or {\lstinline!output!}.
 
 Protected components can be passed to the external function without being initialized by means of a declaration equation, which is useful for passing workspace memory to functions with FORTRAN style memory management, and the reason for passing them in the same (writable) way as output components (see \cref{argument-type-mapping}).
 The value of a protected component passed to the external function should be considered undefined (destroyed) after the external function call.
 
-The {\lstinline[language=grammar]!language-specification!} must currently be one of {\lstinline!"builtin"!} (deprecated), {\lstinline!"C"!}, {\lstinline!"C$\ldots$"!} (for one of the specific C standards like C89, C99, and C11 -- specifying that it relies on the C standard library of that version) or {\lstinline!"FORTRAN 77"!}.
+The \productionref{language-specification} must currently be one of {\lstinline!"builtin"!} (deprecated), {\lstinline!"C"!}, {\lstinline!"C$\ldots$"!} (for one of the specific C standards like C89, C99, and C11 -- specifying that it relies on the C standard library of that version) or {\lstinline!"FORTRAN 77"!}.
 Unless the external language is specified, it is assumed to be {\lstinline!"C"!}.
 
 \begin{nonnormative}
@@ -1850,7 +1899,7 @@ end UserModel;
 \end{lstlisting}
 \end{example}
 
-The {\lstinline[language=grammar]!external-function-call!} specification allows functions whose prototypes do not match the default assumptions as defined below to be called.
+The \productionref{external-function-call} specification allows functions whose prototypes do not match the default assumptions as defined below to be called.
 It also gives the name used to call the external function.
 If the external call is not given explicitly, this name is assumed to be the same as the Modelica name.
 
@@ -1862,7 +1911,7 @@ A component reference to a component that is part of an input or output is treat
 \subsection{Argument type Mapping}\label{argument-type-mapping}
 
 The arguments of the external function are declared in the same order as in the Modelica declaration, unless specified otherwise in an explicit external function call.
-Protected variables (i.e., temporaries) are passed in the same way as outputs, whereas constants and {\lstinline!size!} calls are passed as inputs.
+Values of constant expressions (including references to constant components) and \lstinline!size! calls are passed as inputs, whereas protected non-constant variables (i.e., temporaries) are passed in the same way as outputs.
 
 \subsubsection{Simple Types}\label{simple-types}
 
@@ -2075,10 +2124,12 @@ A Modelica record class is mapped as follows:
 \item
   The components of the Modelica record class are declared in the same order in the C struct.
 \item
-  Arrays cannot be mapped.
+  Records containing arrays cannot be mapped.
 \end{itemize}
 
-Records are passed by reference (i.e., a pointer to the record is being passed).
+Scalar records are passed as pointers (by reference).
+Record inputs are const-pointers, indicating that the records shall not be changed.
+As stated in \cref{arrays-1}, an array of records is passed as a pointer to the first element in an array of structs (array-to-pointer decay in C).
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -2205,86 +2256,118 @@ The use of the function {\lstinline!foo!} in Modelica is uninfluenced by these c
 
 \subsection{Annotations for External Functions}\label{annotations-for-external-libraries-and-include-files}
 
-The following annotations are useful in the context of calling external functions from Modelica, and they should occur on the {\lstinline!external!}-clause and no other standard annotations should occur on the {\lstinline!external!}-clause.
-They can all specify either a scalar value or an array of values as indicated below for the {\lstinline!Library!} annotation:
-\begin{itemize}
-\item
-  The {\lstinline!annotation(Library="libraryName")!}\annotationindex{Library}, used by the linker to include the library file where the compiled external function is available.
-\item
-  The {\lstinline!annotation(Library={"libraryName1", "libraryName2"})!}, used by the linker to include the library files where the compiled external function is available and additional libraries used to implement it.
-  For shared libraries it is recommended to include all non-system libraries in this list.
-\item
-  The {\lstinline!annotation(Include="insertedCode")!}\annotationindex{Include}, used to insert function prototypes or definitions needed for calling the external function in the code generated by the Modelica compiler.
-  When generating a call to the external function, the \lstinline!"insertedCode"! shall be present at the top level somewhere before the point of the call (similar to where include directives are typically placed).
-  The \lstinline!Include! annotation shall be used in such a way that each external function can be handled in a separate translation unit.
-  In particular, different external functions must not have \lstinline!Include! annotations providing exported definitions of the same function symbol to avoid linking errors.
+The annotations listed below are useful in the context of calling external functions from Modelica.
+They should occur on the {\lstinline!external!}-clause, and no other standard annotations should occur on the {\lstinline!external!}-clause.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+{\lstinline!Library!} & Libraries to link with & \Cref{modelica:Library}\\
+{\lstinline!Include!} & Include directives & \Cref{modelica:Include}\\
+{\lstinline!LibraryDirectory!} & Directories containing libraries & \Cref{modelica:LibraryDirectory}\\
+{\lstinline!IncludeDirectory!} & Directories containing header files & \Cref{modelica:IncludeDirectory}\\
+{\lstinline!SourceDirectory!} & Directories containing source code & \Cref{modelica:SourceDirectory}\\
+{\lstinline!License!} & License files & \Cref{modelica:extfun-License}\\
+\hline
+\end{tabular}
+\end{center}
 
-  A deprecated feature is that if multiple \lstinline!Include! annotations -- possibly coming from different external functions -- have identical content, the tool shall not include this content more than once in any translation unit.
-  In case calls to several external functions are generated in the same translation unit, the \lstinline!Include! annotations of the different functions must not define the same function -- except when relying on the deprecated behavior.
+As an alternative to specifying a scalar string, they all can also specify an array of strings instead as indicated explicitly only for the {\lstinline!Library!} annotation.
 
-  The included code should be valid C89 code.
-  If the \lstinline[language=grammar]!external-function-call! contains any `size`-expression, the tool is responsible for ensuring that a C-header defining \lstinline[language=C]!size_t! is included before the \lstinline!"insertedCode"!.
-  The \lstinline!"insertedCode"!, conditionally preceded by a header for \lstinline[language=C]!size_t!, must be a valid translation unit.
+The {\lstinline!TopPackage!} used below for {\lstinline!IncludeDirectory!}, {\lstinline!LibraryDirectory!}, and {\lstinline!SourceDirectory!} indicates the top-level class where the annotation is found in the Modelica source code.
 
-  When an \lstinline!Include! annotation is present, it shall provide a prototype for the external function, and hence the tool shall not produce an automatically generated prototype in the generated code in this case.
+\begin{annotationdefinition}[Library]
+\begin{synopsis}
+\begin{lstlisting}
+/*literal*/ constant String Library
+\end{lstlisting}
+or
+\begin{lstlisting}
+/*literal*/ constant String[:] Library
+\end{lstlisting}
+\end{synopsis}
+\begin{semantics}
+{\lstinline!Library = "libraryName"!} is used to tell the linker to include the library file where the compiled external function is available.
 
-  Although all pointer types are const pointers in the type mapping for input arguments, it is a deprecated feature that the prototype in an \lstinline!Include! annotation may use non-const pointers instead.
+{\lstinline!Library = {"libraryName1", "libraryName2"}!} is used to tell the linker to include the library file where the compiled external function is available, as well as additional libraries used to implement it.
+For shared libraries it is recommended to include all non-system libraries in this list.
 
-  \begin{nonnormative}
-  For an external function declaration calling the external function \lstinline[language=C]!myfoo!, examples of \lstinline!"insertedCode"! include:
-  \begin{itemize}
-  \item
-    An \lstinline[language=C]!#include! directive including a header file with a prototype for \lstinline[language=C]!myfoo!.
-  \item
-    An \lstinline[language=C]!#include! directive including a source file with a \lstinline[language=C]!static! definition of \lstinline[language=C]!myfoo!.
-    Include guards should be used (either in the \lstinline!Include! annotation or in the source file) to avoid relying on the deprecated feature that tools shall include at most one copy in the same translation unit.
-    (Having a \lstinline[language=C]!static! definition allows the same source file to be included by multiple \lstinline!Include! annotations in different translation units.)
-  \item
-    A prototype for \lstinline[language=C]!myfoo!.
-    This may be useful when no header file is available and it is not desirable to rely on the automatic generation of a prototype.
-  \item
-    A piece of C code directly defining \lstinline[language=C]!myfoo!.
-    Since no other \lstinline!Include! annotation is expected to contain a definition of \lstinline[language=C]!myfoo!, it is not necessary to make the definition \lstinline[language=C]!static!.
-  % Uncomment the following item once \cref{utility-functions} has something to say regarding how to use Include annotations.
-% \item
-%   See also \cref{utility-functions} for recommended ways of using the functions in \filename{ModelicaUtilities.h}.
-  \end{itemize}
-  \end{nonnormative}
-\item
-  The
-  {\lstinline!annotation(IncludeDirectory="modelica:/ModelicaLibraryName/Resources/Include")!}\annotationindex{IncludeDirectory}, used to specify a location for header files.
-  The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the include directory, see \cref{external-resources}.
-\item
-  The
-  {\lstinline!annotation(LibraryDirectory="modelica:/ModelicaLibraryName/Resources/Library")!}\annotationindex{LibraryDirectory}, used to specify a location for library files.
-  The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the library directory, see \cref{external-resources}.
-  Different versions of one object library can be provided (e.g., for Windows and for Linux) by providing a \emph{platform} directory below the {\lstinline!LibraryDirectory!}.
-  If no platform directory is present, the object library must be present in the {\lstinline!LibraryDirectory!}.
-  The following \emph{platform} names are standardized:
-  \begin{itemize}
-  \item
-    {\lstinline!"win32"!} (Microsoft Windows 32 bit)
-  \item
-    {\lstinline!"win64"!} (Microsoft Windows 64 bit)
-  \item
-    {\lstinline!"linux32"!} (Linux Intel 32 bit)
-  \item
-    {\lstinline!"linux64"!} (Linux Intel 64 bit)
-  \end{itemize}
-\item
-  The
-  {\lstinline!annotation(SourceDirectory="modelica:/ModelicaLibraryName/Resources/Source")!}\annotationindex{SourceDirectory}, gives the location for source files.
-  The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the source directory, see \cref{external-resources}.
-  It is not specified how they are built.
-\item
-  The {\lstinline!annotation(License="modelica:/ModelicaLibraryName/Resources/Licenses/MyLicense.txt")!}\annotationindex{License}, gives the license text file for the function.
-  It is analogous to the \lstinline!License! annotation for a top-level class, see \cref{license-texts}.
-\end{itemize}
-
-The \filename{win32} or \filename{win64} directories may contain \filename{gcc47}, \filename{vs2010}, \filename{vs2012} for specific versions of these compilers and these are used instead of the general \filename{win32} or \filename{win64} directories, and similarly for other platforms.
+The {\lstinline!Library!} name and the {\lstinline!LibraryDirectory!} (see below) are mapped to a linkage directive in a compiler-dependent way, thereby selecting the object library suited for the respective computer platform.
 
 The library on Windows may refer to a lib-file (static library), both a lib- and dll-file (in this case the lib-file is an import-library), or just a dll-file.
 It shall not refer to an obj-file.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[Include]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String Include
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The {\lstinline!annotation(Include="insertedCode")!}, used to insert function prototypes or definitions needed for calling the external function in the code generated by the Modelica compiler.
+When generating a call to the external function, the \lstinline!"insertedCode"! shall be present at the top level somewhere before the point of the call (similar to where include directives are typically placed).
+The \lstinline!Include! annotation shall be used in such a way that each external function can be handled in a separate translation unit.
+In particular, different external functions must not have \lstinline!Include! annotations providing exported definitions of the same function symbol to avoid linking errors.
+
+A deprecated feature is that if multiple \lstinline!Include! annotations -- possibly coming from different external functions -- have identical content, the tool shall not include this content more than once in any translation unit.
+In case calls to several external functions are generated in the same translation unit, the \lstinline!Include! annotations of the different functions must not define the same function -- except when relying on the deprecated behavior.
+
+The included code should be valid C89 code.
+If the \productionref{external-function-call} contains any \lstinline!size!-expression, the tool is responsible for ensuring that a C-header defining \lstinline[language=C]!size_t! is included before the \lstinline!"insertedCode"!.
+The \lstinline!"insertedCode"!, conditionally preceded by a header for \lstinline[language=C]!size_t!, must be a valid translation unit.
+
+When an \lstinline!Include! annotation is present, it shall provide a prototype for the external function, and hence the tool shall not produce an automatically generated prototype in the generated code in this case.
+
+Although all pointer types are const pointers in the type mapping for input arguments, it is a deprecated feature that the prototype in an \lstinline!Include! annotation may use non-const pointers instead.
+
+\begin{nonnormative}
+For an external function declaration calling the external function \lstinline[language=C]!myfoo!, examples of \lstinline!"insertedCode"! include:
+\begin{itemize}
+\item
+  An \lstinline[language=C]!#include! directive including a header file with a prototype for \lstinline[language=C]!myfoo!.
+\item
+  An \lstinline[language=C]!#include! directive including a source file with a \lstinline[language=C]!static! definition of \lstinline[language=C]!myfoo!.
+  Include guards should be used (either in the \lstinline!Include! annotation or in the source file) to avoid relying on the deprecated feature that tools shall include at most one copy in the same translation unit.
+  (Having a \lstinline[language=C]!static! definition allows the same source file to be included by multiple \lstinline!Include! annotations in different translation units.)
+\item
+  A prototype for \lstinline[language=C]!myfoo!.
+  This may be useful when no header file is available and it is not desirable to rely on the automatic generation of a prototype.
+\item
+  A piece of C code directly defining \lstinline[language=C]!myfoo!.
+  Since no other \lstinline!Include! annotation is expected to contain a definition of \lstinline[language=C]!myfoo!, it is not necessary to make the definition \lstinline[language=C]!static!.
+% Uncomment the following item once \cref{utility-functions} has something to say regarding how to use Include annotations.
+%\item
+%  See also \cref{utility-functions} for recommended ways of using the functions in \filename{ModelicaUtilities.h}.
+\end{itemize}
+\end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[LibraryDirectory]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String LibraryDirectory
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The {\lstinline!annotation(LibraryDirectory="modelica:/TopPackage/Resources/Library")!}, used to specify a location for library files.
+The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the library directory, see \cref{external-resources}.
+Different versions of one object library can be provided (e.g., for Windows and for Linux) by providing a \emph{platform} directory below the {\lstinline!LibraryDirectory!}.
+If no platform directory is present, the object library must be present in the {\lstinline!LibraryDirectory!}.
+
+The following \emph{platform} names are standardized:
+\begin{itemize}
+\item
+  {\lstinline!"win32"!} (Microsoft Windows 32 bit)
+\item
+  {\lstinline!"win64"!} (Microsoft Windows 64 bit)
+\item
+  {\lstinline!"linux32"!} (Linux Intel 32 bit)
+\item
+  {\lstinline!"linux64"!} (Linux Intel 64 bit)
+\end{itemize}
+
+The \filename{win32} or \filename{win64} directories may contain \filename{gcc47}, \filename{vs2010}, \filename{vs2012} for specific versions of these compilers and these are used instead of the general \filename{win32} or \filename{win64} directories, and similarly for other platforms.
 
 If the directory for the specific compiler version is missing the platform specific directory is used.
 
@@ -2292,11 +2375,47 @@ If the directory for the specific compiler version is missing the platform speci
 A tool may give a diagnostic if the directory corresponding to the selected compiler version is missing.
 The directories may use symbolic links or use a text-file as described below: e.g., a text-file \filename{vs2008} containing the text \emph{../win32/vs2005} (or \emph{vs2005}) suggesting that it is compatible with vs2005.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
-The {\lstinline!ModelicaLibraryName!} used for {\lstinline!IncludeDirectory!}, {\lstinline!LibraryDirectory!}, and {\lstinline!SourceDirectory!} indicates the top-level class where the annotation is found in the Modelica source code.
+\begin{annotationdefinition}[IncludeDirectory]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String IncludeDirectory
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The {\lstinline!annotation(IncludeDirectory="modelica:/TopPackage/Resources/Include")!}, used to specify a location for header files.
+The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the include directory, see \cref{external-resources}.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition}[SourceDirectory]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String SourceDirectory
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The {\lstinline!annotation(SourceDirectory="modelica:/TopPackage/Resources/Source")!}, gives the location for source files.
+The preceding one is the default and need not be specified; but another location could be specified by using an URI name for the source directory, see \cref{external-resources}.
+It is not specified how they are built.
+\end{semantics}
+\end{annotationdefinition}
+
+\begin{annotationdefinition*}[License]\label{modelica:extfun-License}\index{License@\robustinline{License}!external function annotation}
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant String License
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The {\lstinline!annotation(License="modelica:/TopPackage/Resources/Licenses/MyLicense.txt")!}, gives the license text file for the function.
+It is analogous to the \lstinline!License! annotation for a top-level class, see \cref{modelica:top-License}.
+\end{semantics}
+\end{annotationdefinition*}
+
+
+\subsection{Examples}\label{examples1}
+
+\subsubsection{Use of object libraries}
 
 \begin{example}
-Use of external functions and of object libraries:
+A package with some external functions making use of object libraries:
 \begin{lstlisting}[language=modelica]
 package ExternalFunctions
   model Example
@@ -2317,26 +2436,31 @@ package ExternalFunctions
     output Real y;
   external "C"
     y = ExternalFunc1_ext(x)
-      annotation(Library = "ExternalLib1",
-                 Include = "#include \"ExternalFunc1.h\"",
-                 SourceDirectory =
-                  "modelica:/ExternalFunctions/Resources/Source");
-      // The specified SourceDirectory is the default and thus redundant.
+      annotation(
+        Library = "ExternalLib1",
+        Include = "#include \"ExternalFunc1.h\"",
+        // SourceDirectory is the default and thus redundant:
+        SourceDirectory = "modelica:/ExternalFunctions/Resources/Source"
+      );
   end ExternalFunc1;
 
   function ExternalFunc2 "Include header file for library implementation"
     input Real x;
     output Real y;
   external "C"
-      annotation(Library = "ExternalLib2",
-                 Include = "#include \"ExternalFunc2.h\"");
+      annotation(
+        Library = "ExternalLib2",
+        Include = "#include \"ExternalFunc2.h\""
+      );
   end ExternalFunc2;
 
   function ExternalFunc3 "Include source file"
     input Real x;
     output Real y;
   external "C"
-      annotation(Include = "#include \"ExternalFunc3.c\"");
+      annotation(
+        Include = "#include \"ExternalFunc3.c\""
+      );
   end ExternalFunc3;
 end ExternalFunctions;
 
@@ -2344,6 +2468,7 @@ package MyExternalFunctions
   extends ExternalFunctions;
 end MyExternalFunctions;
 \end{lstlisting}
+
 Directory structure:
 % Adding paragraph break above tabbing environment to work around LaTeXML issue (fixed on master 2021-12-17):
 % - https://github.com/brucemiller/LaTeXML/issues/1719 (marked as fixed as of commit 3e8e2e15)
@@ -2405,7 +2530,7 @@ extern "C" {
 #endif
 #elif  __GNUC__ >= 4
   /* In gnuc, all symbols are by default exported. It is still often useful,
-  to not export all symbols but only the needed ones */
+   * to not export all symbols but only the needed ones */
 #  define EXTLIB2_EXPORT __attribute__ ((visibility("default")))
 #else
 #  define EXTLIB2_EXPORT
@@ -2420,9 +2545,6 @@ EXTLIB2_EXPORT double ExternalFunc2(double);
 \end{lstlisting}
 \end{example}
 
-The {\lstinline!Library!} name and the {\lstinline!LibraryDirectory!} name in the function annotation are mapped to a linkage directive in a compiler-dependent way thereby selecting the object library suited for the respective computer platform.
-
-\subsection{Examples}\label{examples1}
 
 \subsubsection{Input Parameters, Function Value}\label{input-parameters-function-value}
 
@@ -2514,6 +2636,26 @@ z1 = myfoo(2.4, 3, &i2);
 
 This section describes the utility functions declared in \filename{ModelicaUtilities.h}, which can be called in external Modelica functions written in C.
 
+The tool must ensure that the header is found by \lstinline[language=C]!#include "ModelicaUtilities.h"! within an \lstinline!Include! annotation (see \cref{annotations-for-external-libraries-and-include-files}); no \lstinline!IncludeDirectory! annotation is needed.
+
+\begin{example}
+The following usage patterns are common:
+\begin{itemize}
+\item
+  The \lstinline!Include! annotation may first \lstinline[language=C]!#include "ModelicaUtilities.h"!, and then contain the external function definition where the utility functions may be used.
+\item
+  Like above, but moving the annotation content above to, say, \filename{myExtFun.c}, and then just do \lstinline[language=C]!#include "myExtFun.c"! in the annotation.
+\item
+  After \lstinline[language=C]!#include "ModelicaUtilities.h"!, the \lstinline!Include! annotation can also define a wrapper around a function in a linked library that does the real job, where the wrapper forwards the arguments as well as passes function pointers for a selection of functions from \filename{ModelicaUtilities.h}.
+\end{itemize}
+\end{example}
+
+\begin{nonnormative}
+When building external libraries independently of Modelica tools, it is not possible to rely on the tool mechanism that provides \filename{ModelicaUtilities.h} for \lstinline!Include! annotations.
+Instead, an external library project may contain its own instance of \filename{ModelicaUtilities.h}, for example obtained by making a copy of the instance included within the Modelica Standard Library.
+\end{nonnormative}
+
+
 \subsubsection{Error Reporting Utility Functions}\label{utility-functions-for-reporting-errors}\label{error-reporting-utility-functions}
 
 The functions listed below produce a message in different ways.
@@ -2540,7 +2682,7 @@ The functions listed below produce a message in different ways.
 
 The \emph{Message}-functions only produce the message, but the \emph{Warning}- and \emph{Error}-functions combine this with error handling as follows.
 
-The \emph{Warning}-functions view the message as a warning and can skip duplicated messages similarly as an {\lstinline!assert!} with {\lstinline!level = AssertionLevel.Warning!} in the Modelica code.
+The \emph{Warning}-functions view the message as a warning and can skip duplicated messages similarly to an {\lstinline!assert!} with {\lstinline!level = AssertionLevel.Warning!} in the Modelica code.
 
 The \emph{Error}-functions never return to the calling function, but handle the error similarly to an {\lstinline!assert!} with {\lstinline!level = AssertionLevel.Error!} in the Modelica code.
 

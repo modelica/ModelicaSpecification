@@ -14,23 +14,18 @@ The converse relation is then expressed as \lstinline!B! being a \firstuse{deriv
 This relation is specified by an \lstinline!extends!-clause in \lstinline!B! or in one of \lstinline!B!'s base classes.
 A class inherits all elements from its base classes, and may modify all non-final elements inherited from base classes, as explained below.
 
-The \lstinline!extends!-clause is used to specify inheritance from a base class into an (enclosing) class containing the \lstinline!extends!-clause.
+The \lstinline!extends!-clause\indexinline{extends} is used to specify inheritance from a base class into an (enclosing) class containing the \lstinline!extends!-clause.
 It is an unnamed element of a class definition that uses a name and an optional modification to specify a base class of the class defined using the class definition.
-The syntax of the \lstinline!extends!-clause is as follows:
-\begin{lstlisting}[language=grammar]
-extends-clause :
-   extends name [ class-or-inheritance-modification ] [ annotation-clause ]
-\end{lstlisting}%
-\indexinline{extends}
 The name of the base class is looked up in the partially flattened enclosing class (\cref{enclosing-classes}) of the \lstinline!extends!-clause.
-If the optional \lstinline[language=grammar]!class-or-inheritance-modification! contains any \lstinline[language=grammar]!inheritance-modification! the base class is then modified as described in \cref{selective-model-extension}.
+The syntax of the \lstinline!extends!-clause is given by \productionref{extends-clause} in the grammar.
+If the optional \productionref{class-or-inheritance-modification} contains any \productionref{inheritance-modification} the base class is then modified as described in \cref{selective-model-extension}.
 The possibly modified found base class is flattened with a new environment and the partially flattened enclosing class of the \lstinline!extends!-clause.
 The new environment is the result of merging
 \begin{itemize}
 \item
   arguments of all enclosing class environments that match names in the flattened base class
 \item
-  a \lstinline[language=grammar]!class-modification! constructed from all \lstinline!argument! of the \lstinline[language=grammar]!inheritance-modification!
+  a \productionref{class-modification} constructed from all \lstinline!argument! of the \productionref{inheritance-modification}
 \end{itemize}
 in that order.
 
@@ -85,7 +80,7 @@ The declaration elements of the flattened base class shall either:
 Otherwise the model is incorrect.
 
 \begin{nonnormative}
-Clarifiying order:
+Clarifying order:
 \begin{lstlisting}[language=modelica]
 function A
   input Real a;
@@ -221,14 +216,14 @@ end ModelB;
 \subsection{Require Transitively Non-Replaceable}\label{restrictions-on-base-classes-and-constraining-types-to-be-transitively-non-replaceable}\label{require-transitively-non-replaceable}
 
 The class name used after \lstinline!extends! for base classes and for constraining classes must use a class reference considered transitively non-replaceable, see definition in \cref{transitively-non-replaceable}.
-For a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! the class must use a class reference considered transitively non-replaceable.
+For a replaceable component declaration without \productionref{constraining-clause} the class must use a class reference considered transitively non-replaceable.
 
 \begin{nonnormative}
 The requirement to use a transitively non-replaceable name excludes the long form of redeclare, i.e., \lstinline!redeclare model extends M $\ldots$! where \lstinline!M! must be an inherited replaceable class.
 \end{nonnormative}
 
 \begin{nonnormative}
-The rule for a replaceable component declaration without \lstinline[language=grammar]!constraining-clause! implies that constraining classes are always transitively non-replaceable -- both if explicitly given or implicitly by the declaration.
+The rule for a replaceable component declaration without \productionref{constraining-clause} implies that constraining classes are always transitively non-replaceable -- both if explicitly given or implicitly by the declaration.
 \end{nonnormative}
 
 
@@ -696,7 +691,7 @@ A \lstinline!redeclare!\indexinline{redeclare} construct in a modifier replaces 
 A \lstinline!redeclare! construct as an element replaces the declaration of a local class or component with another declaration.
 Both \lstinline!redeclare! constructs work in the same way.
 The \lstinline!redeclare! construct as an element requires that the element is inherited, and cannot be combined with a modifier of the same element in the \lstinline!extends!-clause.
-For modifiers, the redeclare of classes uses the \lstinline[language=grammar]!short-class-definition! construct, which is a special case of normal class definitions and semantically behaves as the corresponding \lstinline[language=grammar]!class-definition!.
+For modifiers, the redeclare of classes uses the \productionref{short-class-definition} construct, which is a special case of normal class definitions and semantically behaves as the corresponding \productionref{class-definition}.
 
 A modifier with the keyword \lstinline!replaceable!\indexinline{replaceable} is automatically seen as being a \lstinline!redeclare!.
 
@@ -780,34 +775,11 @@ Since the rule about applying the optional class-modification implies that all d
 For \lstinline!redeclare class extends B($\ldots$)! the inherited class is subject to the same restrictions as a redeclare of the inherited element, and the original class \lstinline!B! should be \firstuse{replaceable}, and the new element is only replaceable if the new definition is replaceable.
 In contrast to normal extends it is not subject to the restriction that \lstinline!B! should be transitively non-replaceable (since \lstinline!B! should be replaceable).
 
-The syntax rule for \lstinline!class extends! construct is in the definition of the
-\lstinline!class-specifier! nonterminal (see also class declarations in \cref{class-declarations}):
-\begin{lstlisting}[language=grammar]
-class-definition :
-   [ encapsulated ] class-prefixes
-   class-specifier
+The syntax of the \lstinline!class extends! construct is part of \productionref{long-class-specifier} in the grammar (see also class declarations in \cref{class-declarations}), where \productionref{long-class-specifier} is reached from \productionref{class-definition}.
+The \lstinline!redeclare! before the \productionref{class-definition} comes from \productionref{element} in the grammar.
 
-class-specifier : long-class-specifier | $\ldots$
-
-long-class-specifier : $\ldots$
-    | extends IDENT [ class-modification ] description-string
-      composition end IDENT
-\end{lstlisting}
-The nonterminal \lstinline!class-definition! is referenced in several places in the grammar, including the following case which is used in some examples below, including \lstinline!package extends! and \lstinline!model extends!:
-\begin{lstlisting}[language=grammar]
-element :
-   import-clause |
-   extends-clause |
-   [ redeclare ]
-   [ final ]
-   [ inner ] [ outer ]
-   ( ( class-definition | component-clause) |
-      replaceable ( class-definition | component-clause)
-        [constraining-clause comment])
-\end{lstlisting}
-
-\begin{nonnormative}
-Example to extend from existing packages:
+\begin{example}
+Extending from existing packages.
 \begin{lstlisting}[language=modelica]
 package PowerTrain // library from someone else
   replaceable package GearBoxes
@@ -822,8 +794,10 @@ package MyPowerTrain
   end GearBoxes;
 end MyPowerTrain;
 \end{lstlisting}
+\end{example}
 
-Example for an advanced type of package structuring with constraining types:
+\begin{example}
+Advanced type of package structuring with constraining types.
 \begin{lstlisting}[language=modelica]
 partial package PartialMedium "Generic medium interface"
   constant Integer nX "number of substances";
@@ -860,7 +834,7 @@ package MoistAir "Special type of medium"
 end MoistAir;
 \end{lstlisting}
 
-Note, since \lstinline!MostAir! extends from \lstinline!PartialMedium!, constant \lstinline!nX! = 2 in package \lstinline!MoistAir! and the model \lstinline!BaseProperties! and the function \lstinline!dynamicViscosity! is present in \lstinline!MoistAir!.
+Note, since \lstinline!MoistAir! extends from \lstinline!PartialMedium!, constant \lstinline!nX! = 2 in package \lstinline!MoistAir! and the model \lstinline!BaseProperties! and the function \lstinline!dynamicViscosity! is present in \lstinline!MoistAir!.
 By the following definitions, the available \lstinline!BaseProperties! model is replaced by another implementation which extends from the \lstinline!BaseProperties! model that has been temporarily constructed during the extends of package \lstinline!MoistAir! from \lstinline!PartialMedium!.
 The redeclared \lstinline!BaseProperties! model references constant \lstinline!nX! which is 2, since by construction the redeclared \lstinline!BaseProperties! model is in a package with \lstinline!nX! = 2.
 
@@ -897,28 +871,22 @@ With this construction, all constant definitions have to be repeated whenever th
 For larger models this is not practical and therefore the only practically useful definition is the complicated construction in the previous example with \lstinline!redeclare model extends BaseProperties!.
 
 To detect this issue the rule on lookup of composite names (\cref{composite-name-lookup}) ensures that \lstinline!PartialMedium.dynamicViscosity! is incorrect in a simulation model.
-\end{nonnormative}
+\end{example}
 
 
 \subsection{Constraining Type}\label{constraining-type}
 
-In a replaceable declaration the optional \lstinline[language=grammar]!constraining-clause! defines a constraining type.
+In a replaceable declaration, the optional \productionref{constraining-clause}\indexinline{constrainedby} in the grammar defines a constraining type.
 Any modifications following the constraining type name are applied both for the purpose of defining the actual constraining type and they are automatically applied in the declaration and in any subsequent redeclaration.
 The precedence order is that declaration modifiers override constraining type modifiers.
 
-If the \lstinline[language=grammar]!constraining-clause! is not present in the original declaration (i.e., the non-redeclared declaration):
+If the \productionref{constraining-clause} is not present in the original declaration (i.e., the non-redeclared declaration):
 \begin{itemize}
 \item
   The type of the declaration is also used as a constraining type.
 \item
   If modifiers are present in the original declaration, they also become modifiers on the constraining type.
 \end{itemize}
-
-The syntax of a \lstinline[language=grammar]!constraining-clause!\indexinline{constrainedby} is as follows:
-\begin{lstlisting}[language=grammar]
-constraining-clause :
-   constrainedby name [ class-modification ]
-\end{lstlisting}
 
 \begin{example}
 Merging of modifiers:
@@ -1026,7 +994,7 @@ Thus if \lstinline!T2! is a scalar type (e.g., \lstinline!type T2 = Real!) then 
 
 \subsubsection{Constraining-Clause Annotations}\label{constraining-clause-annotations}
 
-Description and annotations on the \lstinline[language=grammar]!constraining-clause! are applied to the entire declaration, and it is an error if they also appear on the definition.
+Description and annotations on the \productionref{constraining-clause} are applied to the entire declaration, and it is an error if they also appear on the definition.
 
 \begin{nonnormative}
 The intent is that the description and/or annotation are at the end of the declaration, but it is not straightforward to specify this in the grammar.
@@ -1078,8 +1046,30 @@ The following additional constraints apply to redeclarations (after prefixes are
 
 \subsection{Annotations for Redeclaration and Modification}\label{annotation-choices-for-suggested-redeclarations-and-modifications}
 
-A declaration can have an annotation \fmtannotationindex{choices} containing modifiers on \lstinline!choice!, where each of them indicates a suitable redeclaration or modifications of the element.
-This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comments on the \lstinline!choice! modifiers can be used as textual explanations of the choices.
+The annotations listed below are used to suggest certain redeclarations and modifications that should be made conveniently available in tools.
+\begin{center}
+\begin{tabular}{l|l l}
+\hline
+\tablehead{Annotation} & \tablehead{Description} & \tablehead{Details}\\
+\hline
+\hline
+\lstinline!choices! & List suggested redeclarations and modifications & \Cref{modelica:choices}\\
+\lstinline!choicesAllMatching! & Automatically generated list of redeclarations & \Cref{modelica:choicesAllMatching}\\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{annotationdefinition}[choices]
+\begin{synopsis}[grammar]\begin{lstlisting}
+"choices" "(" [ choices-argument { "," choice } ] ")"
+
+choices-argument :
+   "choice" modification
+   | "checkBox" "=" true
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+A declaration can have a \lstinline!choices! annotation containing modifiers for \lstinline!choice!, where each of them indicates a suitable redeclaration or modification of the element.
+This is a hint for users of the model, and can also be used by the user interface to suggest reasonable redeclarations, where the string comment on each \lstinline!choice! modifier can be used as explanation of that choice.
 The annotation is not restricted to replaceable elements but can also be applied to non-replaceable elements, enumeration types, and simple variables.
 
 The string comments for the \lstinline!choice! modifiers shall not automatically be copied to the modifier.
@@ -1098,8 +1088,65 @@ It is allowed to include choices that are invalid in some contexts, e.g., a valu
 (Options for tools encountering such choices include not showing them, marking them as invalid, or detecting the violations later.)
 
 For a \lstinline!Boolean! variable, a \lstinline!choices! annotation may contain the annotation \lstinline!checkBox = true!\annotationindex{checkBox}, meaning to display a checkbox to input the values \lstinline!false! or \lstinline!true! in the graphical user interface.
+\end{semantics}
+\end{annotationdefinition}
 
-The annotation \lstinline!choicesAllMatching = true!\annotationindex{choicesAllMatching} on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
+\begin{example}
+Using \lstinline!choices! to suggest suitable redeclarations:
+\begin{lstlisting}[language=modelica]
+replaceable model MyResistor = Resistor
+  annotation(choices(
+    choice(redeclare model MyResistor = lib2.Resistor(a = {2}) "$\ldots$"),
+    choice(redeclare model MyResistor = lib2.Resistor2 "$\ldots$")
+  ));
+
+replaceable Resistor Load(R = 2) constrainedby TwoPin
+  annotation(choices(
+    choice(redeclare lib2.Resistor Load(a = {2}) "$\ldots$"),
+    choice(redeclare Capacitor Load(L = 3) "$\ldots$")
+  ));
+
+replaceable FrictionFunction a(func = exp) constrainedby Friction
+  annotation(choices(
+    choice(redeclare ConstantFriction a(c = 1) "$\ldots$"),
+    choice(redeclare TableFriction a(table = "$\ldots$") "$\ldots$"),
+    choice(redeclare FunctionFriction a(func = exp) "$\ldots$")
+  ));
+\end{lstlisting}
+\end{example}
+
+\begin{example}
+Using \lstinline!choices! to suggest suitable value modifications for a non-replaceable declaration:
+\begin{lstlisting}[language=modelica]
+type KindOfController = Integer(min = 1, max = 3)
+  annotation(choices(
+    choice = 1 "P",
+    choice = 2 "PI",
+    choice = 3 "PID"
+  ));
+
+model A
+  parameter KindOfController x;
+end A;
+
+A a(x = 3);
+\end{lstlisting}
+Note that \lstinline!"PID"! was not copied here.
+\end{example}
+
+\begin{example}
+Using \lstinline!choices! to request that a checkbox is used to select modification for a \lstinline!Boolean! variable:
+\begin{lstlisting}[language=modelica]
+parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
+\end{lstlisting}
+\end{example}
+
+\begin{annotationdefinition}[choicesAllMatching]
+\begin{synopsis}\begin{lstlisting}
+/*literal*/ constant Boolean choicesAllMatching
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The annotation \lstinline!choicesAllMatching = true! on the following kinds of elements indicates that tools should automatically construct a menu with appropriate choices.
 \begin{itemize}
 \item For a replaceable element the included elements should be usable for replacing it.
 Exact criteria for inclusion in such a menu are not defined, but there shall be a a way to at least get a selection of classes, \lstinline!A.B.$\ldots$.X.Z!, that are either directly or indirectly derived by inheritance from the constraining class of the declaration, where \lstinline!A! to \lstinline!X! are non-partial packages, and \lstinline!Z! is non-partial.
@@ -1107,31 +1154,17 @@ Exact criteria for inclusion in such a menu are not defined, but there shall be 
 \end{itemize}
 
 This menu can be disabled using annotation \lstinline!choicesAllMatching = false!.
-It is possible to combine the two annotations for one declaration, and tools may avoid generating duplicate menu entries in that case.
+It is possible for a single declaration to combine \lstinline!choicesAllMatching! with the \lstinline!choices! annotation, and tools may avoid generating duplicate menu entries in that case.
 \begin{nonnormative}
 When \lstinline!choicesAllMatching! is not specified the following behavior is recommended for replaceable elements.
 A tool could ideally present (at least) the same choices as for \lstinline!choicesAllMatching = true!, but if it takes (too long) time to present the list it might be better to use the \lstinline!choicesAllMatching = false! behavior instead.
 \end{nonnormative}
+\end{semantics}
+\end{annotationdefinition}
 
 \begin{example}
-Demonstrating the \lstinline!choices! and  \lstinline!choicesAllMatching = true! annotations applied to replaceable elements.
+Using \lstinline!choicesAllMatching! for a replaceable element:
 \begin{lstlisting}[language=modelica]
-replaceable model MyResistor = Resistor
-  annotation(choices(
-               choice(redeclare model MyResistor=lib2.Resistor(a={2}) "$\ldots$"),
-               choice(redeclare model MyResistor=lib2.Resistor2 "$\ldots$")));
-
-replaceable Resistor Load(R = 2) constrainedby TwoPin
-  annotation(choices(
-               choice(redeclare lib2.Resistor Load(a={2}) "$\ldots$"),
-               choice(redeclare Capacitor Load(L=3) "$\ldots$")));
-
-replaceable FrictionFunction a(func = exp) constrainedby Friction
-  annotation(choices(
-               choice(redeclare ConstantFriction a(c=1) "$\ldots$"),
-               choice(redeclare TableFriction a(table="$\ldots$") "$\ldots$"),
-               choice(redeclare FunctionFriction a(func=exp) "$\ldots$")));
-
 replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
   constrainedby Modelica.Media.Interfaces.PartialMedium
   annotation(choicesAllMatching = true);
@@ -1139,7 +1172,7 @@ replaceable package Medium = Modelica.Media.Water.ConstantPropertyLiquidWater
 \end{example}
 
 \begin{example}
-Demonstrating the \lstinline!choicesAllMatching = true! annotation for parameter records.
+Demonstrating \lstinline!choicesAllMatching! for parameter records.
 \begin{lstlisting}[language=modelica]
 record Medium
   parameter SI.Density rho "Density";
@@ -1157,28 +1190,6 @@ The choices for \lstinline!medium! shall include \lstinline!Medium()!, \lstinlin
 If \lstinline!Medium()! is chosen it is necessary to also set its \lstinline!rho!-parameter.
 \end{example}
 
-\begin{example}
-Applying the \lstinline!choices! annotation to nonreplaceable declarations, e.g., to describe enumerations.
-\begin{lstlisting}[language=modelica]
-type KindOfController = Integer(min = 1, max = 3)
-  annotation(choices(
-              choice = 1 "P",
-              choice = 2 "PI",
-              choice = 3 "PID"));
-
-model A
-  parameter KindOfController x;
-end A;
-A a(x = 3);
-\end{lstlisting}
-Note that \lstinline!"PID"! was not copied here.
-
-The \lstinline!choices! annotation can also be applied to \lstinline!Boolean! variables to define a check box.
-\begin{lstlisting}[language=modelica]
-parameter Boolean useHeatPort = false annotation(choices(checkBox = true));
-\end{lstlisting}
-\end{example}
-
 
 \section{Selective Model Extension}\label{selective-model-extension}\index{deselection!selective model extension}
 
@@ -1187,7 +1198,7 @@ The goal of selective model extension is to enable unforeseen structural variabi
 This is done by deselecting specific elements from a base class, described here, combined with adding elements as normal.
 \end{nonnormative}
 
-Selective model extension is activated by using one (or more) \lstinline[language=grammar]!inheritance-modification! in the optional \lstinline[language=grammar]!class-or-inheritance-modification! of an \lstinline!extends!-clause.
+Selective model extension is activated by using one (or more) \productionref{inheritance-modification} in the optional \productionref{class-or-inheritance-modification} of an \lstinline!extends!-clause.
 
 \begin{nonnormative}
 There is no corresponding mechanism for component modifications, short class definitions, or constrainedby.
