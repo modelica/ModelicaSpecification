@@ -131,44 +131,59 @@ The unit expression \lstinline!"T"! means tesla, but note that the letter \lstin
 
 \section{Unitful Literals}
 
-The \lstinline[language=grammar]!unsigned-number! in the grammar allows a unit to be attached to a numeric value.
-In this case, the unit is given as a \lstinline[language=grammar]!Q-IDENT! rather than a string, since the use of a string could be ambiguously interpreted as \lstinline[language=grammar]!description-string! in some contexts.
+The \productionref{unsigned-number} in the grammar allows a unit to be attached to a numeric value.
+In this case, the unit is given as a \lexicalunitref{Q-IDENT} rather than a string, since the use of a string could be ambiguously interpreted as \productionref{description-string} in some contexts.
 
 \begin{example}
 An acceleration of 9.8~meters per square second can be expressed as \lstinline!9.8'm/s2'!.
 \end{example}
 
-A unitful literal may only be used where unit consistency can be verified.
+When the modified component of a binding equation has a \lstinline!unit!-attribute, a binding equation consisting of a unitful literal or a negated unitful literal is implicitly converted to the component's unit.
 
 \begin{example}
-A tool which is only able to check unit consistency of declaration equations may allow basic uses of unitful literals:
+Implicit unit conversion in binding equations:
 \begin{lstlisting}[language=modelica]
-// Very easy to verify unit consistency:
-parameter Real x(unit = "m") = 5'm';
-// Very easy to infer consistent unit of variable:
-parameter Real y = 5'm';
-// Requires unit arithmetic to verify consistency:
-parameter Real z(unit = "m") = 2'm/s' * 2's';
+// Implicit unit conversion resolves inconsistent units:
+Real x(unit = "m") = -5'cm';        // OK, same as -0.05'm'
+// No implicit unit conversion since not (signed) literal:
+Real y(unit = "m") = 0'cm' - 5'cm'; // Unit conflict
+// No implicit unit conversion since not (signed) literal:
+Real z(unit = "cm") = x;            // Unit conflict
+// No implicit unit conversion since w has no unit-attribute:
+Real w = 5'cm';                     // OK
 \end{lstlisting}
 
-That is, if a tool is unable to perform unit arithmetic, it should reject the use of unitful literals in the declaration equation for \lstinline!z!, as it wouldn't be able to detect the following:
+There is no implicit unit conversion in equations:
 \begin{lstlisting}[language=modelica]
-// Unit inconsistency:
-parameter Real w(unit = "m") = 2'cm/s' * 2's';
+  Real x(unit = "m");
+equation
+  x = -5'cm'    // Unit conflict
+  x = -0.05'm'  // OK
 \end{lstlisting}
 \end{example}
 
-A unitful literal with a temperature unit can represent either an absolute or a relative value of temperature, depending on context.
+A unitful literal may represent either an absolute or a relative quantity, depending on context.
+If an implicit unit conversion for an absolute quantity would not be a pure scaling due to unit offsets, the implicit unit conversion is only allowed if the modified component (or its type) has an \lstinline!absoluteValue! annotation.
 
 \begin{example}
-The two different meanings of the unitful literal \lstinline!20'degC'!:
-\begin{lstlisting}[language=modelica]
-// Will display as 293.15 K:
-Real tAbs(unit = "degC", displayUnit = "K") = 20'degC'
+Meanings of the unitful literal \lstinline!20'degC'!:
+\begin{lstlisting}[language=modelica, escapechar=!]
+// Absolute temperature literal, will display as 293.15 K:
+Real tCAbs(unit = "degC", displayUnit = "K") = 20'degC'
   annotation(absoluteValue = true);
-// Will display as 20 K:
-Real tRel(unit = "degC", displayUnit = "K") = 20'degC'
+// Relative temperature literal, will display as 20 K:
+Real tCRel(unit = "degC", displayUnit = "K") = 20'degC'
   annotation(absoluteValue = false);
+// Unclear temperature literal, but no need for conversion:
+Real tC(unit = "degC") = 20'degC'; // OK
+// Implicit unit conversion with offset, will display as 293.15 K:
+Real tKAbs(unit = "K", displayUnit = "K") = 20'degC'
+  annotation(absoluteValue = true);
+// Implicit unit conversion without offset, will display as 20 K:
+Real tKRel(unit = "K", displayUnit = "K") = 20'degC'
+  annotation(absoluteValue = false);
+// No implicit conversion since no absoluteValue annotation:
+Real tK(unit = "K") = 20'degC'; // Unit conflict
 \end{lstlisting}
 \end{example}
 
@@ -186,7 +201,7 @@ Using a unitful literal makes the intention clear:
 \begin{lstlisting}[language=modelica]
   y = x + 2'cm';
 \end{lstlisting}
-It is currently not expected that tools will perform an implicit unit conversion to make the addition possible, in which case the addition should be rejected as a unit inconsistency.
+Since implicit unit conversion is not allowed in equations, there is a unit inconsistency in the addition that tools can detect and report.
 The unit inconsistency can then be resolved by using a unit compatible with the unit of \lstinline!x!:
 \begin{lstlisting}[language=modelica]
   y = x + 0.02'm';
