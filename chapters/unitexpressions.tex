@@ -166,8 +166,9 @@ A unitful literal may represent either an absolute or a relative quantity, depen
 If an implicit unit conversion would be different for absolute and relative quantities (due to unit offsets), the implicit unit conversion is only allowed if the modified component (or its type) has an \lstinline!absoluteValue! annotation (\cref{absoluteValue}).
 
 \begin{example}
-Meanings of the unitful literal \lstinline!20'degC'!:
-\begin{lstlisting}[language=modelica, escapechar=!]
+Meanings of the unitful literal \lstinline!20'degC'!.
+Some valid uses in binding equations:
+\begin{lstlisting}[language=modelica]
 // Absolute temperature literal, will display as 293.15 K:
 Real tCAbs(unit = "degC", displayUnit = "K") = 20'degC'
   annotation(absoluteValue = true);
@@ -175,15 +176,25 @@ Real tCAbs(unit = "degC", displayUnit = "K") = 20'degC'
 Real tCRel(unit = "degC", displayUnit = "K") = 20'degC'
   annotation(absoluteValue = false);
 // Unclear temperature literal, but no need for conversion:
-Real tC(unit = "degC") = 20'degC'; // OK
+Real tC(unit = "degC") = 20'degC'; // OK, same as unitless literal "20"
 // Implicit unit conversion with offset, will display as 293.15 K:
 Real tKAbs(unit = "K", displayUnit = "K") = 20'degC'
   annotation(absoluteValue = true);
 // Implicit unit conversion without offset, will display as 20 K:
 Real tKRel(unit = "K", displayUnit = "K") = 20'degC'
   annotation(absoluteValue = false);
+\end{lstlisting}
+
+Absence of \lstinline!absoluteValue! annotation can prevent use of a unitful literal:
+\begin{lstlisting}[language=modelica]
 // No implicit conversion since no absoluteValue annotation:
 Real tK(unit = "K") = 20'degC'; // Unit conflict
+\end{lstlisting}
+
+Adding a unitful temperature literal to a relative temperature leads to the same ambiguity as when adding a temperature variable without \lstinline!absoluteValue! annotation:
+\begin{lstlisting}[language=modelica]
+Real x(displayUnit = "K") = tCRel + tC;      // Ambiguous conversion to K
+Real y(displayUnit = "K") = tCRel + 20'degC; // Ambiguous conversion to K
 \end{lstlisting}
 \end{example}
 
