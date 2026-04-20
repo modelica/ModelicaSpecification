@@ -3,7 +3,11 @@
 % change the layout that can wait
 \hfuzz=50pt
 
-\usepackage[english]{babel}
+% Work around LaTeXML issue with the babel package:
+% - https://github.com/brucemiller/LaTeXML/issues/2429 (marked as fixed as of commit c9b03438)
+%\usepackage[english]{babel}
+% This command was supposed to be provided by babel:
+\newcommand{\alsoname}{see also}
 
 \usepackage{fancyhdr}
 
@@ -133,16 +137,6 @@
 
 \usepackage{multirow} % for multirow entries in tables
 
-% When producing PDF, the ttfamily looks better in size \small, but with LaTeXML this becomes too small,
-% and the size is applied deep down on the HTML elements, making it hard to adjust using CSS.
-% Thus, the problem has to be addressed already when a listings language's 'basicstyle' is defined.
-% This needs to go before mlsshared.sty is loaded.
-\ifpdf
-\let\smallifpdf\small
-\else
-\let\smallifpdf\normalsize
-\fi
-
 \ifpdf
 % Don't load cleveref yet.
 \else
@@ -181,13 +175,6 @@
 \newcommand{\annotationindex}[1]{\index{#1@\robustinline{#1}}}
 % Like \annotationindex, but also outputting the formatted name of the annotation.
 \newcommand{\fmtannotationindex}[1]{\lstinline{#1}\annotationindex{#1}}
-
-\def\S0#1#2{\hypertarget{#2}\chapter{#1}\label{#2}}
-\def\S1#1#2{\hypertarget{#2}\section{#1}\label{#2}}
-\def\S2#1#2{\hypertarget{#2}\subsection{#1}\label{#2}}
-\def\S3#1#2{\hypertarget{#2}\subsubsection{#1}\label{#2}}
-\def\S4#1#2{\hypertarget{#2}\paragraph{#1}\label{#2}}
-\def\S5#1#2{\hypertarget{#2}\subparagraph{#1}\label{#2}}
 
 % Simple numbering of lists, should preferably use \usepackage{enumitem}
 % https://stackoverflow.com/questions/2007627/latex-how-can-i-create-nested-lists-which-look-this-1-1-1-1-1-1-1-2-1-2
@@ -244,7 +231,6 @@
   \fi%
 }
 \makeatother% As long as this file isn't a normal package included with \usepackage...
-
 
 % Like \firstuse, but when speaking of a term that hasn't been introduced.
 % Produces same appearance as \firstuse, but doesn't add anything to the index.
@@ -355,6 +341,48 @@
 }\item[]%
 }{%
 \endlist
+}
+
+\lstdefinelanguage{production}[]{grammar}{% Language for use only inside the 'production' environment, giving us an easily identifiable element for CSS styling.
+  frame=none,
+  xleftmargin=1em,
+  aboveskip=0pt,
+}
+
+% Don't use ':' as separator in the hypertarget key; it doesn't work with LaTeXML
+\newenvironment{production}[1]{%
+\lstset{language=production}%
+\par\noindent\hypertarget{production_#1}{\lstinline!#1 :!}%
+}{%
+}
+
+% Variant of 'production' for use in Notation section.
+\newenvironment{production*}[1]{%
+\lstset{language=production}%
+\par\noindent\lstinline!#1 :!%
+}{%
+}
+
+\newcommand{\productionref}[1]{%
+\hyperlink{production_#1}{{\lstinline[language=production]!#1!}}%
+}
+
+% Similar to 'production', but for lexical units.
+\newenvironment{lexicalunit}[1]{%
+\lstset{language=production}%
+\par\noindent\hypertarget{lexicalunit_#1}{\lstinline!#1 =!}%
+}{%
+}
+
+% Variant of 'lexicalunit' for use in Notation section.
+\newenvironment{lexicalunit*}[1]{%
+\lstset{language=production}%
+\par\noindent\lstinline!#1 =!%
+}{%
+}
+
+\newcommand{\lexicalunitref}[1]{%
+\hyperlink{lexicalunit_#1}{{\lstinline[language=production]!#1!}}%
 }
 
 % Change all \cref and \Cref variants below chapter to use "section"
