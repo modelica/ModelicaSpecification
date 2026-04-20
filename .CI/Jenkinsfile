@@ -18,7 +18,7 @@ pipeline {
   stage('build') {
     agent {
       docker {
-        image 'modelicaspec/latexml:20220405'
+        image 'modelicaspec/latexml:20260212'
         label 'linux'
         alwaysPull true
       }
@@ -30,7 +30,7 @@ pipeline {
       sh 'mkdir -p /tmp/jenkins'
       sh 'latexmk -pdf MLS.tex'
       sh 'latexml MLS.tex --includestyles --path=media --dest MLS.xml'
-      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --javascript=LaTeXML-maybeMathjax.js --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest index.html'
+      sh 'latexmlpost MLS.xml -format html -pmml --splitat=chapter --splitnaming=labelrelative --navigationtoc=context --css=css/MLS.css --css=css/MLS-navbar-left.css --dest index.html'
       sh '.scripts/patch-viewport.sh'
       sh '.scripts/patch-body-ios-hover.sh'
       sh 'ln -s index.html MLS.html'
@@ -61,10 +61,10 @@ pipeline {
       sh 'ln -s bib.html A6.html'
       sh 'ln -s bib.html literature.html'
       sh script: '! (find . -type l -xtype l | egrep \'.*\')', label: 'Verify symbolic links work'
-      sh 'tar czf MLS.tar.gz *.html *.css *.js media/ css/'
+      sh 'tar czf MLS.tar.gz *.html *.css media/ css/'
       archiveArtifacts artifacts: 'MLS.tar.gz', fingerprint: true
       archiveArtifacts artifacts: 'MLS.pdf', fingerprint: true
-      stash name: 'MLS', includes: '*.html,*.css,*.js,MLS.pdf,media/**,css/**,MLS.tar.gz'
+      stash name: 'MLS', includes: '*.html,*.css,MLS.pdf,media/**,css/**,MLS.tar.gz'
     }
   }
   stage('upload') {

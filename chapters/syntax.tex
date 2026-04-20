@@ -9,36 +9,85 @@ The following syntactic metasymbols are used (extended BNF):
 \tablehead{Syntax} & \tablehead{Description}\\
 \hline
 \hline
-\lstinline[language=grammar]![ $\ldots$ ]! & Optional\\
-\lstinline[language=grammar]!{ $\ldots$ }! & Repeat zero or more times\\
-\lstinline[language=grammar]!$\ldots$ | $\ldots$! & Alternatives\\
-\lstinline[language=grammar]!"$\mathit{text}$"! & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
+{\lstinline[language=grammar]![ $\ldots$ ]!} & Optional\\
+{\lstinline[language=grammar]!{ $\ldots$ }!} & Repeat zero or more times\\
+{\lstinline[language=grammar]!$\ldots$ | $\ldots$!} & Alternatives\\
+{\lstinline[language=grammar]!"$\mathit{text}$"!} & The $\mathit{text}$ is treated as a single token (no white-space between any characters)\\
 \hline
 \end{tabular}
 \end{center}
 
 The following lexical units are defined:
 % Beware that the first lines of the lexing rules below are duplicated in \cref{identifiers}, and must be kept in sync.
-\begin{lstlisting}[language=grammar]
-IDENT = NON-DIGIT { DIGIT | NON-DIGIT } | Q-IDENT
-Q-IDENT = "'" { Q-CHAR | S-ESCAPE } "'"
-NON-DIGIT = "_" | letters "a" $\ldots$ "z" | letters "A" $\ldots$ "Z"
-DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-Q-CHAR = NON-DIGIT | DIGIT | "!" | "#" | "$\mbox{\textdollar}$" | "%" | "&" | "(" | ")"
-   | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | ">" | "="
-   | "?" | "@" | "[" | "]" | "^" | "{" | "}" | "|" | "~" | " " | """
-S-ESCAPE = "\'" | "\"" | "\?" | "\\"
-   | "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
-STRING = """ { S-CHAR | S-ESCAPE } """
-S-CHAR = see below
-UNSIGNED-INTEGER = DIGIT { DIGIT }
-UNSIGNED-REAL =
-   UNSIGNED-INTEGER  "." [ UNSIGNED-INTEGER ]
-   | UNSIGNED_INTEGER [ "." [ UNSIGNED_INTEGER ] ]
-     ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER
-   | "."  UNSIGNED-INTEGER [ ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER ]
+
+\begin{lexicalunit}{IDENT}
+\begin{lstlisting}
+NON-DIGIT { DIGIT | NON-DIGIT } | Q-IDENT
 \end{lstlisting}
-\lstinline[language=grammar]!S-CHAR! is any member of the Unicode character set (\url{https://unicode.org}; see \cref{mapping-package-class-structures-to-a-hierarchical-file-system} for storing as UTF-8 on files) except double-quote `"', and backslash `\textbackslash{}'.
+\end{lexicalunit}
+
+\begin{lexicalunit}{Q-IDENT}
+\begin{lstlisting}
+"'" { Q-CHAR | S-ESCAPE } "'"
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{NON-DIGIT}
+\begin{lstlisting}
+"_" | letters "a" $\ldots$ "z" | letters "A" $\ldots$ "Z"
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{DIGIT}
+\begin{lstlisting}
+"0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{Q-CHAR}
+\begin{lstlisting}
+NON-DIGIT | DIGIT
+| " " | """ | "." | "," | ":" | ";" | "!" | "?" | "@" | "#" | "$\mbox{\textdollar}$"
+| "+" | "-" | "*" | "/" | "^" | "=" | "&" | "|" | "~" | "%"
+| "<" | ">" | "(" | ")" | "[" | "]" | "{" | "}"
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{S-ESCAPE}
+\begin{lstlisting}
+"\'" | "\"" | "\?" | "\\"
+| "\a" | "\b" | "\f" | "\n" | "\r" | "\t" | "\v"
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{STRING}
+\begin{lstlisting}
+""" { S-CHAR | S-ESCAPE } """
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{S-CHAR}
+\begin{lstlisting}
+see below
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{UNSIGNED-INTEGER}
+\begin{lstlisting}
+DIGIT { DIGIT }
+\end{lstlisting}
+\end{lexicalunit}
+
+\begin{lexicalunit}{UNSIGNED-REAL}
+\begin{lstlisting}
+UNSIGNED-INTEGER  "." [ UNSIGNED-INTEGER ]
+| UNSIGNED_INTEGER [ "." [ UNSIGNED_INTEGER ] ]
+  ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER
+| "."  UNSIGNED-INTEGER [ ( "e" | "E" ) [ "+" | "-" ] UNSIGNED-INTEGER ]
+\end{lstlisting}
+\end{lexicalunit}
+
+\lexicalunitref{S-CHAR} is any member of the Unicode character set (\url{https://unicode.org}; see \cref{mapping-package-class-structures-to-a-hierarchical-file-system} for storing as UTF-8 on files) except double-quote `"', and backslash `\textbackslash{}'.
 
 For identifiers the redundant escapes (`\lstinline!\?!' and `\lstinline!\"!') are the same as the corresponding non-escaped variants (`\lstinline!?!' and '\lstinline!"!').
 The single quotes are part of an identifier.
@@ -47,8 +96,9 @@ For example, the identifiers \lstinline!'x'! and \lstinline!x! are different.
 Note:
 \begin{itemize}
 \item
-  White-space and comments can be used between separate lexical units and/or symbols, and also separates them. Each lexical unit will consume the maximum number of characters from the input stream.
-  White-space and comments cannot be used inside other lexical units, except for \lstinline[language=grammar]!STRING! and \lstinline[language=grammar]!Q-IDENT! where they are treated as part of the \lstinline[language=grammar]!STRING! or \lstinline[language=grammar]!Q-IDENT! lexical unit.
+  White-space and comments can be used between separate lexical units and/or symbols, and also separates them.
+  Each lexical unit will consume the maximum number of characters from the input stream.
+  White-space and comments cannot be used inside other lexical units, except for \lexicalunitref{STRING} and \lexicalunitref{Q-IDENT} where they are treated as part of the \lexicalunitref{STRING} or \lexicalunitref{Q-IDENT} lexical unit.
 \item
   Concatenation of string literals requires a binary expression.
   For example, \lstinline!"a" + "b"! evaluates to \lstinline!"ab"!.
@@ -62,395 +112,707 @@ Note:
   Productions use hyphen as separator both in the grammar and in the text.
   (Previously the grammar used underscore.)
 \end{itemize}
-\begin{nonnormative}
-  Within a description-string the optional tags \lstinline!<HTML>! and \lstinline!</HTML>! or \lstinline!<html>! and \lstinline!</html>! define the start and end of content that is HTML encoded.
-  \end{nonnormative}
+
+If a description-string starts with the tag \lstinline!<html>! or \lstinline!<HTML>!, the entire string is HTML encoded (assumed to end with \lstinline!</html>! or \lstinline!</HTML>!, but to be rendered as HTML even if the end-tag is missing).
+Otherwise, the entire string is rendered as is.
+HTML encoded content may contain links in the same way as class documentation, see \cref{documentation}.
+
+
 \section{Grammar}\label{grammar}
 
 \subsection{Stored Definition -- Within}\label{stored-definition-within}
 
-\begin{lstlisting}[language=grammar]
-stored-definition :
-   [ within [ name ] ";" ]
-   { [ final ] class-definition ";" }
+\begin{production}{stored-definition}
+\begin{lstlisting}
+[ within-clause ]
+{ [ final ] class-definition ";" }
 \end{lstlisting}
+\end{production}
+
+\begin{production}{within-clause}
+\begin{lstlisting}
+within [ name ] ";"
+\end{lstlisting}
+\end{production}
+
 
 \subsection{Class Definition}\label{class-definition}
 
-\begin{lstlisting}[language=grammar]
-class-definition :
-   [ encapsulated ] class-prefixes class-specifier
-
-class-prefixes :
-   [ partial ]
-   ( class
-     | model
-     | [ operator ] record
-     | block
-     | [ expandable ] connector
-     | type
-     | package
-     | [ pure | impure ] [ operator ] function
-     | operator
-   )
-
-class-specifier :
-   long-class-specifier | short-class-specifier | der-class-specifier
-
-long-class-specifier :
-   IDENT description-string composition end IDENT
-   | extends IDENT [ class-modification ] description-string composition
-     end IDENT
-
-short-class-specifier :
-   IDENT "=" base-prefix type-specifier [ array-subscripts ]
-   [ class-modification ] description
-   | IDENT "=" enumeration "(" ( [ enum-list ] | ":" ) ")" description
-
-der-class-specifier :
-   IDENT "=" der "(" type-specifier "," IDENT { "," IDENT } ")" description
-
-base-prefix :
-   [ input | output ]
-
-enum-list :
-   enumeration-literal { "," enumeration-literal }
-
-enumeration-literal :
-   IDENT description
-
-composition :
-   element-list
-   { public element-list
-     | protected element-list
-     | equation-section
-     | algorithm-section
-   }
-   [ external [ language-specification ]
-     [ external-function-call ] [ annotation-clause ] ";"
-   ]
-   [ annotation-clause ";" ]
-
-language-specification :
-   STRING
-
-external-function-call :
-   [ component-reference "=" ]
-   IDENT "(" [ expression-list ] ")"
-
-element-list :
-   { element ";" }
-
-element :
-   import-clause
-   | extends-clause
-   | [ redeclare ]
-     [ final ]
-     [ inner ] [ outer ]
-     ( class-definition
-       | component-clause
-       | replaceable ( class-definition | component-clause )
-         [ constraining-clause description ]
-     )
-
-import-clause :
-   import
-   ( IDENT "=" name
-     | name [ ".*" | "." ( "*" | "{" import-list "}" ) ]
-   )
-   description
-
-import-list :
-   IDENT { "," IDENT }
+\begin{production}{class-definition}
+\begin{lstlisting}
+[ encapsulated ] class-prefixes class-specifier
 \end{lstlisting}
+\end{production}
+
+\begin{production}{class-prefixes}
+\begin{lstlisting}
+[ partial ]
+( class
+  | model
+  | [ operator ] record
+  | block
+  | [ expandable ] connector
+  | type
+  | package
+  | [ pure | impure ] [ operator ] function
+  | operator
+)
+\end{lstlisting}
+\end{production}
+
+\begin{production}{class-specifier}
+\begin{lstlisting}
+long-class-specifier | short-class-specifier | der-class-specifier
+\end{lstlisting}
+\end{production}
+
+\begin{production}{long-class-specifier}
+\begin{lstlisting}
+IDENT description-string composition end IDENT
+| extends IDENT [ class-modification ] description-string composition
+  end IDENT
+\end{lstlisting}
+\end{production}
+
+\begin{production}{short-class-specifier}
+\begin{lstlisting}
+IDENT "=" base-prefix type-specifier [ array-subscripts ]
+[ class-modification ] description
+| IDENT "=" enumeration "(" ( [ enum-list ] | ":" ) ")" description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{der-class-specifier}
+\begin{lstlisting}
+IDENT "=" der "(" type-specifier "," IDENT { "," IDENT } ")" description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{base-prefix}
+\begin{lstlisting}
+[ input | output ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{enum-list}
+\begin{lstlisting}
+enumeration-literal { "," enumeration-literal }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{enumeration-literal}
+\begin{lstlisting}
+IDENT description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{composition}
+\begin{lstlisting}
+element-list
+{ public element-list
+  | protected element-list
+  | equation-section
+  | algorithm-section
+}
+[ external [ language-specification ]
+  [ external-function-call ] [ annotation-clause ] ";"
+]
+[ annotation-clause ";" ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{language-specification}
+\begin{lstlisting}
+STRING
+\end{lstlisting}
+\end{production}
+
+\begin{production}{external-function-call}
+\begin{lstlisting}
+[ component-reference "=" ]
+IDENT "(" [ expression-list ] ")"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{element-list}
+\begin{lstlisting}
+{ element ";" }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{element}
+\begin{lstlisting}
+import-clause
+| extends-clause
+| [ redeclare ]
+  [ final ]
+  [ inner ] [ outer ]
+  ( class-definition
+    | component-clause
+    | replaceable ( class-definition | component-clause )
+      [ constraining-clause description ]
+  )
+\end{lstlisting}
+\end{production}
+
+\begin{production}{import-clause}
+\begin{lstlisting}
+import
+( IDENT "=" name
+  | name [ ".*" | "." ( "*" | "{" import-list "}" ) ]
+)
+description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{import-list}
+\begin{lstlisting}
+IDENT { "," IDENT }
+\end{lstlisting}
+\end{production}
+
 
 \subsection{Extends}\label{extends}
 
-\begin{lstlisting}[language=grammar]
-extends-clause :
-   extends type-specifier [ class-modification ] [ annotation-clause ]
-
-constraining-clause :
-   constrainedby type-specifier [ class-modification ]
+\begin{production}{extends-clause}
+\begin{lstlisting}
+extends type-specifier [ class-or-inheritance-modification ] [ annotation-clause ]
 \end{lstlisting}
+\end{production}
+
+\begin{production}{constraining-clause}
+\begin{lstlisting}
+constrainedby type-specifier [ class-modification ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{class-or-inheritance-modification}
+\begin{lstlisting}
+"(" [ argument-or-inheritance-modification-list ] ")"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{argument-or-inheritance-modification-list}
+\begin{lstlisting}
+ ( argument | inheritance-modification ) { "," ( argument | inheritance-modification ) }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{inheritance-modification}
+\begin{lstlisting}
+ break ( connect-equation | IDENT )
+\end{lstlisting}
+\end{production}
+
 
 \subsection{Component Clause}\label{component-clause}
 
-\begin{lstlisting}[language=grammar]
-component-clause :
-   type-prefix type-specifier [ array-subscripts ] component-list
-
-type-prefix :
-   [ flow | stream ]
-   [ discrete | parameter | constant ]
-   [ input | output ]
-
-component-list :
-   component-declaration { "," component-declaration }
-
-component-declaration :
-   declaration [ condition-attribute ] description
-
-condition-attribute :
-   if expression
-
-declaration :
-   IDENT [ array-subscripts ] [ modification ]
+\begin{production}{component-clause}
+\begin{lstlisting}
+type-prefix type-specifier [ array-subscripts ] component-list
 \end{lstlisting}
+\end{production}
+
+\begin{production}{type-prefix}
+\begin{lstlisting}
+[ flow | stream ]
+[ discrete | parameter | constant ]
+[ input | output ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{component-list}
+\begin{lstlisting}
+component-declaration { "," component-declaration }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{component-declaration}
+\begin{lstlisting}
+declaration [ condition-attribute ] description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{condition-attribute}
+\begin{lstlisting}
+if expression
+\end{lstlisting}
+\end{production}
+
+\begin{production}{declaration}
+\begin{lstlisting}
+IDENT [ array-subscripts ] [ modification ]
+\end{lstlisting}
+\end{production}
+
 
 \subsection{Modification}\label{modification}
 
-\begin{lstlisting}[language=grammar]
-modification :
-   class-modification [ "=" expression ]
-   | "=" expression
-   | ":=" expression
-
-class-modification :
-   "(" [ argument-list ] ")"
-
-argument-list :
-   argument { "," argument }
-
-argument :
-   element-modification-or-replaceable
-   | element-redeclaration
-
-element-modification-or-replaceable :
-   [ each ] [ final ] ( element-modification | element-replaceable )
-
-element-modification :
-   name [ modification ] description-string
-
-element-redeclaration :
-   redeclare [ each ] [ final ]
-   ( short-class-definition | component-clause1 | element-replaceable )
-
-element-replaceable :
-   replaceable ( short-class-definition | component-clause1 )
-   [ constraining-clause ]
-
-component-clause1 :
-   type-prefix type-specifier component-declaration1
-
-component-declaration1 :
-   declaration description
-
-short-class-definition :
-   class-prefixes short-class-specifier
+\begin{production}{modification}
+\begin{lstlisting}
+class-modification [ "=" modification-expression ]
+| "=" modification-expression
 \end{lstlisting}
+\end{production}
+
+\begin{production}{modification-expression}
+\begin{lstlisting}
+expression
+| break
+\end{lstlisting}
+\end{production}
+
+\begin{production}{class-modification}
+\begin{lstlisting}
+"(" [ argument-list ] ")"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{argument-list}
+\begin{lstlisting}
+argument { "," argument }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{argument}
+\begin{lstlisting}
+element-modification-or-replaceable
+| element-redeclaration
+\end{lstlisting}
+\end{production}
+
+\begin{production}{element-modification-or-replaceable}
+\begin{lstlisting}
+[ each ] [ final ] ( element-modification | element-replaceable )
+\end{lstlisting}
+\end{production}
+
+\begin{production}{element-modification}
+\begin{lstlisting}
+name [ modification ] description-string
+\end{lstlisting}
+\end{production}
+
+\begin{production}{element-redeclaration}
+\begin{lstlisting}
+redeclare [ each ] [ final ]
+( short-class-definition | component-clause1 | element-replaceable )
+\end{lstlisting}
+\end{production}
+
+\begin{production}{element-replaceable}
+\begin{lstlisting}
+replaceable ( short-class-definition | component-clause1 )
+[ constraining-clause ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{component-clause1}
+\begin{lstlisting}
+type-prefix type-specifier component-declaration1
+\end{lstlisting}
+\end{production}
+
+\begin{production}{component-declaration1}
+\begin{lstlisting}
+declaration description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{short-class-definition}
+\begin{lstlisting}
+class-prefixes short-class-specifier
+\end{lstlisting}
+\end{production}
+
 
 \subsection{Equations}\label{equations1}
 
-\begin{lstlisting}[language=grammar]
-equation-section :
-   [ initial ] equation { equation ";" }
-
-algorithm-section :
-   [ initial ] algorithm { statement ";" }
-
-equation :
-   ( simple-expression "=" expression
-     | if-equation
-     | for-equation
-     | connect-clause
-     | when-equation
-     | component-reference function-call-args
-   )
-   description
-
-statement :
-   ( component-reference ( ":=" expression | function-call-args )
-     | "(" output-expression-list ")" ":="
-       component-reference function-call-args
-     | break
-     | return
-     | if-statement
-     | for-statement
-     | while-statement
-     | when-statement
-   )
-   description
-
-if-equation :
-   if expression then
-     { equation ";" }
-   { elseif expression then
-     { equation ";" }
-   }
-   [ else
-     { equation ";" }
-   ]
-   end if
-
-if-statement :
-   if expression then
-     { statement ";" }
-   { elseif expression then
-     { statement ";" }
-   }
-   [ else
-     { statement ";" }
-   ]
-   end if
-
-for-equation :
-   for for-indices loop
-     { equation ";" }
-   end for
-
-for-statement :
-   for for-indices loop
-     { statement ";" }
-   end for
-
-for-indices :
-   for-index { "," for-index }
-
-for-index :
-   IDENT [ in expression ]
-
-while-statement :
-   while expression loop
-     { statement ";" }
-   end while
-
-when-equation :
-   when expression then
-     { equation ";" }
-   { elsewhen expression then
-     { equation ";" }
-   }
-   end when
-
-when-statement :
-   when expression then
-     { statement ";" }
-   { elsewhen expression then
-     { statement ";" }
-   }
-   end when
-
-connect-clause :
-   connect "(" component-reference "," component-reference ")"
+\begin{production}{equation-section}
+\begin{lstlisting}
+[ initial ] equation { some-equation ";" }
 \end{lstlisting}
+\end{production}
+
+\begin{production}{algorithm-section}
+\begin{lstlisting}
+[ initial ] algorithm { statement ";" }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{some-equation}
+\begin{lstlisting}
+( equation-or-procedure
+  | if-equation
+  | for-equation
+  | connect-equation
+  | when-equation
+)
+description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{equation-or-procedure}
+\begin{lstlisting}
+simple-equation
+| function-call
+\end{lstlisting}
+\end{production}
+
+\begin{production}{simple-equation}
+\begin{lstlisting}
+simple-expression "=" expression
+\end{lstlisting}
+\end{production}
+
+\begin{production}{statement}
+\begin{lstlisting}
+( statement-or-procedure
+  | "(" output-expression-list ")" ":="
+    function-call
+  | break
+  | return
+  | if-statement
+  | for-statement
+  | while-statement
+  | when-statement
+)
+description
+\end{lstlisting}
+\end{production}
+
+\begin{production}{statement-or-procedure}
+\begin{lstlisting}
+function-call
+| component-reference ":=" expression
+| der "(" component-reference ")" ":=" expression
+\end{lstlisting}
+\end{production}
+
+\begin{production}{function-call}
+\begin{lstlisting}
+component-reference function-call-args
+\end{lstlisting}
+\end{production}
+
+\begin{production}{if-equation}
+\begin{lstlisting}
+if expression then
+  { some-equation ";" }
+{ elseif expression then
+  { some-equation ";" }
+}
+[ else
+  { some-equation ";" }
+]
+end if
+\end{lstlisting}
+\end{production}
+
+\begin{production}{if-statement}
+\begin{lstlisting}
+if expression then
+  { statement ";" }
+{ elseif expression then
+  { statement ";" }
+}
+[ else
+  { statement ";" }
+]
+end if
+\end{lstlisting}
+\end{production}
+
+\begin{production}{for-equation}
+\begin{lstlisting}
+for for-indices loop
+  { some-equation ";" }
+end for
+\end{lstlisting}
+\end{production}
+
+\begin{production}{for-statement}
+\begin{lstlisting}
+for for-indices loop
+  { statement ";" }
+end for
+\end{lstlisting}
+\end{production}
+
+\begin{production}{for-indices}
+\begin{lstlisting}
+for-index { "," for-index }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{for-index}
+\begin{lstlisting}
+IDENT [ in expression ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{while-statement}
+\begin{lstlisting}
+while expression loop
+  { statement ";" }
+end while
+\end{lstlisting}
+\end{production}
+
+\begin{production}{when-equation}
+\begin{lstlisting}
+when expression then
+  { some-equation ";" }
+{ elsewhen expression then
+  { some-equation ";" }
+}
+end when
+\end{lstlisting}
+\end{production}
+
+\begin{production}{when-statement}
+\begin{lstlisting}
+when expression then
+  { statement ";" }
+{ elsewhen expression then
+  { statement ";" }
+}
+end when
+\end{lstlisting}
+\end{production}
+
+\begin{production}{connect-equation}
+\begin{lstlisting}
+connect "(" component-reference "," component-reference ")"
+\end{lstlisting}
+\end{production}
+
+\begin{nonnormative}
+The productions \productionref{equation-or-procedure} and \productionref{statement-or-procedure} are not suitable for recursive descent parsers.
+A work-around is to left-factor them and for \productionref{equation-or-procedure} introduce semantic checks to ensure that only the grammar above is accepted.
+\end{nonnormative}
+
 
 \subsection{Expressions}\label{expressions1}
 
-\begin{lstlisting}[language=grammar]
-expression :
-   simple-expression
-   | if expression then expression
-     { elseif expression then expression }
-     else expression
-
-simple-expression :
-   logical-expression [ ":" logical-expression [ ":" logical-expression ] ]
-
-logical-expression :
-   logical-term { or logical-term }
-
-logical-term :
-   logical-factor { and logical-factor }
-
-logical-factor :
-   [ not ] relation
-
-relation :
-   arithmetic-expression [ relational-operator arithmetic-expression ]
-
-relational-operator :
-   "<" | "<=" | ">" | ">=" | "==" | "<>"
-
-arithmetic-expression :
-   [ add-operator ] term { add-operator term }
-
-add-operator :
-   "+" | "-" | ".+" | ".-"
-
-term :
-   factor { mul-operator factor }
-
-mul-operator :
-   "*" | "/" | ".*" | "./"
-
-factor :
-   primary [ ("^" | ".^") primary ]
-
-primary :
-   UNSIGNED-NUMBER
-   | STRING
-   | false
-   | true
-   | ( component-reference | der | initial | pure ) function-call-args
-   | component-reference
-   | "(" output-expression-list ")"
-   | "[" expression-list { ";" expression-list } "]"
-   | "{" array-arguments "}"
-   | end
-
-UNSIGNED-NUMBER :
-   UNSIGNED-INTEGER | UNSIGNED-REAL
-
-type-specifier :
-   ["."] name
-
-name :
-   IDENT { "." IDENT }
-
-component-reference :
-   [ "." ] IDENT [ array-subscripts ] { "." IDENT [ array-subscripts ] }
-
-result-reference :
-   component-reference
-   | der "(" component-reference [ "," UNSIGNED-INTEGER ] ")"
-
-function-call-args :
-   "(" [ function-arguments ] ")"
-
-function-arguments :
-   expression [ "," function-arguments-non-first | for for-indices ]
-   | function-partial-application [ "," function-arguments-non-first ]
-   | named-arguments
-
-function-arguments-non-first :
-   function-argument [ "," function-arguments-non-first ]
-   | named-arguments
-
-array-arguments :
-   expression [ "," array-arguments-non-first | for for-indices ]
-
-array-arguments-non-first :
-   expression [ "," array-arguments-non-first ]
-
-named-arguments: named-argument [ "," named-arguments ]
-
-named-argument: IDENT "=" function-argument
-
-function-argument :
-   function-partial-application | expression
-
-function-partial-application :
-   function type-specifier "(" [ named-arguments ] ")"
-
-output-expression-list :
-   [ expression ] { "," [ expression ] }
-
-expression-list :
-   expression { "," expression }
-
-array-subscripts :
-   "[" subscript { "," subscript } "]"
-
-subscript :
-   ":" | expression
-
-description :
-   description-string [ annotation-clause ]
-
-description-string :
-   [ STRING { "+" STRING } ]
-
-annotation-clause :
-   annotation class-modification
+\begin{production}{expression}
+\begin{lstlisting}
+simple-expression
+| if expression then expression
+  { elseif expression then expression }
+  else expression
 \end{lstlisting}
+\end{production}
+
+\begin{production}{simple-expression}
+\begin{lstlisting}
+logical-expression [ ":" logical-expression [ ":" logical-expression ] ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{logical-expression}
+\begin{lstlisting}
+logical-term { or logical-term }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{logical-term}
+\begin{lstlisting}
+logical-factor { and logical-factor }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{logical-factor}
+\begin{lstlisting}
+[ not ] relation
+\end{lstlisting}
+\end{production}
+
+\begin{production}{relation}
+\begin{lstlisting}
+arithmetic-expression [ relational-operator arithmetic-expression ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{relational-operator}
+\begin{lstlisting}
+"<" | "<=" | ">" | ">=" | "==" | "<>"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{arithmetic-expression}
+\begin{lstlisting}
+[ add-operator ] term { add-operator term }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{add-operator}
+\begin{lstlisting}
+"+" | "-" | ".+" | ".-"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{term}
+\begin{lstlisting}
+factor { mul-operator factor }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{mul-operator}
+\begin{lstlisting}
+"*" | "/" | ".*" | "./"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{factor}
+\begin{lstlisting}
+primary [ ( "^" | ".^" ) primary ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{primary}
+\begin{lstlisting}
+unsigned-number
+| STRING
+| false
+| true
+| time
+| ( component-reference | der | initial | pure ) function-call-args
+| component-reference
+| "(" output-expression-list ")" [ ( array-subscripts | "." IDENT ) ]
+| "[" expression-list { ";" expression-list } "]"
+| "{" array-arguments "}"
+| end
+\end{lstlisting}
+\end{production}
+
+\begin{production}{unsigned-number}
+\begin{lstlisting}
+UNSIGNED-INTEGER | UNSIGNED-REAL
+\end{lstlisting}
+\end{production}
+
+\begin{production}{type-specifier}
+\begin{lstlisting}
+["."] name
+\end{lstlisting}
+\end{production}
+
+\begin{production}{name}
+\begin{lstlisting}
+IDENT { "." IDENT }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{component-reference}
+\begin{lstlisting}
+[ "." ] IDENT [ array-subscripts ] { "." IDENT [ array-subscripts ] }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{result-reference}
+\begin{lstlisting}
+component-reference
+| time
+| der "(" ( component-reference | time ) [ "," UNSIGNED-INTEGER ] ")"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{function-call-args}
+\begin{lstlisting}
+"(" [ function-arguments ] ")"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{function-arguments}
+\begin{lstlisting}
+expression [ "," function-arguments-non-first | for for-indices ]
+| function-partial-application [ "," function-arguments-non-first ]
+| named-arguments
+\end{lstlisting}
+\end{production}
+
+\begin{production}{function-arguments-non-first}
+\begin{lstlisting}
+function-argument [ "," function-arguments-non-first ]
+| named-arguments
+\end{lstlisting}
+\end{production}
+
+\begin{production}{array-arguments}
+\begin{lstlisting}
+expression [ "," array-arguments-non-first | for for-indices ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{array-arguments-non-first}
+\begin{lstlisting}
+expression [ "," array-arguments-non-first ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{named-arguments}
+\begin{lstlisting}
+named-argument [ "," named-arguments ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{named-argument}
+\begin{lstlisting}
+IDENT "=" function-argument
+\end{lstlisting}
+\end{production}
+
+\begin{production}{function-argument}
+\begin{lstlisting}
+function-partial-application | expression
+\end{lstlisting}
+\end{production}
+
+\begin{production}{function-partial-application}
+\begin{lstlisting}
+function type-specifier "(" [ named-arguments ] ")"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{output-expression-list}
+\begin{lstlisting}
+[ expression ] { "," [ expression ] }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{expression-list}
+\begin{lstlisting}
+expression { "," expression }
+\end{lstlisting}
+\end{production}
+
+\begin{production}{array-subscripts}
+\begin{lstlisting}
+"[" subscript { "," subscript } "]"
+\end{lstlisting}
+\end{production}
+
+\begin{production}{subscript}
+\begin{lstlisting}
+":" | expression
+\end{lstlisting}
+\end{production}
+
+\begin{production}{description}
+\begin{lstlisting}
+description-string [ annotation-clause ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{description-string}
+\begin{lstlisting}
+[ STRING { "+" STRING } ]
+\end{lstlisting}
+\end{production}
+
+\begin{production}{annotation-clause}
+\begin{lstlisting}
+annotation class-modification
+\end{lstlisting}
+\end{production}
