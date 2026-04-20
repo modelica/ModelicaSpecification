@@ -19,13 +19,17 @@ Note that the mapping of the fully qualified class name to a directory is the sa
 
 ## Special resource directories
 
-The specification is currently giving special meaning to two external resource directores, specified using the legacy form of Modelica URIs:
-- _modelica://ModelicaLibraryName/Resources/Include_
-- _modelica://ModelicaLibraryName/Resources/Library_
+The specification is currently giving special meaning to a few external resource directores, specified using the legacy form of Modelica URIs:
+- _modelica:/TopPackage/Resources/Include_
+- _modelica:/TopPackage/Resources/Library_
+- _modelica:/TopPackage/Resources/Source_
+- _modelica:/TopPackage/Resources/Language_
 
 As these are considered a legacy form as of this MCP, the following replacements are suggested:
 - _modelica:~?resource=Include_
 - _modelica:~?resource=Library_
+- _modelica:~?resource=Source_
+- _modelica:~?resource=Language_
 
 To use _Include_ and _Library_ directories associated with the top level package instead of the encapsulation barrier, there are at least two natural possibilities:
 - Introduce something like a double tilde for reference to the current top level package:
