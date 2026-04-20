@@ -54,7 +54,7 @@ The following commits at the Git repository at https://github.com/modelica-3rdpa
    - It is recommended to use ModelicaPackage/Resource/Licenses as the directory for the license files.
 1. https://github.com/modelica-3rdparty/ExternData/commit/f38372d825b20eac4de01ce01b95560522b43ad2
    - The license file LICENSE_ExternData.txt of the Modelica package is referenced by the Modelica top-level class as new annotation License="modelica://ExternData/Resources/Licenses/LICENSE_ExternData.txt".
-     To introduce this new annotation on existing Modelica packages in a Modelica-compliant and vendorneutral way, the `__ModelicaAssociation` prefix was added (similar as `__ModelicaAssociation_Impure` in MSL v3.2.2).
+     To introduce this new annotation on existing Modelica packages in a Modelica-compliant and vendorneutral way, the `__ModelicaAssociation` prefix was added (similar to `__ModelicaAssociation_Impure` in MSL v3.2.2).
      This means, that library developers can adopt early to this proposal, for example a new MSL v3.2.3 can already introduce this new annotation and is not needed to be based on a new release of the Modelica language specification.
 1. https://github.com/modelica-3rdparty/ExternData/commit/d6dec789aec1c1333386161147c91cdd49b484d0
    - All third-party licenses are listed as new License annotation to the external functions.
