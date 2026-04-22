@@ -26,6 +26,8 @@ The Modelica Association uses the vendor name _MA_.
 Coordination between the different projects under the Modelica Association enables resources for both, say, the Modelica specification and the Modelica Standard Library, to coexist in this directory.
 
 In addition to preventing conflicts between different vendors, and between vendors and library authors, the idea of vendor-specific directories might also turn out to be useful if the Modelica language would have to support "layered standards" in the future.
+With one directory associated with each layered standard, it might be possible to map many layered standards to Modelica without the need for vendor-specific annotations.
+At lease, any information that would be a candidate for going into a vendor-specific class annotation could go into a file associated with the class instead.
 
 ## Special resource directories
 
