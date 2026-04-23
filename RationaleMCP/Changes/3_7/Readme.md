@@ -107,7 +107,7 @@ Figure annotations allowing plots to be de defined in models was introduced in M
 - Define empty class and allow extends from empty base-class, https://github.com/modelica/ModelicaSpecification/pull/3362
 - Generalize/clarify reinit https://github.com/modelica/ModelicaSpecification/pull/3415
 
-Many additional minior clarifications are not listed.
+Many additional minor clarifications are not listed.
 
 ## Breaking changes
 
