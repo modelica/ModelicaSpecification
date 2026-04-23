@@ -7,7 +7,7 @@
 - License annotation to automatically include license files in exported code, https://github.com/modelica/ModelicaSpecification/pull/2900
 - Cleaner rules for variability:
   - Introduce evaluable parameter, https://github.com/modelica/ModelicaSpecification/pull/2754
-  - Additional discrete-time variability for functions https://github.com/modelica/ModelicaSpecification/pull/3610 and generalized delay operator https://github.com/modelica/ModelicaSpecification/pull/3730
+  - Additional discrete-time variability for functions, https://github.com/modelica/ModelicaSpecification/pull/3610 and generalized delay operator, https://github.com/modelica/ModelicaSpecification/pull/3730
 - Rules for pure functions improved to allow gradual introduction, https://github.com/modelica/ModelicaSpecification/pull/3755
 
 ### Variability - Evaluable
@@ -22,12 +22,10 @@ Also:
 
 ### Variability - discrete-time
 
-The previously introduced annotation `GenerateEvents` now implies discrete-time variability as if it were in a block and not a function [breaking change](3610.md), https://github.com/modelica/ModelicaSpecification/pull/3610 
-
-Also:
-- Similarly as in models equality between Reals is forbidden in such functions, https://github.com/modelica/ModelicaSpecification/pull/3825
-
-The delay-operator is generalized to non-Reals and to generate events for significant discontinuities, https://github.com/modelica/ModelicaSpecification/pull/3730
+- Cleaner `GenerateEvents`
+  - The previously introduced annotation `GenerateEvents` now implies discrete-time variability as if it were in a block and not a function [breaking change](3610.md), https://github.com/modelica/ModelicaSpecification/pull/3610
+  - Similarly as in models equality between Reals is forbidden in such functions, https://github.com/modelica/ModelicaSpecification/pull/3825
+- The delay-operator is generalized to non-Reals and to generate events for significant discontinuities, https://github.com/modelica/ModelicaSpecification/pull/3730
 
 ### Pure function
 
@@ -91,12 +89,12 @@ Figure annotations allowing plots to be de defined in models was introduced in M
 
 - Expressions:
   - Vectorized min/max of two arrays, https://github.com/modelica/ModelicaSpecification/pull/3728
-  - General record member referencing, https://github.com/modelica/ModelicaSpecification/pull/3516
+  - General record member referencing `(complexa*complexb).re`, https://github.com/modelica/ModelicaSpecification/pull/3516
   - `size(A,j)` defined as syntactic sugar for `size(A)[j]` (bug fix - backwards compatible) https://github.com/modelica/ModelicaSpecification/pull/3792
   - Define time as keyword, https://github.com/modelica/ModelicaSpecification/pull/3797
   - spatialDistribution require that initialPoints span the range 0 to 1 (bug fix), https://github.com/modelica/ModelicaSpecification/pull/3648
   - Continuity of differentiated expressions:
-    - Clarified that continuity check for differentiated expresions can be delayed until simulation https://github.com/modelica/ModelicaSpecification/pull/3544
+    - Clarified that continuity check for differentiated expresions can be delayed until simulation, https://github.com/modelica/ModelicaSpecification/pull/3544
 	- With special case for reinit function, https://github.com/modelica/ModelicaSpecification/pull/3568
 - Translation and Simulations
   - Inherit experiment annotation, https://github.com/modelica/ModelicaSpecification/pull/2535
