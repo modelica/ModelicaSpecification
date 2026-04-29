@@ -140,6 +140,12 @@ An acceleration of 9.8~meters per square second can be expressed as \lstinline!9
 
 When the modified component of a binding equation has a \lstinline!unit!-attribute, a binding equation consisting of a unitful literal or a negated unitful literal is implicitly converted to the component's unit.
 
+\begin{nonnormative}
+The predominant use of unscaled SI units in \lstinline!unit!-attributes in libraries (as this is a good way to avoid unit inconsistency without tool assistance to verify unit consistency) should be kept in mind when using unitful literals where there is no implicit unit conversion.
+That is, using units which are not equivalent to unscaled SI units for those unitful literals is likely to be a mistake.
+The mistake can be detected by tools that perform (tool-dependent) analysis of unit consistency, while tools that don't analyze unit consistency are likely to just drop the unit and produce unexpected results, see example below.
+\end{nonnormative}
+
 \begin{example}
 Implicit unit conversion in binding equations:
 \begin{lstlisting}[language=modelica]
@@ -156,10 +162,12 @@ Real w = 5'cm';                     // OK
 There is no implicit unit conversion in equations:
 \begin{lstlisting}[language=modelica]
   Real x(unit = "m");
+  Real y(unit = "m");
 equation
-  x = -5'cm'    // Unit conflict
-  x = -0.05'm'  // OK
+  x = 5'cm'    // Unit conflict
+  y = 0.05'm'  // OK
 \end{lstlisting}
+A tool which does not detect the unit conflict might give the unexpected result of \lstinline!x! being 5~meters.
 \end{example}
 
 A unitful literal may represent either an absolute or a relative quantity, depending on context.
