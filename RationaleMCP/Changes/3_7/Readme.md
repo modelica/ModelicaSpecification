@@ -25,7 +25,8 @@ Also:
 - Cleaner `GenerateEvents`
   - The previously introduced annotation `GenerateEvents` now implies discrete-time variability as if it were in a block and not a function [breaking change](3610.md), https://github.com/modelica/ModelicaSpecification/pull/3610
   - Similarly as in models equality between Reals is forbidden in such functions, https://github.com/modelica/ModelicaSpecification/pull/3825
-- The delay-operator is generalized to non-Reals and to generate events for significant discontinuities, https://github.com/modelica/ModelicaSpecification/pull/3730
+- The `delay`-operator is generalized to non-`Real` types and to generate events for significant discontinuities, https://github.com/modelica/ModelicaSpecification/pull/3730
+- The `spatialDistribution`-operator is generalized to non-`Real` types and to generate events for significant discontinuities, https://github.com/modelica/ModelicaSpecification/pull/3795
 
 ### Pure function
 
@@ -113,6 +114,7 @@ Many additional minor clarifications are not listed.
 
 - [GenerateEvents](3610.md)
 - [Real Interval Clock - bug fix](3754.md)
+- [spatialDistribution](3795.md)
 
 Other changes are backwards compatible for correct models (at least in practice).
 
