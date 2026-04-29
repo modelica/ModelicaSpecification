@@ -82,23 +82,23 @@ return;
 \end{lstlisting}
 
 \begin{example}
-(Note that this could alternatively use \lstinline!break!:)
+Using \lstinline!return! to terminate evaluation of a function algorithm:
 \begin{lstlisting}[language=modelica]
-function findValue "Returns position of val or 0 if not found"
+function findValue "Find position of value in array, or 0 if not found"
   input Integer x[:];
-  input Integer val;
+  input Integer value;
   output Integer index;
 algorithm
-  for i in 1:size(x,1) loop
-    if x[i] == val then
+  for i loop
+    if x[i] == value then
       index := i;
       return;
     end if;
   end for;
   index := 0;
-  return;
 end findValue;
 \end{lstlisting}
+The same result could be obtained using \lstinline!break!, provided that \lstinline!index := 0! is moved to the start of the algorithm.
 \end{example}
 
 \subsection{Inheritance of Functions}\label{inheritance-of-functions}
@@ -110,7 +110,7 @@ For example, it is possible to modify and extend a \lstinline!function! class to
 \end{nonnormative}
 
 A special case is defining a \lstinline!function! as a short-class definition with modifiers for inputs inside a model.
-These default values, unless overridden in the function call, will then be considered for variability similarly as if they were given in the function call, see \cref{function-variability}.
+These default values, unless overridden in the function call, will then be considered for variability as if they were given in the function call, see \cref{function-variability}.
 
 \begin{example}
 Demonstrating the variability implications.
@@ -169,7 +169,7 @@ Modelica functions have the following restrictions compared to a general Modelic
 \item
   There are many Modelica built-in operators that are not allowed to be used in functions, including \lstinline!der!, \lstinline!initial!, \lstinline!terminal!, \lstinline!sample!, \lstinline!pre!, \lstinline!edge!, \lstinline!change!, \lstinline!reinit!, \lstinline!delay!, \lstinline!cardinality!, \lstinline!inStream!, \lstinline!actualStream!, the operators of the built-in package \lstinline!Connections!, the operators defined in \cref{synchronous-language-elements} and \cref{state-machines}.
 \item
-  The dimension \emph{sizes} not declared with colon (\lstinline!:!) of each array result or array local variable (i.e., a non-input component) of a function must be either given by the input formal parameters, or given by constant or parameter expressions, or by expressions containing combinations of those (\cref{initialization-and-binding-equations-of-components-in-functions}).
+  The dimension \emph{sizes} not declared with colon (\lstinline!:!) of each array result or array local variable (i.e., a non-input component) of a function must be either given by the input formal parameters, or given by constant or evaluable expressions, or by expressions containing combinations of those (\cref{initialization-and-binding-equations-of-components-in-functions}).
 \item
   For initialization of local variables of a function see \cref{initialization-and-binding-equations-of-components-in-functions}).
 \item
@@ -252,7 +252,7 @@ A call to a function with no declared outputs is assumed to have desired side-ef
 
 \begin{nonnormative}
 A tool shall thus not remove such function calls, with exception of non-triggered assert calls.
-A pure function, used in an expression or used with a non-empty left hand side, need not be called if the output from the function call do not mathematically influence the simulation result, even if errors would be generated if it were called.
+A pure function, used in an expression or used with a non-empty left-hand side, need not be called if the output from the function call do not mathematically influence the simulation result, even if errors would be generated if it were called.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -364,30 +364,11 @@ Function classes and record constructors (\cref{record-constructor-functions}) a
 
 \subsection{Positional or Named Input Arguments}\label{positional-or-named-input-arguments-of-functions}
 
-A function call has optional positional arguments followed by zero, one or more named arguments, such as
-
+A function call has optional positional arguments followed by zero, one or more named arguments, such as:
 \begin{lstlisting}[language=modelica]
 f(3.5, 5.76, arg3=5, arg6=8.3);
 \end{lstlisting}
-
-The formal syntax of a function call (simplified by removing reduction expression, \cref{reduction-expressions}):
-\begin{lstlisting}[language=grammar]
-primary :
-   component-reference function-call-args
-
-function-call-args :
-   "(" [ function-arguments ] ")"
-
-function-arguments :
-   function-argument [ "," function-arguments]
-   | named-arguments
-
-named-arguments: named-argument [ "," named-arguments ]
-
-named-argument: IDENT "=" function-argument
-
-function-argument : function-partial-application | expression
-\end{lstlisting}
+The formal syntax is given by \productionref{function-call} in the grammar, and is shared by the reduction expressions in \cref{reduction-expressions}.
 
 The interpretation of a function call is as follows: First, a list of unfilled slots is created for all formal input parameters.
 If there are $N$ positional arguments, they are placed in the first $N$ slots, where the order of the parameters is given by the order of the component declarations in the function definition.
@@ -598,8 +579,8 @@ end surfaceQuadrature;
 \subsection{Output Formal Parameters}\label{output-formal-parameters-of-functions}
 
 A function may have more than one output component, corresponding to multiple return values.
-The only way to use more than the first return value of such a function is to make the function call the right hand side of an equation or assignment.
-In this case, the left hand side of the equation or assignment shall contain a list of component references within parentheses:
+The only way to use more than the first return value of such a function is to make the function call the right-hand side of an equation or assignment.
+In this case, the left-hand side of the equation or assignment shall contain a list of component references within parentheses:
 
 \lstinline!(out1, out2, out3) = f($\ldots$);!
 
@@ -609,7 +590,7 @@ The type of each component reference in the list must agree with the type of the
 
 A function application may be used as expression whose value and type is given by the value and type of the first output component, if at least one return result is provided.
 
-It is possible to omit left hand side component references and/or truncate the left hand side list in order to discard outputs from a function call.
+It is possible to omit left-hand side component references and/or truncate the left-hand side list in order to discard outputs from a function call.
 
 \begin{nonnormative}
 Optimizations to avoid computation of unused output results can be automatically deduced by an optimizing compiler.
@@ -643,7 +624,7 @@ end eigen;
 \end{lstlisting}
 \end{example}
 
-The only permissible use of an expression in the form of a list of expressions in parentheses, is when it is used as the left hand side of an equation or assignment where the right hand side is an application of a function.
+The only permissible use of an expression in the form of a list of expressions in parentheses, is when it is used as the left-hand side of an equation or assignment where the right-hand side is an application of a function.
 
 \begin{example}
 The following are illegal:
@@ -833,7 +814,7 @@ There are basically four groups of built-in functions in Modelica:
 
 \section{Record Constructor Functions}\label{record-constructor-functions}
 
-Whenever a record is defined, a record constructor function with the same name and in the same scope as the record class is implicitly defined according to the following rules:
+Whenever a scalar record is defined, a record constructor function with the same name and in the same scope as the record class is implicitly defined according to the following rules:
 
 % Warning: 'partial flatteing' doesn't seem to be defined.  See 'partial instantitation'.
 The declaration of the record is partially flattened including inheritance, modifications, redeclarations, and expansion of all names referring to declarations outside of the scope of the record to their fully qualified names.
@@ -856,6 +837,7 @@ An instance of the record is declared as output parameter using a name not appea
 In the modification, all input parameters are used to set the corresponding record variables.
 
 A record constructor can only be called if the referenced record class is found in the global scope, and thus cannot be modified.
+The record constructor can be used in vectorized form according to \cref{scalar-functions-applied-to-array-arguments}.
 
 \begin{nonnormative}
 This allows constructing an instance of a record, with an optional modification, at all places where a function call is allowed.
@@ -981,6 +963,8 @@ Demo.Record2 r2 =
   Demo.Record2(1, 2, 2, 3, 1, 2, 5, 5, {1, 2}, {1, 2, 3});
 parameter Demo.Record2 r3 =
   Demo.Record2(c2 = 2, n2 = 1, r1 = 1, r4 = 4, r6 = 1 : 5, r7 = {1});
+parameter Demo.Record2 r4[2] =
+  Demo.Record2(c2 = 2, n2 = {1, 2}, r1 = 1, r4 = {4, 5}, r6 = 1 : 5, r7 = {1});
 \end{lstlisting}
 
 The above example is only used to show the different variants appearing with prefixes, but it is not very meaningful, because it is simpler to just use a direct modifier.
@@ -1087,13 +1071,13 @@ Partial derivatives are not provided via annotations, but using a certain type o
 
 \begin{annotationdefinition}[smoothOrder]
 \begin{synopsis}[grammar]\begin{lstlisting}
-"smoothOrder" "=" UNSIGNED-NUMBER
+"smoothOrder" "=" UNSIGNED-INTEGER
 "smoothOrder"
    "("
       "normallyConstant" "=" IDENT
       { "," "normallyConstant" "=" IDENT }
    ")"
-   "=" UNSIGNED-NUMBER
+   "=" UNSIGNED-INTEGER
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
 This annotation has only an effect within a function declaration.
@@ -1102,6 +1086,9 @@ This annotation has only an effect within a function declaration.
 
 \begin{nonnormative}
 This means that the function is at least C\textsuperscript{smoothOrder}.
+
+While it cannot be expressed that a function is infinitely differentiable, something like \lstinline!smoothOrder=100! gives tools sufficient guarantees about smoothness for virtually all practical purposes.
+It is recommended to specifically use 100 to make it easy to recognize.
 
 When a tool computes the derivative of a function, e.g., for index reduction or to compute an analytic Jacobian, each differentiation of a function reduces the \lstinline!smoothOrder! by 1.
 The \lstinline!smoothOrder! information can then be used to infer continuity of the resulting differentiated function calls, provided the input arguments are continuous.
@@ -1131,7 +1118,7 @@ derivative-constraints :
    "(" derivative-constraint { "," derivative-constraint } ")"
 
 derivative-constraint :
-   "order" = UNSIGNED-NUMBER
+   "order" = UNSIGNED-INTEGER
    | "noDerivative" = IDENT
    | "zeroDerivative" = IDENT
 \end{lstlisting}\end{synopsis}
@@ -1434,6 +1421,7 @@ In the example above {\lstinline!zeroDerivative=y!} and {\lstinline!zeroDerivati
 The derivative of $\mathit{inputVar}_{1}$ is excluded from the argument list of the derivative-function.
 This relies on assumptions on the arguments to the function; and the function should document these assumptions (it is not always straightforward to verify them).
 In many cases even the undifferentiated function will only behave correctly under these assumptions.
+If {\lstinline!zeroDerivative!} can be used, that is preferable over {\lstinline!noDerivative!} as the assumptions are clearly stated and checked.
 
 The inputs excluded using {\lstinline!zeroDerivative!} or {\lstinline!noDerivative!} may be of any type (including types not containing reals).
 
@@ -1483,11 +1471,7 @@ Therefore {\lstinline!h!} indirectly includes the derivative with respect to {\l
 
 \subsection{Partial Derivatives of Functions}\label{partial-derivatives-of-functions}\index{partial derivative}\index{der@\robustinline{der}!partial derivative}
 
-A function class defined as follows is a partial derivative of another function:
-\begin{lstlisting}[language=grammar]
-IDENT "=" der "(" name "," IDENT { "," IDENT } ")" comment
-\end{lstlisting}
-
+A function class defined using \productionref{der-class-specifier} in the grammar is a partial derivative of another function.
 In \lstinline!$f$ = der($g$, $u_{1}, \ldots$)!, the function being defined is named $f$, and the function being differentiated is $g$.
 The name $g$ is looked up in the same way as a in short class definition, and the referenced class must be a function.
 Each $u_{i}$ must be a scalar {\lstinline!Real!} input to the function, and corresponds mathematically to prepending $\frac{\partial}{\partial u_{i}}$ to the function call.
@@ -1497,7 +1481,7 @@ The $u_{i}$ are applied in increasing order of $i$ (although the partial derivat
 In mathematical notation, the order of partial differentiation is reversed compared to the function definition; \lstinline!der($g$, $x$, $y$)! means $\frac{\partial}{\partial y}\frac{\partial}{\partial x}g$.
 \end{nonnormative}
 
-The \lstinline[language=grammar]!comment! has the same semantics as in a short class definition, for instance allowing the function to be given a description string, as well as \lstinline!Documentation! and \lstinline!Icon! annotations.
+The \productionref{description} has the same semantics as in a short class definition, for instance allowing the function to be given a description string, as well as \lstinline!Documentation! and \lstinline!Icon! annotations.
 
 \begin{example}
 The specific enthalpy can be computed from a Gibbs-function as follows:
@@ -1536,7 +1520,7 @@ function $f_1$
   output $T_2$ $y$;
 algorithm
   $\ldots$
-  annotation(inverse($u_k$ = $f_2$($\ldots$, $y$, $\ldots$));
+  annotation(inverse($u_k$ = $f_2$($\ldots$, $y$, $\ldots$)));
 end $f_1$;
 \end{lstlisting}
 
@@ -1700,7 +1684,7 @@ This means, that the body of the function is included at all places where the fu
 
 If {\lstinline!Inline = false!}, the model developer proposes to not inline the function.
 
-The default for inlining is tool-specific.
+The default for inlining is tool specific.
 
 \begin{nonnormative}
 {\lstinline!Inline = true!} is for example used in {\lstinline!Modelica.Mechanics.MultiBody.Frames!} and in functions of {\lstinline!Modelica.Media!} to have no overhead for function calls such as resolving a vector in a different coordinate system and at the same time the function can be analytically differentiated, e.g., for index reduction needed for mechanical systems.
@@ -1723,7 +1707,7 @@ Late inlining is especially useful for differentiation and inversion of function
 
 If {\lstinline!LateInline = false!}, the model developer proposes to not inline the function after symbolic transformations have been performed.
 
-The default for late inlining is tool-specific.
+The default for late inlining is tool specific.
 In particular, tools may automatically delay inlining in order to take advantage of function annotations for derivatives and inverses.
 
 {\lstinline!Inline = true, LateInline = false!} is identical to {\lstinline!Inline = true!}.
@@ -1822,7 +1806,7 @@ end bad;
 \end{lstlisting}
 
 In \lstinline!M!, there will be an event when \lstinline!time! becomes greater or equal to \lstinline!1!, and thus the discrete-time variable \lstinline!b1! can be bound to this function call even though it involves the non-discrete time variable \lstinline!time!.
-Both \lstinline!b2! and \lstinline!b3! are illegal, since the right hand sides have non-discrete-time variability.
+Both \lstinline!b2! and \lstinline!b3! are illegal, since the right-hand sides have non-discrete-time variability.
 The variable \lstinline!z! is legal, since a \lstinline!Real! variable can have non-discrete time variability.
 The variable \lstinline!b4! is legal, since the function inputs have discrete-time variability.
 The function \lstinline!bad! demonstrates that similar restrictions (as for \lstinline!b2! and \lstinline!b3!) apply inside functions with {\lstinline!GenerateEvents = true!}.
@@ -1878,25 +1862,13 @@ The Modelica external function call interface provides the following:
   \end{nonnormative}
 \end{itemize}
 
-The format of an external function declaration is as follows.
-\begin{lstlisting}[language=grammar]
-function IDENT description-string
-  { component-clause ";" }
-  [ protected { component-clause ";" } ]
-external [ language-specification ]
-  [ external-function-call ]
-    [ annotation-clause ] ";"
-  [ annotation-clause ";" ]
-end IDENT;
-\end{lstlisting}%
-\indexinline{external}
-
+The syntax for declaring an external function is a function declaration where the optional \productionref{external-function-call}\indexinline{external} of \productionref{composition} in the grammar is present.
 Just as for any other function, components in the public part of an external function declaration shall be declared either as {\lstinline!input!} or {\lstinline!output!}.
 
 Protected components can be passed to the external function without being initialized by means of a declaration equation, which is useful for passing workspace memory to functions with FORTRAN style memory management, and the reason for passing them in the same (writable) way as output components (see \cref{argument-type-mapping}).
 The value of a protected component passed to the external function should be considered undefined (destroyed) after the external function call.
 
-The {\lstinline[language=grammar]!language-specification!} must currently be one of {\lstinline!"builtin"!} (deprecated), {\lstinline!"C"!}, {\lstinline!"C$\ldots$"!} (for one of the specific C standards like C89, C99, and C11 -- specifying that it relies on the C standard library of that version) or {\lstinline!"FORTRAN 77"!}.
+The \productionref{language-specification} must currently be one of {\lstinline!"builtin"!} (deprecated), {\lstinline!"C"!}, {\lstinline!"C$\ldots$"!} (for one of the specific C standards like C89, C99, and C11 -- specifying that it relies on the C standard library of that version) or {\lstinline!"FORTRAN 77"!}.
 Unless the external language is specified, it is assumed to be {\lstinline!"C"!}.
 
 \begin{nonnormative}
@@ -1930,7 +1902,7 @@ end UserModel;
 \end{lstlisting}
 \end{example}
 
-The {\lstinline[language=grammar]!external-function-call!} specification allows functions whose prototypes do not match the default assumptions as defined below to be called.
+The \productionref{external-function-call} specification allows functions whose prototypes do not match the default assumptions as defined below to be called.
 It also gives the name used to call the external function.
 If the external call is not given explicitly, this name is assumed to be the same as the Modelica name.
 
@@ -1942,7 +1914,7 @@ A component reference to a component that is part of an input or output is treat
 \subsection{Argument type Mapping}\label{argument-type-mapping}
 
 The arguments of the external function are declared in the same order as in the Modelica declaration, unless specified otherwise in an explicit external function call.
-Protected variables (i.e., temporaries) are passed in the same way as outputs, whereas constants and {\lstinline!size!} calls are passed as inputs.
+Values of constant expressions (including references to constant components) and \lstinline!size! calls are passed as inputs, whereas protected non-constant variables (i.e., temporaries) are passed in the same way as outputs.
 
 \subsubsection{Simple Types}\label{simple-types}
 
@@ -2346,7 +2318,7 @@ A deprecated feature is that if multiple \lstinline!Include! annotations -- poss
 In case calls to several external functions are generated in the same translation unit, the \lstinline!Include! annotations of the different functions must not define the same function -- except when relying on the deprecated behavior.
 
 The included code should be valid C89 code.
-If the \lstinline[language=grammar]!external-function-call! contains any \lstinline!size!-expression, the tool is responsible for ensuring that a C-header defining \lstinline[language=C]!size_t! is included before the \lstinline!"insertedCode"!.
+If the \productionref{external-function-call} contains any \lstinline!size!-expression, the tool is responsible for ensuring that a C-header defining \lstinline[language=C]!size_t! is included before the \lstinline!"insertedCode"!.
 The \lstinline!"insertedCode"!, conditionally preceded by a header for \lstinline[language=C]!size_t!, must be a valid translation unit.
 
 When an \lstinline!Include! annotation is present, it shall provide a prototype for the external function, and hence the tool shall not produce an automatically generated prototype in the generated code in this case.
@@ -2713,7 +2685,7 @@ The functions listed below produce a message in different ways.
 
 The \emph{Message}-functions only produce the message, but the \emph{Warning}- and \emph{Error}-functions combine this with error handling as follows.
 
-The \emph{Warning}-functions view the message as a warning and can skip duplicated messages similarly as an {\lstinline!assert!} with {\lstinline!level = AssertionLevel.Warning!} in the Modelica code.
+The \emph{Warning}-functions view the message as a warning and can skip duplicated messages similarly to an {\lstinline!assert!} with {\lstinline!level = AssertionLevel.Warning!} in the Modelica code.
 
 The \emph{Error}-functions never return to the calling function, but handle the error similarly to an {\lstinline!assert!} with {\lstinline!level = AssertionLevel.Error!} in the Modelica code.
 
