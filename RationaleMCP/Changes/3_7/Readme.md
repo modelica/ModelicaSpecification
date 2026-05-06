@@ -42,7 +42,7 @@ Pure functions were introduced in Modelica 3.4.
 - Compatible non-SI units are listed, https://github.com/modelica/ModelicaSpecification/pull/3522
 - Make `absoluteValue` inferred by default, https://github.com/modelica/ModelicaSpecification/pull/3645
 
-### Visualization 
+### Visualization
 
 - Gradients in the graphical layers are now defined, https://github.com/modelica/ModelicaSpecification/pull/3789
 - Texts on connection lines can now use `Automatic` for alignment instead of relying on left-to-right drawing, https://github.com/modelica/ModelicaSpecification/pull/3845/
@@ -79,11 +79,11 @@ Figure annotations allowing plots to be de defined in models was introduced in M
 
 ### Connections and Building Models Graphically
 
-- Generalize conditional components https://github.com/modelica/ModelicaSpecification/pull/3556 
-- Allow deselection of partial classes (easier to build models) https://github.com/modelica/ModelicaSpecification/pull/3653 
-- Choice restrictions (allowing choices to be filtered based on min/max) https://github.com/modelica/ModelicaSpecification/pull/3412 
+- Generalize conditional components https://github.com/modelica/ModelicaSpecification/pull/3556
+- Allow deselection of partial classes (easier to build models) https://github.com/modelica/ModelicaSpecification/pull/3653
+- Choice restrictions (allowing choices to be filtered based on min/max) https://github.com/modelica/ModelicaSpecification/pull/3412
 - ConnectorSizing was improved:
-  - Allow connectorSizing for constants https://github.com/modelica/ModelicaSpecification/pull/3716 
+  - Allow connectorSizing for constants https://github.com/modelica/ModelicaSpecification/pull/3716
   - Clarified exactly how connectorSizing works https://github.com/modelica/ModelicaSpecification/pull/3774
 
 ### Cleaner semantics
@@ -129,4 +129,3 @@ Note that minor changes (without any semantic impact) are not listed here.
 
 The following should list all included changes:
 https://github.com/search?q=repo%3Amodelica%2FModelicaSpecification+label%3AM37+is%3Apr&type=pullrequests
-
