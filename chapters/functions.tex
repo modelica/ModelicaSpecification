@@ -2717,24 +2717,37 @@ record R
   Integer y;
   annotation(CStructName="MyComp_R");
 end R;
+
 record R2
   Real z;
   Real w;
-  annotation(Include="struct MyComp_R2 {double a,w,z;}");
-  // Note different order and a is unused.
+  annotation(Include="
+struct MyComp_R2 {
+  double a,w,z; // Different order, and a is unused.
+};"
+  );
 end R2;
+
 function foo
   input R r;
   output R2 r2;
 external "C"
-  MyComp_foo(r, r2);
-  annotation(Include="void MyComp_foo(const struct MyComp_R*r, struct MyComp_R2*r2);");
+  MyComp_foo(r, r2) annotation(
+      Include="void MyComp_foo(const struct MyComp_R*r, struct MyComp_R2*r2);"
+    );
 end foo;
 \end{lstlisting}
 This will generate C-code along these lines:
 \begin{lstlisting}[language=C]
-struct MyComp_R2 {double a,w,z;}
-struct MyComp_R {double x;int y;}
+struct MyComp_R {
+  double x;
+  int y;
+};
+
+struct MyComp_R2 {
+  double a,w,z; // Different order, and a is unused.
+};
+
 void MyComp_foo(const struct MyComp_R*r, struct MyComp_R2*r2);
 \end{lstlisting}
 \end{example}
