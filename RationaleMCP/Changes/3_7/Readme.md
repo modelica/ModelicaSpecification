@@ -102,7 +102,7 @@ Figure annotations allowing plots to be de defined in models was introduced in M
   - Solvability for non-real equations, https://github.com/modelica/ModelicaSpecification/pull/3798
   - Show values of variables for asserts - to avoid having to use String-operator for that, https://github.com/modelica/ModelicaSpecification/pull/3641
 - Algorithms
-  - Derivatives are allowed in the left-hand-side of algorithms, https://github.com/modelica/ModelicaSpecification/pull/3838
+  - Derivatives are allowed in the left-hand side of algorithms, https://github.com/modelica/ModelicaSpecification/pull/3838
   - While loop event generation (bug fix), https://github.com/modelica/ModelicaSpecification/pull/3360
   - Uniform treatment of variables in initial algorithms (bug fix), https://github.com/modelica/ModelicaSpecification/pull/3562
 - Define empty class and allow extends from empty base-class, https://github.com/modelica/ModelicaSpecification/pull/3362
