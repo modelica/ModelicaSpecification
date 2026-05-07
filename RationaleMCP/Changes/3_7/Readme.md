@@ -35,6 +35,7 @@ Pure functions were introduced in Modelica 3.4.
 
 ### Units and Quantities
 
+- Unitful literals (literals with unit), with conversion in simple binding equations, https://github.com/modelica/ModelicaSpecification/pull/3688
 - Unit handling generalized to non-integer exponents for rare cases:
   - Syntax for declaring such units, https://github.com/modelica/ModelicaSpecification/pull/3439
   - New `nthRoot` generalizing square root, https://github.com/modelica/ModelicaSpecification/pull/3439
@@ -86,6 +87,11 @@ Figure annotations allowing plots to be de defined in models was introduced in M
   - Allow connectorSizing for constants https://github.com/modelica/ModelicaSpecification/pull/3716 
   - Clarified exactly how connectorSizing works https://github.com/modelica/ModelicaSpecification/pull/3774
 
+### Records in external functions
+
+- Include C-function records and name struct and members, https://github.com/modelica/ModelicaSpecification/pull/3198 and https://github.com/modelica/ModelicaSpecification/pull/3894
+- Return records, https://github.com/modelica/ModelicaSpecification/pull/3155
+
 ### Cleaner semantics
 
 - Expressions:
@@ -107,6 +113,7 @@ Figure annotations allowing plots to be de defined in models was introduced in M
   - Uniform treatment of variables in initial algorithms (bug fix), https://github.com/modelica/ModelicaSpecification/pull/3562
 - Define empty class and allow extends from empty base-class, https://github.com/modelica/ModelicaSpecification/pull/3362
 - Generalize/clarify reinit https://github.com/modelica/ModelicaSpecification/pull/3415
+- Support Modelica_StateGraph2, https://github.com/modelica/ModelicaSpecification/pull/3701
 
 Many additional minor clarifications are not listed.
 
