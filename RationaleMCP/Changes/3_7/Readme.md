@@ -10,7 +10,7 @@ Main highlights:
 
 ### License files
 
-License annotation to automatically include license files in exported code, https://github.com/modelica/ModelicaSpecification/pull/2900
+License annotation to automatically include files stating license conditions in exported code, https://github.com/modelica/ModelicaSpecification/pull/2900
 
 ### Variability - Evaluable
 
