@@ -55,7 +55,7 @@ Pure functions were introduced in Modelica 3.4.
 
 - Stylesheets are supported, https://github.com/modelica/ModelicaSpecification/pull/3409
 - Replace `modelica://` by `modelica:/` (to preserve case) https://github.com/modelica/ModelicaSpecification/pull/3254
-- Introduce `EllipseClosure.Default` https://github.com/modelica/ModelicaSpecification/pull/3655
+- Introduce `EllipseClosure.Automatic` for default https://github.com/modelica/ModelicaSpecification/pull/3655
 
 ### Plotting
 
