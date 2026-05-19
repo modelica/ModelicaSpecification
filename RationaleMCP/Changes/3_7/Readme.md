@@ -2,13 +2,15 @@
 
 ## New features
 
-### Main highlights
+Main highlights:
+- [MCP-0029 License Export](#license-files)
+- [Evaluable variability](#variability---evaluable)
+- [Improved support for discrete-time variability](#variability---discrete---time)
+- [Improved function purity rules](#pure-function)
 
-- License annotation to automatically include license files in exported code, https://github.com/modelica/ModelicaSpecification/pull/2900
-- Cleaner rules for variability:
-  - Introduce evaluable parameter, https://github.com/modelica/ModelicaSpecification/pull/2754
-  - Additional discrete-time variability for functions, https://github.com/modelica/ModelicaSpecification/pull/3610 and generalized delay operator, https://github.com/modelica/ModelicaSpecification/pull/3730
-- Rules for pure functions improved to allow gradual introduction, https://github.com/modelica/ModelicaSpecification/pull/3755
+### License files
+
+License annotation to automatically include files stating license conditions in exported code, https://github.com/modelica/ModelicaSpecification/pull/2900
 
 ### Variability - Evaluable
 
@@ -53,7 +55,7 @@ Pure functions were introduced in Modelica 3.4.
 
 - Stylesheets are supported, https://github.com/modelica/ModelicaSpecification/pull/3409
 - Replace `modelica://` by `modelica:/` (to preserve case) https://github.com/modelica/ModelicaSpecification/pull/3254
-- Introduce `EllipseClosure.Default` https://github.com/modelica/ModelicaSpecification/pull/3655
+- Introduce `EllipseClosure.Automatic` for default https://github.com/modelica/ModelicaSpecification/pull/3655
 
 ### Plotting
 
