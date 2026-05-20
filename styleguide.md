@@ -1,6 +1,6 @@
-# Modelica Specification style guide
+# Modelica specification style guide
 
-This is the style guide for the Modelica Specification document.
+This is the style guide for the Modelica specification document.
 
 
 ## Document format and tool chain

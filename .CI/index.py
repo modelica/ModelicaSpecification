@@ -7,7 +7,7 @@ head = """<!DOCTYPE html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Modelica Specification</title>
+    <title>Modelica specification</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
     <link rel="stylesheet" href="https://doc.modelica.org/Modelica%203.2.3/Resources/helpOM/style.css" />
@@ -16,13 +16,13 @@ head = """<!DOCTYPE html>
     <nav class="navbar navbar-light bg-light">
       <div class="container justify-content-between flex-nowrap">
         <span class="navbar-brand mb-0">
-          <a href="https://modelica.org/"><img src="https://raw.githubusercontent.com/modelica/MA-Logos/master/HighRes/Modelica_Language.svg" alt="Modelica Language logo" class="md-logo"></a>
+          <a href="https://modelica.org/"><img src="https://raw.githubusercontent.com/modelica/MA-Logos/master/HighRes/Modelica_Language.svg" alt="Modelica language logo" class="md-logo"></a>
         </span>
         <div id="head-selects"></div>
       </div>
     </nav>
     <div class="container pt-4">
-      <h1 class="pt-2 h2">Modelica Specification</h1>
+      <h1 class="pt-2 h2">Modelica specification</h1>
 """
 tail = """    </div>
 

@@ -1,8 +1,9 @@
-<img src="https://github.com/modelica/ModelicaSpecification/raw/master/media/Modelica_Language.svg?sanitize=true#gh-light-mode-only" alt="Modelica Language Logo" width="250px"/>
-<img src="https://github.com/modelica/ModelicaSpecification/raw/master/media/Modelica_Language_dark.svg?sanitize=true#gh-dark-mode-only" alt="Modelica Language Logo" width="250px"/>
+<img src="https://github.com/modelica/ModelicaSpecification/raw/master/media/Modelica_Language.svg?sanitize=true#gh-light-mode-only" alt="Modelica language logo" width="250px"/>
+<img src="https://github.com/modelica/ModelicaSpecification/raw/master/media/Modelica_Language_dark.svg?sanitize=true#gh-dark-mode-only" alt="Modelica language logo" width="250px"/>
 
-# ModelicaSpecification
-This repository contains the Modelica Language Specification, hosted at https://github.com/modelica/ModelicaSpecification.
+# Modelica language specification
+
+This repository contains the Modelica language specification, hosted at https://github.com/modelica/ModelicaSpecification.
 Development is organized within the [Modelica Association Project Language (MAP-Lang)](https://modelica.org/projects) according to the [project rules](https://github.com/modelica/MAP-Lang_ProjectRules/blob/main/MAP-Lang-ProjectRules.md).
 
 ## Description

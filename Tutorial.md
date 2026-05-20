@@ -4,7 +4,7 @@
 ## Abstract:
 
 This document is a tutorial for the Modelica language, which is developed by the Modelica Association, a non-profit organization with seat in Linköping, Sweden. 
-This tutorial was originally for version 1.4 of the Modelica Language, the text and examples has been updated to be correct for the latest version, but the tutorial does not explain features introduced later.
+This tutorial was originally for version 1.4 of the Modelica language, the text and examples has been updated to be correct for the latest version, but the tutorial does not explain features introduced later.
 Modelica is a freely available, object-oriented language for modeling of large, complex, and heterogeneous physical systems.
 It is suited for multi-domain modeling, for example, mechatronic models in robotics, automotive and aerospace applications involving mechanical, electrical, hydraulic and control subsystems, process oriented applications and generation and distribution of electric power.
 Models in Modelica are mathematically described by differential, algebraic and discrete equations.
@@ -119,7 +119,7 @@ Similar laws apply to flow rates in a piping network and to forces and torques i
 
 When developing models and model libraries for a new application domain, it is good to start by defining a set of connector classes.
 A common set of connector classes used in all components in the library supports compatibility of the component models.
-In the Modelica Standard Library developed together with the Modelica Language, for many domains appropriate connector definitions are already available.
+In the Modelica Standard Library developed together with the Modelica language, for many domains appropriate connector definitions are already available.
 
 A common property of many electrical components is that they have two pins.
 This means that it is useful to define an "interface" model class,
@@ -1036,7 +1036,7 @@ Within Modelica, this function is called as:
 equation
   (Ares,Bres,Cres,Dres,info) = BilinearSampling(alpha,beta,A,B,C,D,true);
 ```
-More details, especially the exact mapping of the Modelica types to C and Fortran 77 types, are discussed in the appendix of the Modelica Language Specification.
+More details, especially the exact mapping of the Modelica types to C and Fortran 77 types, are discussed in the appendix of the Modelica language specification.
 
 ### Hybrid Models
 
@@ -1289,7 +1289,7 @@ This can be done by embedding the corresponding relation in a function noEvent a
                else if u < LowLimit then LowLimit else u);
 ```
 The `noEvent()` operator can only be applied in Real equations, but not in Boolean, Integer or String equations, in order that Boolean, Integer and String variables can change their value only at event instants, i.e., they are always discrete-time variables.
-(For the exact formulation of this restriction, see section [variability of expressions](https://specification.modelica.org/master/operators-and-expressions.html#variability-of-expressions) in the Modelica Language Specification).
+(For the exact formulation of this restriction, see section [variability of expressions](https://specification.modelica.org/master/operators-and-expressions.html#variability-of-expressions) in the Modelica language specification).
 
 In this case it would also be possible to state that it is `smooth` (in this case with `0` continuous derivatives) and have the tools handle events completely.
 ```Modelica
@@ -1794,7 +1794,7 @@ If only a unit name is given and no quantity name, it is not possible to get a l
 Together with Modelica the standard package `Modelica.Units.SI` of predefined quantity and connector types is provided in the form as shown in the example above.
 This package is based on the corresponding ISO norm.
 This will give some help in standardization of the interfaces of models.
-The grammar for unit expressions, such as "N.m/s2" is defined in the Modelica Language Specification and follows an ISO recommendation.
+The grammar for unit expressions, such as "N.m/s2" is defined in the Modelica language specification and follows an ISO recommendation.
 Note, that the prefix final defines that the quantity and unit values of the predefined types cannot be modified.
 
 Conversion between units is not supported within the Modelica language.
@@ -2085,7 +2085,7 @@ Interested simulation professionals who would like to contribute are encouraged 
 
 ## References
 
-The following are the references for the original design of the Modelica Language.
+The following are the references for the original design of the Modelica language.
 
 - Abadi M., and L. Cardelli: A Theory of Objects. Springer Verlag, ISBN 0-387-94775-2, 1996.
 Broenink J.F.: "Bond-Graph Modeling in Modelica". ESS’97 - European Simulation

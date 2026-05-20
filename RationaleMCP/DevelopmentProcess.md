@@ -1,10 +1,10 @@
- # Development process for Modelica Language
+ # Development process for the Modelica language specification
 
 The following describes the steps in the development process; who is involved and the expected decisions and results.
 The Modelica Association Project Modelica Language (MAP-Lang) decides on changing this process and in exceptional cases to deviate from it.
 The guiding principles of the development are [guiding principles](GuidingPrinciples.MD).
 
-This document document describes version 2.0.0 of the development process for the Modelica Language.
+This document document describes version 2.0.0 of the development process for the Modelica language specification.
 
 # Changes of the specification document
 
@@ -45,7 +45,7 @@ What problems can be solved (in a better way) that cannot be solved (as easily) 
 *	A prototype implementation, simple test cases to profoundly illustrate the solution of the problem and to show that the language element scales well.
 *	At least one description of an industry-relevant example to show that this MCP is able to solve a problem from industry, if relevant for the MCP.
 
-## MCP Process
+## MCP process
 
 The stages of the MCP process are:
 1.	In Preparation.
@@ -66,16 +66,16 @@ The MCP is normally included in the specification as soon as possible, but if an
 
 If the MCP is not accepted by the vote or has been inactive for at least one year; it can be closed.
 
-# Defining a new Modelica Language Release
+# Defining a new Modelica language specification release
 
 ## Ongoing development
 
-The current development of the Modelica Language specification is available online and tool vendors are encouraged to implement features when they are added to the development version of the language specification; it is recommended that tool vendors do not wait until the beta release but incorporate changes as early as possible.
+The current development of the Modelica language specification is available online and tool vendors are encouraged to implement features when they are added to the development version of the language specification; it is recommended that tool vendors do not wait until the beta release but incorporate changes as early as possible.
 Tool vendors and others are also encouraged to report issues at the earliest possible time, noting that the development version is not yet released.
 
 ## Decision on scheduling a release
 
-A Modelica Language Specification release needs to be announced in advance, after a normal vote. That should include:
+A Modelica language specification release needs to be announced in advance, after a normal vote. That should include:
 *	A version number.
 *	A preliminary release schedule.
 *	A preliminary list of features; possibly including MCPs that are not yet accepted.
@@ -101,7 +101,7 @@ If an MCP is not accepted in accordance with the release schedule (because it is
 If not all known flaws are corrected before the planned release candidate then the release schedule should be updated.
 In exceptional cases, it may be necessary to plan to release a version with a known flaw (in case correcting that flaw turns out to be too complicated).
 
-## Maintenance of released versions.
+## Maintenance of released versions
 
 After a version is released development will continue on the next version (possibly not yet named).
 The issue tracking system will include a list of found issues – and MAP-Lang may decide to release a maintenance version to correct these in the previous version; according to the same procedure – except that the beta release should be absent (as no features should be added).
@@ -121,9 +121,9 @@ Note that there are also proposals for stricter version numbering of libraries.
 
 Pre-release and development versions are not formally released, and should in general not be used even if they follow some released version.
 
-However, if the trunk version of the Modelica Language Specification has accepted changes that clarify behavior or correct flaws, a tool may use the updated semantics.
+However, if the trunk version of the Modelica language specification has accepted changes that clarify behavior or correct flaws, a tool may use the updated semantics.
 
-In general, tools should not use versions of the Modelica Language Specification that are not yet accepted by MAP-Lang; except when using them for clearly marked prototypes.
+In general, tools should not use versions of the Modelica language specification that are not yet accepted by MAP-Lang; except when using them for clearly marked prototypes.
 
 # Forms of voting
 
