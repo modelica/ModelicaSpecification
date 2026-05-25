@@ -7,7 +7,7 @@ head = """<!DOCTYPE html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Modelica specification</title>
+    <title>Modelica Language Specification</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
     <link rel="stylesheet" href="https://doc.modelica.org/Modelica%203.2.3/Resources/helpOM/style.css" />
@@ -22,7 +22,7 @@ head = """<!DOCTYPE html>
       </div>
     </nav>
     <div class="container pt-4">
-      <h1 class="pt-2 h2">Modelica specification</h1>
+      <h1 class="pt-2 h2">Modelica Language Specification</h1>
 """
 tail = """    </div>
 

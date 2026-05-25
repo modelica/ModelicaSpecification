@@ -1,4 +1,4 @@
-# Changes in Modelica language specification 3.7
+# Changes in Modelica Language Specification 3.7
 
 ## New features
 
