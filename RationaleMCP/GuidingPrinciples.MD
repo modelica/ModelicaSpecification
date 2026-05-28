@@ -1,4 +1,4 @@
-# Guiding Principles of the Modelica language development
+# Guiding Principles of the Modelica Language Development
 
 The overall goal of the development process is guided by the following fundamental tenets that all aim to facilitate widespread adoption of the standard and promoting modeling of cyber-physical systems:
 
