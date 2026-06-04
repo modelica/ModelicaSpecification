@@ -33,7 +33,7 @@ This MCP is based on an existing solution using vendor specific annoations in Wo
 Wolfram MathCore is willing to convert these vendor specific annotations to the form standardized by this MCP, and provide the plots for free to the MSL.
 
 ### Experience with Prototype
-See Summary above.  The greatly enhanced user experience was observed even though the existing collection of predefined plots does not make use of captions.  The use of captions have been tested with very nice results on a smaller number of plots.  
+See Summary above.  The greatly enhanced user experience was observed even though the existing collection of predefined plots does not make use of captions.  The use of captions have been tested with very nice results on a smaller number of plots.
 
 ## Required Patents
 To the best of our knowledge, there are no patents that would conflict with the incorporation of this MCP.

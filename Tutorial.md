@@ -4,7 +4,7 @@
 ## Abstract:
 
 This document is a tutorial for the Modelica language, which is developed by the Modelica Association, a non-profit organization with seat in Linköping, Sweden. 
-This tutorial was originally for version 1.4 of the Modelica Language, the text and examples has been updated to be correct for the latest version, but the tutorial does not explain features introduced later.
+This tutorial was originally for version 1.4 of the Modelica Language Specification, the text and examples has been updated to be correct for the latest version, but the tutorial does not explain features introduced later.
 Modelica is a freely available, object-oriented language for modeling of large, complex, and heterogeneous physical systems.
 It is suited for multi-domain modeling, for example, mechatronic models in robotics, automotive and aerospace applications involving mechanical, electrical, hydraulic and control subsystems, process oriented applications and generation and distribution of electric power.
 Models in Modelica are mathematically described by differential, algebraic and discrete equations.
@@ -119,7 +119,7 @@ Similar laws apply to flow rates in a piping network and to forces and torques i
 
 When developing models and model libraries for a new application domain, it is good to start by defining a set of connector classes.
 A common set of connector classes used in all components in the library supports compatibility of the component models.
-In the Modelica Standard Library developed together with the Modelica Language, for many domains appropriate connector definitions are already available.
+In the Modelica Standard Library developed together with the Modelica language, for many domains appropriate connector definitions are already available.
 
 A common property of many electrical components is that they have two pins.
 This means that it is useful to define an "interface" model class,
@@ -2023,7 +2023,7 @@ annotation ( Documentation( info = "
 <HTML>
 <p>
 Package <b>Modelica</b> is a <b>standardized</b> and <b>pre-defined</b>
-package that is developed together with the Modelica language from the
+package that is developed together with the Modelica Language Specification from the
 Modelica Association, see
 <a href=\"http://www.Modelica.org\">http://www.Modelica.org</a>.
 It is also called <b>Modelica Standard Library</b>.
@@ -2085,7 +2085,7 @@ Interested simulation professionals who would like to contribute are encouraged 
 
 ## References
 
-The following are the references for the original design of the Modelica Language.
+The following are the references for the original design of the Modelica language.
 
 - Abadi M., and L. Cardelli: A Theory of Objects. Springer Verlag, ISBN 0-387-94775-2, 1996.
 Broenink J.F.: "Bond-Graph Modeling in Modelica". ESS’97 - European Simulation

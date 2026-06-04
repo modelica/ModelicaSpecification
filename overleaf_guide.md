@@ -1,6 +1,6 @@
 # Editing ModelicaSpecification with Overleaf
 
-You can use [Overleaf](https://www.overleaf.com/) for convenient online collaborative editing of the Modelica Specification LaTeX sources.
+You can use [Overleaf](https://www.overleaf.com/) for convenient online collaborative editing of the Modelica Language Specification LaTeX sources.
 
 ## Getting Started
 
