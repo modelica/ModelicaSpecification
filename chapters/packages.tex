@@ -176,18 +176,15 @@ In this case the search succeeds and the package \lstinline!MyLib.Pack2! is load
 
 \section{File System Mapping of Package/Class}\label{mapping-package-class-structures-to-a-hierarchical-file-system}\label{file-system-mapping-of-package-class}
 
-A package/class hierarchy may be represented in the hierarchical structure of the operating system (the file system).
-For classes with version information see also \cref{mapping-of-versions-to-file-system}.
-The nature of such an external entity falls into one of the following two groups:
+A sub-tree (at any level) of the class tree can be represented in one of two ways in a file system:
 \begin{itemize}
 \item
-  Directory in the file system.
+  A directory containing a file named \filename{package.mo} (\cref{directory-hierarchy-mapping}).
+\item
+  A file with filename extension \filename{mo}, other than \filename{package.mo} (\cref{single-file-mapping}).
 \end{itemize}
 
-\begin{itemize}
-\item
-  File in the file system.
-\end{itemize}
+For classes with version information see also \cref{mapping-of-versions-to-file-system}.
 
 Each Modelica file in the file system is stored in UTF-8 format (defined by The Unicode Consortium; \url{https://unicode.org}).
 A deprecated feature is that the file may start with the UTF-8 encoded BOM\index{BOM (byte order mark)}\index{byte order mark} (byte order mark; \lstinline!0xef 0xbb 0xbf!); this is treated as white-space in the grammar.
@@ -200,47 +197,61 @@ Tools may also store classes in data-base systems, but that is not standardized.
 
 \subsection{Directory Hierarchy Mapping}\label{mapping-a-package-class-hierarchy-into-a-directory-hierarchy-structured-entity}\label{directory-hierarchy-mapping}
 
-A directory shall contain a node, the file \filename{package.mo}.
-The node shall contain a \productionref{stored-definition} that defines a class \lstinline!A! with a name matching the name of the structured entity.
-
-\begin{nonnormative}
-The node typically contains documentation and graphical information for a package, but may also contain additional elements of the class \lstinline!A!.
-\end{nonnormative}
-
-A directory may also contain one or more sub-entities (directories or files).
-The sub-entities are mapped as elements of the class defined by their enclosing structured entity.
-Two sub-entities shall not define classes with identical names.
-Immediate sub-directories that contain a \filename{package.mo} are part of the package.
+A directory whose \filename{package.mo} contains a \productionref{stored-definition} with an absent or empty \lstinline!within!-clause (\cref{the-within-clause}) is the root of a \firstuse{stored hierarchy} in the file system.
+In a directory which is part of a stored hierarchy, the immediate sub-directories containing a \filename{package.mo} file are also part of the same stored hierarchy.
 It is recommended that immediate sub-directories not containing a \filename{package.mo} do not contain any file with the extension \filename{mo}.
 
+Each directory which is part of the stored hierarchy defines a class corresponding to a sub-tree of the class tree.
+The directory at the root of the stored hierarchy defines a top-level class.
+Any other directory in the stored hierarchy defines a child of the class defined in the parent directory.
+
+By construction, a directory (e.g., the directory \filename{P}) which is part of a stored hierarchy will contain the file \filename{package.mo}.
+This file shall contain a \productionref{stored-definition}, defining a single class (possibly with nested classes inside).
+The name of the class (here, \lstinline!P!) shall match the name of the directory.
+The definition in \filename{package.mo} defines all parts of the sub-tree corresponding to the directory, except zero or more direct child classes (defined by other files or sub-directories).
+
+\begin{nonnormative}
+The \filename{package.mo} typically contains documentation and graphical information for a package, but may also contain additional elements of the class \lstinline!P!.
+\end{nonnormative}
+
+Each other file with filename extension \filename{mo} in a directory of a stored hierarchy is also part of the same stored hierarchy.
+Each such file defines a child of the class corresponding to the directory where the file is located.
+See also \cref{single-file-mapping}.
+
 \begin{example}
-If directory \filename{A} contains the three files \filename{package.mo}, \filename{B.mo} and \filename{C.mo}, the classes defined are \lstinline!A!,
-\lstinline!A.B!, and \lstinline!A.C.!
+If directory \filename{A} contains the three files \filename{package.mo}, \filename{B.mo} and \filename{C.mo}, the classes defined are \lstinline!A!, \lstinline!A.B!, and \lstinline!A.C.!
 \end{example}
+
+All children of the class defined in \filename{package.mo} (including those defined in \filename{package.mo}) shall have unique names.
 
 \begin{example}
 A directory shall not contain both the sub-directory \filename{A} (containing a \filename{package.mo}) and the file \filename{A.mo}.
 \end{example}
 
-In order to preserve the order of sub-entities it is advisable to create a file \filename{package.order}\index{package.order@\filename{package.order}} where each line contains the name of one class or constant (using its Modelica \lstinline!IDENT! form).
-If a \filename{package.order} is present when reading a structured entity the classes and constants are added in this order; if the contents does not exactly match the classes and constants in the package, the resulting order is tool specific and a warning may be given.
+In order to preserve the order of classes and constants, it is advisable to create a file \filename{package.order}\index{package.order@\filename{package.order}} where each line contains the name of one class or constant (using its Modelica \lstinline!IDENT! form).
+If a \filename{package.order} is present when reading a directory, the classes and constants are added in this order; if the contents does not exactly match the classes and constants in the package, the resulting order is tool specific and a warning may be given.
 Classes and constants that are stored in \filename{package.mo} are also present in \filename{package.order} but their relative order should be identical to the one in \filename{package.mo} (this ensures that the relative order between classes and constants stored in different ways is preserved).
 
 
 \subsection{Single File Mapping}\label{mapping-a-package-class-hierarchy-into-a-single-file-nonstructured-entity}\label{single-file-mapping}
 
-When mapping a package or class hierarchy to a file (e.g., the file \filename{A.mo}), the file content shall match \productionref{stored-definition} in the grammar.
-In this case, the \productionref{stored-definition} shall only define a single class whose name (here, \lstinline!A!) matches the name of the nonstructured entity.
-The filename shall have the extension \filename{mo}.
+When mapping a sub-tree of the class tree to a file with filename extension \filename{mo} (e.g., the file \filename{A.mo}), the file content shall match \productionref{stored-definition} in the grammar, defining a single class (possibly with nested classes inside).
+The name of the class (here, \lstinline!A!) shall match the base name of the file.
 
 
 \subsection{The within Clause}\label{the-within-clause}
 
 The syntax of a \lstinline!within!-clause\indexinline{within} is given by \productionref{within-clause} in the grammar.
-A non-top-level entity shall begin with a \lstinline!within!-clause which for the class defined in the entity specifies the location in the Modelica class hierarchy.
-A top-level class may contain a \lstinline!within!-clause with no \productionref{name}.
-For a sub-entity of an enclosing structured entity, the \lstinline!within!-clause shall designate the class of the enclosing entity; and this class must exist and must not have been defined using a short class definition.
+A file defining a top-level class may contain a \lstinline!within!-clause with no \productionref{name}.
+A file defining a non-top-level class shall begin with a \lstinline!within!-clause specifying the parent of the defined class in the class tree.
+When a file defining a class resides next to a \filename{package.mo} (where the parent in the class tree is defined), the class defined in \filename{package.mo} shall have the \productionref{long-class-specifier} form.
+
 See \cref{stored-definitions-containing-multiple-class-definitions} regarding the use of \lstinline!within!-clause when a \productionref{stored-definition} does not hold exactly one class definition.
+
+\begin{nonnormative}
+A non-empty \lstinline!within!-clause only states redundant information, completely determined by the file location in the stored hierarchy rooted in the directory where the \filename{package.mo} has no or an empty \lstinline!within!-clause.
+The redundant information is not only a convenience for tools and humans, it is also information needed to verify that \lstinline!Protection!-annotations (\Cref{modelica:Protection.access}) are not bypassed by moving an encrypted file to a different location in the class tree.
+\end{nonnormative}
 
 \begin{example}
 The subpackage \lstinline!Rotational! declared within \lstinline!Modelica.Mechanics! has the fully qualified name \lstinline!Modelica.Mechanics.Rotational!, which is formed by concatenating the \productionref{name} of the \productionref{within-clause} with the short name of the package.
