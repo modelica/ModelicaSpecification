@@ -1,0 +1,40 @@
+//! base 0.1.0
+package 'ExternalObjectExample'
+  function 'Multiplication.multiply' "Multiply x by the factor stored in the external object"
+    input 'Multiplication.Multiplier' 'm';
+    input Real 'x';
+    output Real 'y';
+  external "C" 'y' = Multiplier_multiply('m', 'x') annotation(
+    Library = "Multiplication",
+    LibraryDirectory = "base-modelica:ExternalObjectExample/Multiplication/Library");
+  end 'Multiplication.multiply';
+
+  class 'Multiplication.Multiplier'
+    extends ExternalObject;
+
+    function constructor "Allocate and initialise the multiplier"
+      input Real 'factor';
+      output 'Multiplication.Multiplier' 'obj';
+    external "C" 'obj' = Multiplier_constructor('factor') annotation(
+      Library = "Multiplication",
+      LibraryDirectory = "base-modelica:ExternalObjectExample/Multiplication/Library");
+    end constructor;
+
+    function destructor "Free the multiplier"
+      input 'Multiplication.Multiplier' 'obj';
+    external "C" Multiplier_destructor('obj') annotation(
+      Library = "Multiplication",
+      LibraryDirectory = "base-modelica:ExternalObjectExample/Multiplication/Library");
+    end destructor;
+
+  end 'Multiplication.Multiplier';
+
+  model 'ExternalObjectExample' "Multiply a decaying signal by a constant factor stored in an external object"
+    'Multiplication.Multiplier' 'm' = 'Multiplication.Multiplier'(3.0);
+    Real 'x'(start = 1.0) "Decaying signal";
+    Real 'y' "Scaled output: y = 3 * x";
+  equation
+    der('x') = -'x';
+    'y' = 'Multiplication.multiply'('m', 'x');
+  end 'ExternalObjectExample';
+end 'ExternalObjectExample';

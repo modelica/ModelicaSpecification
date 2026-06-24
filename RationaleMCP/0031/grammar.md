@@ -100,7 +100,7 @@ Note that there is no optional byte order mark, in agreement with the use of byt
 > &emsp; | **type**\
 > &emsp; | ~~**operator**?~~ **record**\
 > &emsp; | ( ( **pure** **constant**? ) | **impure** )? ~~**operator**?~~ **function**\
-> &emsp; ~~| **class**~~\
+> &emsp; | **class**\
 > &emsp; ~~| **model**~~\
 > &emsp; ~~| **block**~~\
 > &emsp; ~~| **expandable**? **connector**~~\
@@ -138,14 +138,26 @@ Note that there is no optional byte order mark, in agreement with the use of byt
 > &emsp; ~~| **protected** (_generic-element_ **;**)*~~ \
 > &emsp; )* \
 > &emsp; ( _decoration_? **external** _language-specification_?\
-> &emsp;&emsp; _external-function-call_? _annotation-comment_? **;**\
+> &emsp;&emsp; _external-function-call_? _external-annotation-comment_? **;**\
 > &emsp; )?\
 > &emsp; _base-partition_* \
 > &emsp; ( _annotation-comment_ **;** )?
 
-> _language-specification_ → _STRING_
+> _language-specification_ → ~~_STRING_~~ **"C"**
 
 > _external-function-call_ → ( _component-reference_ **=** )? _IDENT_ `[(]` _expression-list_? `[)]`
+
+> _external-annotation-comment_ → **annotation** `[(]` _external-annotation-list_ `[)]`
+
+> _external-annotation-list_ → _external-annotation_ ( **,** _external-annotation_ )*
+
+> _external-annotation_ →\
+> &emsp; **Library** **=** ( _STRING_ | `[[]` _STRING_ ( **,** _STRING_ )* `[]]` )\
+> &emsp; | **LibraryDirectory** **=** _STRING_\
+> &emsp; | **License** **=** _STRING_\
+> &emsp; ~~| **Include** **=** _STRING_~~\
+> &emsp; ~~| **IncludeDirectory** **=** _STRING_~~\
+> &emsp; ~~| **SourceDirectory** **=** _STRING_~~
 
 > _generic-element_ → ~~_import-clause_ | _extends-clause_ |~~ _normal-element_ | _parameter-equation_
 
