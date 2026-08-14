@@ -12,7 +12,7 @@ The details of this mapping for the legacy form of a Modelica URI are omitted he
 - The relative file system path is relative to _resources.d_ and may not contain the special path segments "." or "..".
 
 Note that the period (".") in the name _resources.d_ makes it distinguishable from a Modelica identifier.
-In combination with the constraints on the relative file system path, this implies that that the referenced resourse resides inside the _resources.d_ directory of the class, and that any Modelica URI referencing this resource must do so via reference to the current class.
+In combination with the constraints on the relative file system path, this implies that that the referenced resource resides inside the _resources.d_ directory of the class, and that any Modelica URI referencing this resource must do so via reference to the current class.
 
 In the example Modelica URI above, assume `Modelica` is stored in _/Users/jdoe/modelica-packages/Modelica-4.3.2/Modelica_.
 Then, the resolved external resource is:
@@ -38,7 +38,7 @@ At lease, any information that would be a candidate for going into a vendor-spec
 
 ## Special resource directories
 
-The specification is currently giving special meaning to a few external resource directores, specified using the legacy form of Modelica URIs:
+The specification is currently giving special meaning to a few external resource directories, specified using the legacy form of Modelica URIs:
 - _modelica:/TopPackage/Resources/Include_
 - _modelica:/TopPackage/Resources/Library_
 - _modelica:/TopPackage/Resources/Source_
