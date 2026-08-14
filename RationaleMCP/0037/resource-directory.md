@@ -58,3 +58,22 @@ To use directories associated with the top level package instead of the encapsul
 - Redefine the single tilde to reference the top level package rather than the encapsulation barrier.
 - Revert to the old strategy of a symbolically package-dependent URI:
   - _modelica:/ModelicaLibraryName?resource=\_\_ModelicaAssociation/Include
+
+## Possible application to layered standards
+
+There is currently pressure on the Modelica language development to introduce a layered standard mechanism, similar to FMI.
+While the Modelica vendor-specific annotations could be used to implement layered standards, there are some clear drawbacks to this approach:
+- Layered standards with bulky information, or information attached in many places, introduce clutter for readers mainly interested in the feature of the core language.
+- Risk of merge conflicts.
+- When looking at the change history of a file, there is no easy way to filter out changes only related to layered standards.
+
+For any layered standard that could have been implemented using class annotations, it is therefore more appealing to implement the layered standard similar to a vendor-specific directory.
+That is, _LS_ could be introduced as the "vendor name" for all layered standards, and each layered standard would have its own directory inside.
+Hypothetical examples:
+- \_\_LS/org.modelica.uq: Uncertainty quantification.
+- \_\_LS/org.modelica.md: Class documentation in Markdown format.
+- \_\_LS/com.big-tech.req: Model requirements in a format owned by a company.
+
+A tool supporting a layered standard would know where to find the directory, and how to interpret and edit the files inside.
+Other tools would not be bothered at all.
+If a class is renamed or moved, the _resources.d_ directory will follow along, meaning that the layered standard information for a class remains associated with the class.
