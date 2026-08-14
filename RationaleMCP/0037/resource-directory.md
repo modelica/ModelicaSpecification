@@ -29,7 +29,7 @@ Then this is the location of the resource _modelica:/Foo?resource=media/foo.png_
 Analogous to vendor-specific annotations, the directory _resources.d/\_\_NameOfVendor_ is reserved for vendor-specific use.
 The _NameOfVendor_ consists of only digits and letters, and shall only convey the name of the vendor defining the meaning of the directory content.
 
-The Modelica Association uses the vendor name _MA_.
+The Modelica Association uses the vendor name _ModelicaAssociation_, as has already been established in the MAP-Lib project.
 Coordination between the different projects under the Modelica Association enables resources for both, say, the Modelica specification and the Modelica Standard Library, to coexist in this directory.
 
 In addition to preventing conflicts between different vendors, and between vendors and library authors, the idea of vendor-specific directories might also turn out to be useful if the Modelica language would have to support "layered standards" in the future.
@@ -45,16 +45,16 @@ The specification is currently giving special meaning to a few external resource
 - _modelica:/TopPackage/Resources/Language_
 
 As these are considered a legacy form as of this MCP, the following replacements are suggested:
-- _modelica:~?resource=\_\_MA/Include_
-- _modelica:~?resource=\_\_MA/Library_
-- _modelica:~?resource=\_\_MA/Source_
-- _modelica:~?resource=\_\_MA/Language_
+- _modelica:~?resource=\_\_ModelicaAssociation/Include_
+- _modelica:~?resource=\_\_ModelicaAssociation/Library_
+- _modelica:~?resource=\_\_ModelicaAssociation/Source_
+- _modelica:~?resource=\_\_ModelicaAssociation/Language_
 
-By placing the directories under _\_\_MA_, there is no risk of conflict if the Modelica specification would introduce more resource directories with special meaning in the future.
+By placing the directories under _\_\_ModelicaAssociation_, there is no risk of conflict if the Modelica specification would introduce more resource directories with special meaning in the future.
 
 To use directories associated with the top level package instead of the encapsulation barrier, there are at least two natural possibilities:
 - Introduce something like a double tilde for reference to the current top level package:
-  - _modelica:~~?resource=\_\_MA/Include
+  - _modelica:~~?resource=\_\_ModelicaAssociation/Include
 - Redefine the single tilde to reference the top level package rather than the encapsulation barrier.
 - Revert to the old strategy of a symbolically package-dependent URI:
-  - _modelica:/ModelicaLibraryName?resource=\_\_MA/Include
+  - _modelica:/ModelicaLibraryName?resource=\_\_ModelicaAssociation/Include
