@@ -1,0 +1,36 @@
+//! base 0.1.0
+package 'Example'
+  function 'PackageA.ExternalFunc1' "Include header file for library implementation"
+    input Real 'x';
+    output Real 'y';
+  external "C" 'y' = ExternalFunc1_ext('x') annotation(
+    Library = "ExternalLib1",
+    LibraryDirectory = "base-modelica:Example/PackageA/Library");
+  end 'PackageA.ExternalFunc1';
+
+  function 'PackageA.ExternalFunc2' "Include header file for library implementation"
+    input Real 'x';
+    output Real 'y';
+  external "C" annotation(
+    Library = "ExternalLib2",
+    LibraryDirectory = "base-modelica:Example/PackageA/Library");
+  end 'PackageA.ExternalFunc2';
+
+  function 'PackageB.ExternalFunc1' "Source file was compiled into a library by lowering tool"
+    input Real 'x';
+    output Real 'y';
+  external "C" annotation(
+    Library = "ExternalLib1",
+    LibraryDirectory = "base-modelica:Example/PackageB/Library");
+  end 'PackageB.ExternalFunc1';
+
+  model 'Example'
+    Real 'x'(start = 1.0);
+    Real 'y'(start = 2.0);
+    Real 'z'(start = 3.0);
+  equation
+    der('x') = -'PackageA.ExternalFunc1'('x');
+    der('y') = -'PackageA.ExternalFunc2'('y');
+    der('z') = -'PackageB.ExternalFunc1'('z');
+  end 'Example';
+end 'Example';

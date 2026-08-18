@@ -249,7 +249,7 @@ This change was made to support the [changed definitions of _constant expression
 
 Base Modelica functions cannot have function default arguments.
 A tool producing Base Modelica from full Modelica can accommodate this by automatically generating a helper function for every present subset of arguments used in the model.
-(The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call. 
+(The helpers can be omitted if the defaults are literal or otherwise independent of the other inputs, since those values can be added in each call.
 No helper function needs to be created for argument combinations that aren't used in the model, which means that the potential combinatorial explosion of possible argument combinations is avoided.)
 
 For example, consider this full Modelica model:
@@ -843,7 +843,7 @@ model A
       Real x(start = 1.0);
       Real y;
       Real z;
-    equation 
+    equation
       y = 5 * x;
       z = 7 * x;
       x + y + z = sin(time + x + y + z);
@@ -1304,6 +1304,45 @@ Accordingly, a function component declaration which is neither input nor output 
 The new annotation `protected = true` provides a standardized way to indicate that a component declaration in Base Modelica comes from a protected section in the full Modelica model.
 See [`protected` annotation](annotations.md#protected).
 
+## External Functions
+
+Base Modelica restricts the full Modelica external function interface ([12.9](https://specification.modelica.org/master/functions.html#external-function-interface)) in several ways.
+
+**Language.**
+Only `"C"` is permitted as the language specification; `"FORTRAN 77"` is dropped.
+See [grammar](grammar.md#B22-Class-definition) for the restricted `_language-specification_` rule.
+
+**Annotations.**
+The `Include`, `IncludeDirectory`, and `SourceDirectory` annotations are not allowed in Base Modelica.
+Only binary distribution is supported, so the permitted annotations on the `external` clause are `Library`, `LibraryDirectory`, and `License`.
+Both `Library` and `LibraryDirectory` must always be given explicitly — no defaults are provided.
+See [grammar](grammar.md#B22-Class-definition) for the `_external-annotation_` rule.
+
+**URI scheme.**
+The `modelica://` URI scheme is replaced by `base-modelica:/`, which is always relative to the directory of the current `.bmo` file.
+This removes any dependency on package path lookups.
+
+**Library layout.**
+The platform (e.g. `linux64`, `win64`) must be given as a mandatory subdirectory of the `LibraryDirectory` path.
+Placing libraries directly in `LibraryDirectory` is not allowed.
+Using the model name as part of the path (e.g. `base-modelica:/Example/PackageA/Library`) is recommended to prevent naming conflicts when two packages provide a library with the same filename.
+
+**External objects.**
+The `class` keyword is the only class prefix allowed Base Modelica to support external objects that extend `ExternalObject`.
+The `constructor` and `destructor` functions follow the same rules as in full Modelica ([12.9.8](https://specification.modelica.org/master/functions.html#external-objects)); no further changes are needed.
+
+### Rationale
+
+The introduction of the new URI scheme `base-modelica:/` removes the ambiguity of having a class that extends `ExternalObject`.
+With the need to explicitly state what the name of the library is and where the library is located, it is completely clear where to look for the external function during linkage.
+No guesswork about `MODELICAPATH` lookups or conflicting library versions is needed.
+
+This simplifies the work a Base Modelica tool has to perform.
+For example, a source code library needs to be compiled for the target architecture of the host system before a simulation executable can link to it.
+Consequently, this removes the need to compile arbitrary C files during transformation from Base Modelica to a simulation executable.
+
+All compilation of source code has to be handled by the tool lowering Modelica to Base Modelica or the modeler.
+The restricted set of Modelica annotations is the simplest way to build a simulation executable from Base Modelica.
 
 ## Clock partitions
 
