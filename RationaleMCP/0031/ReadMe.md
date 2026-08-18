@@ -81,7 +81,7 @@ These are subtopics that are considered necessary to resolve for a first version
 - [x] Remove byte order mark, as it is already deprecated in full Modelica. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3528)
 - [ ] Base Modelica package shall have no dependencies on other loaded classes.
 - [ ] Management of resources and Modelica URIs.
-- [ ] External function interface and external objects.
+- [ ] External function interface and external objects. [PR with discussion](https://github.com/modelica/ModelicaSpecification/pull/3925)
 
 ### Base Modelica 0.1+…1.0 (future MCPs)
 In future minor versions of Base Modelica 1, we could improve the language by incorporating smaller improvements that were not considered necessary for version 1.0.
