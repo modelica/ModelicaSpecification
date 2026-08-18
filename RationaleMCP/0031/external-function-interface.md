@@ -140,6 +140,44 @@ ExternalFunctions1_Example/
     └── ExternalLib2.txt
 ```
 
+#### Alternative Mandatory Resources Layout
+
+> Instead of a suggestion where resources *could* live it is mandatory that all parts of a Base Modelica model *must* live in a specific structure.
+> An additional advantage is that this would also result in a natural location for other accompanying files like license or documentation files and clear what files need to be collected to share with another person.
+
+A Base Modelica file **must** live in a directory with the same name as the Base Modelica package identifier.
+URI `base-modelica` is always pointing to directory `Resources` directly next to the Base Modelica file, removing any dependency on complex package path lookups.
+
+```modelica
+function 'PackageA.ExternalFunc1' "Include header file for library implementation"
+  input Real 'x';
+  output Real 'y';
+external "C" 'y' = ExternalFunc1_ext('x') annotation(
+  Library = "ExternalLib1",
+  LibraryDirectory = "base-modelica:PackageA/Library");
+end 'PackageA.ExternalFunc1';
+```
+
+A short example of the mandatory structure for Base Modelica package `AlternativeStructure`:
+
+```text
+AlternativeStructure
+├── AlternativeStructure.bmo
+├── Documentation
+│   └── how-to-use.pdf
+├── LICENSE.txt
+└── Resources
+    ├── PackageA
+    │   └── Library
+    │       └── linux64
+    │           ├── libExternalLib1.a
+    │           └── libExternalLib2.so
+    └── PackageB
+        └── Library
+            └── linux64
+                └── libExternalLib1.a
+```
+
 ### Example
 
 Lowering of Modelica model `Example`, which uses functions from two Modelica packages.
