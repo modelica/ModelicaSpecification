@@ -74,7 +74,7 @@ It is evaluated once for each \lstinline!for!-equation, and is evaluated in the 
 The expression of a \lstinline!for!-equation shall be evaluable.
 The iteration range of a \lstinline!for!-equation can also be specified as \lstinline!Boolean! or as an enumeration type, see \cref{types-as-iteration-ranges} for more information.
 The loop-variable (\lstinline!IDENT!) is in scope inside the loop-construct and shall not be assigned to.
-For each element of the evaluated vector expression, in the normal order, the loop-variable gets the value of that element and that is used to evaluate the body of the \lstinline!for!-loop.
+For each element of the evaluated vector expression, in the normal order, the loop-variable gets the value of that element and that is used to evaluate the \lstinline!for!-loop body.
 
 \begin{example}
 \begin{lstlisting}[language=modelica]
@@ -126,13 +126,13 @@ The same restrictions apply to \lstinline!Connections.branch!, \lstinline!Connec
 
 \subsection{If-Equations}\label{if-equations}
 
-The syntax of an \lstinline!if!-equations\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} is given by \productionref{if-equation} in the grammar.
-Here, each \productionref{expression} in the grammar (representing the condition of an \lstinline!if!- or \lstinline!elseif!-clause) must be a scalar \lstinline!Boolean! expression.
-One \lstinline!if!-clause, and zero or more \lstinline!elseif!-clauses, and an optional \lstinline!else!-clause together form a list of branches.
-One or zero of the bodies of these \lstinline!if!-, \lstinline!elseif!- and \lstinline!else!-clauses is selected, by evaluating the conditions of the \lstinline!if!- and \lstinline!elseif!-clauses sequentially until a condition that evaluates to true is found.
-If none of the conditions evaluate to true the body of the \lstinline!else!-clause is selected (if an \lstinline!else!-clause exists, otherwise no body is selected).
-In an equation section, the equations in the body are seen as equations that must be satisfied.
-The bodies that are not selected have no effect on that model evaluation.
+The syntax of an \lstinline!if!-equation\index{if@\robustinline{if}!equation}\index{then@\robustinline{then}!if-equation@\robustinline{if}-equation}\index{else@\robustinline{else}!if-equation@\robustinline{if}-equation}\index{elseif@\robustinline{elseif}!if-equation@\robustinline{if}-equation} is given by \productionref{if-equation} in the grammar.
+An \lstinline!if!-equation is seen as a list of branches: one \lstinline!if!-branch, and zero or more \lstinline!elseif!-branches, and an optional \lstinline!else!-branch.
+One or zero of these branches is selected, by evaluating their conditions sequentially until a condition that evaluates to true is found.
+If none of the conditions evaluate to true the \lstinline!else!-branch is selected if it exists, otherwise no branch is selected.
+In an equation section, the equations in the body of the selected branch are seen as equations that must be satisfied.
+The bodies of the branches that are not selected have no effect on that model evaluation.
+Each branch condition (represented by \productionref{expression} in the grammar) must be a scalar \lstinline!Boolean! expression.
 
 The \lstinline!if!-equations which do not have exclusively evaluable expressions as switching conditions shall satisfy the following:
 \begin{itemize}
@@ -196,7 +196,7 @@ equation
 \end{lstlisting}
 
 \begin{nonnormative}
-The equivalence is conceptual since \lstinline!pre($\ldots$)! of a non discrete-time \lstinline!Real! variable or expression can only be used within a \lstinline!when!-clause.
+The equivalence is conceptual since \lstinline!pre($\ldots$)! of a non-discrete-time \lstinline!Real! variable or expression can only be used within a \lstinline!when!-clause body.
 Example:
 \begin{lstlisting}[language=modelica]
   /* discrete */ Real x;
@@ -211,7 +211,7 @@ equation
 
 Here, \lstinline!x! is a discrete-time variable (whether it is declared with the \lstinline!discrete! prefix or not), but \lstinline!u! and \lstinline!y! cannot be discrete-time variables
 (since they are not assigned in \lstinline!when!-clauses).
-However, \lstinline!pre(u)! is legal within the \lstinline!when!-clause, since the body of the \lstinline!when!-clause is only evaluated at events, and thus all expressions are discrete-time expressions.
+However, \lstinline!pre(u)! is legal within the \lstinline!when!-clause body, since the body is only evaluated at events, and thus all expressions are discrete-time expressions.
 \end{nonnormative}
 
 The start values of the introduced \lstinline!Boolean! variables are defined by the taking the start value of the when-condition, as above where \lstinline!b! is a parameter variable.
@@ -227,6 +227,7 @@ The start value of the special functions \lstinline!initial!, \lstinline!termina
   \lstinline!when!-equations cannot be nested.
 \item
   \lstinline!when!-equations can only occur within \lstinline!if!-equations and \lstinline!for!-equations if the controlling expressions are exclusively evaluable expressions.
+  For \lstinline!if!-equations this requires that the condition (if any) of the branch containing the \lstinline!when!-equation and the conditions of all preceding branches are evaluable.
 \end{itemize}
 
 \begin{example}
@@ -400,7 +401,7 @@ end WhenPriorityAlg;
 
 \subsection{reinit}\label{reinit}
 
-\lstinline!reinit! can only be used in the body of a \lstinline!when!-equation.
+\lstinline!reinit! can only be used in a \lstinline!when!-equation body.
 It has the following syntax:
 \begin{lstlisting}[language=modelica]
 reinit(x, expr);
@@ -409,15 +410,15 @@ reinit(x, expr);
 The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
 \lstinline!x! is a component-reference (where any subscripts are evaluable) referring to a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e., \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
 \lstinline!expr! needs to be type-compatible with \lstinline!x!.
-For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several \lstinline!when!- or \lstinline!elsewhen!-clauses of the same \lstinline!when!-equation is allowed).
-If there are multiple \lstinline!reinit! for a variable inside the same \lstinline!when!- or \lstinline!elsewhen!-clause, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
+For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several branches of the same \lstinline!when!-equation is allowed).
+If there are multiple \lstinline!reinit! for a variable inside one \lstinline!when!-equation body, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
 In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
 
 \lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value, then at the end of the current event iteration step it assigns this value to \lstinline!x! (this copying from values to reinitialized state(s) is done after all other evaluations of the model and before copying \lstinline!x! to \lstinline!pre(x)!).
 
 \begin{example}
 If a higher index system is present, i.e., constraints between state variables, some state variables need to be redefined to non-state variables.
-During simulation, non-state variables should be chosen in such a way that variables with an applied \lstinline!reinit! are selected as states at least when the corresponding \lstinline!when!-clauses become active.
+During simulation, non-state variables should be chosen in such a way that variables with an applied \lstinline!reinit! are selected as states at least during the events when the \lstinline!reinit!-equation is active.
 If this is not possible, an error occurs, since otherwise \lstinline!reinit! would be applied to a non-state variable.
 
 Example for the usage of \lstinline!reinit! (bouncing ball):
@@ -643,7 +644,7 @@ All equations and assignment statements within \lstinline!when!-clauses and all 
 Clocked discrete-time partitions are also treated this way, see \cref{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}.
 
 \begin{nonnormative}
-Using state events in \lstinline!when!-clauses is unnecessary because the body of a \lstinline!when!-clause is not evaluated during continuous integration.
+Expressions in \lstinline!when!-clause bodies do not trigger state events since they are not active during continuous integration.
 \end{nonnormative}
 
 \begin{example}
@@ -715,7 +716,7 @@ algorithm
   end when;
 \end{lstlisting}
 
-The \lstinline!slowSample! \lstinline!when!-clause is evaluated at every 5th occurrence of the \lstinline!fastSample! \lstinline!when!-clause.
+The \lstinline!slowSample! \lstinline!when!-clause body is evaluated at every 5th evaluation of the \lstinline!fastSample! \lstinline!when!-clause body.
 \end{nonnormative}
 
 \begin{nonnormative}
@@ -744,7 +745,7 @@ If the condition of the \lstinline!when!-clause contains \lstinline!initial()!, 
 The algorithmic statements within a \lstinline!when!-statement are active during initialization, if and only if they are explicitly enabled with \lstinline!initial()!, and only in one of the two forms \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
 In this case, the algorithmic statements within the \lstinline!when!-statement remain active during the whole initialization phase.
 
-An active \lstinline!when!-clause inactivates the following \lstinline!elsewhen! (similarly to \lstinline!when!-clauses during simulation), but apart from that the first \lstinline!elsewhen initial() then! or \lstinline!elsewhen {$\ldots$, initial(), $\ldots$} then! is similarly active during initialization as \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
+An active \lstinline!when!-clause branch condition inactivates the following \lstinline!elsewhen!-branches (similarly to \lstinline!when!-clauses during simulation), but apart from that the first \lstinline!elsewhen initial() then! or \lstinline!elsewhen {$\ldots$, initial(), $\ldots$} then! is similarly active during initialization as \lstinline!when initial() then! or \lstinline!when {$\ldots$, initial(), $\ldots$} then!.
 
 \begin{nonnormative}
 That means that any subsequent \lstinline!elsewhen initial()! has no effect, similarly to \lstinline!when false then!.
@@ -945,8 +946,8 @@ equation
   end when;
 \end{lstlisting}
 After solving the initialization problem, both \lstinline!b! and \lstinline!pre(b)! are false.
-During transient analysis, \lstinline!initial()! is false, so \lstinline!b! changes from falso to true during the first round of the initial event iteration.
-This triggers the \lstinline!when!-clause, and \lstinline!x! gets reinitialized.
+During transient analysis, \lstinline!initial()! is false, so \lstinline!b! changes from false to true during the first round of the initial event iteration.
+This activates the \lstinline!when!-clause body, and \lstinline!x! gets reinitialized.
 \end{example}
 
 

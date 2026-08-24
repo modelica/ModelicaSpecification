@@ -621,7 +621,7 @@ Integer modulus of $x / y$, i.e., \lstinline!mod($x$, $y$) = $x$ - floor($x$ / $
 Result and arguments shall have type \lstinline!Real! or \lstinline!Integer!.
 If either of the arguments is \lstinline!Real! the result is \lstinline!Real! otherwise \lstinline!Integer!.
 \begin{nonnormative}
-Note, outside of a \lstinline!when!-clause state events are triggered when the return value changes discontinuously.
+Note, outside of \lstinline!when!-clause bodies, state events are triggered when the return value changes discontinuously.
 Examples: \lstinline!mod(3, 1.4) = 0.2!, \lstinline!mod(-3, 1.4) = 1.2!, \lstinline!mod(3, -1.4) = -1.2!.
 \end{nonnormative}
 \end{semantics}
@@ -636,7 +636,7 @@ Integer remainder of $x / y$, such that \lstinline!div($x$, $y$) * $y$ + rem($x$
 Result and arguments shall have type \lstinline!Real! or \lstinline!Integer!.
 If either of the arguments is \lstinline!Real! the result is \lstinline!Real! otherwise \lstinline!Integer!.
 \begin{nonnormative}
-Note, outside of a \lstinline!when!-clause state events are triggered when the return value changes discontinuously.
+Note, outside of \lstinline!when!-clause bodies, state events are triggered when the return value changes discontinuously.
 Examples: \lstinline!rem(3, 1.4) = 0.2!, \lstinline!rem(-3, 1.4) = -0.2!.
 \end{nonnormative}
 \end{semantics}
@@ -650,7 +650,7 @@ ceil($x$)
 Smallest integer not less than $x$.
 Result and argument shall have type \lstinline!Real!.
 \begin{nonnormative}
-Note, outside of a \lstinline!when!-clause state events are triggered when the return value changes discontinuously.
+Note, outside of \lstinline!when!-clause bodies, state events are triggered when the return value changes discontinuously.
 \end{nonnormative}
 \end{semantics}
 \end{operatordefinition}
@@ -663,7 +663,7 @@ floor($x$)
 Largest integer not greater than $x$.
 Result and argument shall have type \lstinline!Real!.
 \begin{nonnormative}
-Note, outside of a \lstinline!when!-clause state events are triggered when the return value changes discontinuously.
+Note, outside of \lstinline!when!-clause bodies, state events are triggered when the return value changes discontinuously.
 \end{nonnormative}
 \end{semantics}
 \end{operatordefinition}
@@ -677,7 +677,7 @@ Largest integer not greater than $x$.
 The argument shall have type \lstinline!Real!.
 The result has type \lstinline!Integer!.
 \begin{nonnormative}
-Note, outside of a \lstinline!when!-clause state events are triggered when the return value changes discontinuously.
+Note, outside of \lstinline!when!-clause bodies, state events are triggered when the return value changes discontinuously.
 \end{nonnormative}
 \end{semantics}
 \end{operatordefinition}
@@ -1463,7 +1463,7 @@ Any subscripts in the component expression $y$ must be evaluable expressions.
 The operator is not allowed inside \lstinline!function! classes.
 \lstinline!pre! can be applied to the variable $y$ only if $y$ is a discrete-time expression and $y$ is either a subtype of a simple type or is a record component.
 \begin{nonnormative}
-This can be applied to continuous-time variables in \lstinline!when!-clauses, see \cref{discrete-time-expressions} for the definition of discrete-time expression.
+This can be applied to continuous-time variables in \lstinline!when!-clause bodies, see \cref{discrete-time-expressions} for the definition of discrete-time expression.
 \end{nonnormative}
 The first value of \lstinline!pre($y$)! is determined in the initialization phase.
 
@@ -1473,10 +1473,10 @@ This evaluation sequence is called \firstuse{event iteration}\index{mixed system
 When no more round of model equation evaluation is triggered, the processing of the event is completed and the transient analysis may proceed forward in time.
 
 For purposes of event iteration, each scalar expression in a \lstinline!when!-clause condition is treated as an implicit variable \lstinline!v!.
-Since the \lstinline!when!-clause is triggered when \lstinline!v and not pre(v)!, the implicit variable is considered wrapped in \lstinline!pre($\ldots$)! and becomes part of the event iteration convergence criterion.
+Since a \lstinline!when!-clause branch triggers when \lstinline!v and not pre(v)!, the implicit variable is considered wrapped in \lstinline!pre($\ldots$)! and becomes part of the event iteration convergence criterion.
 
 \begin{nonnormative}
-If \lstinline!v! and \lstinline!pre(v)! are only used in \lstinline!when!-clauses, the translator might mask event iteration for variable \lstinline!v! since \lstinline!v! cannot change during event iteration.
+If \lstinline!v! and \lstinline!pre(v)! are only used in \lstinline!when!-clause bodies, the translator might mask event iteration for variable \lstinline!v! since \lstinline!v! cannot change during event iteration.
 It is a quality of implementation to find the minimal loops for event iteration, i.e., not all parts of the model need to be reevaluated.
 
 A consequence of the implicit \lstinline!when!-clause condition variables is that every time a \lstinline!when!-clause is triggered, there is a variable with \lstinline!v <> pre(v)!, meaning that another round of the iteration is triggered.
@@ -1514,14 +1514,14 @@ The same restrictions as for \lstinline!pre! apply (e.g., not to be used in \lst
 reinit($x$, $\mathit{expr}$)
 \end{lstlisting}\end{synopsis}
 \begin{semantics}
-In the body of a \lstinline!when!-clause, reinitializes $x$ with $\mathit{expr}$ at an event instant.
+Re-initializes $x$ with $\mathit{expr}$.
+Only allowed in a \lstinline!when!-equation body, meaning that re-initialization will only occur at events.
 $x$ is a scalar or array \lstinline!Real! variable that is implicitly defined to have \lstinline!StateSelect.always!.
 \begin{nonnormative}
 It is an error if the variable cannot be selected as a state.
 \end{nonnormative}
 $\mathit{expr}$ needs to be type-compatible with $x$.
 \lstinline!reinit! can only be applied once for the same variable -- either as an individual variable or as part of an array of variables.
-It can only be applied in the body of a \lstinline!when!-clause in an equation section.
 See also \cref{reinit}.
 \end{semantics}
 \end{operatordefinition}
@@ -1692,7 +1692,7 @@ Discrete-time expressions\index{discrete-time!expression}\index{expression varia
 \item
   Expressions where all the subexpressions are discrete-time expressions.
 \item
-  Expressions in the body of a \lstinline!when!-clause, \lstinline!initial equation!, or \lstinline!initial algorithm!.
+  Expressions in a \lstinline!when!-clause body, \lstinline!initial equation!, or \lstinline!initial algorithm!.
 \item
   Expressions in a clocked discrete-time partition, see \cref{clocked-discrete-time-and-clocked-discretized-continuous-time-partition}.
 \item
@@ -1715,7 +1715,8 @@ Discrete-time expressions\index{discrete-time!expression}\index{expression varia
   Expressions in functions not having annotation \lstinline!GenerateEvents = true! (\cref{modelica:GenerateEvents}), behave as though they were discrete-time expressions.
 \end{itemize}
 
-Inside an \lstinline!if!-expression, \lstinline!if!-clause, \lstinline!while!-statement or \lstinline!for!-clause, that is controlled by a non-discrete-time (that is continuous-time, but not discrete-time) switching expression and not in the body of a \lstinline!when!-clause, it is not legal to have assignments to discrete-time variables, equations between discrete-time expressions, or real elementary relations/functions that should generate events.
+The following rule applies to \lstinline!while!-statements and \lstinline!for!-clauses inside an \lstinline!if!-clause body, except when also inside a \lstinline!when!-clause body.
+When such a \lstinline!while!-statement or \lstinline!for!-clause is controlled by a non-discrete-time (that is continuous-time, but not discrete-time) switching expression, it is not legal to contain assignments to discrete-time variables, equations between discrete-time expressions, or real elementary relations/functions that should generate events.
 
 \begin{nonnormative}
 The restriction above is necessary in order to guarantee that all equations for discrete-time variable are discrete-time expressions, and to ensure that crossing functions do not become active between events.
