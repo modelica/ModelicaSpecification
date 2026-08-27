@@ -37,6 +37,9 @@ These are all the non-vendor specific annotations inherited from full Modelica t
 - `choices` — Applied to a parameter or variable, can be used to enumerate and tag different values for parameter input
 - `experiment` — In the class annotation of the `model`, provide the default start time, stop time, tolerance, and interval length
 
+These are all the non-vendor specific annotations inherited from full Modelica that are relevant for tool development and testing:
+- `TestCase` — In the class annotation of the `model`, indicate that content is a test case, and whether translation is expected to succeed or not
+
 These are the new annotations introduced in Base Modelica, each explained in more detail below:
 - [`Protected`](#protected) — Indicate whether component declaration comes from protected section in original full Modelica model
 - [`solverMethod`](#solvermethod) — Discretization method for a clocked sub-partition
