@@ -76,6 +76,128 @@ That case is not recommended, but it is allowed to avoid having special rules in
 \end{nonnormative}
 
 
+\subsubsection{reinit}\label{reinit}
+
+\lstinline!reinit! can only be used in a \lstinline!when!-equation body.
+It has the following syntax:
+\begin{lstlisting}[language=modelica]
+reinit(x, expr);
+\end{lstlisting}
+
+The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
+\lstinline!x! is a component-reference (where any subscripts are evaluable) referring to a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e., \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
+\lstinline!expr! needs to be type-compatible with \lstinline!x!.
+For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several branches of the same \lstinline!when!-equation is allowed).
+If there are multiple \lstinline!reinit! for a variable inside one \lstinline!when!-equation body, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
+In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
+
+\lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value, then at the end of the current event iteration step it assigns this value to \lstinline!x! (this copying from values to reinitialized state(s) is done after all other evaluations of the model and before copying \lstinline!x! to \lstinline!pre(x)!).
+
+\begin{example}
+If a higher index system is present, i.e., constraints between state variables, some state variables need to be redefined to non-state variables.
+During simulation, non-state variables should be chosen in such a way that variables with an applied \lstinline!reinit! are selected as states at least during the events when the \lstinline!reinit!-equation is active.
+If this is not possible, an error occurs, since otherwise \lstinline!reinit! would be applied to a non-state variable.
+
+Example for the usage of \lstinline!reinit! (bouncing ball):
+\begin{lstlisting}[language=modelica]
+der(h) = v;
+der(v) = if flying then -g else 0;
+flying = not (h <= 0 and v <= 0);
+when h < 0 then
+  reinit(v, -e * pre(v));
+end when
+\end{lstlisting}
+\end{example}
+
+
+\subsubsection{assert}\label{assert}
+
+An equation or statement of one of the following forms is an assertion\index{assert@\robustinline{assert}!equation}:
+\begin{lstlisting}[language=modelica]
+assert(condition, message); // Uses level=AssertionLevel.error
+assert(condition, message, assertionLevel);
+assert(condition, message, level = assertionLevel);
+\end{lstlisting}
+Here, \lstinline!condition! is a \lstinline!Boolean! expression, \lstinline!message! is a \lstinline!String! expression, and \lstinline!assertionLevel! is an optional evaluable expression of the built-in enumeration type \lstinline!AssertionLevel!.
+It can be used in equation sections or algorithm sections.
+
+\begin{nonnormative}
+This means that \lstinline!assert! can be called as if it were a function with three formal parameters, the third formal parameter has the name \lstinline!level! and the default value \lstinline!AssertionLevel.error!.
+\end{nonnormative}
+
+If the \lstinline!condition! of an assertion is true, \lstinline!message! is not evaluated and the procedure call is ignored.
+If the \lstinline!condition! evaluates to false, different actions are taken depending on the \lstinline!level! input:
+\begin{itemize}
+\item
+  \lstinline!level = AssertionLevel.error!:
+  The current evaluation is aborted.
+  The simulation may continue with another evaluation.
+  If the simulation is aborted, \lstinline!message! indicates the cause of the error.
+  \begin{nonnormative}
+  Ways to continue simulation with another evaluation include using a shorter step-size, or changing the values of iterationvariables.
+  \end{nonnormative}
+  Failed assertions take precedence over successful termination, such that if the model first triggers the end of successful analysis by reaching the stop-time or explicitly with \lstinline!terminate!, but the evaluation with \lstinline!terminal()=true! triggers an assert, the analysis failed.
+\item
+  \lstinline!level = AssertionLevel.warning!:
+  The current evaluation is not aborted.
+  \lstinline!message! indicates the cause of the warning.
+  \begin{nonnormative}
+  It is recommended to report the warning only once when the condition becomes false, and it is reported that the condition is no longer violated when the condition returns to true.
+  The \lstinline!assert!-statement shall have no influence on the behavior of the model.
+  For example, by evaluating the condition and reporting the message only after accepted integrator steps.
+  \lstinline!condition! needs to be implicitly treated with \lstinline!noEvent! since otherwise events might be triggered that can lead to slightly changed simulation results.
+  \end{nonnormative}
+\end{itemize}
+Tools are recommended to provide more information than just the given message of a failed assertion, in particular the condition and the values of variables used in it.
+
+\begin{nonnormative}
+The \lstinline!AssertionLevel.error! case can be used to avoid evaluating a model outside its limits of validity; for instance, a function to compute the saturated liquid temperature cannot be called with a pressure lower than the triple point value.
+
+The \lstinline!AssertionLevel.warning! case can be used when the boundary of validity is not hard: for instance, a fluid property model based on a polynomial interpolation curve might give accurate results between temperatures of 250 K and 400 K, but still give reasonable results in the range 200 K and 500 K.
+When the temperature gets out of the smaller interval, but still stays in the largest one, the user should be warned, but the simulation should continue without any further action.
+The corresponding code would be:
+\begin{lstlisting}[language=modelica]
+assert(T > 250 and T < 400, "Medium model outside full accuracy range",
+       AssertionLevel.warning);
+assert(T > 200 and T < 500, "Medium model outside feasible region");
+\end{lstlisting}
+
+It is recommended that asserts have a simple message as above, formulated with the recommended tool behavior in mind.
+Writing \lstinline!assert(T<500, "Temperature = "+String(T)+" was above 500")! is thus not recommended, and is likely to lead to duplicated information.
+\end{nonnormative}
+
+
+\subsubsection{terminate}\label{terminate}
+
+The \lstinline!terminate!\index{terminate@\robustinline{terminate}!equation@\robustinline{equation}}-equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also \cref{assert}.
+The termination is not immediate at the place where it is defined since not all variable results might be available that are necessary for a successful stop.
+Instead, the termination actually takes place when the current integrator step is successfully finalized or at an event instant after the event handling has been completed before restarting the integration.
+
+\lstinline!terminate! takes a string argument indicating the reason for the success.
+
+\begin{example}
+The intention of \lstinline!terminate! is to give more complex stopping criteria than a fixed point in time:
+\begin{lstlisting}[language=modelica]
+model ThrowingBall
+  Real x(start = 0);
+  Real y(start = 1);
+equation
+  der(x) = $\ldots$;
+  der(y) = $\ldots$;
+algorithm
+  when y < 0 then
+    terminate("The ball touches the ground");
+  end when;
+end ThrowingBall;
+\end{lstlisting}
+\end{example}
+
+
+\subsubsection{Equation Operators for Overconstrained Connection-Based Equation Systems}\label{equation-operators-for-overconstrained-connection-based-equation-systems}
+
+See \cref{equation-operators-for-overconstrained-connection-based-equation-systems1} for a description of this topic.
+
+
 \subsection{For-Equations -- Repetitive Equation Structures}\label{for-equations-repetitive-equation-structures}
 
 The syntax of a \lstinline!for!-equation\index{for@\robustinline{for}!equation}\index{loop@\robustinline{loop}!for-equation@\robustinline{for}-equation} is given by \productionref{for-equation} in the grammar.
@@ -413,128 +535,6 @@ end WhenPriorityAlg;
 \end{lstlisting}
 \end{nonnormative}
 \end{itemize}
-
-
-\subsection{reinit}\label{reinit}
-
-\lstinline!reinit! can only be used in a \lstinline!when!-equation body.
-It has the following syntax:
-\begin{lstlisting}[language=modelica]
-reinit(x, expr);
-\end{lstlisting}
-
-The operator reinitializes \lstinline!x! with \lstinline!expr! at an event instant.
-\lstinline!x! is a component-reference (where any subscripts are evaluable) referring to a \lstinline!Real! variable (or an array of \lstinline!Real! variables) that must be selected as a state (resp., states), i.e., \lstinline!reinit! on \lstinline!x! implies \lstinline!stateSelect = StateSelect.always! on \lstinline!x!.
-\lstinline!expr! needs to be type-compatible with \lstinline!x!.
-For any given variable (possibly an array variable), \lstinline!reinit! can only be applied (either to an individual variable or to a part of an array variable) in one \lstinline!when!-equation (applying \lstinline!reinit! to a variable in several branches of the same \lstinline!when!-equation is allowed).
-If there are multiple \lstinline!reinit! for a variable inside one \lstinline!when!-equation body, they must appear in different branches of an \lstinline!if!-equation (in order that at most one \lstinline!reinit! for the variable is active at any event).
-In case of \lstinline!reinit! active during initialization (due to \lstinline!when initial()!), see \cref{initialization-initial-equation-and-initial-algorithm}.
-
-\lstinline!reinit! does not break the single assignment rule, because \lstinline!reinit(x, expr)! in equations evaluates \lstinline!expr! to a value, then at the end of the current event iteration step it assigns this value to \lstinline!x! (this copying from values to reinitialized state(s) is done after all other evaluations of the model and before copying \lstinline!x! to \lstinline!pre(x)!).
-
-\begin{example}
-If a higher index system is present, i.e., constraints between state variables, some state variables need to be redefined to non-state variables.
-During simulation, non-state variables should be chosen in such a way that variables with an applied \lstinline!reinit! are selected as states at least during the events when the \lstinline!reinit!-equation is active.
-If this is not possible, an error occurs, since otherwise \lstinline!reinit! would be applied to a non-state variable.
-
-Example for the usage of \lstinline!reinit! (bouncing ball):
-\begin{lstlisting}[language=modelica]
-der(h) = v;
-der(v) = if flying then -g else 0;
-flying = not (h <= 0 and v <= 0);
-when h < 0 then
-  reinit(v, -e * pre(v));
-end when
-\end{lstlisting}
-\end{example}
-
-
-\subsection{assert}\label{assert}
-
-An equation or statement of one of the following forms is an assertion\index{assert@\robustinline{assert}!equation}:
-\begin{lstlisting}[language=modelica]
-assert(condition, message); // Uses level=AssertionLevel.error
-assert(condition, message, assertionLevel);
-assert(condition, message, level = assertionLevel);
-\end{lstlisting}
-Here, \lstinline!condition! is a \lstinline!Boolean! expression, \lstinline!message! is a \lstinline!String! expression, and \lstinline!assertionLevel! is an optional evaluable expression of the built-in enumeration type \lstinline!AssertionLevel!.
-It can be used in equation sections or algorithm sections.
-
-\begin{nonnormative}
-This means that \lstinline!assert! can be called as if it were a function with three formal parameters, the third formal parameter has the name \lstinline!level! and the default value \lstinline!AssertionLevel.error!.
-\end{nonnormative}
-
-If the \lstinline!condition! of an assertion is true, \lstinline!message! is not evaluated and the procedure call is ignored.
-If the \lstinline!condition! evaluates to false, different actions are taken depending on the \lstinline!level! input:
-\begin{itemize}
-\item
-  \lstinline!level = AssertionLevel.error!:
-  The current evaluation is aborted.
-  The simulation may continue with another evaluation.
-  If the simulation is aborted, \lstinline!message! indicates the cause of the error.
-  \begin{nonnormative}
-  Ways to continue simulation with another evaluation include using a shorter step-size, or changing the values of iterationvariables.
-  \end{nonnormative}
-  Failed assertions take precedence over successful termination, such that if the model first triggers the end of successful analysis by reaching the stop-time or explicitly with \lstinline!terminate!, but the evaluation with \lstinline!terminal()=true! triggers an assert, the analysis failed.
-\item
-  \lstinline!level = AssertionLevel.warning!:
-  The current evaluation is not aborted.
-  \lstinline!message! indicates the cause of the warning.
-  \begin{nonnormative}
-  It is recommended to report the warning only once when the condition becomes false, and it is reported that the condition is no longer violated when the condition returns to true.
-  The \lstinline!assert!-statement shall have no influence on the behavior of the model.
-  For example, by evaluating the condition and reporting the message only after accepted integrator steps.
-  \lstinline!condition! needs to be implicitly treated with \lstinline!noEvent! since otherwise events might be triggered that can lead to slightly changed simulation results.
-  \end{nonnormative}
-\end{itemize}
-Tools are recommended to provide more information than just the given message of a failed assertion, in particular the condition and the values of variables used in it.
-
-\begin{nonnormative}
-The \lstinline!AssertionLevel.error! case can be used to avoid evaluating a model outside its limits of validity; for instance, a function to compute the saturated liquid temperature cannot be called with a pressure lower than the triple point value.
-
-The \lstinline!AssertionLevel.warning! case can be used when the boundary of validity is not hard: for instance, a fluid property model based on a polynomial interpolation curve might give accurate results between temperatures of 250 K and 400 K, but still give reasonable results in the range 200 K and 500 K.
-When the temperature gets out of the smaller interval, but still stays in the largest one, the user should be warned, but the simulation should continue without any further action.
-The corresponding code would be:
-\begin{lstlisting}[language=modelica]
-assert(T > 250 and T < 400, "Medium model outside full accuracy range",
-       AssertionLevel.warning);
-assert(T > 200 and T < 500, "Medium model outside feasible region");
-\end{lstlisting}
-
-It is recommended that asserts have a simple message as above, formulated with the recommended tool behavior in mind.
-Writing \lstinline!assert(T<500, "Temperature = "+String(T)+" was above 500")! is thus not recommended, and is likely to lead to duplicated information.
-\end{nonnormative}
-
-
-\subsection{terminate}\label{terminate}
-
-The \lstinline!terminate!\index{terminate@\robustinline{terminate}!equation@\robustinline{equation}}-equation or statement (using function syntax) successfully terminates the analysis which was carried out, see also \cref{assert}.
-The termination is not immediate at the place where it is defined since not all variable results might be available that are necessary for a successful stop.
-Instead, the termination actually takes place when the current integrator step is successfully finalized or at an event instant after the event handling has been completed before restarting the integration.
-
-\lstinline!terminate! takes a string argument indicating the reason for the success.
-
-\begin{example}
-The intention of \lstinline!terminate! is to give more complex stopping criteria than a fixed point in time:
-\begin{lstlisting}[language=modelica]
-model ThrowingBall
-  Real x(start = 0);
-  Real y(start = 1);
-equation
-  der(x) = $\ldots$;
-  der(y) = $\ldots$;
-algorithm
-  when y < 0 then
-    terminate("The ball touches the ground");
-  end when;
-end ThrowingBall;
-\end{lstlisting}
-\end{example}
-
-
-\subsection{Equation Operators for Overconstrained Connection-Based Equation Systems}\label{equation-operators-for-overconstrained-connection-based-equation-systems}
-
-See \cref{equation-operators-for-overconstrained-connection-based-equation-systems1} for a description of this topic.
 
 
 \section{Synchronous Data-Flow Principle and Single Assignment Rule}\label{synchronous-data-flow-principle-and-single-assignment-rule}
