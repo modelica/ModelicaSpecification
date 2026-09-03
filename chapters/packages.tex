@@ -220,6 +220,7 @@ The definition in \filename{package.mo} defines all parts of the sub-tree corres
 
 \begin{nonnormative}
 The \filename{package.mo} typically contains documentation and graphical information for a package, but may also contain additional elements of the class \lstinline!P!.
+Typically, the class defined in \filename{package.mo} will be a package, but there are also situations where classes of other specializations may benefit from being stored as a directory with a \filename{package.mo} inside.
 \end{nonnormative}
 
 Each other file with filename extension \filename{mo} in a directory of a stored hierarchy is also part of the same stored hierarchy.
@@ -236,8 +237,8 @@ All children of the class defined in \filename{package.mo} (including those defi
 A directory shall not contain both the sub-directory \filename{A} (containing a \filename{package.mo}) and the file \filename{A.mo}.
 \end{example}
 
-In order to preserve the order of classes and constants, it is advisable to create a file \filename{package.order}\index{package.order@\filename{package.order}} where each line contains the name of one class or constant (using its Modelica \lstinline!IDENT! form).
-If a \filename{package.order} is present when reading a directory, the classes and constants are added in this order; if the contents does not exactly match the classes and constants in the package, the resulting order is tool specific and a warning may be given.
+In order to preserve the order of classes and constants in a package, it is advisable to create a file \filename{package.order}\index{package.order@\filename{package.order}} where each line contains the name of one class or constant (using its Modelica \lstinline!IDENT! form).
+If a \filename{package.order} is present when reading a directory for a package, the classes and constants are added in this order; if the contents does not exactly match the classes and constants in the package, the resulting order is tool specific and a warning may be given.
 Classes and constants that are stored in \filename{package.mo} are also present in \filename{package.order} but their relative order should be identical to the one in \filename{package.mo} (this ensures that the relative order between classes and constants stored in different ways is preserved).
 
 As defined in \cref{access-control-public-and-protected-elements}, the effect of the visibility headings \lstinline!public! and \lstinline!protected! appearing in \filename{package.mo} only affect visibility of elements defined in that file; the child classes defined in other files or directories always have public visibility.
@@ -285,28 +286,32 @@ It follows that any \lstinline!within!-clause (\cref{the-within-clause}) in such
 \section{External Resources}\label{external-resources}
 
 Examples of references to external resources include links and images in HTML documentation, and images in the \lstinline!Bitmap! annotation (see \cref{bitmap}).
-Absolute URIs should be used, for example \filename{file:///} and the URI scheme \filename{modelica:/} which can be used to retrieve resources associated with a package.
+Absolute URIs should be used, for example \filename{file:///} and the URI scheme \filename{modelica:/} which can be used to retrieve resources associated with a class.
 According to the URI specification scheme names are case-insensitive, but the lower-case form should be used, that is \filename{Modelica:/} is allowed but \filename{modelica:/} is the recommended form.
 
-The Modelica-scheme\index{Modelica!URI scheme}\index{URI!Modelica} has the ability to reference a hierarchical structure of resources associated with packages.
+\begin{nonnormative}
+The external resources are normally associated with a package.
+\end{nonnormative}
+
+The Modelica-scheme\index{Modelica!URI scheme}\index{URI!Modelica} has the ability to reference a hierarchical structure of resources associated with classes.
 The same structure is used for all kind of resource references, independent of use (external file, image in documentation, bitmap in icon layer, and link to external file in the documentation), and regardless of the storage mechanism.
 
-Any Modelica-scheme URI containing a slash after the package-name is interpreted as a reference to a resource.
-The first \emph{segment} of the \emph{path} of the URI is interpreted as a fully qualified package name and the rest of the \emph{path} of the URI is interpreted as the path (relative to the package) of the resource.
+Any Modelica-scheme URI containing a slash after the class-name is interpreted as a reference to a resource.
+The first \emph{segment} of the \emph{path} of the URI is interpreted as a fully qualified class name and the rest of the \emph{path} of the URI is interpreted as the path (relative to the class) of the resource.
 Each storage scheme can define its own interpretation of the path (but care should be taken when converting from one storage scheme or when restructuring packages that resource references resolve to the same resource).
-Any storage scheme should be constrained such that a resource with a given path should be unique for any package name that precedes it.
-The second segment of the path shall not be the name of a class in the package given by the first segment.
+Any storage scheme should be constrained such that a resource with a given path should be unique for any class name that precedes it.
+The second segment of the path shall not be the name of a class in the class given by the first segment.
 
-As a deprecated feature the URI may start with \filename{modelica://} and use the host-part of the authority as the fully qualified package name.
+As a deprecated feature the URI may start with \filename{modelica://} and use the host-part of the authority as the fully qualified class name.
 That feature is widely used, but deprecated since host-names are generally case-insensitive.
 \begin{nonnormative}
 Examples of deprecated URIs would be \filename{modelica://Modelica/Resources/C.jpg} (referring to a resource) and \filename{modelica://Modelica.Blocks} (referring to a package).
 These should be rewritten as \filename{modelica:/Modelica/Resources/C.jpg} and \filename{modelica:/Modelica.Blocks}.
 \end{nonnormative}
 
-When Modelica packages are stored hierarchically in a file system (i.e., package \lstinline!A! in a directory \filename{A} containing \filename{package.mo}) the resource
+When Modelica classes are stored hierarchically in a file system (i.e., package \lstinline!A! in a directory \filename{A} containing \filename{package.mo}) the resource
 \filename{modelica:/A/Resources/C.jpg} should be stored in the file \filename{A/Resources/C.jpg}, it is not recommend to use \filename{modelica:/A.B/C.jpg} for referencing resources; it could be stored in the file \filename{A/B/C.jpg} -- which is counter-intuitive if \lstinline!A.B! is stored together with \lstinline!A!.
-When Modelica packages are stored in other formats a similar mapping should be defined, such that a resource with a given path should be unique for any package name that precedes it.
+When Modelica classes are stored in other formats a similar mapping should be defined, such that a resource with a given path should be unique for any class name that precedes it.
 The second segment of the path shall not be the name of a class in the package given by the first segment.
 As above for \filename{Modelica 3.2.1/package.mo}, i.e., resources starting from \filename{Modelica 3.2.1}, and \filename{modelica:/Modelica.Mechanics/C.jpg} is \filename{Modelica 3.2.1/Mechanics/C.jpg} -- regardless of whether \lstinline!Modelica.Mechanics! is stored in \filename{Modelica 3.2.1/package.mo}, \filename{Modelica 3.2.1/Mechanics.mo}, or \filename{Modelica 3.2.1/Mechanics/package.mo}.
 
@@ -318,7 +323,7 @@ The use of a trailing segment separator is recommended when the resource is a di
 If possible, use URIs for specific files or specific sub-directories instead of appending relative paths to a generic URI such as \filename{modelica:/A/Resources/} as the latter creates a dependency on the entire directory.
 \end{nonnormative}
 
-For a Modelica-package stored as a single file, \filename{A.mo}, the resource \filename{modelica:/A/C.jpg} refers to a file \filename{C.jpg} stored in the same directory as \filename{A.mo}, but using resources in this variant is not recommended since multiple packages will share resources.
+For a Modelica-package (or class) stored as a single file, \filename{A.mo}, the resource \filename{modelica:/A/C.jpg} refers to a file \filename{C.jpg} stored in the same directory as \filename{A.mo}, but using resources in this variant is not recommended since multiple packages will share resources.
 
 In case the name of the class contains quoted identifiers, the single-quote `\lstinline!`!' and any reserved characters (`\lstinline!:!', `\lstinline!/!', `\lstinline!?!', `\lstinline!#!', `\lstinline![!', `\lstinline!]!', `\lstinline!@!', `\lstinline!!!', `\lstinline[mathescape=false]!$!', `\lstinline!&!', `\lstinline!(!', `\lstinline!)!', `\lstinline!*!', `\lstinline!+!', `\lstinline!,!', `\lstinline!;!', `\lstinline!=!') should be percent-encoded as normal in URIs.
 
