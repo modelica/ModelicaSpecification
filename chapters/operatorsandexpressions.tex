@@ -947,6 +947,8 @@ The operators listed below include the derivative operator and special purpose o
 {\lstinline!der($\mathit{expr}$)!} & Time derivative & \Cref{modelica:der} \\
 {\lstinline!cardinality($c$)!} & Number of occurrences in {\lstinline!connect!}-equations & \Cref{modelica:cardinality} \\
 {\lstinline!homotopy($\mathit{actual}$, $\mathit{simplified}$)!} & Homotopy initialization & \Cref{modelica:homotopy} \\
+{\lstinline!nullCombination($\mathit{weights}$, $\mathit{items}$)!} & Null combination & \Cref{modelica:nullCombination} \\
+{\lstinline!affineCombination($\mathit{weights}$, $\mathit{items}$)!} & Affine combination & \Cref{modelica:affineCombination} \\
 {\lstinline!semiLinear($x$, $k^{+}$, $k^{-}$)!} & Sign-dependent slope & \Cref{modelica:semiLinear} \\
 {\lstinline!inStream($v$)!} & Stream variable flow into component & \Cref{modelica:inStream} \\
 {\lstinline!actualStream($v$)!} & Actual value of stream variable & \Cref{modelica:actualStream} \\
@@ -1050,6 +1052,102 @@ A Modelica translator should map this operator into either of the two forms:
 \end{enumerate}
 For non-scalar arguments the function is vectorized according to \cref{scalar-functions-applied-to-array-arguments}.
 For further details, see \cref{homotopy}.
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[nullCombination]
+\begin{synopsis}\begin{lstlisting}
+nullCombination($\mathit{weights}$, $\mathit{items}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Compute a null combination of an array of items.
+The $\mathit{weights}$ shall be a \lstinline!Real! vector of size \lstinline!size($\mathit{items}$, 1)!.
+It is not required that the size is non-zero, but the weights must add up to zero.
+This is a requirement on the mathematical values of the weights; as these can be the result of numeric computations, verification of the requirement shall be made with a tolerance accommodating numeric error.
+The result type is the same as the $\mathit{items}$ element type (stripping its first array dimension), and shall be a \lstinline!Real! scalar or array type.
+The result is the null combination of the $\mathit{items}$ based on the $\mathit{weights}$.
+All elements of $\mathit{items}$ must agree on being either absolute or relative quantities, and the result is always a relative quantity, compare \cref{modelica:absoluteValue}.
+
+\begin{nonnormative}
+When the $\mathit{items}$ are relative quantities, a null combination is just a linear combination.
+The interesting case is when the $\mathit{items}$ are absolute quantities, when null combinations generalize the fact that a difference between two absolute quantities is a relative quantity.
+
+For relative items the requirement that the weights add up to zero is not needed for the result to be well defined; it is what makes the operator express a null combination rather than an arbitrary linear combination.
+Requiring it regardless of the nature of the items also keeps the rule independent of whether the \lstinline!absoluteValue! status of the items has been determined.
+
+The weights of a null combination are often constant, and the requirement that they add up to zero can then be verified at translation time.
+\end{nonnormative}
+
+\begin{nonnormative}
+If the number of items is zero, the null combination is the zero of the element type.
+
+For a non-zero number of items, writing $w$ for the weights and $x$ for the items, the null combination $\text{\lstinline!nullCombination!}(w,\, x)$ can conceptually be computed as follows using an arbitrary element $y$ of the $x$ element type.
+The null combination is formed using differences relative to $y$ (it can be shown that the result does not depend on the choice of $y$):
+\begin{equation*}
+\text{\lstinline!nullCombination!}(w,\, x) = \sum_{i} w_{i} (x_{i} - y)
+\end{equation*}
+\end{nonnormative}
+
+\begin{example}
+Finite difference approximation of a second-order derivative.
+Three temperatures are sampled with a time difference of \lstinline!h!.
+The approximation is a null combination of the temperatures, also when the temperatures are expressed in non-coherent units:
+\begin{lstlisting}[language=modelica]
+constant Real h = 0.01's';
+Real tPrev = 10'degC' annotation(absoluteValue = true);
+Real tMid = 12'degC' annotation(absoluteValue = true);
+Real tNext = 18'degC' annotation(absoluteValue = true);
+Real d2t = nullCombination({1, -2, 1} / h^2, {tPrev, tMid, tNext});
+\end{lstlisting}
+The use of \lstinline!nullCombination! avoids intermediate ill-formed expressions such as \lstinline!-tMid! or \lstinline!2 * tMid! -- a Celsius temperature cannot be negated or multiplied.
+A rewrite where only the Celsius differences such as \lstinline!tPrev - tMid! get multiplied is possible, but would lack the symmetry and clarity of the \lstinline!nullCombination! form.
+\end{example}
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[affineCombination]
+\begin{synopsis}\begin{lstlisting}
+affineCombination($\mathit{weights}$, $\mathit{items}$)
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+Compute an affine combination of an array of items.
+The $\mathit{weights}$ shall be a \lstinline!Real! vector of size \lstinline!size($\mathit{items}$, 1)!.
+The size must be non-zero, and the weights must add up to a value which is not close to zero.
+Since the weights can be the result of numeric computations, the requirement is deliberately approximate: it shall be verified with a tolerance, rejecting a sum so close to zero that the normalization would be dominated by numeric error.
+The result type is the same as the $\mathit{items}$ element type (stripping its first array dimension), and shall be a \lstinline!Real! scalar or array type.
+The result is the affine combination of the $\mathit{items}$ based on the normalized $\mathit{weights}$.
+All elements of $\mathit{items}$ must agree on being either absolute or relative quantities, and the result is a quantity of the same nature, compare \cref{modelica:absoluteValue}.
+
+\begin{nonnormative}
+When the $\mathit{items}$ are relative quantities, an affine combination is just a linear combination.
+The interesting case is when the $\mathit{items}$ are absolute quantities, due to the ability to clearly state that a new absolute quantity is produced.
+\end{nonnormative}
+
+\begin{nonnormative}
+Writing $w$ for the weights and $x$ for the items, the affine combination $\text{\lstinline!affineCombination!}(w,\, x)$ can conceptually be computed as follows using an arbitrary element $y$ of the $x$ element type.
+Define the normalized weights $\hat{w}_{i}$ such that $\sum_{i} \hat{w}_{i} = 1$:
+\begin{equation*}
+\hat{w}_{i} = \frac{w_{i}}{\sum_{j} w_{j}}
+\end{equation*}
+Then form the affine combination using differences relative to $y$ (it can be shown that the result does not depend on the choice of $y$):
+\begin{equation*}
+\text{\lstinline!affineCombination!}(w,\, x) = y + \sum_{i} \hat{w}_{i} (x_{i} - y)
+\end{equation*}
+\end{nonnormative}
+
+\begin{example}
+2~kilograms of water at 10~degrees Celsius are mixed with 5~kilograms of water at 20~degrees Celsius.
+The resulting temperature is an affine combination of the temperatures, also when the temperatures are expressed in non-coherent units:
+\begin{lstlisting}[language=modelica]
+Real m1 = 2'kg';
+Real t1 = 10'degC' annotation(absoluteValue = true);
+Real m2 = 5'kg';
+Real t2 = 20'degC' annotation(absoluteValue = true);
+Real tMix = affineCombination({m1, m2}, {t1, t2});
+\end{lstlisting}
+The use of \lstinline!affineCombination! avoids intermediate ill-formed expressions such as \lstinline!m1 * t1! -- a Celsius temperature cannot be multiplied.
+A rewrite where only the Celsius difference \lstinline!t2 - t1! gets multiplied is possible, but would lack the symmetry and clarity of the \lstinline!affineCombination! form.
+\end{example}
 \end{semantics}
 \end{operatordefinition}
 
