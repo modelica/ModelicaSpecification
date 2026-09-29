@@ -278,10 +278,14 @@ record Plot
   Curve[:] curves "Plot curves";
   /*literal*/ constant Axis x "X axis properties";
   /*literal*/ constant Axis y "Y axis properties";
+  /*literal*/ constant Axis yRight "Right y axis properties";
 end Plot;
 \end{lstlisting}
 
-A \lstinline!Plot! can contain several \lstinline!curves!, see \cref{plot-curves}, that all share a common \lstinline!x! and \lstinline!y! axis with properties described in \cref{axis-properties}.
+A \lstinline!Plot! can contain several \lstinline!curves!, see \cref{plot-curves}, that all share a common \lstinline!x! axis with properties described in \cref{axis-properties}.
+There can be either one or two $y$ axes, with the properties of the left and right axes defined by \lstinline!y! and \lstinline!yRight!, respectively.
+A curve's associated $y$ axis is defined at the curve, see \cref{plot-curves}.
+A $y$ axis not associated with any curve should not be displayed.
 
 Both \lstinline!Figure! and \lstinline!Plot! can have an optional title.
 When the \lstinline!Figure! \lstinline!title! is the empty string (the default), the tool must produce a non-empty title based on the figure content.
@@ -358,7 +362,7 @@ end AxisScale;
 \end{lstlisting}%
 \annotationindex{AxisScale}
 
-The standardized annotations extending from \lstinline!AxisScale! are \lstinline!Linear! and  \lstinline!Log!, but it is also allowed to use a vendor-specific annotation.
+The standardized annotations extending from \lstinline!AxisScale! are \lstinline!Linear! and \lstinline!Log!, but it is also allowed to use a vendor-specific annotation.
 
 Use \lstinline!Linear! for a linear mapping between axis values and position on axis:
 \begin{lstlisting}[language=modelica]
@@ -402,6 +406,7 @@ record Curve
   expression x = time "X coordinate values";
   expression y "Y coordinate values";
   /*literal*/ constant String legend "Legend";
+  /*literal*/ constant YAxisSelection yAxis "Associated y axis";
   /*literal*/ constant Integer zOrder = 0 "Drawing order control";
 end Curve;
 \end{lstlisting}
@@ -422,6 +427,13 @@ When \lstinline!legend! is not provided, the tool produces a default based on \l
 Providing the empty string as \lstinline!legend! means that the curve shall be omitted from the plot legend.
 Variable replacements, as described in \cref{variable-replacements}, can be used in \lstinline!legend!.
 The order of presentation within the plot legend corresponds to order of appearance in the \lstinline!curves! of a \lstinline!Plot!.
+
+A curve is plotted against the $y$ axis is defined by \lstinline!yAxis!, with two possible settings:
+\begin{lstlisting}[language=modelica]
+type YAxisSelection = enumeration(Left, Right);
+\end{lstlisting}%
+\annotationindex{YAxisSelection}
+When \lstinline!yAxis! is not provided, the tool makes an automatic choice.
 
 The \lstinline!zOrder! gives control over drawing order, with higher values corresponding to closer to front.
 Ties are resolved using order of appearance in the \lstinline!curves! of a \lstinline!Plot!, with later appearance corresponding to closer to front.
@@ -1388,7 +1400,7 @@ The \lstinline!extent! attribute specifies the bounding box of the ellipse.
 
 Partial ellipses can be drawn using the \lstinline!startAngle! and \lstinline!endAngle! attributes.
 These specify the endpoints of the arc prior to the stretch and rotate operations.
-The arc is drawn counter-clockwise from \lstinline!startAngle! to \lstinline!endAngle!, where \lstinline!startAngle! and \lstinline!endAngle! are defined counter-clockwise from 3 o'clock (the positive x-axis).
+The arc is drawn counter-clockwise from \lstinline!startAngle! to \lstinline!endAngle!, where \lstinline!startAngle! and \lstinline!endAngle! are defined counter-clockwise from 3 o'clock (the positive $x$ axis).
 
 The \lstinline!closure! attribute specifies whether the endpoints specified by \lstinline!startAngle! and \lstinline!endAngle! are to be joined by lines to the center of the extent (\lstinline!closure = EllipseClosure.Radial!), joined by a single straight line between the end points (\lstinline!closure = EllipseClosure.Chord!), or left unconnected (\lstinline!closure = EllipseClosure.None!).
 In the latter case, the ellipse is treated as an open curve instead of a closed shape, and the \lstinline!fillPattern! and \lstinline!fillColor! are not applied (if present, they are ignored).
