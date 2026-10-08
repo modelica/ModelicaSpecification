@@ -473,6 +473,7 @@ A tool which does not understand any of the vendor-specific meanings will always
 \subsubsection{Variable Replacements}\label{variable-replacements}
 
 In the places listed in \cref{attributes-with-variable-replacements} where text for display is defined, the final value of a result variable can be embedded by referring to the variable as \lstinline!%{inertia1.w}!.
+A numeric value can be embedded in the same way, for example \lstinline!%{100'ms'}!, and shall be displayed consistently with a final variable value.
 This is similar to the \lstinline!Text! graphical primitive in \cref{text}.
 
 \begin{table}[H]
@@ -495,8 +496,12 @@ This is similar to the \lstinline!Text! graphical primitive in \cref{text}.
 \end{center}
 \end{table}
 
-In \lstinline!%{$\mathit{variable}$}!, text markup escape sequences don't apply inside the $\mathit{variable}$, which has the form of \productionref{result-reference}.
-This means that a complete \productionref{result-reference} shall be scanned before looking for the terminating closing brace.
+In \lstinline!%{$\mathit{variable}$}!, the $\mathit{variable}$ has the form of \productionref{result-reference}.
+The tool should consider the \lstinline!displayUnit!-attribute (if any) when selecting the unit in which to display a $\mathit{variable}$.
+In \lstinline!%{$\mathit{value}$}!, the $\mathit{value}$ has the form of \productionref{unsigned-number} (i.e., a number optionally followed by a unit, see \cref{unitful-literals}) optionally preceded by a minus sign.
+
+Text markup escape sequences don't apply inside the $\mathit{variable}$ or $\mathit{value}$.
+This means that a complete \productionref{result-reference} or numeric value shall be scanned before looking for the terminating closing brace.
 
 \begin{example}
 The variable replacement \lstinline!%{'%%'}! references the variable \lstinline!'%%'!, not the variable \lstinline!'%'!.
@@ -513,7 +518,7 @@ By design, neither \lstinline!%class! nor \lstinline!%name! is supported in this
 (Titles making use of \lstinline!%class! or \lstinline!%name! would then only lead to ugly duplication of this information.)
 \end{nonnormative}
 
-Vendor-specific markup can be added to a variable replacement in the form \lstinline!%$\mathit{vendorSpecificMarkup}${$\mathit{variable}$}!.
+Vendor-specific markup can be added to a variable replacement in the form \lstinline!%$\mathit{vendorSpecificMarkup}${$\mathit{variable}$}!, and similarly for an embedded value.
 The vendor-specific markup must not fundamentally alter the meaning of the variable replacement, in order to ensure that a tool can safely ignore all vendor-specific markup and still obtain a result that fits the current context.
 
 \begin{example}
@@ -597,7 +602,7 @@ One application of vendor-specific alternative content is to prototype a feature
 For example, say that the tool AVendor wants to generalize the variable replacements such that the duration of a simulation can be substituted into a caption.
 During the development, this could be represented as the vendor-specific markup \lstinline!%__AVendor(?duration)[10 s]!, if the simulation has a duration of 10~seconds at the time of writing the caption.
 When AVendor renders this, it ignores the text \lstinline!10 s! and just displays the actual duration instead.
-Later, if this would become supported by standard markup, it might take the form of something like \lstinline!%{experiment:duration}! instead (note that \lstinline!experiment:duration! is not in the form of a component reference, avoiding conflict with current use of variable replacements).
+Later, if this would become supported by standard markup, it might take the form of something like \lstinline!%{experiment:duration}! instead (note that \lstinline!experiment:duration! has neither the form of a component reference nor that of a numeric value, avoiding conflict with current use of variable replacements).
 
 In a similar way, vendor-specific alternative content can be used to prototype a link for future inclusion in the link markup (either by extending the meaning of Modelica URIs, or by introducing another pseudo-scheme similar to \lstinline!variable:!).
 This is an example where the vendor-specific markup could make use of the $\mathit{text}$ (for link text) together with the vendor-specific $\mathit{data}$ (describing the actual link).
@@ -1435,28 +1440,36 @@ The text is drawn with transparent background and no border around the text (and
 There are a number of common macros that can be used in the text, and they should be replaced when displaying the text as follows (in order such that the earliest ones have precedence, and using the longest sequence of identifier characters -- alphanumeric and underscore):
 \begin{itemize}
 \item
-  \%\% replaced by \%
+  \lstinline!%%! replaced by \%
 \item
-  \%name replaced by the name of the component (i.e., the identifier for it in the enclosing class).
+  \lstinline!%name! replaced by the name of the component (i.e., the identifier for it in the enclosing class).
 \item
-  \%class replaced by the name of the class (only the last part of the hierarchical name).
+  \lstinline[deletekeywords={[2]class}]!%class! replaced by the name of the class (only the last part of the hierarchical name).
 \item
-  \%\emph{par} and \%\{\emph{par}\} replaced by the value of the parameter or variable with a binding or modifier setting the value \lstinline!par!.
-  If the value is numeric, tools shall display the value with \lstinline!displayUnit!, formatted according to the BIPM specification.
-  E.g., for
+  \lstinline!%{$\mathit{par}$}! and \lstinline!%$\mathit{par}$! replaced by the value of the parameter or variable with a binding or modifier setting the value $\mathit{par}$.
+  The tool should consider the \lstinline!displayUnit!-attribute of $\mathit{par}$ (if any) when selecting the unit in which to display the value.
+  A displayed value with unit shall be formatted according to the BIPM specification.
+  E.g., with
 \begin{lstlisting}[language=modelica]
 parameter Real t(unit = "s", displayUnit = "ms") = 0.1
 \end{lstlisting}
-  tools shall display \emph{100 ms}.
-  The intent is that the text is easily readable, thus if \lstinline!par! is of an enumeration type, replace \%\emph{par} by the item name, not by the full name.
+  it would be natural for a tool to display \lstinline!%{t}! as \emph{100 ms}.
+  The intent is that the text is easily readable, thus if $\mathit{par}$ is of an enumeration type, replace \lstinline!%{$\mathit{par}$}! by the item name, not by the full name.
   \begin{example}
-  If \lstinline!par = "Modelica.Blocks.Types.Enumeration.Periodic"!, then \%\emph{par} should be displayed as \emph{Periodic}.
+  If \lstinline!par = "Modelica.Blocks.Types.Enumeration.Periodic"!, then \lstinline!%{par}! should be displayed as \emph{Periodic}.
   \end{example}
-  When quoted identifiers (e.g., \lstinline'quoted ident'! or \lstinline!'}'!) or composite names (i.e., not simple identifiers) are involved, the form \%\{\emph{par}\} must be used.
-  Here, \emph{par} is a general \productionref{component-reference}, and \lstinline!%{a.p}! gives the value of the parameter \lstinline!p! in the component \lstinline!a!.
+  When quoted identifiers (e.g., \lstinline!'quoted ident'! or \lstinline!'}'!) or composite names (i.e., not simple identifiers) are involved, the form \lstinline!%{$\mathit{par}$}! must be used.
+  Here, $\mathit{par}$ is a general \productionref{component-reference}, and \lstinline!%{a.p}! gives the value of the parameter \lstinline!p! in the component \lstinline!a!.
   The macro can be directly followed by a letter.
   Thus \lstinline!%{w}x%{h}! gives the value of \lstinline!w! directly followed by \emph{x} and the value of \lstinline!h!, while \lstinline!%wxh! gives the value of the parameter \lstinline!wxh!.
   The referenced parameter or variable must exist.
+\item
+  \lstinline!%{$\mathit{value}$}! replaced by $\mathit{value}$ displayed in the same style as a parameter or variable in the item above.
+  Here, $\mathit{value}$ has the form of \productionref{unsigned-number} (i.e., a number optionally followed by a unit, see \cref{unitful-literals}) optionally preceded by a minus sign.
+  Unlike \lstinline!%$\mathit{par}$!, there is no form without braces.
+  \begin{nonnormative}
+  Compared to writing the number and unit directly in the text, this makes the presentation consistent with that of parameter values in several ways: the minus sign of a negative value, formatting and precision of the number, separation between number and unit, and the presentation of the unit.
+  \end{nonnormative}
 \end{itemize}
 
 The style attribute \lstinline!fontSize! specifies the font size.
