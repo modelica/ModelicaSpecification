@@ -194,7 +194,7 @@ Here, automatically generated records are used to preserve the hierarchical stru
 ```
 record _R1
   parameter Real 'p';
-  Real[2] 'arr';
+  Real 'arr'[2];
   Real 'x';
 end _R1;
 

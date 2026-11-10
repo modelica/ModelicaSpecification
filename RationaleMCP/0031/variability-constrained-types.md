@@ -70,8 +70,8 @@ record 'M.Parameters'
 end 'M.Parameters';
 
 model 'M'
-  parameter 'M.Parameters'[2] 'data' = {'M.Parameters'(1, 2), 'M.Parameters'(3, 4)};
-  'Analog.Basic.Resistor'[2] 'r'('R' = 'data'.'x', T_ref = 'data'.'y');
+  parameter 'M.Parameters' 'data'[2] = {'M.Parameters'(1, 2), 'M.Parameters'(3, 4)};
+  'Analog.Basic.Resistor' 'r'[2]('R' = 'data'.'x', T_ref = 'data'.'y');
 end 'M';
 ```
 

@@ -40,7 +40,7 @@ For example, this is illegal:
 package 'OutOfScope'
   record 'R'
     constant Integer 'n';
-    Real['n'] 'x';         /* Error: Unknown variable 'n'. */
+    Real 'x'['n'];         /* Error: Unknown variable 'n'. */
     parameter Real 'p';
     Real 'y'(start = 'p'); /* Error: Unknown variable 'p'. */
   end 'R';
@@ -54,7 +54,7 @@ Instead, constants may need to be evaluated and modifications moved to the model
 package 'OutOfScope'
   record _R1 "Automatically generated specialization of R(n = 3)"
     constant Integer 'n' = 3;
-    Real[3] 'x';
+    Real 'x'[3];
     parameter Real 'p';
     Real 'y';
   end _R1;
@@ -540,9 +540,9 @@ Example:
 ```
 function 'f'
   input Integer 'n';
-  input Real[:] 'x';
-  output Real['n' + size('x', 1)] 'y';
-  Real[:] 'a';
+  input Real 'x'[:];
+  output Real 'y'['n' + size('x', 1)];
+  Real 'a'[:];
 algorithm
   'a' := {0.5}; /* OK: Constant size can be assigned to flexible size. */
   ...
@@ -551,8 +551,8 @@ end 'f';
 model 'M'
   parameter Integer 'p' = 2;
   constant Integer 'c' = 3;
-  Real[2] 'a' = fill(1.0, 'p'); /* Error: expression has flexible size. */
-  Real[5] 'b' = f('c', 'a'); /* OK. */
+  Real 'a'[2] = fill(1.0, 'p'); /* Error: expression has flexible size. */
+  Real 'b'[5] = f('c', 'a'); /* OK. */
 end 'M';
 ```
 
@@ -585,21 +585,21 @@ Example:
 ```
 model M
   function f
-    output Real[2, :] y;
+    output Real y[2, :];
     ...
   end f;
   function g
-    output Real[2, :, 4] y;
+    output Real y[2, :, 4];
     ...
   end g;
   function h
-    output Real[Boolean, :] y;
+    output Real y[Boolean, :];
     ...
   end h;
-  Real[2, 3] a = constsize(f(), 2, 3); /* OK. */
-  Real[2, 3] b = constsize(f(), size(b)); /* OK. */
-  Real[2, 3, 4] c = constsize(g(), 2, 3); /* OK. */
-  Real[Boolean, 3] b = constsize(f(), 2, 3); /* OK; a Boolean dimension has size 2. */
+  Real a[2, 3] = constsize(f(), 2, 3); /* OK. */
+  Real b[2, 3] = constsize(f(), size(b)); /* OK. */
+  Real c[2, 3, 4] = constsize(g(), 2, 3); /* OK. */
+  Real b[Boolean, 3] = constsize(f(), 2, 3); /* OK; a Boolean dimension has size 2. */
 end M;
 ```
 
@@ -998,10 +998,10 @@ end 'SteadyStateInit';
 
 For arrays, full Modelica modification of `start` with `each` will be described below.  Here is a simple example without `each`:
 ```
-  Real[3] 'x';
+  Real 'x'[3];
   parameter equation guess('x') = fill(1.5, 3);
-  Real[3] 'y';
-  Real[2] 'z';
+  Real 'y'[3];
+  Real 'z'[2];
 initial equation
   guess('y') = fill(1.5, 3);
   guess('z'[1]) = 1.5;
@@ -1027,13 +1027,13 @@ initial equation
 Combining arrays and records:
 ```
   record 'R'
-    Real[3] 'a';
+    Real 'a'[3];
     Real 'b';
   end 'R';
-  'R'[2] 'x';
+  'R' 'x'[2];
   parameter equation guess('x') = fill(R(fill(1.5, 3), 1.2), ,2);
-  'R'[2] 'y';
-  'R'[2] 'z';
+  'R' 'y'[2];
+  'R' 'z'[2];
 initial equation
   /* Some of the many ways to give equations for all guess values: */
   guess('y') = fill(R(fill(1.5, 3), 1.2), 2);
@@ -1176,7 +1176,7 @@ For example, the full Modelica
 ```
 is translated to the Base Modelica
 ```
-  Real[3] 'x';
+  Real 'x'[3];
   parameter equation guess('x') = {1.1, 1.2, 1.3}; /* From non-final modification of start in full Modelica. */
 initial equation
   'x' = guess('x'); /* Array equation from each fixed = true in full Modelica. */
@@ -1190,7 +1190,7 @@ Real[3] x(each start = 1.0, fixed = {true, false, true});
 ```
 is translated to the Base Modelica
 ```
-  Real[3] 'x';
+  Real 'x'[3];
   parameter equation guess('x') = fill(1.0, 3);
 initial equation
   'x'[1] = guess('x'[1]);
@@ -1224,7 +1224,7 @@ initial equation
 
 Array variables are no exception:
 ```
-  Real[3] 'x';
+  Real 'x'[3];
   parameter equation guess('x') = {1.1, 1.2, 1.3};
 initial equation
   prioritize('x', 2);

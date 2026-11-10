@@ -8,9 +8,9 @@ This section describes a limitation of the current design, and ways in which it 
 The current forms of `constsize` don't allow leaving some leading sizes flexible, while making other sizes constant.  It means that some full Modelica function algorithms cannot be directly converted to Base Modelica:
 ```
 function 'flexibleTrouble'
-  Real[:, :] 'a'; /* (That the second dimension doesn't have constant size matching 'b' is probably a sign of bad design.) */
-  Real[2] 'b';
-  Real[:] 'y';
+  Real 'a'[:, :]; /* (That the second dimension doesn't have constant size matching 'b' is probably a sign of bad design.) */
+  Real 'b'[2];
+  Real 'y'[:];
 algorithm
   /* Allowed in full Modelica, but not in Base Modelica.
    * Size mismatch in array multiplication: ':' is not compatible with constant size.
@@ -40,12 +40,12 @@ For now, however, we don't expect this to be a problem for real-world examples. 
 With a way to specify `:` in the `constsize` expression, one would have to define if a `:` specified for a constant dimension should turn that dimension into a flexible size, or if it should be defined as leaving the size constant.  This could be particularly useful when dealing with dimensions indexed by enumerations:
 ```
 function 'f'
-  output Real[:, 'MyEnumType', :] 'y';
+  output Real 'y'[:, 'MyEnumType', :];
   ...
 end 'f';
 
 function 'h'
-  Real[:, 'MyEnumType', 3] 'z';
+  Real 'z'[:, 'MyEnumType', 3];
 algorithm
   /* Cumbersome way to assign the result of f() to 'z':
    */
@@ -70,8 +70,8 @@ As long as there are no known use cases for turning a constant size into flexibl
 Finally, note that a very cumbersome workaround that doesn't require generalization of `constsize` is to introduce a new function to do the job:
 ```
 function _constsize_Real_flexible_2
-  input Real[:, :] 'x';
-  output Real[size(x, 1), 2] 'y';
+  input Real 'x'[:, :];
+  output Real 'y'[size(x, 1), 2];
 algorithm
   assert(size('x', 2) == 2, "Expected second array dimension to have size 2.");
   for 'i' in 1 : size('y', 1) loop
@@ -98,11 +98,11 @@ Pros and cons leading to the current decision of going with the function call sy
 Example (compare [example using current design](differences.md#the-constsize-expression)):
 ```
 function 'f'
-  output Real[Boolean, :] 'y';
+  output Real 'y'[Boolean, :];
   ...
 end 'f';
 
 model 'M'
-  Real[Boolean, 3] b = constsize[Boolean, 3]('f'()); /*  */
+  Real b[Boolean, 3] = constsize[Boolean, 3]('f'()); /*  */
 end 'M';
 ```
