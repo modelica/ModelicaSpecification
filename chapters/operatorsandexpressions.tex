@@ -947,6 +947,7 @@ The operators listed below include the derivative operator and special purpose o
 \hline
 {\lstinline!der($\mathit{expr}$)!} & Time derivative & \Cref{modelica:der} \\
 {\lstinline!cardinality($c$)!} & Number of occurrences in {\lstinline!connect!}-equations & \Cref{modelica:cardinality} \\
+{\lstinline!initialSimplified()!} & Simplified homotopy initialization & \Cref{modelica:initialSimplified} \\
 {\lstinline!homotopy($\mathit{actual}$, $\mathit{simplified}$)!} & Homotopy initialization & \Cref{modelica:homotopy} \\
 {\lstinline!semiLinear($x$, $k^{+}$, $k^{-}$)!} & Sign-dependent slope & \Cref{modelica:semiLinear} \\
 {\lstinline!inStream($v$)!} & Stream variable flow into component & \Cref{modelica:inStream} \\
@@ -1029,6 +1030,22 @@ It should no longer be used, since it will be removed in one of the next Modelic
 \end{nonnormative}
 Returns the number of (inside and outside) occurrences of connector instance $c$ in a \lstinline!connect!-equation as an \lstinline!Integer! number.
 For further details, see \cref{cardinality-deprecated}.
+\end{semantics}
+\end{operatordefinition}
+
+\begin{operatordefinition}[initialSimplified]
+\begin{synopsis}\begin{lstlisting}
+initialSimplified()
+\end{lstlisting}\end{synopsis}
+\begin{semantics}
+The scalar \lstinline!Boolean! expression is true when solving the simplified homotopy problem.
+\begin{enumerate}
+\item
+  Returns \lstinline!false! (trivial implementation).
+\item
+  May return \lstinline!true! during homotopy initialization when $\lambda$ is zero, otherwise \lstinline!false!.
+\end{enumerate}
+For further details, see \cref{homotopy}.
 \end{semantics}
 \end{operatordefinition}
 
@@ -1180,6 +1197,11 @@ algorithm
   annotation(Inline = true);
 end homotopy;
 \end{lstlisting}
+
+A non-trivial implementation may symbolically simplify the homotopy-equations for the case where $\lambda=0$, and for that simplified case can also treat \lstinline!initialSimplified()! as \lstinline!true!.
+After that the tool can then switch to the complete equations for $\lambda \in (0,1]$, where \lstinline!initialSimplified()! is \lstinline!false!.
+See \textcite{DePascali31122026} for details and advantages.
+This approach may even be used if there are calls to \lstinline!initialSimplified! without any calls to \lstinline!homotopy!.
 \end{nonnormative}
 
 \begin{example}[1]
